@@ -1,0 +1,53 @@
+name: Update dashboard data
+
+on:
+  schedule:
+    # Roda 2x/dia: 06h e 18h (horário de Brasília = UTC-3 → 09h e 21h UTC)
+    - cron: '0 9 * * *'
+    - cron: '0 21 * * *'
+  workflow_dispatch:  # permite rodar manualmente pelo botão "Run workflow"
+
+permissions:
+  contents: write   # necessário pra commitar data/*.json atualizado
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Create .env from secrets
+        run: |
+          cat > .env <<EOF
+          KOMMO_SUBDOMAIN=${{ secrets.KOMMO_SUBDOMAIN }}
+          KOMMO_TOKEN=${{ secrets.KOMMO_TOKEN }}
+          META_TOKEN=${{ secrets.META_TOKEN }}
+          META_ACCOUNT=${{ secrets.META_ACCOUNT }}
+          EOF
+
+      - name: Fetch Kommo CRM
+        run: python3 fetch_kommo_imr.py
+
+      - name: Fetch Meta Ads
+        run: python3 fetch_meta_spend.py
+
+      - name: Commit updated data
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add data/kommo_leads.json data/meta_spend.json
+          if git diff --staged --quiet; then
+            echo "Nenhuma mudança nos dados."
+          else
+            git commit -m "chore: auto-update data $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
