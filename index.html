@@ -340,11 +340,11 @@
     <div class="badge">IMR</div>
     <div><h1>Ipioca Mar Resort</h1><p>Meta Ads × Kommo CRM · Trilha Performance Digital</p></div>
   </div>
-  <div class="pills">
-<div class="pill">💰 <b>R$ 3.744 investidos</b></div>
-    <div class="pill">📥 <b>372 leads SDR</b></div>
-    <div class="pill">🤝 <b>83 reuniões (Closer)</b></div>
-    <div class="pill">✅ <b>7 vendas</b></div>
+  <div class="pills" id="topbar-pills">
+    <div class="pill">💰 <b id="pill-invest">—</b></div>
+    <div class="pill">📥 <b id="pill-leads">—</b></div>
+    <div class="pill">🤝 <b id="pill-reunioes">—</b></div>
+    <div class="pill">✅ <b id="pill-vendas">—</b></div>
   </div>
 </header>
 
@@ -524,7 +524,7 @@
 
 <footer>
   <b>Ipioca Mar Resort (IMR)</b> · Agência Trilha · MME Vacation ·
-  Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · 16/04/2026
+  Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · <span id="footer-date">—</span>
 </footer>
 
 <!-- ================================================================
@@ -1464,40 +1464,158 @@ renderMensuracao();
 <script>
 // ══════════════════════════════════════════════════════════════════════════
 // MENSURAÇÃO · Abril 2026 — dados Kommo CRM + Meta Ads API
+// Dados carregados dinamicamente de data/kommo_leads.json + data/meta_spend.json
+// (gerados pelo workflow GitHub Actions 2x/dia)
 // ══════════════════════════════════════════════════════════════════════════
-const MENS_DATA = {
-  meta:{
-    w1:{invest:839.39, leads:64, qualif:42, agend:11, realiz:11},
-    w2:{invest:874.29, leads:68, qualif:43, agend:5,  realiz:4 },
-    w3:{invest:316.14, leads:19, qualif:10, agend:0,  realiz:0 },
-    w4:{invest:0,      leads:0,  qualif:0,  agend:0,  realiz:0 }
-  },
-  google:{
-    w1:{invest:0,      leads:0,  qualif:0,  agend:0, realiz:0},
-    w2:{invest:519.60, leads:37, qualif:21, agend:2, realiz:2},
-    w3:{invest:0,      leads:54, qualif:33, agend:7, realiz:6},
-    w4:{invest:0,      leads:0,  qualif:0,  agend:0, realiz:0}
-  },
-  duque:{
-    w1:{leads:16, disparo:15, realiz:0},
-    w2:{leads:17, disparo:14, realiz:1},
-    w3:{leads:0,  disparo:0,  realiz:0},
-    w4:{leads:0,  disparo:0,  realiz:0}
-  },
-  org:{
-    w1:{leads:2, qualif:2, agend:2, realiz:2},
-    w2:{leads:0, qualif:0, agend:0, realiz:0},
-    w3:{leads:0, qualif:0, agend:0, realiz:0},
-    w4:{leads:0, qualif:0, agend:0, realiz:0}
-  },
-  closer:{
-    w1:{leads:9,  prop:0,  vendas:0, fat:0},
-    w2:{leads:20, prop:14, vendas:4, fat:132868},
-    w3:{leads:9,  prop:9,  vendas:0, fat:0},
-    w4:{leads:0,  prop:0,  vendas:0, fat:0}
-  }
+
+// Estrutura vazia; será preenchida em loadDashboardData()
+let MENS_DATA = {
+  meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
+  google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
+  duque:  {w1:{leads:0,disparo:0,realiz:0}, w2:{leads:0,disparo:0,realiz:0}, w3:{leads:0,disparo:0,realiz:0}, w4:{leads:0,disparo:0,realiz:0}},
+  org:    {w1:{leads:0,qualif:0,agend:0,realiz:0}, w2:{leads:0,qualif:0,agend:0,realiz:0}, w3:{leads:0,qualif:0,agend:0,realiz:0}, w4:{leads:0,qualif:0,agend:0,realiz:0}},
+  closer: {w1:{leads:0,prop:0,vendas:0,fat:0}, w2:{leads:0,prop:0,vendas:0,fat:0}, w3:{leads:0,prop:0,vendas:0,fat:0}, w4:{leads:0,prop:0,vendas:0,fat:0}}
 };
 const MENS_GOALS = {txQ:50, qToA:60, txA:40, txComp:65, pToV:13, txConv:2.5};
+
+// Helpers de classificação/semana
+function _weekFromTs(ts) {
+  if (!ts) return 'w4';
+  const d = new Date(ts * 1000);
+  const day = d.getUTCDate(), month = d.getUTCMonth() + 1;
+  if (month < 4) return 'w1';         // antes de abril → conta em w1
+  if (month > 4) return 'w4';         // depois → w4
+  if (day <= 7)  return 'w1';
+  if (day <= 14) return 'w2';
+  if (day <= 21) return 'w3';
+  return 'w4';
+}
+
+function _classifyOrigem(origem) {
+  const o = (origem || '').toLowerCase();
+  if (o.includes('meta')) return 'meta';
+  if (o.includes('google')) return 'google';
+  return 'org';
+}
+
+function _fmtFetchedDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// Recalcula MENS_DATA a partir dos JSONs
+function computeMensData(kommo, meta) {
+  const D = {
+    meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
+    google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
+    duque:  {w1:{leads:0,disparo:0,realiz:0}, w2:{leads:0,disparo:0,realiz:0}, w3:{leads:0,disparo:0,realiz:0}, w4:{leads:0,disparo:0,realiz:0}},
+    org:    {w1:{leads:0,qualif:0,agend:0,realiz:0}, w2:{leads:0,qualif:0,agend:0,realiz:0}, w3:{leads:0,qualif:0,agend:0,realiz:0}, w4:{leads:0,qualif:0,agend:0,realiz:0}},
+    closer: {w1:{leads:0,prop:0,vendas:0,fat:0}, w2:{leads:0,prop:0,vendas:0,fat:0}, w3:{leads:0,prop:0,vendas:0,fat:0}, w4:{leads:0,prop:0,vendas:0,fat:0}}
+  };
+
+  // ── SDR leads → Meta/Google/Org por origem
+  for (const l of (kommo.sdr || [])) {
+    const ch = _classifyOrigem(l.origem);
+    const w = l.week || 'w4';
+    if (!D[ch][w]) continue;
+    D[ch][w].leads++;
+    if (l.qualified)         D[ch][w].qualif++;
+    if (l.reuniao_agendada)  D[ch][w].agend++;
+    if (l.reuniao_realizada) D[ch][w].realiz++;
+  }
+
+  // ── Meta spend → por semana (adset sums)
+  for (const weeks of Object.values(meta.adset || {})) {
+    for (const [w, v] of Object.entries(weeks)) {
+      if (D.meta[w]) D.meta[w].invest += v;
+    }
+  }
+
+  // ── Duque: todos = disparos; leads = responderam (passaram de "Leads Entrantes"); realiz = Nutrição Closer
+  const STATUS_LEADS_ENTRANTES_DUQUE = 98164999;
+  const STATUS_NUTR_CLOSER_DUQUE     = 98524255;
+  for (const l of (kommo.duque || [])) {
+    const w = l.week || 'w4';
+    if (!D.duque[w]) continue;
+    D.duque[w].disparo++;
+    if (l.status !== STATUS_LEADS_ENTRANTES_DUQUE) D.duque[w].leads++;
+    if (l.status === STATUS_NUTR_CLOSER_DUQUE)     D.duque[w].realiz++;
+  }
+
+  // ── Closer: leads (criados na semana), prop (propostas), vendas (por closed_at)
+  for (const l of (kommo.closer || [])) {
+    const w = l.week || 'w4';  // semana de criação
+    if (D.closer[w]) {
+      D.closer[w].leads++;
+      if (l.proposta) D.closer[w].prop++;
+    }
+    if (l.venda) {
+      const wv = _weekFromTs(l.closed_at);  // semana de fechamento
+      if (D.closer[wv]) {
+        D.closer[wv].vendas++;
+        D.closer[wv].fat += (l.price || 0);
+      }
+    }
+  }
+
+  return D;
+}
+
+// Carrega dados e dispara re-render do dashboard
+async function loadDashboardData() {
+  try {
+    const [kommoRes, metaRes] = await Promise.all([
+      fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
+      fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json())
+    ]);
+    MENS_DATA = computeMensData(kommoRes, metaRes);
+
+    // Atualiza "Última atualização" em todas as barras
+    const dateStr = _fmtFetchedDate(kommoRes.fetched_at);
+    document.querySelectorAll('.update-bar b').forEach(el => {
+      if (el.textContent.match(/^\d{2}\/\d{2}\/\d{4}/)) el.textContent = dateStr;
+    });
+    const footerDate = document.getElementById('footer-date');
+    if (footerDate) footerDate.textContent = dateStr;
+
+    // Atualiza pílulas do topbar
+    const totals = {
+      invest: 0, leads: 0, reunioes: 0, vendas: 0
+    };
+    for (const ch of ['meta','google','org']) {
+      for (const w of ['w1','w2','w3','w4']) {
+        totals.invest += MENS_DATA[ch][w].invest || 0;
+        totals.leads  += MENS_DATA[ch][w].leads  || 0;
+        totals.reunioes += MENS_DATA[ch][w].realiz || 0;
+      }
+    }
+    for (const w of ['w1','w2','w3','w4']) {
+      totals.vendas += MENS_DATA.closer[w].vendas || 0;
+    }
+    const fmtBRL = v => 'R$\u00a0' + v.toLocaleString('pt-BR', {maximumFractionDigits:0});
+    const pi = document.getElementById('pill-invest');
+    const pl = document.getElementById('pill-leads');
+    const pr = document.getElementById('pill-reunioes');
+    const pv = document.getElementById('pill-vendas');
+    if (pi) pi.textContent = fmtBRL(totals.invest) + ' investidos';
+    if (pl) pl.textContent = totals.leads + ' leads SDR';
+    if (pr) pr.textContent = totals.reunioes + ' reuniões (Closer)';
+    if (pv) pv.textContent = totals.vendas + ' vendas';
+
+    if (typeof renderMensuracao === 'function') renderMensuracao();
+    console.log('[dashboard] dados carregados:', kommoRes.fetched_at);
+  } catch (e) {
+    console.error('[dashboard] erro ao carregar dados:', e);
+  }
+}
+// Disparar logo após DOM pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadDashboardData);
+} else {
+  loadDashboardData();
+}
 
 // Mapeamento período → semanas do Mensuracao
 const MENS_PERIOD_MAP = {

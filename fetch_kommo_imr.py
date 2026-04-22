@@ -33,10 +33,12 @@ PIPELINE_DUQUE  = 12719007
 CF_SCORE = 2929964   # Lead score A/B/C/D
 
 # Contact custom fields
+CF_ORIGEM      = 3167410  # Origem (Meta Ads / Google+Ads / ...)
 CF_CAMPANHA    = 3167412  # Campanha
 CF_PUBLICO     = 3167420  # Público (audience/adset)
 CF_ANUNCIO     = 3167422  # Anúncio (creative/ad)
 CF_PHONE       = 2813078  # Telefone
+CF_MEDIUM      = 4226808  # Medium (cpc/organic/...)
 CF_HOSPEDAGEM  = 4226162  # Como se hospeda quando viaja
 CF_VIAJA_MAIS  = 4226170  # Você costuma viajar mais
 CF_INVESTIMENTO= 4226176  # Quanto investe/ano em viagens
@@ -198,9 +200,11 @@ def process_lead(lead, contacts_map):
         "pipeline":  pipeline,
         "price":     lead.get("price", 0) or 0,
         "score":      get_lead_cf(lead, CF_SCORE),
+        "origem":     contact.get(CF_ORIGEM, ""),       # "Meta Ads" / "Google+Ads" / ""
         "audience":   contact.get(CF_PUBLICO, ""),
         "creative":   contact.get(CF_ANUNCIO, ""),
         "campaign":   contact.get(CF_CAMPANHA, ""),
+        "medium":     contact.get(CF_MEDIUM, ""),
         "phone":      phone_masked,   # telefone mascarado (55XXXXXXXX1234) pra publicação
         "_phone_key": phone_hash,     # usado apenas em memória pra deduplicar; removido antes de salvar
         "tags":       tags,
