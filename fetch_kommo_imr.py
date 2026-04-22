@@ -150,7 +150,9 @@ def get_lead_tags(lead):
 def classify(pipeline, status, tags, closed_in_period):
     """Regras do cliente (abril/2026):
       - SDR:
-         qualified = Lead Qualificado + Reunião Agendada + Reunião Realizada (status 142 SDR)
+         qualified = status em {Lead Qualificado, Reunião Agendada, Reunião Realizada}
+                     OU tem tag de reunião (reunião-agendada/realizada/reagendar)
+                     — leads que agendaram/realizaram reunião passaram pela qualificação
          reuniao_agendada = qualquer tag em TAGS_REUNIAO
          reuniao_realizada = status 142 no SDR
       - Closer:
@@ -160,9 +162,10 @@ def classify(pipeline, status, tags, closed_in_period):
     qualified = reuniao_agendada = reuniao_realizada = proposta = venda = False
     tag_set = set(tags)
     if pipeline == PIPELINE_SDR:
-        qualified         = status in {SDR_QUALIF, SDR_REUNIAO, WON}
         reuniao_agendada  = bool(tag_set & TAGS_REUNIAO)
         reuniao_realizada = status == WON
+        # Qualificado = está numa etapa qualificada OU já passou pela reunião (tags)
+        qualified = (status in {SDR_QUALIF, SDR_REUNIAO, WON}) or reuniao_agendada
     elif pipeline == PIPELINE_CLOSER:
         proposta = status in {CLO_PROP, CLO_FOLLOW, CLO_VERDE}
         venda    = (status == WON) and closed_in_period
