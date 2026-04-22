@@ -1,5 +1,5 @@
 # Relatório de Análise: Leads × Público × Criativo
-**Cliente:** Ipioca Mar Resort (IMR) | **Agência:** Trilha / MME Vacation  
+**Cliente:** Ipioca Mar Resort (IMR) | **Agência:** Trilha Performance Digital / MME Vacation  
 **Período:** 17/03/2026 – 15/04/2026 (últimos 30 dias)  
 **Gerado em:** 16/04/2026  
 **Fontes:** Meta Ads API v21.0 | Kommo CRM *(aguardando reconexão)*
@@ -153,4 +153,4 @@ Sem os dados de Lead Score e funil, não é possível saber se os leads baratos 
 
 ---
 
-*Relatório gerado automaticamente | Trilha · MME Vacation · Ipioca Mar Resort*
+*Relatório gerado automaticamente | Trilha Performance Digital · MME Vacation · Ipioca Mar Resort*

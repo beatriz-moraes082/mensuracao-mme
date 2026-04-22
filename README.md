@@ -93,4 +93,4 @@ Os relatórios em markdown (`relatorio_analise_leads_*.md`) são gerados manualm
 
 ---
 
-*Trilha · MME Vacation · Ipioca Mar Resort*
+*Trilha Performance Digital · MME Vacation · Ipioca Mar Resort*

@@ -5,7 +5,7 @@
 ### Leads × Público × Criativo
 
 **Ipioca Mar Resort (IMR)**
-_Trilha · MME Vacation_
+_Trilha Performance Digital · MME Vacation_
 
 `Período: 01–30/abr/2026` • `Atualizado: 22/04/2026 18:46` • `Fontes: Meta Ads + Kommo CRM`
 
