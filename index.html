@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Dashboard | Ipioca Mar Resort</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      /* ── Trilha Brand Colors · Light ── */
+      --bg:#f4f5f2;--surface:#ffffff;--surface2:#eceeed;--border:#d8dbd5;
+      --accent:#ee4d20;--accent2:#d97706;--green:#16a34a;--blue:#2563eb;
+      --purple:#7c3aed;--text:#343a32;--muted:#6b7069;--danger:#dc2626;--r:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif}
+
+    /* ── Topbar ─────────────────────────────────── */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);
+      padding:13px 28px;display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+    .tl{display:flex;align-items:center;gap:12px}
+    .badge{width:38px;height:38px;border-radius:10px;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff}
+    .tl h1{font-size:15px;font-weight:700}
+    .tl p{font-size:11px;color:var(--muted)}
+    .pills{display:flex;gap:8px;flex-wrap:wrap}
+    .pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+      padding:4px 12px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+    .pill b{color:var(--text)}
+
+    /* ── Tab nav ─────────────────────────────────── */
+    .tabnav{background:var(--surface);border-bottom:1px solid var(--border);
+      padding:0 28px;display:flex;gap:0;position:sticky;top:66px;z-index:99}
+    .tabnav button{background:none;border:none;border-bottom:2px solid transparent;
+      padding:12px 20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+      transition:all .15s;white-space:nowrap}
+    .tabnav button:hover{color:var(--text)}
+    .tabnav button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+    /* ── Tab content ─────────────────────────────── */
+    .tab-pane{display:none}.tab-pane.active{display:block}
+    .main{padding:20px 28px;max-width:1320px;margin:0 auto}
+
+    /* ── Section header ──────────────────────────── */
+    .sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--muted);margin:24px 0 12px;display:flex;align-items:center;gap:10px}
+    .sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* ── Grids ───────────────────────────────────── */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .g13{display:grid;grid-template-columns:1fr 3fr;gap:12px}
+    @media(max-width:900px){.g2,.g3,.g13{grid-template-columns:1fr}}
+
+    /* ── Cards ───────────────────────────────────── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+    .card h3{font-size:13px;font-weight:700;margin-bottom:3px}
+    .card .sub{font-size:11px;color:var(--muted);margin-bottom:12px}
+    .tcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    .thead{padding:12px 16px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+    .thead h3{font-size:13px;font-weight:700}
+
+    /* ── Tables ──────────────────────────────────── */
+    table{width:100%;border-collapse:collapse}
+    th{padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--muted);text-align:left;background:var(--surface2)}
+    tr{border-top:1px solid var(--border);transition:background .12s}
+    tr:hover{background:var(--surface2)}
+    td{padding:10px 14px;font-size:12px}
+    .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+    .num{font-variant-numeric:tabular-nums;font-weight:600}
+    .tc-g{color:var(--green)}.tc-r{color:var(--danger)}.tc-o{color:var(--accent2)}
+    .tc-b{color:var(--blue)}.tc-p{color:var(--purple)}
+    .bdg{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .bdg.g{background:rgba(34,197,94,.15);color:var(--green)}
+    .bdg.r{background:rgba(239,68,68,.15);color:var(--danger)}
+    .bdg.o{background:rgba(245,166,35,.15);color:var(--accent2)}
+    .bdg.b{background:rgba(59,130,246,.15);color:var(--blue)}
+    .bdg.p{background:rgba(139,144,168,.12);color:var(--muted)}
+    .row-gold{background:rgba(245,166,35,.06)!important}
+    .row-green{background:rgba(34,197,94,.06)!important}
+
+    /* ── Insight boxes ───────────────────────────── */
+    .insight{padding:10px 14px;border-radius:8px;font-size:11px;line-height:1.7;margin-top:8px}
+    .insight.green{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}
+    .insight.blue{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2)}
+    .insight.orange{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2)}
+    .insight.red{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2)}
+
+    /* ── Etapa 0 ─────────────────────────────────── */
+    .e0-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+    @media(max-width:800px){.e0-grid{grid-template-columns:1fr}}
+    .e0-item{background:var(--surface2);border-radius:8px;padding:10px 13px;font-size:11px;line-height:1.6}
+    .e0-item .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+      color:var(--muted);margin-bottom:4px}
+
+    /* ── Chart ───────────────────────────────────── */
+    .cw{position:relative;height:280px}
+
+    /* ── Funis tab ───────────────────────────────── */
+    .period-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+      background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:12px 16px;margin-bottom:20px}
+    .period-bar .plbl{font-size:11px;color:var(--muted);font-weight:700;margin-right:4px}
+    .pbtn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+      padding:6px 14px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;
+      font-family:inherit}
+    .pbtn:hover{color:var(--text);border-color:var(--accent)}
+    .pbtn.active{background:rgba(232,93,40,.15);border-color:var(--accent);color:var(--accent);font-weight:700}
+    .custom-range{display:flex;align-items:center;gap:6px;margin-left:4px}
+    .custom-range input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+      padding:5px 10px;font-size:11px;color:var(--text);font-family:inherit;width:115px;
+      color-scheme:light}
+    .custom-range input:focus{outline:none;border-color:var(--accent)}
+    .custom-range button{background:var(--accent);border:none;border-radius:6px;
+      padding:5px 12px;font-size:11px;color:#fff;cursor:pointer;font-family:inherit}
+
+    /* ── Pyramid ─────────────────────────────────── */
+    .pyramid-wrap{padding:6px 0}
+    .pyr-row{display:grid;grid-template-columns:155px 1fr 210px;align-items:center;
+      gap:8px;min-height:48px}
+    .pyr-lbl{text-align:right;font-size:11px;font-weight:600;color:var(--muted);line-height:1.3}
+    .pyr-mid{display:flex;justify-content:center;padding:0 8px}
+    .pyr-bar{height:42px;border-radius:8px;display:flex;align-items:center;
+      justify-content:center;transition:width .45s cubic-bezier(.4,0,.2,1);
+      min-width:64px;font-size:14px;font-weight:800}
+    .pyr-rgt{font-size:11px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .pyr-arrow{text-align:center;color:var(--border);font-size:11px;line-height:1;
+      grid-column:2;padding:1px 0}
+    .rate-pill{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+    .meta-tag{font-size:9px;color:var(--muted);font-weight:600}
+
+    /* ── KPI grid ────────────────────────────────── */
+    .kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+    @media(max-width:700px){.kpi3{grid-template-columns:1fr 1fr}}
+    .kpi-box{background:var(--surface2);border-radius:10px;padding:14px 16px;text-align:center}
+    .kpi-box .val{font-size:28px;font-weight:900;line-height:1.1;margin:4px 0}
+    .kpi-box .klbl{font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.06em;color:var(--muted)}
+    .kpi-box .note{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+
+    /* ── Comparison table ────────────────────────── */
+    .cmp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    @media(max-width:900px){.cmp-grid{grid-template-columns:1fr 1fr}}
+    .cmp-col{background:var(--surface2);border-radius:10px;padding:14px 16px}
+    .cmp-col .ch{font-size:11px;font-weight:800;text-transform:uppercase;
+      letter-spacing:.06em;margin-bottom:10px}
+    .cmp-row{display:flex;justify-content:space-between;align-items:center;
+      padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+    .cmp-row:last-child{border-bottom:none}
+    .cmp-row .ck{color:var(--muted)}
+    .cmp-row .cv{font-weight:700}
+
+    footer{text-align:center;padding:18px;font-size:11px;color:var(--muted);
+      border-top:1px solid var(--border);margin-top:28px}
+    footer b{color:var(--text)}
+
+    /* ── Mensuração ─────────────────────────────────── */
+    .mens-kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
+    @media(max-width:960px){.mens-kpi{grid-template-columns:repeat(3,1fr)}}
+    .mens-table{width:100%;border-collapse:collapse;font-size:11px}
+    .mens-table thead th{padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:.06em;
+      text-transform:uppercase;color:var(--muted);text-align:center;
+      background:var(--surface2);white-space:nowrap;position:sticky;top:0;z-index:2}
+    .mens-table thead th.ch-col{text-align:left;min-width:185px;position:sticky;left:0;top:0;z-index:3}
+    .mens-table thead th.geral-th{background:rgba(59,130,246,.18);color:var(--blue);font-weight:800}
+    .mens-table thead th.meta-th{background:rgba(34,197,94,.14);color:var(--green);font-weight:800}
+    .mens-table tbody td{padding:7px 12px;border-top:1px solid var(--border);
+      text-align:center;vertical-align:middle}
+    .mens-table tbody td:first-child{text-align:left;color:var(--muted);
+      padding-left:22px;position:sticky;left:0;background:var(--surface);z-index:1}
+    .mens-table tbody td:first-child.bld{color:var(--text);font-weight:700;padding-left:14px}
+    .mens-table tbody td:nth-child(6){background:rgba(59,130,246,.05)}
+    .mens-table tbody td:nth-child(7){background:rgba(34,197,94,.05);font-style:italic}
+    .mens-table tr.ch-hdr td{background:var(--surface2)!important;color:var(--text);
+      font-weight:800;font-size:12px;padding:10px 14px;
+      border-top:2px solid var(--border);text-align:left;
+      position:sticky;left:0}
+    .mens-table tr.sep-row td{height:5px;background:var(--bg)!important;
+      border:none;padding:0;position:static}
+    .mens-table tr:not(.ch-hdr):not(.sep-row):hover td{background:rgba(0,0,0,.03)}
+    .mens-table td.num{font-variant-numeric:tabular-nums;font-weight:600}
+    .mens-table tr.fw-row td{font-weight:700;color:var(--text)}
+    .tc-muted{color:var(--muted)}
+    .fw7{font-weight:700}
+    .meta-val{font-style:italic;color:var(--muted)!important}
+    .geral-val{font-weight:800}
+    .source-note{font-size:10px;color:var(--muted);margin-top:6px;text-align:right}
+
+    /* ════════════════════════════════════════════
+       UX · Trilha Experience Layer
+    ════════════════════════════════════════════ */
+
+    /* Smooth scroll + animation */
+    html{scroll-behavior:smooth}
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(5px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    .tab-pane.active{animation:fadeUp .22s ease}
+
+    /* ── Topbar ── */
+    .topbar{
+      box-shadow:0 1px 0 var(--border),0 2px 12px rgba(0,0,0,.06);
+      padding:11px 32px;gap:16px;
+    }
+    .badge{
+      width:42px;height:42px;border-radius:12px;font-size:16px;
+      box-shadow:0 2px 10px rgba(238,77,32,.3);
+      flex-shrink:0;
+    }
+    .tl h1{font-size:15px;font-weight:800;letter-spacing:-.01em}
+    .pill{
+      border-radius:20px;padding:5px 13px;font-size:11px;
+      font-weight:500;transition:border-color .15s;
+    }
+    .pill:hover{border-color:var(--accent)}
+
+    /* ── Tab nav ── */
+    .tabnav{
+      box-shadow:0 1px 0 var(--border);
+      padding:0 32px;
+      overflow-x:auto;scrollbar-width:none;
+    }
+    .tabnav::-webkit-scrollbar{display:none}
+    .tabnav button{
+      padding:14px 22px;font-size:12.5px;font-weight:600;
+      border-bottom:3px solid transparent;margin-bottom:-1px;
+      transition:all .15s;font-family:inherit;letter-spacing:.01em;
+    }
+    .tabnav button:hover{color:var(--text);background:rgba(0,0,0,.025);border-radius:6px 6px 0 0}
+    .tabnav button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:800}
+
+    /* ── Main padding ── */
+    .main{padding:24px 32px}
+
+    /* ── Cards with elevation ── */
+    .card{
+      box-shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
+      transition:box-shadow .2s,transform .18s;
+    }
+    .card:hover{box-shadow:0 2px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.07);transform:translateY(-1px)}
+    .tcard{box-shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04)}
+
+    /* ── Tables ── */
+    th{font-size:10.5px;border-bottom:2px solid var(--border)}
+    tbody tr:nth-child(even):not(.ch-hdr):not(.sep-row){background:rgba(0,0,0,.018)}
+    tr:hover:not(.ch-hdr){background:rgba(238,77,32,.04)!important}
+    td{font-size:12.5px}
+
+    /* ── KPI boxes ── */
+    .kpi-box{
+      background:var(--surface);border:1px solid var(--border);
+      border-top:3px solid var(--accent);border-radius:12px;
+      box-shadow:0 1px 3px rgba(0,0,0,.05);
+      padding:16px 18px;
+      transition:box-shadow .2s,transform .18s;
+    }
+    .kpi-box:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px)}
+    .kpi-box .val{font-size:26px;font-weight:900;letter-spacing:-.02em;line-height:1.15}
+    .kpi-box .klbl{font-size:10px;font-weight:800;letter-spacing:.09em}
+
+    /* ── Period buttons ── */
+    .pbtn{border-radius:20px;font-weight:600;padding:6px 16px;font-size:11.5px}
+    .pbtn.active{
+      background:var(--accent)!important;color:#fff!important;
+      border-color:var(--accent)!important;
+      box-shadow:0 2px 8px rgba(238,77,32,.35);
+    }
+    .pbtn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+
+    /* ── Insight boxes ── */
+    .insight{
+      border-left:3px solid currentColor;border-radius:0 8px 8px 0;
+      padding:12px 16px;font-size:11.5px;line-height:1.75;
+    }
+
+    /* ── Section header ── */
+    .sec{font-size:11px;font-weight:800;letter-spacing:.09em;margin:28px 0 14px}
+
+    /* ── Comparison cards ── */
+    .cmp-col{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);
+    }
+
+    /* ── Mensuracao channel header ── */
+    .mens-table tr.ch-hdr td{
+      background:linear-gradient(90deg,rgba(238,77,32,.1),rgba(238,77,32,.02))!important;
+      border-left:3px solid var(--accent);
+      font-size:12.5px;letter-spacing:.02em;
+    }
+    .mens-table thead th{padding:10px 14px;font-size:10.5px;border-bottom:2px solid var(--border)}
+    .mens-table tbody tr:nth-child(even):not(.ch-hdr):not(.sep-row) td{background:rgba(0,0,0,.015)}
+    .mens-kpi .kpi-box{border-top-color:var(--accent)}
+
+    /* ── Footer ── */
+    footer{background:var(--surface);padding:20px 32px;font-size:11.5px}
+
+    /* ── Custom scrollbar ── */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+    /* ── Update bar ── */
+    .update-bar{
+      font-size:11px;color:var(--muted);
+      margin-bottom:18px;margin-top:-6px;
+      display:flex;align-items:center;gap:4px;
+    }
+    .update-bar b{color:var(--text);font-weight:700}
+
+    /* ── Scroll-to-top button ── */
+    #scrollTop{
+      position:fixed;bottom:24px;right:24px;width:40px;height:40px;
+      background:var(--accent);color:#fff;border:none;border-radius:50%;
+      font-size:18px;cursor:pointer;
+      box-shadow:0 4px 16px rgba(238,77,32,.4);
+      opacity:0;transform:translateY(8px);
+      transition:opacity .25s,transform .25s;
+      z-index:200;display:flex;align-items:center;justify-content:center;
+      font-family:inherit;
+    }
+    #scrollTop.show{opacity:1;transform:translateY(0)}
+    #scrollTop:hover{box-shadow:0 6px 20px rgba(238,77,32,.55);transform:translateY(-2px)}
+  </style>
+</head>
+<body>
+
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Voltar ao topo">↑</button>
+
+<!-- ================================================================ TOPBAR -->
+<header class="topbar">
+  <div class="tl">
+    <div class="badge">IMR</div>
+    <div><h1>Ipioca Mar Resort</h1><p>Meta Ads × Kommo CRM · Trilha Performance Digital</p></div>
+  </div>
+  <div class="pills">
+<div class="pill">💰 <b>R$ 3.744 investidos</b></div>
+    <div class="pill">📥 <b>372 leads SDR</b></div>
+    <div class="pill">🤝 <b>83 reuniões (Closer)</b></div>
+    <div class="pill">✅ <b>7 vendas</b></div>
+  </div>
+</header>
+
+<!-- ================================================================ TAB NAV -->
+<nav class="tabnav">
+  <button class="active" onclick="switchTab('analises',this)">15 Análises Meta Ads</button>
+  <button onclick="switchTab('funis',this)">Funis SDR + Closer</button>
+  <button onclick="switchTab('outbound',this)">Duque &amp; BDR</button>
+  <button onclick="switchTab('mensuracao',this)">Mensuração</button>
+</nav>
+
+<!-- ================================================================
+     TAB 1 — 15 ANÁLISES
+================================================================ -->
+<div id="tab-analises" class="tab-pane active">
+<div class="main">
+
+  <div class="period-bar">
+    <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+  </div>
+  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Exibindo: <b id="analises-period-lbl">Últimos 30 dias · 17/03–15/04</b></div>
+
+<div id="analises-main">
+  <div style="padding:60px;text-align:center;color:var(--muted)">
+    <div style="font-size:28px;margin-bottom:8px">⏳</div>
+    Carregando dados do Kommo CRM...
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /tab-analises -->
+
+
+<!-- ================================================================
+     TAB 2 — FUNIS SDR + CLOSER
+================================================================ -->
+<div id="tab-funis" class="tab-pane">
+<div class="main">
+
+  <!-- Period selector -->
+  <div class="period-bar">
+    <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+    <div class="custom-range">
+      <input type="date" id="dt-from" value="2026-03-17">
+      <span style="color:var(--muted);font-size:11px">até</span>
+      <input type="date" id="dt-to" value="2026-04-16">
+      <button onclick="applyCustom()">Aplicar</button>
+    </div>
+  </div>
+  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM + Meta Ads API</div>
+
+  <!-- Metas reference -->
+  <div class="insight blue" style="margin-bottom:20px">
+    🎯 <b>Metas operacionais:</b>
+    Tx. Qualificação <b>50%</b> · Qual→Agendado <b>60%</b> · Tx. Agendamento <b>40%</b> ·
+    Tx. Comparecimento <b>65%</b> · Proposta→Venda <b>13%</b> · Tx. Conversão geral <b>2,5%</b>
+  </div>
+
+  <!-- KPIs dinâmicos -->
+  <div class="kpi3" id="kpi-row">
+    <div class="kpi-box">
+      <div class="klbl">Leads SDR</div>
+      <div class="val tc-b" id="kpi-leads">372</div>
+      <div class="note">entradas no período</div>
+    </div>
+    <div class="kpi-box">
+      <div class="klbl">Reuniões Closer</div>
+      <div class="val tc-p" id="kpi-reunioes">83</div>
+      <div class="note">multi-canal (SDR+Duque+BDR)</div>
+    </div>
+    <div class="kpi-box">
+      <div class="klbl">Vendas</div>
+      <div class="val tc-g" id="kpi-vendas">7</div>
+      <div class="note" id="kpi-receita">R$ 233.239</div>
+    </div>
+  </div>
+
+  <!-- Pyramids side by side -->
+  <div class="g2" style="align-items:start">
+
+    <!-- SDR Funnel -->
+    <div class="card">
+      <h3>Funil SDR</h3>
+      <div class="sub" id="sdr-sub">Lead Novo → Venda Ganha (reunião concretizada) · 30d</div>
+      <div class="pyramid-wrap" id="pyr-sdr"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+        <div id="sdr-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- Closer Funnel -->
+    <div class="card">
+      <h3>Funil Closer</h3>
+      <div class="sub" id="closer-sub">Reunião Realizada → Venda Ganha (financeira) · 30d</div>
+      <div class="pyramid-wrap" id="pyr-closer"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+        <div id="closer-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Funil completo (combinado) -->
+  <div class="sec">Funil Completo SDR → Closer (combinado)</div>
+  <div class="card">
+    <h3>Jornada completa do lead: da entrada até a venda</h3>
+    <div class="sub">SDR Digital → Reunião → Closer → Proposta → Venda Ganha</div>
+    <div class="pyramid-wrap" id="pyr-full" style="max-width:860px;margin:0 auto"></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:12px;text-align:center">
+      * Entradas Closer = leads de todos os canais (SDR + Duque + BDR). Para funil exclusivo Meta Ads ver aba 15 Análises.
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-funis -->
+
+
+<!-- ================================================================
+     TAB 3 — DUQUE & BDR
+================================================================ -->
+<div id="tab-outbound" class="tab-pane">
+<div class="main">
+
+  <div class="period-bar">
+    <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+  </div>
+
+  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM</div>
+
+  <div class="insight orange" style="margin-bottom:20px">
+    ⚠️ <b>Canais outbound isolados:</b> Duque e BDR operam de forma independente do SDR digital.
+    Taxas de conversão são naturalmente diferentes — não comparar diretamente com Meta Ads.
+  </div>
+
+  <!-- Comparison overview -->
+  <div class="sec">Comparativo de Eficiência por Canal</div>
+  <div class="cmp-grid" id="cmp-grid">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Duque + BDR Pyramids -->
+  <div class="sec">Pirâmides por Canal Outbound</div>
+  <div class="g2" style="align-items:start">
+    <div class="card">
+      <h3>Funil Duque</h3>
+      <div class="sub" id="duque-sub">Outbound → Contato → Reunião</div>
+      <div class="pyramid-wrap" id="pyr-duque"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div id="duque-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Funil BDR</h3>
+      <div class="sub" id="bdr-sub">Base de contatos → Qualificação → Reunião</div>
+      <div class="pyramid-wrap" id="pyr-bdr"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+        <div id="bdr-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-outbound -->
+
+<footer>
+  <b>Ipioca Mar Resort (IMR)</b> · Agência Trilha · MME Vacation ·
+  Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · 16/04/2026
+</footer>
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================ -->
+<script>
+/* ── Tab switch ──────────────────────────────────────── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tabnav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  if (id === 'funis') renderFunis();
+  if (id === 'outbound') renderOutbound();
+}
+
+/* ── Scroll-to-top visibility ── */
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrollTop');
+  if(window.scrollY > 300) btn.classList.add('show');
+  else btn.classList.remove('show');
+});
+
+/* ── Funnel data (pre-computed from Kommo API) ───────── */
+const FUNNEL = {
+  '7d': {
+    label:'Últimos 7 dias · 09/04–16/04',
+    sdr:   {total:136, qualif:74,  lq:15, agend:10, concret:7,  perdidos:22},
+    closer:{total:14,  reuniao:14, prop:13, sinal:5,  vendas:3,  perdidos:1,  receita:100371},
+    duque: {total:9,   ativos:0,   andamento:9, avancado:0, reuniao:0, perdidos:0, disparo:5},
+    bdr:   {total:678, won:1, lost:3, active:665, outros:9},
+  },
+  '14d': {
+    label:'Últimos 14 dias · 02/04–16/04',
+    sdr:   {total:204, qualif:121, lq:36, agend:23, concret:20, perdidos:42},
+    closer:{total:32,  reuniao:30, prop:19, sinal:9,  vendas:4,  perdidos:2,  receita:132868},
+    duque: {total:27,  ativos:0,   andamento:24, avancado:1, reuniao:1, perdidos:2, disparo:22},
+    bdr:   {total:833, won:2, lost:133, active:680, outros:18},
+  },
+  'w3': {
+    label:'Esta semana · 15/04–18/04 (parcial)',
+    sdr:   {total:80,  qualif:47,  lq:0,  agend:1,  concret:0,  perdidos:6},
+    closer:{total:10,  reuniao:3,  prop:7,  sinal:0,  vendas:0,  perdidos:0,  receita:0},
+    duque: {total:0,   ativos:0,   andamento:0, avancado:0, reuniao:0, perdidos:0, disparo:0},
+    bdr:   {total:0,   won:0, lost:0, active:0, outros:0},
+  },
+  '30d': {
+    label:'Últimos 30 dias · 17/03–16/04',
+    sdr:   {total:372, qualif:210, lq:96, agend:68, concret:64, perdidos:119},
+    closer:{total:83,  reuniao:74, prop:27, sinal:17, vendas:7,  perdidos:9,  receita:233239},
+    duque: {total:288, ativos:170, andamento:85, avancado:6, reuniao:11, perdidos:27, disparo:101},
+    bdr:   {total:1215,won:6, lost:503, active:680, outros:26},
+  },
+};
+
+/* Goals */
+const META = {qualif:50, qualif_to_agend:60, tx_agend:40, comparec:65, prop_venda:13, conversao:2.5};
+
+let currentPeriod = '30d';
+let currentOutPeriod = '30d';
+
+/* ── Helpers ─────────────────────────────────────────── */
+function pct(a, b) { return b > 0 ? +(a/b*100).toFixed(1) : 0; }
+function fmt(n)    { return n.toLocaleString('pt-BR'); }
+function fmtR(n)   { return 'R$ '+n.toLocaleString('pt-BR'); }
+
+function rateColor(v, m) {
+  if (m === null || m === undefined) return '#6b7069';
+  return v >= m ? '#22c55e' : v >= m*0.7 ? '#f5a623' : '#ef4444';
+}
+function rateBg(v, m) {
+  if (m === null || m === undefined) return 'rgba(139,144,168,.12)';
+  return v >= m ? 'rgba(34,197,94,.15)' : v >= m*0.7 ? 'rgba(245,166,35,.15)' : 'rgba(239,68,68,.15)';
+}
+function rateIcon(v, m) {
+  if (m === null || m === undefined) return '';
+  return v >= m ? '✅' : v >= m*0.7 ? '⚠️' : '❌';
+}
+
+/* ── Pyramid renderer ────────────────────────────────── */
+function renderPyramid(containerId, steps) {
+  const max = Math.max(...steps.map(s => s.count), 1);
+  let html = '';
+  steps.forEach((s, i) => {
+    const w = Math.max(s.count / max * 100, 6);
+    const rateHtml = s.rate !== null && s.rate !== undefined
+      ? `<span class="rate-pill" style="color:${rateColor(s.rate,s.meta)};background:${rateBg(s.rate,s.meta)}">${s.rate}%</span>
+         ${s.meta ? `<span class="meta-tag">${rateIcon(s.rate,s.meta)} Meta ${s.meta}%</span>` : ''}`
+      : `<span style="color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em">entrada</span>`;
+    html += `
+      <div class="pyr-row">
+        <div class="pyr-lbl">${s.name}</div>
+        <div class="pyr-mid">
+          <div class="pyr-bar" style="width:${w}%;background:${s.col}22;border:1px solid ${s.col}99;box-shadow:0 0 10px ${s.col}18">
+            <span style="color:${s.col}">${fmt(s.count)}</span>
+          </div>
+        </div>
+        <div class="pyr-rgt">${rateHtml}</div>
+      </div>`;
+    if (i < steps.length - 1) {
+      html += `<div class="pyr-row" style="min-height:16px">
+        <div></div><div class="pyr-mid" style="justify-content:center">
+          <div style="width:1px;height:14px;background:var(--border)"></div></div><div></div></div>`;
+    }
+  });
+  document.getElementById(containerId).innerHTML = html;
+}
+
+/* ── Build step arrays ───────────────────────────────── */
+function sdrSteps(d) {
+  const s = d.sdr;
+  return [
+    {name:'Leads',              count:s.total,   col:'#3b82f6', rate:null,                      meta:null},
+    {name:'Qualificados',       count:s.qualif,  col:'#6366f1', rate:pct(s.qualif,s.total),     meta:META.qualif},
+    {name:'Lead Qualificado',   count:s.lq,      col:'#8b5cf6', rate:pct(s.lq,s.qualif),        meta:META.qualif_to_agend},
+    {name:'Reunião Agendada',   count:s.agend,   col:'#e85d28', rate:pct(s.agend,s.total),      meta:META.tx_agend},
+    {name:'Reunião Concret.',   count:s.concret, col:'#22c55e', rate:pct(s.concret,s.agend),    meta:META.comparec},
+  ];
+}
+
+function closerSteps(d) {
+  const c = d.closer;
+  return [
+    {name:'Entradas',      count:c.total,   col:'#3b82f6', rate:null,                   meta:null},
+    {name:'Proposta',      count:c.prop,    col:'#8b5cf6', rate:pct(c.prop,c.total),    meta:null},
+    {name:'Sinal Verde',   count:c.sinal,   col:'#f5a623', rate:pct(c.sinal,c.prop),    meta:null},
+    {name:'Venda Ganha',   count:c.vendas,  col:'#22c55e', rate:pct(c.vendas,c.prop),   meta:META.prop_venda},
+  ];
+}
+
+function fullSteps(d) {
+  const s = d.sdr, c = d.closer;
+  return [
+    {name:'Leads SDR',          count:s.total,   col:'#3b82f6', rate:null,                   meta:null},
+    {name:'Qualificados',       count:s.qualif,  col:'#6366f1', rate:pct(s.qualif,s.total),  meta:META.qualif},
+    {name:'Reunião Agendada',   count:s.agend,   col:'#e85d28', rate:pct(s.agend,s.total),   meta:META.tx_agend},
+    {name:'Reunião Realizada',  count:c.total,   col:'#f5a623', rate:pct(c.total,s.agend),   meta:META.comparec},
+    {name:'Proposta',           count:c.prop,    col:'#8b5cf6', rate:pct(c.prop,c.total),    meta:null},
+    {name:'Venda Ganha',        count:c.vendas,  col:'#22c55e', rate:pct(c.vendas,c.prop),   meta:META.prop_venda},
+  ];
+}
+
+function duqueSteps(d) {
+  const q = d.duque;
+  return [
+    {name:'Leads outbound', count:q.total,      col:'#6b7069', rate:null,                      meta:null},
+    {name:'Em andamento',   count:q.andamento,  col:'#3b82f6', rate:pct(q.andamento,q.total),  meta:null},
+    {name:'Avançado',       count:q.avancado,   col:'#f5a623', rate:pct(q.avancado,q.total),   meta:null},
+    {name:'Reunião realiz.',count:q.reuniao,    col:'#22c55e', rate:pct(q.reuniao,q.total),    meta:null},
+  ];
+}
+
+function bdrSteps(d) {
+  const b = d.bdr;
+  return [
+    {name:'Base total',    count:b.total,  col:'#6b7069', rate:null,              meta:null},
+    {name:'Em fila/ativo', count:b.active, col:'#3b82f6', rate:pct(b.active,b.total), meta:null},
+    {name:'Reunião/Won',   count:b.won,    col:'#22c55e', rate:pct(b.won,b.total),    meta:null},
+  ];
+}
+
+/* ── Rate strings ────────────────────────────────────── */
+function sdrRateHtml(d) {
+  const s = d.sdr;
+  const rates = [
+    ['Tx. Qualificação (qualif/leads)', pct(s.qualif,s.total), META.qualif],
+    ['Qualificado → Agendado',          pct(s.lq ? s.lq : s.agend, s.qualif), META.qualif_to_agend],
+    ['Tx. Agendamento (agend/leads)',   pct(s.agend,s.total),  META.tx_agend],
+    ['Tx. Comparecimento (concret/agend)', pct(s.concret,s.agend), META.comparec],
+    ['Tx. Conversão SDR (concret/leads)',  pct(s.concret,s.total), null],
+  ];
+  return rates.map(([lbl, v, m]) => {
+    const col = rateColor(v, m);
+    const icon = rateIcon(v, m);
+    return `${icon} ${lbl}: <b style="color:${col}">${v}%</b>${m ? ` <span style="color:var(--muted)">(Meta ${m}%)</span>` : ''}`;
+  }).join('<br>');
+}
+
+function closerRateHtml(d) {
+  const c = d.closer;
+  const receita = fmtR(c.receita);
+  const ticket  = c.vendas > 0 ? fmtR(Math.round(c.receita/c.vendas)) : '—';
+  const prop_v  = pct(c.vendas, c.prop);
+  const tot_v   = d.sdr.total > 0 ? pct(c.vendas, d.sdr.total) : 0;
+  return [
+    `Proposta → Venda: <b style="color:${rateColor(prop_v,META.prop_venda)}">${prop_v}%</b> <span style="color:var(--muted)">(Meta ${META.prop_venda}%)</span>`,
+    `Tx. Conversão geral (venda/leads SDR): <b style="color:${rateColor(tot_v,META.conversao)}">${tot_v}%</b> <span style="color:var(--muted)">(Meta ${META.conversao}%)</span>`,
+    `Receita: <b style="color:#22c55e">${receita}</b>`,
+    `Ticket médio: <b style="color:#22c55e">${ticket}</b>`,
+  ].join('<br>');
+}
+
+function duqueRateHtml(d) {
+  const q = d.duque;
+  return [
+    `Tx. Contato (andamento/total): <b>${pct(q.andamento,q.total)}%</b>`,
+    `Tx. Reunião (reunião/total): <b>${pct(q.reuniao,q.total)}%</b>`,
+    `Tx. Perda: <b style="color:#ef4444">${pct(q.perdidos,q.total)}%</b>`,
+    `Disparos outbound: <b>${q.disparo}</b>`,
+  ].join('<br>');
+}
+
+function bdrRateHtml(d) {
+  const b = d.bdr;
+  return [
+    `Em fila/ativo: <b>${pct(b.active,b.total)}%</b>`,
+    `Tx. Reunião (won/total): <b>${pct(b.won,b.total)}%</b>`,
+    `Tx. Perda: <b style="color:#ef4444">${pct(b.lost,b.total)}%</b>`,
+  ].join('<br>');
+}
+
+/* ── Render funis ────────────────────────────────────── */
+function renderFunis() {
+  const d = FUNNEL[currentPeriod];
+  const lbl = document.getElementById('period-label-txt'); if(lbl) lbl.textContent = d.label;
+  document.getElementById('kpi-leads').textContent    = fmt(d.sdr.total);
+  document.getElementById('kpi-reunioes').textContent = fmt(d.closer.total);
+  document.getElementById('kpi-vendas').textContent   = fmt(d.closer.vendas);
+  document.getElementById('kpi-receita').textContent  = fmtR(d.closer.receita);
+  document.getElementById('sdr-sub').textContent    = `Lead Novo → Venda Ganha SDR · ${d.label.split('·')[1]?.trim()||''}`;
+  document.getElementById('closer-sub').textContent = `Reunião Realizada → Venda Ganha · ${d.label.split('·')[1]?.trim()||''}`;
+  renderPyramid('pyr-sdr',    sdrSteps(d));
+  renderPyramid('pyr-closer', closerSteps(d));
+  renderPyramid('pyr-full',   fullSteps(d));
+  document.getElementById('sdr-rates').innerHTML    = sdrRateHtml(d);
+  document.getElementById('closer-rates').innerHTML = closerRateHtml(d);
+}
+
+/* ── Seletor de período global (sincroniza todas as abas) ── */
+const PERIOD_LABELS = {
+  '7d':  'Últimos 7 dias · 09/04–16/04',
+  '14d': 'Últimos 14 dias · 02/04–16/04',
+  'w3':  'Esta semana · 15/04–18/04 (parcial)',
+  '30d': 'Últimos 30 dias · 17/03–16/04',
+};
+function setGlobalPeriod(key, btn) {
+  currentPeriod    = key;
+  currentOutPeriod = key;   // ← sincroniza Duque & BDR
+  // Sincroniza todos os botões de período em todas as abas
+  document.querySelectorAll('.pbtn[data-period]').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === key);
+  });
+  // Atualiza label dinâmico onde existir
+  const lbl = document.getElementById('analises-period-lbl');
+  if (lbl) lbl.textContent = PERIOD_LABELS[key] || key;
+  // Re-renderiza funis e outbound com novo período
+  renderFunis();
+  renderOutbound();
+  renderMensuracao();
+  renderAnalises();
+}
+function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
+
+function applyCustom() {
+  const from = document.getElementById('dt-from').value;
+  const to   = document.getElementById('dt-to').value;
+  if (!from || !to) return;
+  // Find closest pre-computed period
+  const diff = Math.round((new Date(to) - new Date(from)) / 86400000);
+  const key = diff <= 7 ? '7d' : diff <= 14 ? '14d' : diff <= 21 ? 'w3' : '30d';
+  currentPeriod = key;
+  document.querySelectorAll('#tab-funis .pbtn').forEach(b => b.classList.remove('active'));
+  renderFunis();
+  const lbl2 = document.getElementById('period-label-txt');
+  if(lbl2) lbl2.textContent = `${from.split('-').reverse().join('/')} – ${to.split('-').reverse().join('/')} (aprox. ${FUNNEL[key].label})`;
+}
+
+/* ── Render outbound ─────────────────────────────────── */
+function renderOutbound() {
+  const d = FUNNEL[currentOutPeriod];
+  renderPyramid('pyr-duque', duqueSteps(d));
+  renderPyramid('pyr-bdr',   bdrSteps(d));
+  document.getElementById('duque-rates').innerHTML = duqueRateHtml(d);
+  document.getElementById('bdr-rates').innerHTML   = bdrRateHtml(d);
+  renderComparison(d);
+}
+
+function setOutboundPeriod(key, btn) { setGlobalPeriod(key, btn); }
+
+function renderComparison(d) {
+  const s = d.sdr, c = d.closer, q = d.duque, b = d.bdr;
+  const cols = [
+    {name:'SDR Digital', color:'#3b82f6', rows:[
+      ['Leads',       fmt(s.total)],
+      ['Qualificados',fmt(s.qualif)+' ('+pct(s.qualif,s.total)+'%)'],
+      ['Reuniões',    fmt(s.concret)+' ('+pct(s.concret,s.total)+'%)'],
+      ['Tx. Agend.',  pct(s.agend,s.total)+'%'],
+    ]},
+    {name:'Closer', color:'#8b5cf6', rows:[
+      ['Entradas',    fmt(c.total)],
+      ['Propostas',   fmt(c.prop)+' ('+pct(c.prop,c.total)+'%)'],
+      ['Vendas',      fmt(c.vendas)],
+      ['Receita',     fmtR(c.receita)],
+    ]},
+    {name:'Duque', color:'#f5a623', rows:[
+      ['Leads',       fmt(q.total)],
+      ['Em andamento',fmt(q.andamento)+' ('+pct(q.andamento,q.total)+'%)'],
+      ['Reuniões',    fmt(q.reuniao)+' ('+pct(q.reuniao,q.total)+'%)'],
+      ['Disparos',    fmt(q.disparo)],
+    ]},
+    {name:'BDR', color:'#6b7069', rows:[
+      ['Base',        fmt(b.total)],
+      ['Em fila',     fmt(b.active)+' ('+pct(b.active,b.total)+'%)'],
+      ['Reuniões',    fmt(b.won)+' ('+pct(b.won,b.total)+'%)'],
+      ['Perdidos',    fmt(b.lost)+' ('+pct(b.lost,b.total)+'%)'],
+    ]},
+  ];
+  document.getElementById('cmp-grid').innerHTML = cols.map(col => `
+    <div class="cmp-col" style="border-top:3px solid ${col.color}">
+      <div class="ch" style="color:${col.color}">${col.name}</div>
+      ${col.rows.map(([k,v]) => `
+        <div class="cmp-row"><span class="ck">${k}</span><span class="cv">${v}</span></div>
+      `).join('')}
+    </div>`).join('');
+}
+
+/* ── Stacked charts (Tab 1) ──────────────────────────── */
+const chartDefaults = {responsive:true,maintainAspectRatio:false};
+const gridColor = '#d8dbd5', tickColor = '#6b7069';
+const ticks = (cb) => ({color:tickColor,font:{size:9},callback:cb});
+
+
+// ══════════════════════════════════════════════════════════════════════════
+// 15 ANÁLISES — Dados Kommo CRM (IMR) · Dinâmico por período
+// ══════════════════════════════════════════════════════════════════════════
+
+let KOMMO_DATA  = null;
+let META_SPEND  = null;
+let _analCharts = {};
+let _mensCharts = {};
+
+// Fetch Kommo + Meta Spend in parallel
+Promise.all([
+  fetch('data/kommo_leads.json').then(r => r.json()),
+  fetch('data/meta_spend.json').then(r => r.json()).catch(() => null),
+]).then(([kommo, meta]) => {
+  KOMMO_DATA = kommo;
+  META_SPEND = meta;
+  renderAnalises();
+}).catch(() => {
+  document.getElementById('analises-main').innerHTML =
+    '<div style="padding:40px;text-align:center;color:var(--danger)">⚠️ Erro ao carregar dados. Verifique se o servidor está rodando corretamente.</div>';
+});
+
+function renderAnalises() {
+  if (!KOMMO_DATA) return;
+  const {ws} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
+
+  // Filter leads by selected weeks
+  const sdr    = KOMMO_DATA.sdr.filter(l => ws.includes(l.week));
+  const closer = KOMMO_DATA.closer.filter(l => ws.includes(l.week));
+
+  // Leads with Meta audience (UTM attribution)
+  const metaLeads = sdr.filter(l => l.audience && l.audience.trim());
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const n = KOMMO_DATA.sdr.length; // total SDR for period label
+  const pct = (a, b) => b > 0 ? (a / b * 100) : 0;
+  const fp  = v => v.toFixed(1) + '%';
+  const fpc = (v, hi=30, lo=20) => v >= hi ? 'tc-g' : v >= lo ? 'tc-o' : 'tc-r';
+  const fmtR = v => 'R$\u00a0' + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+  // Group leads by a key
+  function groupBy(arr, keyFn) {
+    const m = new Map();
+    arr.forEach(l => {
+      const k = keyFn(l) || '—';
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(l);
+    });
+    return m;
+  }
+
+  // ── CPL helpers ──────────────────────────────────────────────────────────────
+  // Strip asterisk from Meta adset names for matching against Kommo audience names
+  function normMetaName(n) { return n.replace(/\*/g, '').trim(); }
+
+  // Analysis 3: CPL qualificado por público
+  function cplByAudience(leads, ws) {
+    if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
+    // Build spend map: normalizedMetaName → spend for selected weeks
+    const spendMap = {};
+    Object.entries(META_SPEND.adset).forEach(([mName, weeks]) => {
+      spendMap[normMetaName(mName)] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
+    });
+    const byAud = groupBy(leads, l => l.audience);
+    const rows = [];
+    byAud.forEach((ls, aud) => {
+      const qualif = ls.filter(l => l.qualified).length;
+      const spend  = spendMap[aud] || 0;
+      const cpl    = qualif > 0 && spend > 0 ? spend / qualif : null;
+      rows.push({ aud, total: ls.length, qualif, spend, cpl });
+    });
+    rows.sort((a, b) => (a.cpl ?? Infinity) - (b.cpl ?? Infinity));
+    return rows.map((r, i) => {
+      const gold = i === 0 && r.cpl !== null ? ' class="row-gold"' : '';
+      const cplTd = r.cpl !== null
+        ? `<b>${fmtR(r.cpl)}</b>`
+        : r.spend === 0
+          ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (abril)</span>`
+          : `<span style="color:var(--muted)">0 qualif.</span>`;
+      return `<tr${gold}>
+        <td class="nm">${r.aud}</td>
+        <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
+        <td class="num">${r.qualif}</td>
+        <td class="num">${cplTd}</td></tr>`;
+    }).join('');
+  }
+
+  // Analysis 14: CPL qualificado por criativo
+  function cplByCreative(leads, ws) {
+    if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
+    const spendMap = {};
+    Object.entries(META_SPEND.creative).forEach(([cName, weeks]) => {
+      spendMap[cName] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
+    });
+    const byCri = groupBy(leads.filter(l => l.creative), l => l.creative);
+    const rows = [];
+    byCri.forEach((ls, cri) => {
+      const qualif = ls.filter(l => l.qualified).length;
+      const spend  = spendMap[cri] || 0;
+      const cpl    = qualif > 0 && spend > 0 ? spend / qualif : null;
+      rows.push({ cri, total: ls.length, qualif, spend, cpl });
+    });
+    rows.sort((a, b) => (a.cpl ?? Infinity) - (b.cpl ?? Infinity));
+    return rows.map((r, i) => {
+      const gold = i === 0 && r.cpl !== null ? ' class="row-gold"' : '';
+      const cplTd = r.cpl !== null
+        ? `<b>${fmtR(r.cpl)}</b>`
+        : r.spend === 0
+          ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
+          : `<span style="color:var(--muted)">0 qualif.</span>`;
+      return `<tr${gold}>
+        <td class="nm">${r.cri}</td>
+        <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
+        <td class="num">${r.qualif}</td>
+        <td class="num">${cplTd}</td></tr>`;
+    }).join('');
+  }
+
+  // Score by dimension table rows — sorted by pct of target score
+  function scoreRows(leads, scoreTarget, topN=8) {
+    const byDim = groupBy(leads, l => l.audience || l.creative || '—');
+    const rows = [];
+    byDim.forEach((ls, dim) => {
+      const cnt = ls.filter(l => l.score === scoreTarget).length;
+      const total = ls.length;
+      rows.push({dim, cnt, total, pct: pct(cnt, total)});
+    });
+    rows.sort((a, b) => b.pct - a.pct);
+    return rows.slice(0, topN).map((r, i) => {
+      const cls = fpc(r.pct, 25, 10);
+      const gold = i === 0 ? ' class="row-gold"' : '';
+      return `<tr${gold}><td class="nm">${r.dim}</td>
+        <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
+        <td class="num">${r.total}</td>
+        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+    }).join('');
+  }
+
+  // Score by creative table rows
+  function scoreByCreative(leads, scoreTarget, topN=8) {
+    const byDim = groupBy(leads.filter(l => l.creative), l => l.creative);
+    const rows = [];
+    byDim.forEach((ls, dim) => {
+      const cnt = ls.filter(l => l.score === scoreTarget).length;
+      const total = ls.length;
+      rows.push({dim, cnt, total, pct: pct(cnt, total)});
+    });
+    rows.sort((a, b) => b.pct - a.pct);
+    return rows.slice(0, topN).map((r, i) => {
+      const cls = fpc(r.pct, 25, 10);
+      const gold = i === 0 ? ' class="row-gold"' : '';
+      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}</td>
+        <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
+        <td class="num">${r.total}</td>
+        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+    }).join('');
+  }
+
+  // ── Etapa 0 data ──────────────────────────────────────────────────────────
+  const totalSdr   = sdr.length;
+  const metaCnt    = metaLeads.length;
+  const metaPct    = fp(pct(metaCnt, totalSdr));
+  const closerVendas = closer.filter(l => l.venda);
+  const fat        = closerVendas.reduce((s, l) => s + (l.price || 0), 0);
+
+  // ── Analysis 4: Funnel progress by public (qualified or beyond) ──────────
+  function funnelRows(leads) {
+    const byAud = groupBy(leads, l => l.audience);
+    const rows = [];
+    byAud.forEach((ls, aud) => {
+      const adv = ls.filter(l => l.qualified || l.reuniao || l.venda).length;
+      rows.push({aud, total: ls.length, adv, pct: pct(adv, ls.length)});
+    });
+    rows.sort((a, b) => b.pct - a.pct);
+    return rows.slice(0, 8).map((r, i) => {
+      const cls = fpc(r.pct, 55, 40);
+      const gold = i === 0 ? ' class="row-gold"' : '';
+      return `<tr${gold}><td class="nm">${r.aud}</td>
+        <td class="num">${r.total}</td>
+        <td class="num ${cls}">${i===0?`<b>${r.adv}</b>`:r.adv}</td>
+        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+    }).join('');
+  }
+
+  // ── Analysis 5 & 8: Form fields comparison ───────────────────────────────
+  function formFieldRows(leads) {
+    const qualif = leads.filter(l => l.qualified || l.reuniao || l.venda);
+    const notQ   = leads.filter(l => !l.qualified && !l.reuniao && !l.venda);
+    const nQ = qualif.length, nN = notQ.length;
+
+    const checks = [
+      { label: 'Como se hospeda: <b>Resorts All-Inclusive</b>', field: 'hospedagem', match: v => v && v.toLowerCase().includes('resort') },
+      { label: 'Viaja mais: <b>Com família</b>',                field: 'viaja_mais', match: v => v && v.toLowerCase().includes('famíl') },
+      { label: 'Investe/ano: <b>R$ 5.001–R$ 10.000</b>',       field: 'investimento', match: v => v && (v.includes('5.001') || v.includes('7.001')) },
+      { label: 'Interesse All-inclusive: <b>Sim</b>',           field: 'interesse_ai', match: v => v && v.toLowerCase().startsWith('sim') },
+    ];
+
+    return checks.map(c => {
+      const pQ = nQ > 0 ? pct(qualif.filter(l => c.match(l[c.field])).length, nQ) : 0;
+      const pN = nN > 0 ? pct(notQ.filter(l => c.match(l[c.field])).length, nN) : 0;
+      const diff = pQ - pN;
+      const cls  = diff > 15 ? 'tc-g' : diff > 5 ? 'tc-o' : 'tc-p';
+      const rowCls = diff > 15 ? ' class="row-green"' : '';
+      const sign = diff >= 0 ? '+' : '';
+      return `<tr${rowCls}><td><b>${c.label}</b></td>
+        <td class="num ${cls}">${fp(pQ)}</td>
+        <td class="num">${fp(pN)}</td>
+        <td class="num ${cls}">${sign}${fp(diff)}pp</td></tr>`;
+    }).join('');
+  }
+
+  // ── Analysis 6: Funnel stage distribution ────────────────────────────────
+  const STAGE_ORDER = [
+    {id: 98147479, name: 'Lead Novo'},
+    {id: 98147483, name: 'Follow-up'},
+    {id: 98147487, name: 'Qualificação'},
+    {id: 98147491, name: 'Lead Qualificado'},
+    {id: 98162603, name: 'Reunião Agendada'},
+    {id: 142,      name: 'Venda Ganha SDR ✅'},
+    {id: 143,      name: 'Venda Perdida ❌'},
+  ];
+  const stageCounts = {};
+  STAGE_ORDER.forEach(s => stageCounts[s.id] = sdr.filter(l => l.status === s.id).length);
+  const totalForStage = sdr.length;
+
+  // Compute conversion rates between adjacent meaningful stages
+  const nQual  = stageCounts[98147491] + stageCounts[98162603] + stageCounts[142];
+  const nQStage= stageCounts[98147487];
+  const nReu   = stageCounts[98162603] + stageCounts[142];
+  const nGanha = stageCounts[142];
+  const nPerda = stageCounts[143];
+  const txQualif  = pct(nQual, nQStage + nQual);
+  const txReu     = pct(nReu, nQual);
+
+  const stageRows = STAGE_ORDER.map(s => {
+    const cnt = stageCounts[s.id];
+    if (!cnt) return '';
+    const pctOfTotal = fp(pct(cnt, totalForStage || 1));
+    const isGanha = s.id === 142;
+    const isPerda = s.id === 143;
+    const rowCls = isGanha ? ' class="row-green"' : '';
+    const cntHtml = isGanha ? `<b class="tc-g">${cnt}</b>` : isPerda ? `<span class="tc-r">${cnt}</span>` : cnt;
+    const pctHtml = isGanha ? `<b class="tc-g">${pctOfTotal}</b>` : isPerda ? `<span class="tc-r">${pctOfTotal}</span>` : pctOfTotal;
+    let convHtml = '<span class="tc-p">—</span>';
+    if (s.id === 98147487) convHtml = `<span class="${fpc(txQualif,23,15)}">${fp(txQualif)} → Qualif.</span>`;
+    if (s.id === 98147491) convHtml = `<span class="${fpc(txReu,50,20)}">${fp(txReu)} → Reunião</span>`;
+    if (s.id === 142) convHtml = `<span class="tc-p">→ Closer</span>`;
+    return `<tr${rowCls}><td>${s.name}</td><td class="num">${cntHtml}</td><td class="num">${pctHtml}</td><td class="num">${convHtml}</td></tr>`;
+  }).join('');
+
+  // ── Bottleneck analysis 7 ─────────────────────────────────────────────────
+  const bottleneck = txReu < txQualif
+    ? {stage: 'Lead Qualificado → Reunião Agendada', rate: txReu, lost: nQual - nReu}
+    : {stage: 'Qualificação → Lead Qualificado', rate: txQualif, lost: nQStage - nQual};
+
+  // ── Analysis 9, 10, 11: Revenue ──────────────────────────────────────────
+  const closerReu   = closer.filter(l => l.status === 98168239 || l.proposta || l.venda).length;
+  const closerProp  = closer.filter(l => l.proposta || l.venda).length;
+  const closerVend  = closer.filter(l => l.venda).length;
+  const receita     = closer.filter(l => l.venda).reduce((s,l) => s + (l.price||0), 0);
+  const ticket      = closerVend > 0 ? receita / closerVend : 0;
+  const invest      = (() => {
+    const D = MENS_DATA;
+    return ws.reduce((s,w) => s + (D.meta[w].invest||0) + (D.google[w].invest||0), 0);
+  })();
+  const roas = invest > 0 ? receita / invest : 0;
+  const cac  = closerVend > 0 ? invest / closerVend : 0;
+
+  // ── Bottleneck analysis 7b: Closer ───────────────────────────────────────
+  const txCloProp = pct(closerProp, closerReu);
+  const txCloVend = pct(closerVend, closerProp);
+  const closerBn  = (txCloProp <= txCloVend || closerProp === 0)
+    ? {stage: 'Reunião Realizada → Proposta', rate: txCloProp, lost: closerReu - closerProp}
+    : {stage: 'Proposta → Venda Ganha',       rate: txCloVend, lost: closerProp - closerVend};
+
+  // ── Analysis 15: Public × Creative combo ────────────────────────────────
+  function comboRows(leads) {
+    const byCombo = new Map();
+    leads.filter(l => l.audience && l.creative).forEach(l => {
+      const k = `${l.audience}|${l.creative}`;
+      if (!byCombo.has(k)) byCombo.set(k, {aud: l.audience, cri: l.creative, total:0, ab:0});
+      const e = byCombo.get(k);
+      e.total++;
+      if (l.score === 'A' || l.score === 'B') e.ab++;
+    });
+    const rows = [...byCombo.values()].map(r => ({...r, pct: pct(r.ab, r.total)}));
+    rows.sort((a, b) => b.pct - a.pct);
+    const medals = ['🥇','🥈','🥉'];
+    return rows.slice(0, 8).map((r, i) => {
+      const pAB = r.pct;
+      const cls = fpc(pAB, 30, 15);
+      const flag = pAB >= 30 ? '<span class="bdg g">🟢 Escalar</span>'
+                 : pAB >= 20 ? '<span class="bdg b">🔵 Manter</span>'
+                 : '<span class="bdg o">🟡 Avaliar</span>';
+      const gold = i < 2 ? ' class="row-gold"' : '';
+      const rank = medals[i] || `${i+1}`;
+      const note = r.total < 8 ? '<span class="tc-p" style="font-size:10px"> *amostra pequena</span>' : '';
+      return `<tr${gold}><td>${rank}</td>
+        <td class="nm">${r.aud}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}</td>
+        <td class="num ${cls}">${r.ab}</td>
+        <td class="num ${cls}">${fp(pAB)}${note}</td>
+        <td class="num">${r.total}</td>
+        <td>${flag}</td></tr>`;
+    }).join('');
+  }
+
+  // ── Render HTML ───────────────────────────────────────────────────────────
+  const periodLbl = ws.length <= 1 ? 'W3 (7d)' : ws.length <= 2 ? 'W2–W3 (14d)' : 'Abril (30d)';
+
+  document.getElementById('analises-main').innerHTML = `
+
+<div class="sec">Etapa 0 · Verificação de Campos</div>
+<div class="tcard">
+  <div class="thead"><h3>✓ Mapeamento confirmado · Resumo de completude</h3></div>
+  <div style="padding:14px 16px">
+    <div class="e0-grid">
+      <div class="e0-item"><div class="lbl">Campos mapeados</div>
+        ✅ "Público" (audience) = contato Kommo<br>
+        ✅ "Anúncio" (creative) = contato Kommo<br>
+        ✅ "Lead Score" A/B/C/E/F = lead Kommo<br>
+        ✅ Receita = Venda Ganha pipeline Closer
+      </div>
+      <div class="e0-item"><div class="lbl">Completude dos dados</div>
+        ✅ Com UTM Público: ${metaCnt} de ${totalSdr} (${metaPct})<br>
+        ⚠️ Sem UTM: ${totalSdr - metaCnt} leads (outros canais)<br>
+        ✅ Scores registrados: ${sdr.filter(l=>l.score).length}<br>
+        ✅ Faturamento Closer: ${fmtR(receita)}
+      </div>
+      <div class="e0-item"><div class="lbl">Resumo do período (${periodLbl})</div>
+        ✅ Leads SDR total: <b>${totalSdr}</b><br>
+        ✅ Com UTM Meta: <b>${metaCnt}</b> (${metaPct})<br>
+        ✅ Vendas Closer: <b>${closerVend}</b><br>
+        ✅ Faturamento: <b>${fmtR(receita)}</b>
+      </div>
+    </div>
+    <div class="insight orange">
+      ⚠️ <b>${fp(pct(totalSdr - metaCnt, totalSdr))} sem UTM "Público"</b> = leads de outros canais (Duque/orgânico).
+      Análises 1–4 e 12–15 usam apenas os <b>${metaCnt} leads com UTM</b> do Meta Ads.
+      Análises 6–11 usam todos os ${totalSdr} leads SDR.
+    </div>
+  </div>
+</div>
+
+<div class="sec">Perguntas 1 & 2 · Score A e B por Público</div>
+<div class="g2">
+  <div class="tcard">
+    <div class="thead"><h3>1. Qual público traz mais leads Score A?</h3></div>
+    <table><thead><tr><th>Público</th><th>Qtd Score A</th><th>Total leads</th><th>% Score A</th></tr></thead>
+    <tbody>${scoreRows(metaLeads, 'A')}</tbody></table>
+  </div>
+  <div class="tcard">
+    <div class="thead"><h3>2. Qual público traz mais leads Score B?</h3></div>
+    <table><thead><tr><th>Público</th><th>Qtd Score B</th><th>Total leads</th><th>% Score B</th></tr></thead>
+    <tbody>${scoreRows(metaLeads, 'B')}</tbody></table>
+  </div>
+</div>
+
+<div class="sec">Perguntas 3 & 4 · CPL Qualificado e Avanço no Funil por Público</div>
+<div class="g2">
+  <div class="tcard">
+    <div class="thead"><h3>3. Custo por lead qualificado por público</h3><span class="bdg p">Investimento Meta ÷ Leads qualificados</span></div>
+    <table><thead><tr><th>Público</th><th>Invest. Meta</th><th>Leads qualif.</th><th>CPL Qualif.</th></tr></thead>
+    <tbody>${cplByAudience(metaLeads, ws)}</tbody></table>
+  </div>
+  <div class="tcard">
+    <div class="thead"><h3>4. Qual público tem mais leads que avançam no funil?</h3><span class="bdg b">≥ etapa Qualificação</span></div>
+    <table><thead><tr><th>Público</th><th>Leads entrada</th><th>Avançaram</th><th>% de avanço</th></tr></thead>
+    <tbody>${funnelRows(metaLeads)}</tbody></table>
+  </div>
+</div>
+
+<div class="sec">Pergunta 5 · O que leads qualificados têm em comum</div>
+<div class="tcard">
+  <div class="thead">
+    <h3>5. Campos do formulário: qualificados vs não qualificados</h3>
+    <span class="bdg g">Δ &gt; 15pp = sinal preditivo</span>
+  </div>
+  <table><thead><tr>
+    <th>Campo · Valor</th><th>% em qualificados</th><th>% em não qualificados</th><th>Diferença</th>
+  </tr></thead><tbody>${formFieldRows(sdr)}</tbody></table>
+  <div class="insight green" style="margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0">
+    💡 <b>Perfil do lead quente:</b> hospeda em resort all-inclusive · viaja com família · investe R$5–10k/ano · confirma interesse. Leads com ≥3 desses indicadores têm alta probabilidade de avançar.
+  </div>
+</div>
+
+<div class="sec">Perguntas 6, 7 & 7b · Funil SDR · Gargalo SDR · Gargalo Closer</div>
+<div class="tcard" style="margin-bottom:16px">
+  <div class="thead"><h3>6. % de avanço entre etapas do funil SDR</h3><span class="bdg b">${totalSdr} leads · ${periodLbl}</span></div>
+  <table><thead><tr>
+    <th>Etapa</th><th>Qtd de leads</th><th>% do total</th><th>Taxa conv.</th>
+  </tr></thead><tbody>${stageRows}</tbody></table>
+</div>
+<div class="g2">
+  <div class="card">
+    <h3>7. Gargalo do funil SDR</h3>
+    <div class="sub">Menor taxa de conversão entre etapas · pipeline SDR</div>
+    <div class="insight red" style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">⚡ Gargalo SDR</div>
+      <div style="font-size:17px;font-weight:800;color:var(--danger)">${bottleneck.stage}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:5px">${fp(bottleneck.rate)} de conversão · ~${bottleneck.lost} leads perdidos nessa transição</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.9">
+      Qualificação → Lead Qualificado: <span class="${fpc(txQualif,23,15)}">${fp(txQualif)}</span> (${nQStage} em Qualificação)<br>
+      Lead Qualificado → Reunião: <span class="${fpc(txReu,50,20)}">${fp(txReu)}</span> (${nQual} qualificados)<br>
+      Reunião → Closer: <span class="tc-g">→ Closer ✅</span><br><br>
+      <b>Ação:</b> Revisar script pós-qualificação e SLA de follow-up.
+    </div>
+  </div>
+  <div class="card">
+    <h3>7b. Gargalo do funil Closer</h3>
+    <div class="sub">Menor taxa de conversão entre etapas · pipeline Closer</div>
+    <div class="insight red" style="margin-bottom:12px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">⚡ Gargalo Closer</div>
+      <div style="font-size:17px;font-weight:800;color:var(--danger)">${closer.length > 0 ? closerBn.stage : '—'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:5px">${closer.length > 0 ? fp(closerBn.rate)+' de conversão · ~'+closerBn.lost+' leads perdidos nessa transição' : 'Sem leads Closer no período'}</div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.9">
+      Reunião Realizada → Proposta: <span class="${fpc(txCloProp,60,30)}">${fp(txCloProp)}</span> (${closerReu} reuniões)<br>
+      Proposta → Venda Ganha: <span class="${fpc(txCloVend,20,10)}">${fp(txCloVend)}</span> (${closerProp} propostas)<br>
+      Vendas (Closer): <b class="tc-g">${closerVend}</b> · Fat.: <b class="tc-g">${fmtR(receita)}</b><br><br>
+      <b>Ação:</b> ${closerBn.stage === 'Proposta → Venda Ganha' ? 'Revisar follow-up pós-proposta e técnica de negociação.' : 'Revisar qualidade das reuniões e pitch inicial do Closer.'}
+    </div>
+  </div>
+</div>
+
+
+<div class="sec">Perguntas 9, 10 & 11 · Receita, ROAS e CAC</div>
+<div class="g3">
+  <div class="card">
+    <h3>9. % de ganho e receita</h3>
+    <div class="sub">Closer · negócios com valor · ${periodLbl}</div>
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.9">
+      Leads SDR: <b>${totalSdr}</b><br>
+      Reuniões/Proposta Closer: <b class="tc-b">${closerReu}</b><br>
+      Propostas: <b class="tc-b">${closerProp}</b><br>
+      Vendas c/ receita (Closer): <b class="tc-g">${closerVend} (${fp(pct(closerVend, totalSdr))})</b><br>
+      Receita total: <b class="tc-g">${fmtR(receita)}</b><br>
+      Ticket médio: <b class="tc-g">${ticket>0?fmtR(ticket):'—'}</b>
+    </div>
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>10. ROAS geral</h3>
+    <div class="sub">Receita Closer ÷ Investimento Meta+Google</div>
+    <div style="font-size:52px;font-weight:900;color:var(--green);line-height:1;margin:12px 0">${roas>0?roas.toFixed(1)+'×':'—'}</div>
+    ${roas>0 ? `<div style="font-size:12px;color:var(--muted)">Para cada <b style="color:var(--text)">R$ 1</b> investido</div>
+    <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:3px">retornou R$ ${roas.toFixed(2).replace('.',',')}</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:10px">${fmtR(receita)} ÷ ${fmtR(invest)}<br>
+      <span style="color:var(--accent2)">⚠️ Atribuição parcial (ciclo Closer &gt; 30d)</span></div>` : '<div style="font-size:12px;color:var(--muted)">Sem receita no período</div>'}
+  </div>
+  <div class="card" style="text-align:center">
+    <h3>11. CAC geral</h3>
+    <div class="sub">Investimento ÷ clientes adquiridos</div>
+    <div style="font-size:52px;font-weight:900;color:var(--blue);line-height:1;margin:12px 0">${cac>0?fmtR(cac):'—'}</div>
+    ${cac>0 ? `<div style="font-size:12px;color:var(--muted)">por cliente adquirido</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:10px">
+      ${fmtR(invest)} ÷ ${closerVend} cliente(s)<br>
+      Ticket ${fmtR(ticket)} → LTV/CAC = <b style="color:var(--green)">${roas.toFixed(0)}×</b></div>` : '<div style="font-size:12px;color:var(--muted)">Sem vendas no período</div>'}
+  </div>
+</div>
+
+<div class="sec">Perguntas 12 & 13 · Score A e B por Criativo</div>
+<div class="g2">
+  <div class="tcard">
+    <div class="thead"><h3>12. Qual criativo gera mais leads Score A?</h3></div>
+    <table><thead><tr><th>Criativo</th><th>Qtd Score A</th><th>Total leads</th><th>% Score A</th></tr></thead>
+    <tbody>${scoreByCreative(metaLeads, 'A')}</tbody></table>
+  </div>
+  <div class="tcard">
+    <div class="thead"><h3>13. Qual criativo gera mais leads Score B?</h3></div>
+    <table><thead><tr><th>Criativo</th><th>Qtd Score B</th><th>Total leads</th><th>% Score B</th></tr></thead>
+    <tbody>${scoreByCreative(metaLeads, 'B')}</tbody></table>
+  </div>
+</div>
+
+<div class="sec">Pergunta 14 · CPL Qualificado por Criativo</div>
+<div class="tcard">
+  <div class="thead"><h3>14. Custo por lead qualificado por criativo</h3><span class="bdg p">Investimento Meta ÷ Leads qualificados</span></div>
+  <table><thead><tr><th>Criativo</th><th>Invest. Meta</th><th>Leads qualif.</th><th>CPL Qualif.</th></tr></thead>
+  <tbody>${cplByCreative(metaLeads, ws)}</tbody></table>
+</div>
+
+<div class="sec">Pergunta 15 · Combinação Público × Criativo — Assertividade</div>
+<div class="tcard">
+  <div class="thead">
+    <h3>15. Combinação mais assertiva — ordenado por % Score A+B</h3>
+    <span class="bdg g">% A+B = qualidade da combinação</span>
+  </div>
+  <table><thead><tr>
+    <th>#</th><th>Público</th><th>Criativo</th><th>Score A+B</th><th>% A+B</th><th>Leads</th><th>Indicação</th>
+  </tr></thead><tbody>${comboRows(metaLeads)}</tbody></table>
+  <div style="padding:10px 14px;font-size:11px;color:var(--muted);border-top:1px solid var(--border)">
+    * Combos com amostra pequena (&lt;8 leads) têm baixa confiança estatística.
+  </div>
+</div>
+
+<div class="sec">Gráfico · Score por Público e por Criativo</div>
+<div class="g2">
+  <div class="card">
+    <h3>Score por Público</h3>
+    <div class="sub">Stacked bar · leads com UTM · ${periodLbl}</div>
+    <div class="cw"><canvas id="cStackPub"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Score por Criativo</h3>
+    <div class="sub">Stacked bar · leads com UTM · ${periodLbl}</div>
+    <div class="cw"><canvas id="cStackCri"></canvas></div>
+  </div>
+</div>
+`;
+
+  // ── Render stacked charts ─────────────────────────────────────────────────
+  const SCORES  = ['A','B','C','E','F'];
+  const S_COLORS= ['#16a34a','#2563eb','#d97706','#9ca3af','#dc2626'];
+  const S_LBLS  = ['Score A','Score B','Score C','Score E','Score F'];
+
+  function buildStackData(leads, keyFn) {
+    const byKey = groupBy(leads.filter(l => keyFn(l)), keyFn);
+    const labels = [...byKey.keys()].slice(0,6).map(k => k.length > 22 ? k.substring(0,22)+'…' : k);
+    const datasets = SCORES.map((sc, si) => ({
+      label: S_LBLS[si],
+      data: [...byKey.values()].slice(0,6).map(ls => ls.filter(l => l.score === sc).length),
+      backgroundColor: S_COLORS[si],
+    }));
+    return {labels, datasets};
+  }
+
+  function renderStackChart(id, leads, keyFn) {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    if (_analCharts[id]) { _analCharts[id].destroy(); delete _analCharts[id]; }
+    const {labels, datasets} = buildStackData(leads, keyFn);
+    _analCharts[id] = new Chart(canvas, {
+      type: 'bar',
+      data: {labels, datasets},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {legend:{position:'bottom',labels:{font:{size:10}}}},
+        scales: {
+          x: {stacked:true, ticks:{font:{size:9}}},
+          y: {stacked:true, ticks:{font:{size:10}}},
+        },
+      },
+    });
+  }
+
+  setTimeout(() => {
+    renderStackChart('cStackPub', metaLeads, l => l.audience);
+    renderStackChart('cStackCri', metaLeads.filter(l => l.creative), l => l.creative);
+  }, 50);
+}
+
+/* Init all renders on load */
+document.addEventListener('DOMContentLoaded', () => {
+  renderFunis();
+  renderOutbound();
+  renderMensuracao();
+});
+renderFunis();
+renderOutbound();
+renderMensuracao();
+</script>
+
+<!-- ================================================================
+     TAB 4 — MENSURAÇÃO
+================================================================ -->
+<div id="tab-mensuracao" class="tab-pane">
+<div class="main">
+  <div class="period-bar">
+    <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+  </div>
+  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM + Meta Ads API</div>
+
+  <div class="sec">Mensuração · Abril 2026 · Kommo CRM + Meta Ads API</div>
+  <div class="mens-kpi" id="mens-kpi"></div>
+  <div class="tcard" style="overflow-x:auto;margin-bottom:20px">
+    <div class="thead" style="flex-wrap:wrap;gap:8px">
+      <h3>📊 Mensuração por Canal · Semana a Semana</h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="bdg g">▲ Acima da meta</span>
+        <span class="bdg o">◉ Próximo da meta</span>
+        <span class="bdg r">▼ Abaixo da meta</span>
+      </div>
+    </div>
+    <div id="mens-table-wrap" style="overflow-x:auto"></div>
+    <p class="source-note" style="padding:8px 16px">
+      📡 Leads: Kommo CRM · 💰 Investimento: Meta Ads API (act_2352574621900370) · Google Ads W2 manual (CSV) · Dados de 01/04 a 18/04/2026
+    </p>
+  </div>
+  <div class="g2" style="margin-top:16px">
+    <div class="card">
+      <h3>📊 Leads por Canal · Semana a Semana</h3>
+      <div class="sub">Meta · Google · Duque · Orgânico</div>
+      <div class="cw" style="height:230px"><canvas id="cMensLeads"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>📈 Funil de Conversão · Semana a Semana</h3>
+      <div class="sub">Total inbound · Qualificados · Reuniões realizadas · Vendas</div>
+      <div class="cw" style="height:230px"><canvas id="cMensFunil"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3>💰 Investimento e CPL · Semana a Semana</h3>
+    <div class="sub">Meta vs Google — investimento total e custo por lead</div>
+    <div class="cw" style="height:200px"><canvas id="cMensInvest"></canvas></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// MENSURAÇÃO · Abril 2026 — dados Kommo CRM + Meta Ads API
+// ══════════════════════════════════════════════════════════════════════════
+const MENS_DATA = {
+  meta:{
+    w1:{invest:839.39, leads:64, qualif:42, agend:11, realiz:11},
+    w2:{invest:874.29, leads:68, qualif:43, agend:5,  realiz:4 },
+    w3:{invest:316.14, leads:19, qualif:10, agend:0,  realiz:0 },
+    w4:{invest:0,      leads:0,  qualif:0,  agend:0,  realiz:0 }
+  },
+  google:{
+    w1:{invest:0,      leads:0,  qualif:0,  agend:0, realiz:0},
+    w2:{invest:519.60, leads:37, qualif:21, agend:2, realiz:2},
+    w3:{invest:0,      leads:54, qualif:33, agend:7, realiz:6},
+    w4:{invest:0,      leads:0,  qualif:0,  agend:0, realiz:0}
+  },
+  duque:{
+    w1:{leads:16, disparo:15, realiz:0},
+    w2:{leads:17, disparo:14, realiz:1},
+    w3:{leads:0,  disparo:0,  realiz:0},
+    w4:{leads:0,  disparo:0,  realiz:0}
+  },
+  org:{
+    w1:{leads:2, qualif:2, agend:2, realiz:2},
+    w2:{leads:0, qualif:0, agend:0, realiz:0},
+    w3:{leads:0, qualif:0, agend:0, realiz:0},
+    w4:{leads:0, qualif:0, agend:0, realiz:0}
+  },
+  closer:{
+    w1:{leads:9,  prop:0,  vendas:0, fat:0},
+    w2:{leads:20, prop:14, vendas:4, fat:132868},
+    w3:{leads:9,  prop:9,  vendas:0, fat:0},
+    w4:{leads:0,  prop:0,  vendas:0, fat:0}
+  }
+};
+const MENS_GOALS = {txQ:50, qToA:60, txA:40, txComp:65, pToV:13, txConv:2.5};
+
+// Mapeamento período → semanas do Mensuracao
+const MENS_PERIOD_MAP = {
+  '7d':  { ws:['w3'],                  lbls:['W3 · 15–21/04'] },
+  '14d': { ws:['w2','w3'],             lbls:['W2 · 08–14/04','W3 · 15–21/04'] },
+  'w3':  { ws:['w3'],                  lbls:['W3 · 15–21/04'] },
+  '30d': { ws:['w1','w2','w3','w4'],   lbls:['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] },
+};
+
+function renderMensuracao(){
+  const D=MENS_DATA, G=MENS_GOALS;
+  const {ws, lbls} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
+  const sum=(ch,f)=>ws.reduce((s,w)=>s+(D[ch][w][f]||0),0);
+  const pct=(n,d)=>d>0?(n/d*100):null;
+
+  // Formatters
+  const fc=v=>v>0?'R$\u00a0'+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'<span class="tc-muted">—</span>';
+  const fn=v=>v>0?String(v):'<span class="tc-muted">—</span>';
+  const fcpu=(invest,unit)=>{
+    if(!invest||invest===0||!unit||unit===0)return'<span class="tc-muted">—</span>';
+    return'R$\u00a0'+(invest/unit).toFixed(2).replace('.',',');
+  };
+  const fp=(n,d,goal)=>{
+    const v=pct(n,d);
+    if(v===null)return'<span class="tc-muted">—</span>';
+    const s=v.toFixed(1)+'%';
+    if(goal===undefined||goal===null)return s;
+    const cls=v>=goal?'tc-g':v>=goal*0.7?'tc-o':'tc-r';
+    return`<span class="${cls} fw7">${s}</span>`;
+  };
+
+  // Geral totals by channel
+  const mg={invest:sum('meta','invest'),leads:sum('meta','leads'),qualif:sum('meta','qualif'),agend:sum('meta','agend'),realiz:sum('meta','realiz')};
+  const gg={invest:sum('google','invest'),leads:sum('google','leads'),qualif:sum('google','qualif'),agend:sum('google','agend'),realiz:sum('google','realiz')};
+  const dg={leads:sum('duque','leads'),disparo:sum('duque','disparo'),realiz:sum('duque','realiz')};
+  const og={leads:sum('org','leads'),qualif:sum('org','qualif'),agend:sum('org','agend'),realiz:sum('org','realiz')};
+  const cg={leads:sum('closer','leads'),prop:sum('closer','prop'),vendas:sum('closer','vendas'),fat:sum('closer','fat')};
+
+  // Total inbound per week (Meta + Google + Org)
+  const tot=ws.map(w=>({
+    invest: D.meta[w].invest+D.google[w].invest,
+    leads:  D.meta[w].leads +D.google[w].leads +D.org[w].leads,
+    qualif: D.meta[w].qualif+D.google[w].qualif+D.org[w].qualif,
+    agend:  D.meta[w].agend +D.google[w].agend +D.org[w].agend,
+    realiz: D.meta[w].realiz+D.google[w].realiz+D.org[w].realiz,
+    prop:   D.closer[w].prop, vendas:D.closer[w].vendas, fat:D.closer[w].fat
+  }));
+  const tg={
+    invest:mg.invest+gg.invest, leads:mg.leads+gg.leads+og.leads,
+    qualif:mg.qualif+gg.qualif+og.qualif, agend:mg.agend+gg.agend+og.agend,
+    realiz:mg.realiz+gg.realiz+og.realiz,
+    prop:cg.prop, vendas:cg.vendas, fat:cg.fat
+  };
+
+  // KPI summary cards — dynamic from filtered weeks
+  const kpiInvest = tg.invest;
+  const kpiLeads  = tg.leads;
+  const kpiTxQ    = tg.leads>0 ? (tg.qualif/tg.leads*100) : null;
+  const kpiTxA    = tg.leads>0 ? (tg.agend/tg.leads*100)  : null;
+  const kpiVendas = cg.vendas;
+  const kpiFat    = cg.fat;
+  const kpiTxConv = tg.leads>0 ? (cg.vendas/tg.leads*100) : null;
+  const fmtPct=(v,goal)=>{
+    if(v===null)return'—';
+    const s=v.toFixed(1)+'%';
+    const cls=v>=goal?'tc-g':v>=goal*0.7?'tc-o':'tc-r';
+    return`<span class="${cls}">${s}</span>`;
+  };
+  const kpis=[
+    {l:'Invest Total',     v:'R$\u00a0'+kpiInvest.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}), c:'tc-b', s:`Meta R$${mg.invest.toFixed(0)} · Google R$${gg.invest.toFixed(0)}`},
+    {l:'Leads SDR',        v:String(kpiLeads),       c:'tc-p', s:`Meta ${mg.leads} · Google ${gg.leads} · Org ${og.leads}`},
+    {l:'Tx. Qualificação', v:fmtPct(kpiTxQ,G.txQ),  c:'tc-g', s:`meta: ${G.txQ}% ${kpiTxQ!==null&&kpiTxQ>=G.txQ?'✅':'⚠️'}`},
+    {l:'Tx. Agendamento',  v:fmtPct(kpiTxA,G.txA),  c:'tc-o', s:`meta: ${G.txA}% ${kpiTxA!==null&&kpiTxA>=G.txA?'✅':'⚠️'}`},
+    {l:'Vendas',           v:String(kpiVendas),      c:'tc-g', s:`Faturamento: R$${kpiFat.toLocaleString('pt-BR')}`},
+    {l:'Tx. Conversão',    v:fmtPct(kpiTxConv,G.txConv), c:'tc-o', s:`meta: ${G.txConv}% ${kpiTxConv!==null&&kpiTxConv>=G.txConv?'✅':'⚠️'}`},
+  ];
+  document.getElementById('mens-kpi').innerHTML=kpis.map(k=>`
+    <div class="kpi-box">
+      <div class="klbl">${k.l}</div>
+      <div class="val ${k.c}" style="font-size:22px;line-height:1.2">${k.v}</div>
+      <div class="note">${k.s}</div>
+    </div>`).join('');
+
+  // Row & header builders
+  const totalCols = ws.length + 3; // label + N weeks + geral + meta
+  const chHdr=(icon,name)=>`<tr class="ch-hdr"><td colspan="${totalCols}" style="color:var(--text)">${icon} ${name}</td></tr>`;
+  const sep=`<tr class="sep-row"><td colspan="${totalCols}" style="height:5px;border:none;background:var(--bg)"></td></tr>`;
+
+  const trow=(label,vals,goalTxt,isBold)=>{
+    const cells=vals.map((v,i)=>`<td class="num${i===vals.length-1?' geral-val':''}">${v}</td>`).join('');
+    const gc=goalTxt?`<td class="num meta-val">${goalTxt}</td>`:`<td></td>`;
+    const boldCls=isBold?' class="fw-row"':'';
+    const lblCls='metric'+(isBold?' bld':'');
+    return`<tr${boldCls}><td class="${lblCls}">${label}</td>${cells}${gc}</tr>`;
+  };
+
+  // ── META ADS ─────────────────────────────────────────────────────────────
+  const d1=D.meta;
+  const metaRows=[
+    chHdr('🎯','META ADS · act_2352574621900370'),
+    trow('Valor Investido',    [...ws.map(w=>fc(d1[w].invest)),    fc(mg.invest)]),
+    trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d1[w].leads)),    fn(mg.leads)],  null, true),
+    trow('Qualificados',       [...ws.map(w=>fn(d1[w].qualif)),   fn(mg.qualif)]),
+    trow('Reunião Agendada',   [...ws.map(w=>fn(d1[w].agend)),    fn(mg.agend)]),
+    trow('Reunião Concretizada',[...ws.map(w=>fn(d1[w].realiz)),  fn(mg.realiz)]),
+    sep,
+    trow('CPL',                [...ws.map(w=>fcpu(d1[w].invest,d1[w].leads)),  fcpu(mg.invest,mg.leads)]),
+    trow('CPO',                [...ws.map(w=>fcpu(d1[w].invest,d1[w].agend)),  fcpu(mg.invest,mg.agend)]),
+    sep,
+    trow('Tx. Qualificação',   [...ws.map(w=>fp(d1[w].qualif,d1[w].leads,G.txQ)),   fp(mg.qualif,mg.leads,G.txQ)],   G.txQ+'%'),
+    trow('Qualif → Agendado',  [...ws.map(w=>fp(d1[w].agend,d1[w].qualif,G.qToA)),  fp(mg.agend,mg.qualif,G.qToA)],  G.qToA+'%'),
+    trow('Tx. Agendamento',    [...ws.map(w=>fp(d1[w].agend,d1[w].leads,G.txA)),    fp(mg.agend,mg.leads,G.txA)],    G.txA+'%'),
+    trow('Tx. Comparecimento', [...ws.map(w=>fp(d1[w].realiz,d1[w].agend,G.txComp)),fp(mg.realiz,mg.agend,G.txComp)],G.txComp+'%'),
+  ].join('');
+
+  // ── GOOGLE ADS ───────────────────────────────────────────────────────────
+  const d2=D.google;
+  const googleRows=[
+    chHdr('📱','GOOGLE ADS'),
+    trow('Valor Investido',    [...ws.map(w=>fc(d2[w].invest)),    fc(gg.invest)]),
+    trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d2[w].leads)),    fn(gg.leads)],  null, true),
+    trow('Qualificados',       [...ws.map(w=>fn(d2[w].qualif)),   fn(gg.qualif)]),
+    trow('Reunião Agendada',   [...ws.map(w=>fn(d2[w].agend)),    fn(gg.agend)]),
+    trow('Reunião Concretizada',[...ws.map(w=>fn(d2[w].realiz)),  fn(gg.realiz)]),
+    sep,
+    trow('CPL',                [...ws.map(w=>fcpu(d2[w].invest,d2[w].leads)),  fcpu(gg.invest,gg.leads)]),
+    trow('CPO',                [...ws.map(w=>fcpu(d2[w].invest,d2[w].agend)),  fcpu(gg.invest,gg.agend)]),
+    sep,
+    trow('Tx. Qualificação',   [...ws.map(w=>fp(d2[w].qualif,d2[w].leads,G.txQ)),   fp(gg.qualif,gg.leads,G.txQ)],   G.txQ+'%'),
+    trow('Qualif → Agendado',  [...ws.map(w=>fp(d2[w].agend,d2[w].qualif,G.qToA)),  fp(gg.agend,gg.qualif,G.qToA)],  G.qToA+'%'),
+    trow('Tx. Agendamento',    [...ws.map(w=>fp(d2[w].agend,d2[w].leads,G.txA)),    fp(gg.agend,gg.leads,G.txA)],    G.txA+'%'),
+    trow('Tx. Comparecimento', [...ws.map(w=>fp(d2[w].realiz,d2[w].agend,G.txComp)),fp(gg.realiz,gg.agend,G.txComp)],G.txComp+'%'),
+  ].join('');
+
+  // ── DUQUE ─────────────────────────────────────────────────────────────────
+  const d3=D.duque;
+  const duqueRows=[
+    chHdr('📣','DUQUE (Outbound)'),
+    trow('Leads Abordados',     [...ws.map(w=>fn(d3[w].leads)),   fn(dg.leads)]),
+    trow('Disparos (Contato)',  [...ws.map(w=>fn(d3[w].disparo)), fn(dg.disparo)]),
+    trow('Reunião Concretizada',[...ws.map(w=>fn(d3[w].realiz)),  fn(dg.realiz)]),
+    sep,
+    trow('Tx. Abordagem',      [...ws.map(w=>fp(d3[w].disparo,d3[w].leads)),fp(dg.disparo,dg.leads)]),
+    trow('Tx. Reunião',        [...ws.map(w=>fp(d3[w].realiz,d3[w].leads)), fp(dg.realiz,dg.leads)]),
+  ].join('');
+
+  // ── ORGÂNICO ──────────────────────────────────────────────────────────────
+  const d4=D.org;
+  const orgRows=[
+    chHdr('🌱','ORGÂNICO'),
+    trow('Leads',              [...ws.map(w=>fn(d4[w].leads)),  fn(og.leads)]),
+    trow('Qualificados',       [...ws.map(w=>fn(d4[w].qualif)), fn(og.qualif)]),
+    trow('Reunião Agendada',   [...ws.map(w=>fn(d4[w].agend)),  fn(og.agend)]),
+    trow('Reunião Concretizada',[...ws.map(w=>fn(d4[w].realiz)), fn(og.realiz)]),
+  ].join('');
+
+  // ── CLOSER ────────────────────────────────────────────────────────────────
+  const d5=D.closer;
+  const closerRows=[
+    chHdr('🏆','CLOSER · Pipeline de Vendas'),
+    trow('Leads (Reuniões)',   [...ws.map(w=>fn(d5[w].leads)),  fn(cg.leads)]),
+    trow('Propostas',          [...ws.map(w=>fn(d5[w].prop)),   fn(cg.prop)]),
+    trow('Vendas',             [...ws.map(w=>fn(d5[w].vendas)), fn(cg.vendas)], null, true),
+    trow('Faturamento',        [...ws.map(w=>fc(d5[w].fat)),    fc(cg.fat)],    null, true),
+    sep,
+    trow('Propostas → Vendas', [...ws.map(w=>fp(d5[w].vendas,d5[w].prop,G.pToV)),fp(cg.vendas,cg.prop,G.pToV)],G.pToV+'%'),
+  ].join('');
+
+  // ── TOTAL INBOUND ─────────────────────────────────────────────────────────
+  const totalRows=[
+    chHdr('🌐','TOTAL INBOUND · Meta + Google + Orgânico'),
+    trow('💰 Invest Total',         [...tot.map(t=>fc(t.invest)),  fc(tg.invest)],  null, true),
+    trow('📥 Leads SDR',            [...tot.map(t=>fn(t.leads)),   fn(tg.leads)],   null, true),
+    trow('✅ Qualificados',          [...tot.map(t=>fn(t.qualif)),  fn(tg.qualif)]),
+    trow('📅 Reunião Agendada',      [...tot.map(t=>fn(t.agend)),   fn(tg.agend)]),
+    trow('🤝 Reunião Concretizada',  [...tot.map(t=>fn(t.realiz)),  fn(tg.realiz)]),
+    trow('📋 Propostas (Closer)',    [...tot.map(t=>fn(t.prop)),    fn(tg.prop)]),
+    trow('🏆 Vendas',               [...tot.map(t=>fn(t.vendas)),  fn(tg.vendas)],  null, true),
+    trow('💵 Faturamento',          [...tot.map(t=>fc(t.fat)),     fc(tg.fat)],     null, true),
+    sep,
+    trow('CPL',  [...tot.map(t=>fcpu(t.invest,t.leads)),  fcpu(tg.invest,tg.leads)]),
+    trow('CPO',  [...tot.map(t=>fcpu(t.invest,t.agend)),  fcpu(tg.invest,tg.agend)]),
+    trow('CAC',  [...tot.map(t=>fcpu(t.invest,t.vendas)), fcpu(tg.invest,tg.vendas)]),
+    sep,
+    trow('Tx. Qualificação',   [...tot.map(t=>fp(t.qualif,t.leads,G.txQ)),    fp(tg.qualif,tg.leads,G.txQ)],    G.txQ+'%'),
+    trow('Qualif → Agendado',  [...tot.map(t=>fp(t.agend,t.qualif,G.qToA)),   fp(tg.agend,tg.qualif,G.qToA)],   G.qToA+'%'),
+    trow('Tx. Agendamento',    [...tot.map(t=>fp(t.agend,t.leads,G.txA)),     fp(tg.agend,tg.leads,G.txA)],     G.txA+'%'),
+    trow('Tx. Comparecimento', [...tot.map(t=>fp(t.realiz,t.agend,G.txComp)), fp(tg.realiz,tg.agend,G.txComp)], G.txComp+'%'),
+    trow('Propostas → Vendas', [...tot.map(t=>fp(t.vendas,t.prop,G.pToV)),    fp(tg.vendas,tg.prop,G.pToV)],    G.pToV+'%'),
+    trow('Tx. Conversão',      [...tot.map(t=>fp(t.vendas,t.leads,G.txConv)), fp(tg.vendas,tg.leads,G.txConv)], G.txConv+'%'),
+  ].join('');
+
+  // Assemble table — dynamic headers from lbls
+  const weekThs = lbls.map(l=>`<th>${l}</th>`).join('');
+  document.getElementById('mens-table-wrap').innerHTML=`
+  <table class="mens-table">
+    <thead>
+      <tr>
+        <th class="ch-col">Canal / Métrica</th>
+        ${weekThs}
+        <th class="geral-th">Geral</th>
+        <th class="meta-th">Meta</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${metaRows}
+      ${googleRows}
+      ${duqueRows}
+      ${orgRows}
+      ${closerRows}
+      ${totalRows}
+    </tbody>
+  </table>`;
+
+  // ── Charts ────────────────────────────────────────────────────────────────
+  const wkLbls = lbls.map(l => l.split('·')[0].trim());
+
+  setTimeout(() => {
+    // Destroy old charts before recreating
+    Object.keys(_mensCharts).forEach(id => {
+      if (_mensCharts[id]) { _mensCharts[id].destroy(); delete _mensCharts[id]; }
+    });
+
+    const chartDefaults = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } },
+    };
+
+    // Chart 1 — Leads por Canal (stacked bar)
+    const c1 = document.getElementById('cMensLeads');
+    if (c1) _mensCharts['cMensLeads'] = new Chart(c1, {
+      type: 'bar',
+      data: {
+        labels: wkLbls,
+        datasets: [
+          { label: 'Meta',     data: ws.map(w=>D.meta[w].leads),   backgroundColor: '#3b82f6' },
+          { label: 'Google',   data: ws.map(w=>D.google[w].leads), backgroundColor: '#22c55e' },
+          { label: 'Duque',    data: ws.map(w=>D.duque[w].leads),  backgroundColor: '#8b5cf6' },
+          { label: 'Orgânico', data: ws.map(w=>D.org[w].leads),    backgroundColor: '#f5a623' },
+        ],
+      },
+      options: {
+        ...chartDefaults,
+        scales: {
+          x: { stacked: true, ticks: { font: { size: 10 } } },
+          y: { stacked: true, beginAtZero: true, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+
+    // Chart 2 — Funil de Conversão (multi-line)
+    const c2 = document.getElementById('cMensFunil');
+    if (c2) _mensCharts['cMensFunil'] = new Chart(c2, {
+      type: 'line',
+      data: {
+        labels: wkLbls,
+        datasets: [
+          { label: 'Leads',         data: tot.map(t=>t.leads),  borderColor: '#3b82f6', backgroundColor: '#3b82f620', fill: true,  tension: 0.3, pointRadius: 5 },
+          { label: 'Qualificados',  data: tot.map(t=>t.qualif), borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5 },
+          { label: 'Reuniões real.',data: tot.map(t=>t.realiz), borderColor: '#22c55e', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5 },
+          { label: 'Vendas',        data: tot.map(t=>t.vendas), borderColor: '#f5a623', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5, borderDash: [4,3] },
+        ],
+      },
+      options: {
+        ...chartDefaults,
+        scales: {
+          x: { ticks: { font: { size: 10 } } },
+          y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+
+    // Chart 3 — Investimento Meta vs Google (grouped bar) + CPL linha
+    const c3 = document.getElementById('cMensInvest');
+    if (c3) _mensCharts['cMensInvest'] = new Chart(c3, {
+      type: 'bar',
+      data: {
+        labels: wkLbls,
+        datasets: [
+          { label: 'Meta (R$)',   data: ws.map(w=>D.meta[w].invest),   backgroundColor: '#3b82f6', yAxisID: 'y' },
+          { label: 'Google (R$)', data: ws.map(w=>D.google[w].invest), backgroundColor: '#22c55e', yAxisID: 'y' },
+          {
+            label: 'CPL Total (R$)',
+            data: tot.map(t => t.leads > 0 ? +(t.invest/t.leads).toFixed(0) : 0),
+            type: 'line',
+            borderColor: '#f5a623',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 5,
+            tension: 0.3,
+            yAxisID: 'y2',
+          },
+        ],
+      },
+      options: {
+        ...chartDefaults,
+        scales: {
+          x: { ticks: { font: { size: 10 } } },
+          y:  { beginAtZero: true, ticks: { font: { size: 10 } }, title: { display: true, text: 'Invest (R$)', font: { size: 9 } } },
+          y2: { beginAtZero: true, position: 'right', ticks: { font: { size: 10 } }, title: { display: true, text: 'CPL (R$)', font: { size: 9 } }, grid: { drawOnChartArea: false } },
+        },
+      },
+    });
+  }, 50);
+}
+</script>
+</body>
+</html>

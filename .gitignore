@@ -1,0 +1,28 @@
+# Secrets
+.env
+.env.local
+.google_ads_refresh_token
+secrets.py
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# IDE / tools
+.claude/
+.vscode/
+.idea/
+
+# Temp / build
+*.log
+*.tmp
+build/
+dist/

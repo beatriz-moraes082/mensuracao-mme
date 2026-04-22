@@ -1,0 +1,248 @@
+# Relatório de Análise: Leads × Público × Criativo
+**Cliente:** Ipioca Mar Resort (IMR) | **Agência:** Trilha / MME Vacation
+**Período:** 01/04/2026 – 30/04/2026 (corrente, parcial até 22/04)
+**Última atualização:** 22/04/2026 18:46
+**Fontes:** Meta Ads Graph API v21 · Kommo CRM API v4 · *relatório dinâmico*
+
+> **Google Ads:** fora do escopo em abril (sem saldo veiculado).
+
+---
+
+## 📐 Metodologia / Definições
+
+As métricas abaixo seguem as regras oficiais do cliente (IMR) — fontes, filtros e cálculos:
+
+| Métrica | Fonte | Regra de cálculo |
+|---------|-------|------------------|
+| **Leads** | Kommo | Todos os leads criados no período no **Funil SDR** + **Funil Nutrição (Duque)** |
+| **Leads Qualificados** | Kommo | No Funil SDR: leads nas etapas `Lead Qualificado` + `Reunião Agendada` + `Reunião Realizada` |
+| **Reunião Agendada** | Kommo | No Funil SDR: leads com tags `reunião-agendada`, `reunião-realizada` ou `reagendar-reunião` |
+| **Reunião Realizada** | Kommo | No Funil SDR: leads na etapa `Reunião Realizada` |
+| **Proposta** | Kommo | No Funil Closer: leads nas etapas `Proposta Enviada` + `Follow-up` + `Sinal Verde` |
+| **Venda** | Kommo | No Funil Closer: leads na etapa `Venda Ganha` filtrados por **data de fechamento** (não criação) |
+| **Investimento** | Meta Ads | Soma do `spend` de todas as campanhas no período |
+| **CPL (bruto)** | Cálculo | Investimento ÷ Leads |
+| **CPL qualificado** | Cálculo | Investimento ÷ Leads Qualificados |
+| **CPO** | Cálculo | Investimento ÷ Reuniões Realizadas |
+| **CAC** | Cálculo | Investimento ÷ Vendas |
+| **ROAS** | Cálculo | Receita ÷ Investimento |
+| **Ticket médio** | Cálculo | Receita ÷ Vendas |
+
+**Semanas:** w1 = 01–07/04 · w2 = 08–14/04 · w3 = 15–21/04 · w4 = 22–30/04
+
+> ⚠️ **Dedup automática de vendas:** leads no Closer com mesmo contato + mesma data de fechamento contam como **1 venda única**. Isso corrige casos de duplicação manual no Kommo.
+
+---
+
+## 1. Resumo Executivo
+
+1. **323 leads** em abril (244 SDR + 79 Duque) com **R$ 2.573,79** investidos no Meta Ads → **CPL de R$ 7,97**
+2. **4 vendas** fechadas totalizando **R$ 132.868,00** de receita → **ROAS 51,6x** · **CAC R$ 643**
+3. **Taxa de comparecimento 75,6%** (acima da meta 60–70%) ✅ · **Proposta → Venda 13,3%** (dentro da meta 12–14%) ✅
+4. **Gargalo principal:** qualificação (13% vs meta 50%) e agendamento (12,7% vs meta 40%) 🔴
+5. **RJ/DF/MT/MS/GO** é o motor de volume: 76 leads, CPL R$ 14,06
+6. **Engajamento 90D** traz a melhor qualidade (30% Score A) mas está sem spend em abril — **reativar**
+7. **SP/MG** gera leads (30) mas só 1 qualificou → desalinhamento de oferta com o público
+8. **VD02** lidera em eficiência (73 leads, 19 qualificados, 11 reuniões, CPL R$ 14,94)
+9. **BN02** tem volume alto (82 leads) mas baixa qualificação (7%) — revisar oferta
+10. **82 leads (25%) sem atribuição** de audiência/criativo no Kommo — maior bloco de leads e geraram 14 reuniões realizadas; prioridade investigar origem
+
+> ⚠️ **Ajuste de duplicação:** o Kommo retornou 5 vendas em abril, mas **1 era duplicata** (contato #140000309, 2 leads idênticos em 13/04 com R$ 33.457 cada). Removida automaticamente. Números refletem **4 vendas únicas**. Detalhes na Seção 7.
+
+---
+
+## 2. Funil por Semana
+
+> **Como ler:** cada coluna é uma etapa do funil. A taxa de conversão entre etapas está na tabela seguinte.
+
+| Semana | Leads | Qualif | Reun. Agend. | Reun. Real. | Proposta | Venda | Perda |
+|--------|------:|-------:|-------------:|------------:|---------:|------:|------:|
+| w1 (01–07/04) | 82  | 22 | 16 | 13 |  8 | 0 | 27 |
+| w2 (08–14/04) | 122 | 10 | 12 |  8 | 14 | 3 | 32 |
+| w3 (15–21/04) | 114 | 10 | 13 | 10 |  8 | 1 | 28 |
+| w4 (22–30/04) |   5 |  0 |  0 |  0 |  0 | 0 |  9 |
+| **TOTAL** | **323** | **42** | **41** | **31** | **30** | **4** | **96** |
+
+> **Obs:** Leads = SDR + Duque (todos criados na semana). Qualif/Reunião usam apenas SDR. Venda usa data de fechamento (closed_at) — leads criados em semanas anteriores podem fechar em qualquer semana. A venda do dia 21/04 (w3) veio de um lead de março (o cliente rastreado). **w4 só iniciou 22/04** — dado ainda parcial.
+
+### Taxas de Conversão
+
+| Taxa | Cálculo | Resultado | Meta | Status |
+|------|---------|----------:|-----:|:------:|
+| Qualificação | 42 qualif ÷ 323 leads | 13,0% | 50% | 🔴 |
+| Agendamento | 41 agend ÷ 323 leads | 12,7% | 40% | 🔴 |
+| Comparecimento | 31 realiz ÷ 41 agend | **75,6%** | 60–70% | 🟢 |
+| Proposta → Venda | 4 venda ÷ 30 prop | **13,3%** | 12–14% | 🟢 |
+| Conversão total | 4 venda ÷ 323 leads | 1,24% | 2–3% | 🟡 |
+
+**Leitura operacional:** o time comercial (Closer) está performando dentro/acima do esperado nas etapas que controla (comparecimento e fechamento). O gargalo está **antes** do Closer: na qualificação pelo SDR e na conversão lead → reunião agendada. Hipóteses: (a) qualidade dos leads, (b) volume de tentativas de contato, (c) tempo de resposta.
+
+---
+
+## 3. Indicadores Financeiros
+
+| Métrica | Cálculo | Valor |
+|---------|---------|------:|
+| Investimento Meta | — | R$ 2.573,79 |
+| CPL (bruto) | R$ 2.573,79 ÷ 323 leads | **R$ 7,97** |
+| CPL qualificado | R$ 2.573,79 ÷ 42 qualif | R$ 61,28 |
+| CPO | R$ 2.573,79 ÷ 31 reuniões | R$ 83,03 |
+| CAC | R$ 2.573,79 ÷ 4 vendas | R$ 643,45 |
+| Receita | 4 vendas × ticket médio | R$ 132.868,00 |
+| Ticket médio | R$ 132.868 ÷ 4 vendas | R$ 33.217,00 |
+| **ROAS** | R$ 132.868 ÷ R$ 2.573,79 | **51,6x** |
+
+---
+
+## 4. Performance por Audiência (Adset)
+
+> **Base:** 244 leads SDR deduplicados por telefone. Spend do Meta Ads por adset.
+
+| Audiência | Spend | Leads | Qualif | Reun. Real | CPL | Tx. Qualif | Recomendação |
+|-----------|------:|------:|-------:|-----------:|----:|-----------:|--------------|
+| RJ/DF/MT/MS/GO \| Resort All-inclusive | R$ 1.068,42 | 76 | 10 |  6 | R$ 14,06 | 13% | 🟢 **MANTER** |
+| Engajamento 90D | R$ 0 | 37 | 12 |  7 | — | 32% | 🟢 **REATIVAR** |
+| SP/MG \| Resort All-inclusive | R$ 514,60 | 30 |  1 |  1 | R$ 17,15 | 3% | 🔴 **REVISAR** |
+| Engajamento 365D | R$ 700,09 | 16 |  4 |  3 | R$ 43,76 | 25% | 🟡 AVALIAR |
+| LokaLike 2% Clientes IMR | R$ 152,35 |  2 |  0 |  0 | R$ 76,17 | 0% | 🔴 PAUSAR |
+| RO/AM/MS/MT/AP/TO/RR \| Viajantes | R$ 100,26 |  1 |  0 |  0 | R$ 100,26 | 0% | 🔴 PAUSAR |
+| LokaLike 2% Compradores \| IG | R$ 38,07 |  0 |  0 |  0 | — | — | ⚪ TESTE* |
+| **Sem atribuição** (orgânico/sem UTM) | — | 82 | 15 | 14 | — | 18% | 🔵 INVESTIGAR |
+| **TOTAL** | **R$ 2.573,79** | **244** | **42** | **31** | R$ 10,55** | 17% | |
+
+*\**CPL médio calculado sobre os 244 leads SDR (R$ 2.573,79 ÷ 244).
+
+*LokaLike 2% Compradores \| IG aparece com 0 leads no Kommo mas gerou **1 venda rastreada** (R$ 33.457) via VD02 — público pequeno mas de alto valor.
+
+---
+
+## 5. Performance por Criativo (Ad)
+
+| Criativo | Spend | Leads | Qualif | Reun. Real | CPL | Tx. Qualif | Recomendação |
+|----------|------:|------:|-------:|-----------:|----:|-----------:|--------------|
+| VD02 | R$ 1.090,74 | 73 | 19 | 11 | R$ 14,94 | **26%** | 🟢 **ESCALAR** |
+| BN02 | R$ 1.289,03 | 82 |  6 |  4 | R$ 15,72 | 7%  | 🟡 REVISAR oferta |
+| BN01 | R$ 131,95 |  5 |  2 |  2 | R$ 26,39 | **40%** | 🟢 TESTAR volume |
+| VD03 | R$ 40,04 |  2 |  0 |  0 | R$ 20,02 | 0%  | 🔴 PAUSAR |
+| VD01 | R$ 22,03 |  0 |  0 |  0 | — | — | 🔴 PAUSAR |
+| **Sem atribuição** | — | 82 | 15 | 14 | — | 18% | 🔵 INVESTIGAR |
+
+**Leitura:** VD02 é o único criativo que alia volume + alta qualificação. BN02 traz volume similar mas qualifica 3,5x menos — vale A/B test de copy/CTA. BN01 tem a maior taxa de qualificação (40%) mas volume baixo (5 leads) — testar aumento de budget.
+
+---
+
+## 6. Qualidade dos Leads (Lead Score A–F)
+
+> **Base:** 244 leads do SDR. Score é atribuído pelo time após qualificação.
+
+### Distribuição Geral
+
+| A (excelente) | B (bom) | C (médio) | D | E | F (ruim) | Sem score |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 34 (14%) | 16 (7%) | 15 (6%) | 1 (0%) | 4 (2%) | 69 (28%) | 105 (43%) |
+
+> **Alerta:** 43% dos leads não têm Score atribuído — SDR precisa completar a triagem.
+
+### Concentração de Score A por Audiência
+
+| Público | Leads | Score A | % A | Score B | Ranking |
+|---------|------:|--------:|----:|--------:|:-------:|
+| Engajamento 90D | 37 | **11** | **30%** | 2 | 🥇 |
+| Engajamento 365D | 16 | 3 | 19% | 1 | 🥈 |
+| RJ/DF/MT/MS/GO | 76 | 12 | 16% | 4 | 🥉 |
+| SP/MG | 30 | 2 | 7% | 0 | 🔴 |
+| LokaLike 2% Clientes IMR | 2 | 0 | 0% | 0 | — |
+
+**Leitura:** **Engajamento 90D** é a audiência com maior densidade de leads de alto valor (30% Score A), mas está **sem spend Meta em abril**. Os 37 leads atuais vieram de remarketing/atribuição residual. Reativação dessa audiência deve ser prioridade.
+
+---
+
+## 7. Vendas Fechadas em Abril (4 deals únicos)
+
+| Data | Valor | Lead # | Audiência | Criativo | Jornada no CRM |
+|------|------:|:-------|-----------|----------|----------------|
+| 08/04 | R$ 32.497 | 92809687 | — | — | Direto no Closer (criado e fechado no mesmo dia) |
+| 13/04 | R$ 33.457 | 93496337 | — | — | Direto no Closer (criado e fechado no mesmo dia) |
+| 13/04 | R$ 33.457 | 93543353 | — | — | **Sem contato vinculado** (provável inserção manual) |
+| 21/04 | R$ 33.457 | 86752032 | LokaLike 2% Compradores \| IG | VD02 | **SDR (03/03) → Closer → Venda (21/04)** — jornada de 48 dias |
+| **TOTAL** | **R$ 132.868** | | | | |
+
+### Achados da análise de jornada
+
+> 🔎 **Consultamos o histórico completo de cada contato vendido para validar a origem.**
+
+- ✅ **Nenhuma das 4 vendas passou pelo pipeline Duque** (nutrição). Todas vieram direto para o Closer, exceto o cliente rastreado que passou primeiro pelo SDR em março.
+- ⚠️ **Duplicação removida:** Lead #93496459 era cópia do #93496337 (mesmo contato, mesma data, mesmo valor). **Ação recomendada:** corrigir no Kommo para evitar inflar números.
+- ⚠️ **Lead #93543353 sem contato:** venda sem cadastro vinculado. Pedir ao time operacional para completar o cadastro no Kommo.
+- ℹ️ **Apenas 1 venda (#86752032)** tem atribuição confiável a campanha Meta (VD02 × LokaLike 2% Compradores IG). As outras 3 não têm campanha nem criativo registrados.
+
+---
+
+## 8. Análise do Bloco "Sem Atribuição" (82 leads)
+
+Bloco crítico — 25% de todos os leads do SDR não têm audiência nem criativo registrado no Kommo.
+
+| Indicador | Valor |
+|-----------|------:|
+| Leads sem audiência/criativo | 82 (34% do SDR) |
+| Qualificados | 15 (18% — acima da média geral 17%) |
+| Reuniões agendadas | 19 |
+| Reuniões realizadas | 14 |
+| Taxa de realização | 74% |
+
+**Possíveis origens:**
+1. Tráfego orgânico (Instagram, site, WhatsApp direto)
+2. Indicação de clientes
+3. Campanhas anteriores com tracking incompleto
+4. Entrada manual pelo SDR sem preencher os campos
+
+**Ação recomendada:** habilitar UTMs obrigatórios ou automação no Kommo para bloquear criação de lead sem campanha/criativo quando a origem for tráfego pago.
+
+---
+
+## 9. Recomendações Finais
+
+### 🟢 Escalar imediatamente
+- **VD02**: único criativo que combina volume + qualificação (26%) + venda rastreada
+- **Engajamento 90D**: melhor perfil de qualidade (30% Score A) — voltar ao budget
+- **RJ/DF/MT/MS/GO**: motor de volume com CPL saudável (R$ 14,06)
+- **BN01**: qualificação alta (40%) com volume baixo — testar aumento de budget
+
+### 🔴 Pausar / revisar
+- **SP/MG**: 30 leads com apenas 1 qualificação — rever criativo específico dessa praça
+- **LokaLike 2% Clientes IMR**: CPL R$ 76, 0 qualificados em 2 leads
+- **RO/AM/MS/MT/AP/TO/RR**: 1 lead, CPL R$ 100
+- **VD03**: 2 leads em R$ 40 de spend, 0 qualificações
+- **VD01**: R$ 22 gasto, 0 leads
+
+### 🔵 Investigar / corrigir dados
+- **82 leads sem atribuição** (34% do SDR): mapear origem e corrigir tracking
+- **4 vendas sem atribuição** (75% das vendas): revisar campos no Kommo
+- **1 venda sem contato vinculado** (#93543353): completar cadastro
+- **Duplicação de venda** (#93496459): remover duplicata no Kommo
+- **105 leads sem Score** (43% do SDR): SDR precisa fechar a triagem
+
+### 🎯 Metas para w4 e maio
+- Qualificação: 13% → **25%+** (aumentar volume de tentativas e tempo de resposta)
+- Agendamento: 12,7% → **20%+**
+- Manter comparecimento > 70% e proposta→venda > 12%
+- Atribuição: reduzir "sem atribuição" de 25% para < 10%
+- Recuperar saldo Google Ads para diversificar canais
+
+---
+
+## 📎 Anexos — Fontes de Dados
+
+| Fonte | Endpoint | Última consulta |
+|-------|----------|-----------------|
+| Meta Ads | `graph.facebook.com/v21.0/act_2352574621900370/insights` | 22/04/2026 18:46 |
+| Kommo Leads (SDR/Closer/Duque) | `ipiocamarresort.kommo.com/api/v4/leads` | 22/04/2026 18:46 |
+| Kommo Contatos | `ipiocamarresort.kommo.com/api/v4/contacts` | 22/04/2026 18:46 |
+
+**Atualização automática:** rerodar os scripts `fetch_meta_spend.py` e `fetch_kommo_imr.py` na raiz do projeto.
+
+Arquivos de dados gerados: `data/meta_spend.json` e `data/kommo_leads.json`.
+
+---
+
+*Relatório gerado automaticamente via APIs oficiais · Trilha · MME Vacation · Ipioca Mar Resort*
