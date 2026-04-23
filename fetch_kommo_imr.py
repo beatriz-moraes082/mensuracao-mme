@@ -198,6 +198,7 @@ def process_lead(lead, contacts_map):
         "week":      week_of(ts) if ts else "w4",
         "status":    status,
         "pipeline":  pipeline,
+        "loss_reason_id": lead.get("loss_reason_id") or 0,
         "price":     lead.get("price", 0) or 0,
         "score":      get_lead_cf(lead, CF_SCORE),
         "origem":     contact.get(CF_ORIGEM, ""),       # "Meta Ads" / "Google+Ads" / ""
@@ -229,6 +230,19 @@ def get_pipeline_statuses():
             status_map[st["id"]] = st["name"]
     return status_map
 
+def get_loss_reasons():
+    """Busca mapeamento de loss_reason_id → nome."""
+    reasons = {}
+    page = 1
+    while True:
+        data = kommo_get("/api/v4/leads/loss_reasons", params={"limit": 250, "page": page})
+        batch = data.get("_embedded", {}).get("loss_reasons", []) if data else []
+        if not batch: break
+        for lr in batch: reasons[lr["id"]] = lr.get("name", "")
+        if len(batch) < 250: break
+        page += 1
+    return reasons
+
 def main():
     print(f"\n{'='*60}")
     print("  Kommo IMR → dashboard-imr/data/kommo_leads.json")
@@ -240,6 +254,10 @@ def main():
     status_map = get_pipeline_statuses()
     for sid, name in status_map.items():
         print(f"  status {sid}: {name}")
+
+    print("\n📋 Buscando motivos de perda...")
+    loss_reasons_map = get_loss_reasons()
+    print(f"  {len(loss_reasons_map)} motivos encontrados")
 
     # Fetch pipelines (created_at in period)
     print("\n📋 Buscando leads SDR (created_at)...")
@@ -354,6 +372,7 @@ def main():
         "fetched_at": datetime.now().isoformat(),
         "period":     {"start": str(PERIOD_START), "end": str(PERIOD_END)},
         "status_map": {str(k): v for k, v in status_map.items()},
+        "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},
         "metrics":    metrics,
         "sdr":    deduped_sdr,
         "closer": processed_closer,

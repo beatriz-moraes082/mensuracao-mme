@@ -176,11 +176,11 @@
     .mens-table tbody td:first-child.bld{color:var(--text);font-weight:700;padding-left:14px}
     .mens-table tbody td:nth-child(6){background:rgba(59,130,246,.05)}
     .mens-table tbody td:nth-child(7){background:rgba(34,197,94,.05);font-style:italic}
-    .mens-table tr.ch-hdr td{background:var(--surface2)!important;color:var(--text);
-      font-weight:800;font-size:12px;padding:10px 14px;
-      border-top:2px solid var(--border);text-align:left;
-      position:sticky;left:0}
-    .mens-table tr.sep-row td{height:5px;background:var(--bg)!important;
+    .mens-table tr.ch-hdr td{background:linear-gradient(to right, rgba(232,93,40,.08), transparent)!important;
+      color:var(--text);font-weight:800;font-size:13px;padding:14px 14px 12px;
+      border-top:3px solid var(--accent);text-align:left;
+      position:sticky;left:0;letter-spacing:.02em}
+    .mens-table tr.sep-row td{height:14px;background:var(--bg)!important;
       border:none;padding:0;position:static}
     .mens-table tr:not(.ch-hdr):not(.sep-row):hover td{background:rgba(0,0,0,.03)}
     .mens-table td.num{font-variant-numeric:tabular-nums;font-weight:600}
@@ -474,6 +474,21 @@
     </div>
   </div>
 
+  <!-- ── Motivos de Perda ──────────────────────────────────────── -->
+  <div class="sec">📉 Análise de Motivos de Perda</div>
+  <div class="g2" style="align-items:start">
+    <div class="card">
+      <h3>🔴 Perdas no Funil SDR</h3>
+      <div class="sub" id="loss-sdr-sub">—</div>
+      <div id="loss-sdr-list" style="margin-top:14px"></div>
+    </div>
+    <div class="card">
+      <h3>🔴 Perdas no Funil Closer</h3>
+      <div class="sub" id="loss-closer-sub">—</div>
+      <div id="loss-closer-list" style="margin-top:14px"></div>
+    </div>
+  </div>
+
 </div>
 </div><!-- /tab-funis -->
 
@@ -556,37 +571,112 @@ window.addEventListener('scroll', () => {
   else btn.classList.remove('show');
 });
 
-/* ── Funnel data (pre-computed from Kommo API) ───────── */
-const FUNNEL = {
-  '7d': {
-    label:'Últimos 7 dias · 09/04–16/04',
-    sdr:   {total:136, qualif:74,  lq:15, agend:10, concret:7,  perdidos:22},
-    closer:{total:14,  reuniao:14, prop:13, sinal:5,  vendas:3,  perdidos:1,  receita:100371},
-    duque: {total:9,   ativos:0,   andamento:9, avancado:0, reuniao:0, perdidos:0, disparo:5},
-    bdr:   {total:678, won:1, lost:3, active:665, outros:9},
-  },
-  '14d': {
-    label:'Últimos 14 dias · 02/04–16/04',
-    sdr:   {total:204, qualif:121, lq:36, agend:23, concret:20, perdidos:42},
-    closer:{total:32,  reuniao:30, prop:19, sinal:9,  vendas:4,  perdidos:2,  receita:132868},
-    duque: {total:27,  ativos:0,   andamento:24, avancado:1, reuniao:1, perdidos:2, disparo:22},
-    bdr:   {total:833, won:2, lost:133, active:680, outros:18},
-  },
-  'w3': {
-    label:'Esta semana · 15/04–18/04 (parcial)',
-    sdr:   {total:80,  qualif:47,  lq:0,  agend:1,  concret:0,  perdidos:6},
-    closer:{total:10,  reuniao:3,  prop:7,  sinal:0,  vendas:0,  perdidos:0,  receita:0},
-    duque: {total:0,   ativos:0,   andamento:0, avancado:0, reuniao:0, perdidos:0, disparo:0},
-    bdr:   {total:0,   won:0, lost:0, active:0, outros:0},
-  },
-  '30d': {
-    label:'Últimos 30 dias · 17/03–16/04',
-    sdr:   {total:372, qualif:210, lq:96, agend:68, concret:64, perdidos:119},
-    closer:{total:83,  reuniao:74, prop:27, sinal:17, vendas:7,  perdidos:9,  receita:233239},
-    duque: {total:288, ativos:170, andamento:85, avancado:6, reuniao:11, perdidos:27, disparo:101},
-    bdr:   {total:1215,won:6, lost:503, active:680, outros:26},
-  },
+/* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
+let FUNNEL = {
+  '7d':  { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
+  '14d': { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
+  'w3':  { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
+  '30d': { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
 };
+
+// Dados do Kommo/Meta (populados por loadDashboardData)
+let KOMMO_RAW = null;
+let META_RAW  = null;
+
+// Calcula janela de datas para um período
+function periodWindow(periodKey, refDate) {
+  const ref = new Date(refDate);
+  const toTs = new Date(ref); toTs.setHours(23,59,59,999);
+  let fromTs;
+  if (periodKey === '7d')       { fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 6); }
+  else if (periodKey === '14d') { fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 13); }
+  else if (periodKey === 'w3')  {
+    // "Esta semana" = semana calendar corrente (ref cai em qual das 4 semanas do mês)
+    const d = ref.getDate();
+    let startDay;
+    if      (d <= 7)  startDay = 1;
+    else if (d <= 14) startDay = 8;
+    else if (d <= 21) startDay = 15;
+    else              startDay = 22;
+    fromTs = new Date(ref.getFullYear(), ref.getMonth(), startDay);
+  } else { // 30d
+    fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
+  }
+  fromTs.setHours(0,0,0,0);
+  return { from: fromTs, to: toTs };
+}
+
+function _inWindow(ts, win) {
+  if (!ts) return false;
+  const t = ts * 1000;
+  return t >= win.from.getTime() && t <= win.to.getTime();
+}
+function _fmtDDMM(d) {
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+// Gera label textual para o período
+function periodLabel(periodKey, win, isPartial) {
+  const s = _fmtDDMM(win.from), e = _fmtDDMM(win.to);
+  const p = isPartial ? ' (parcial — até hoje)' : '';
+  if (periodKey === '7d')  return `Últimos 7 dias · ${s}–${e}${p}`;
+  if (periodKey === '14d') return `Últimos 14 dias · ${s}–${e}${p}`;
+  if (periodKey === 'w3')  return `Esta semana · ${s}–${e}${p}`;
+  if (periodKey === '30d') return `Últimos 30 dias · ${s}–${e}${p}`;
+  return `${s}–${e}`;
+}
+
+// Calcula FUNNEL para um período específico a partir dos JSONs
+function computeFunnelForPeriod(kommo, periodKey, refDate) {
+  const win = periodWindow(periodKey, refDate);
+  const today = new Date(); today.setHours(23,59,59,999);
+  const isPartial = win.to.getTime() >= today.getTime() - 86400000;  // janela termina hoje
+
+  const sdrInP = (kommo.sdr || []).filter(l => _inWindow(l.created_at, win));
+  const sdr = {
+    total:    sdrInP.length,
+    qualif:   sdrInP.filter(l => l.qualified).length,
+    lq:       sdrInP.filter(l => l.status === 98147491).length,
+    agend:    sdrInP.filter(l => l.reuniao_agendada).length,
+    concret:  sdrInP.filter(l => l.reuniao_realizada).length,
+    perdidos: sdrInP.filter(l => l.perda).length,
+  };
+
+  const closerCreated = (kommo.closer || []).filter(l => _inWindow(l.created_at, win));
+  const closerWonInP  = (kommo.closer || []).filter(l => l.venda && _inWindow(l.closed_at, win));
+  const closer = {
+    total:    closerCreated.length,
+    reuniao:  closerCreated.length,
+    prop:     closerCreated.filter(l => l.proposta).length,
+    sinal:    closerCreated.filter(l => l.status === 98334563).length,
+    vendas:   closerWonInP.length,
+    perdidos: (kommo.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win)).length,
+    receita:  closerWonInP.reduce((s,l) => s + (l.price || 0), 0),
+  };
+
+  const duqueInP = (kommo.duque || []).filter(l => _inWindow(l.created_at, win));
+  const duque = {
+    total:     duqueInP.length,
+    ativos:    0,
+    andamento: duqueInP.filter(l => l.status === 98165003 || l.status === 99170411).length,
+    avancado:  duqueInP.filter(l => l.status === 98524255).length,
+    reuniao:   duqueInP.filter(l => l.status === 98524255).length,
+    perdidos:  duqueInP.filter(l => l.perda).length,
+    disparo:   duqueInP.length,
+  };
+
+  const bdr = { total: 0, won: 0, lost: 0, active: 0, outros: 0 };
+  return { label: periodLabel(periodKey, win, isPartial), sdr, closer, duque, bdr };
+}
+
+// Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
+function rebuildAllFunnels(kommo) {
+  const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
+  for (const k of ['7d','14d','w3','30d']) {
+    FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
+    PERIOD_LABELS[k] = FUNNEL[k].label;
+  }
+}
 
 /* Goals */
 const META = {qualif:50, qualif_to_agend:60, tx_agend:40, comparec:65, prop_venda:13, conversao:2.5};
@@ -759,14 +849,57 @@ function renderFunis() {
   renderPyramid('pyr-full',   fullSteps(d));
   document.getElementById('sdr-rates').innerHTML    = sdrRateHtml(d);
   document.getElementById('closer-rates').innerHTML = closerRateHtml(d);
+  renderLossReasons();
+}
+
+/* ── Render motivos de perda ─────────────────────────── */
+function renderLossReasons() {
+  if (!KOMMO_RAW) return;
+  const win = periodWindow(currentPeriod, new Date(KOMMO_RAW.fetched_at || new Date()));
+  const lossMap = KOMMO_RAW.loss_reasons || {};
+
+  const sdrLosses = (KOMMO_RAW.sdr || []).filter(l => l.perda && _inWindow(l.created_at, win));
+  const closerLosses = (KOMMO_RAW.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win));
+
+  const tallyAndRender = (leads, listId, subId, label) => {
+    const total = leads.length;
+    const counts = {};
+    for (const l of leads) {
+      const name = lossMap[String(l.loss_reason_id)] || '(sem motivo)';
+      counts[name] = (counts[name] || 0) + 1;
+    }
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+    const sub = document.getElementById(subId);
+    if (sub) sub.textContent = `${total} perda(s) · ${label}`;
+    const list = document.getElementById(listId);
+    if (!list) return;
+    if (total === 0) { list.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:22px">Sem perdas no período</div>'; return; }
+    const max = sorted[0][1];
+    list.innerHTML = sorted.map(([reason, n]) => {
+      const pct = (n/total*100).toFixed(0);
+      const w   = (n/max*100).toFixed(0);
+      return `
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+            <span style="color:var(--text);font-weight:500">${reason}</span>
+            <span style="color:var(--muted);font-variant-numeric:tabular-nums"><b style="color:var(--text)">${n}</b> · ${pct}%</span>
+          </div>
+          <div style="height:6px;background:rgba(239,68,68,.08);border-radius:4px;overflow:hidden">
+            <div style="width:${w}%;height:100%;background:linear-gradient(90deg,#ef4444,#f87171);border-radius:4px"></div>
+          </div>
+        </div>`;
+    }).join('');
+  };
+  tallyAndRender(sdrLosses, 'loss-sdr-list', 'loss-sdr-sub', 'filtro por data de criação do lead');
+  tallyAndRender(closerLosses, 'loss-closer-list', 'loss-closer-sub', 'filtro por data de fechamento');
 }
 
 /* ── Seletor de período global (sincroniza todas as abas) ── */
-const PERIOD_LABELS = {
-  '7d':  'Últimos 7 dias · 09/04–16/04',
-  '14d': 'Últimos 14 dias · 02/04–16/04',
-  'w3':  'Esta semana · 15/04–18/04 (parcial)',
-  '30d': 'Últimos 30 dias · 17/03–16/04',
+let PERIOD_LABELS = {
+  '7d':  'Últimos 7 dias',
+  '14d': 'Últimos 14 dias',
+  'w3':  'Esta semana',
+  '30d': 'Últimos 30 dias',
 };
 function setGlobalPeriod(key, btn) {
   currentPeriod    = key;
@@ -778,6 +911,8 @@ function setGlobalPeriod(key, btn) {
   // Atualiza label dinâmico onde existir
   const lbl = document.getElementById('analises-period-lbl');
   if (lbl) lbl.textContent = PERIOD_LABELS[key] || key;
+  // Atualiza pílulas do topbar (agora respeitam período)
+  if (typeof updateTopbarPills === 'function') updateTopbarPills();
   // Re-renderiza funis e outbound com novo período
   renderFunis();
   renderOutbound();
@@ -1165,7 +1300,66 @@ function renderAnalises() {
   // ── Render HTML ───────────────────────────────────────────────────────────
   const periodLbl = ws.length <= 1 ? 'W3 (7d)' : ws.length <= 2 ? 'W2–W3 (14d)' : 'Abril (30d)';
 
-  document.getElementById('analises-main').innerHTML = `
+  // ── Qualificação por Canal (Meta vs Google vs Orgânico) ─────────────────
+  const byChannel = { meta: [], google: [], org: [] };
+  for (const l of sdr) {
+    const o = (l.origem || '').toLowerCase();
+    if (o.includes('meta')) byChannel.meta.push(l);
+    else if (o.includes('google')) byChannel.google.push(l);
+    else byChannel.org.push(l);
+  }
+  const chInfo = {
+    meta:   { label: 'Meta Ads',  icon: '🎯', color: '#3b82f6' },
+    google: { label: 'Google Ads', icon: '📱', color: '#22c55e' },
+    org:    { label: 'Orgânico',   icon: '🌱', color: '#f5a623' },
+  };
+  const chRows = Object.entries(byChannel).map(([k, ls]) => {
+    const info = chInfo[k];
+    const total = ls.length;
+    const qualif = ls.filter(l => l.qualified).length;
+    const agend  = ls.filter(l => l.reuniao_agendada).length;
+    const realiz = ls.filter(l => l.reuniao_realizada).length;
+    const txq = total > 0 ? qualif/total*100 : 0;
+    const txa = total > 0 ? agend/total*100  : 0;
+    return { ...info, key: k, total, qualif, agend, realiz, txq, txa };
+  }).sort((a,b) => b.qualif - a.qualif);
+
+  const maxQualif = Math.max(...chRows.map(r => r.qualif), 1);
+  const canalQualifHtml = chRows.map((r, i) => {
+    const w = (r.qualif / maxQualif * 100).toFixed(0);
+    const medal = i === 0 ? '🥇 ' : i === 1 ? '🥈 ' : i === 2 ? '🥉 ' : '';
+    const qualifClass = fpc(r.txq, 30, 20);
+    return `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:700">${medal}${r.icon} ${r.label}</div>
+          <div style="font-size:11px;color:var(--muted)">
+            <b style="color:var(--text);font-size:16px">${r.qualif}</b> qualificados
+            · <span class="${qualifClass}">${fp(r.txq)} tx. qualif</span>
+            · ${r.total} leads
+          </div>
+        </div>
+        <div style="height:12px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
+          <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${r.color},${r.color}cc);border-radius:6px"></div>
+        </div>
+        <div style="display:flex;gap:16px;font-size:10px;color:var(--muted);margin-top:4px">
+          <span>📅 ${r.agend} agendadas</span>
+          <span>🤝 ${r.realiz} realizadas</span>
+          <span>⚖️ Tx. agendamento: <b style="color:var(--text)">${fp(r.txa)}</b></span>
+        </div>
+      </div>`;
+  }).join('');
+
+  const canalQualifSection = `
+<div class="sec">📊 Qualificação por Canal</div>
+<div class="tcard">
+  <div class="thead"><h3>🏆 Qual canal qualifica mais leads? (${periodLbl})</h3></div>
+  <div style="padding:18px 20px">${canalQualifHtml}</div>
+  <p class="source-note" style="padding:0 20px 12px">Origem lida do campo <b>Origem</b> no cartão de contato do Kommo. ${chRows.reduce((s,r)=>s+r.total,0)} leads no período.</p>
+</div>
+`;
+
+  document.getElementById('analises-main').innerHTML = canalQualifSection + `
 
 <div class="sec">Etapa 0 · Verificação de Campos</div>
 <div class="tcard">
@@ -1570,6 +1764,53 @@ function computeMensData(kommo, meta) {
   return D;
 }
 
+// Calcula investimento Meta + Google por período (soma de leads com origem correta)
+function computeInvestForPeriod(kommo, meta, periodKey, refDate) {
+  const win = periodWindow(periodKey, refDate);
+  // Meta spend: temos dados semanais, aproximamos proporcionalmente aos dias dentro da janela
+  let metaInvest = 0;
+  const weekRanges = {
+    w1: [new Date(refDate.getFullYear(),refDate.getMonth(),1),  new Date(refDate.getFullYear(),refDate.getMonth(),7,23,59,59)],
+    w2: [new Date(refDate.getFullYear(),refDate.getMonth(),8),  new Date(refDate.getFullYear(),refDate.getMonth(),14,23,59,59)],
+    w3: [new Date(refDate.getFullYear(),refDate.getMonth(),15), new Date(refDate.getFullYear(),refDate.getMonth(),21,23,59,59)],
+    w4: [new Date(refDate.getFullYear(),refDate.getMonth(),22), new Date(refDate.getFullYear(),refDate.getMonth()+1,0,23,59,59)],
+  };
+  for (const adset of Object.values(meta.adset || {})) {
+    for (const [w, v] of Object.entries(adset)) {
+      const [ws, we] = weekRanges[w] || [null,null];
+      if (!ws) continue;
+      // Quanto da semana cai na janela do período?
+      const overlapStart = ws > win.from ? ws : win.from;
+      const overlapEnd   = we < win.to ? we : win.to;
+      if (overlapEnd < overlapStart) continue;
+      const weekDays    = (we - ws) / 86400000 + 1;
+      const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+      metaInvest += (v || 0) * (overlapDays / weekDays);
+    }
+  }
+  return Math.round(metaInvest);
+}
+
+// Atualiza pílulas do topbar respeitando o período atual
+function updateTopbarPills() {
+  if (!FUNNEL[currentPeriod]) return;
+  const d = FUNNEL[currentPeriod];
+  let metaInvest = 0;
+  if (KOMMO_RAW && META_RAW) {
+    const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+    metaInvest = computeInvestForPeriod(KOMMO_RAW, META_RAW, currentPeriod, ref);
+  }
+  const fmtBRL = v => 'R$\u00a0' + v.toLocaleString('pt-BR', {maximumFractionDigits:0});
+  const pi = document.getElementById('pill-invest');
+  const pl = document.getElementById('pill-leads');
+  const pr = document.getElementById('pill-reunioes');
+  const pv = document.getElementById('pill-vendas');
+  if (pi) pi.textContent = fmtBRL(metaInvest) + ' investidos';
+  if (pl) pl.textContent = d.sdr.total + ' leads SDR';
+  if (pr) pr.textContent = d.sdr.concret + ' reuniões realizadas';
+  if (pv) pv.textContent = d.closer.vendas + ' vendas';
+}
+
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
@@ -1577,7 +1818,12 @@ async function loadDashboardData() {
       fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json())
     ]);
+    KOMMO_RAW = kommoRes;
+    META_RAW  = metaRes;
     MENS_DATA = computeMensData(kommoRes, metaRes);
+
+    // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
+    rebuildAllFunnels(kommoRes);
 
     // Atualiza "Última atualização" em todas as barras
     const dateStr = _fmtFetchedDate(kommoRes.fetched_at);
@@ -1587,31 +1833,16 @@ async function loadDashboardData() {
     const footerDate = document.getElementById('footer-date');
     if (footerDate) footerDate.textContent = dateStr;
 
-    // Atualiza pílulas do topbar
-    const totals = {
-      invest: 0, leads: 0, reunioes: 0, vendas: 0
-    };
-    for (const ch of ['meta','google','org']) {
-      for (const w of ['w1','w2','w3','w4']) {
-        totals.invest += MENS_DATA[ch][w].invest || 0;
-        totals.leads  += MENS_DATA[ch][w].leads  || 0;
-        totals.reunioes += MENS_DATA[ch][w].realiz || 0;
-      }
-    }
-    for (const w of ['w1','w2','w3','w4']) {
-      totals.vendas += MENS_DATA.closer[w].vendas || 0;
-    }
-    const fmtBRL = v => 'R$\u00a0' + v.toLocaleString('pt-BR', {maximumFractionDigits:0});
-    const pi = document.getElementById('pill-invest');
-    const pl = document.getElementById('pill-leads');
-    const pr = document.getElementById('pill-reunioes');
-    const pv = document.getElementById('pill-vendas');
-    if (pi) pi.textContent = fmtBRL(totals.invest) + ' investidos';
-    if (pl) pl.textContent = totals.leads + ' leads SDR';
-    if (pr) pr.textContent = totals.reunioes + ' reuniões (Closer)';
-    if (pv) pv.textContent = totals.vendas + ' vendas';
+    // Atualiza label de período e pílulas
+    const lbl = document.getElementById('analises-period-lbl');
+    if (lbl) lbl.textContent = PERIOD_LABELS[currentPeriod] || currentPeriod;
+    updateTopbarPills();
 
+    // Re-renderiza tabs ativas
     if (typeof renderMensuracao === 'function') renderMensuracao();
+    if (typeof renderFunis === 'function')      renderFunis();
+    if (typeof renderOutbound === 'function')   renderOutbound();
+    if (typeof renderAnalises === 'function')   renderAnalises();
     console.log('[dashboard] dados carregados:', kommoRes.fetched_at);
   } catch (e) {
     console.error('[dashboard] erro ao carregar dados:', e);
