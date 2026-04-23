@@ -185,6 +185,16 @@
     .mens-table tr:not(.ch-hdr):not(.sep-row):hover td{background:rgba(0,0,0,.03)}
     .mens-table td.num{font-variant-numeric:tabular-nums;font-weight:600}
     .mens-table tr.fw-row td{font-weight:700;color:var(--text)}
+    /* Cards separados por canal (substitui tabela única) */
+    .mens-channel-card{background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;overflow:hidden;margin-bottom:18px;
+      box-shadow:0 1px 2px rgba(0,0,0,.03)}
+    .mens-channel-header{padding:14px 18px;
+      background:linear-gradient(to right, rgba(232,93,40,.10), transparent);
+      border-bottom:2px solid var(--accent);
+      font-weight:800;font-size:14px;color:var(--text);letter-spacing:.02em}
+    .mens-channel-card .mens-table thead th{position:static}
+    .mens-channel-card .mens-table tbody td:first-child{position:static;background:transparent}
     .tc-muted{color:var(--muted)}
     .fw7{font-weight:700}
     .meta-val{font-style:italic;color:var(--muted)!important}
@@ -2064,7 +2074,6 @@ function renderMensuracao(){
 
   // Row & header builders
   const totalCols = ws.length + 3; // label + N weeks + geral + meta
-  const chHdr=(icon,name)=>`<tr class="ch-hdr"><td colspan="${totalCols}" style="color:var(--text)">${icon} ${name}</td></tr>`;
   const sep=`<tr class="sep-row"><td colspan="${totalCols}" style="height:5px;border:none;background:var(--bg)"></td></tr>`;
 
   const trow=(label,vals,goalTxt,isBold)=>{
@@ -2075,10 +2084,27 @@ function renderMensuracao(){
     return`<tr${boldCls}><td class="${lblCls}">${label}</td>${cells}${gc}</tr>`;
   };
 
+  // Wrapper de canal em card com tabela própria
+  const weekThs = lbls.map(l=>`<th>${l}</th>`).join('');
+  const channelCard=(icon,name,bodyRows)=>`
+    <div class="mens-channel-card">
+      <div class="mens-channel-header">${icon} ${name}</div>
+      <table class="mens-table">
+        <thead>
+          <tr>
+            <th class="ch-col">Métrica</th>
+            ${weekThs}
+            <th class="geral-th">Geral</th>
+            <th class="meta-th">Meta</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+
   // ── META ADS ─────────────────────────────────────────────────────────────
   const d1=D.meta;
   const metaRows=[
-    chHdr('🎯','META ADS · act_2352574621900370'),
     trow('Valor Investido',    [...ws.map(w=>fc(d1[w].invest)),    fc(mg.invest)]),
     trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d1[w].leads)),    fn(mg.leads)],  null, true),
     trow('Qualificados',       [...ws.map(w=>fn(d1[w].qualif)),   fn(mg.qualif)]),
@@ -2097,7 +2123,6 @@ function renderMensuracao(){
   // ── GOOGLE ADS ───────────────────────────────────────────────────────────
   const d2=D.google;
   const googleRows=[
-    chHdr('📱','GOOGLE ADS'),
     trow('Valor Investido',    [...ws.map(w=>fc(d2[w].invest)),    fc(gg.invest)]),
     trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d2[w].leads)),    fn(gg.leads)],  null, true),
     trow('Qualificados',       [...ws.map(w=>fn(d2[w].qualif)),   fn(gg.qualif)]),
@@ -2116,7 +2141,6 @@ function renderMensuracao(){
   // ── DUQUE ─────────────────────────────────────────────────────────────────
   const d3=D.duque;
   const duqueRows=[
-    chHdr('📣','DUQUE (Outbound)'),
     trow('Leads Abordados',     [...ws.map(w=>fn(d3[w].leads)),   fn(dg.leads)]),
     trow('Disparos (Contato)',  [...ws.map(w=>fn(d3[w].disparo)), fn(dg.disparo)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d3[w].realiz)),  fn(dg.realiz)]),
@@ -2128,7 +2152,6 @@ function renderMensuracao(){
   // ── ORGÂNICO ──────────────────────────────────────────────────────────────
   const d4=D.org;
   const orgRows=[
-    chHdr('🌱','ORGÂNICO'),
     trow('Leads',              [...ws.map(w=>fn(d4[w].leads)),  fn(og.leads)]),
     trow('Qualificados',       [...ws.map(w=>fn(d4[w].qualif)), fn(og.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d4[w].agend)),  fn(og.agend)]),
@@ -2138,7 +2161,6 @@ function renderMensuracao(){
   // ── CLOSER ────────────────────────────────────────────────────────────────
   const d5=D.closer;
   const closerRows=[
-    chHdr('🏆','CLOSER · Pipeline de Vendas'),
     trow('Leads (Reuniões)',   [...ws.map(w=>fn(d5[w].leads)),  fn(cg.leads)]),
     trow('Propostas',          [...ws.map(w=>fn(d5[w].prop)),   fn(cg.prop)]),
     trow('Vendas',             [...ws.map(w=>fn(d5[w].vendas)), fn(cg.vendas)], null, true),
@@ -2149,7 +2171,6 @@ function renderMensuracao(){
 
   // ── TOTAL INBOUND ─────────────────────────────────────────────────────────
   const totalRows=[
-    chHdr('🌐','TOTAL INBOUND · Meta + Google + Orgânico'),
     trow('💰 Invest Total',         [...tot.map(t=>fc(t.invest)),  fc(tg.invest)],  null, true),
     trow('📥 Leads SDR',            [...tot.map(t=>fn(t.leads)),   fn(tg.leads)],   null, true),
     trow('✅ Qualificados',          [...tot.map(t=>fn(t.qualif)),  fn(tg.qualif)]),
@@ -2171,27 +2192,15 @@ function renderMensuracao(){
     trow('Tx. Conversão',      [...tot.map(t=>fp(t.vendas,t.leads,G.txConv)), fp(tg.vendas,tg.leads,G.txConv)], G.txConv+'%'),
   ].join('');
 
-  // Assemble table — dynamic headers from lbls
-  const weekThs = lbls.map(l=>`<th>${l}</th>`).join('');
-  document.getElementById('mens-table-wrap').innerHTML=`
-  <table class="mens-table">
-    <thead>
-      <tr>
-        <th class="ch-col">Canal / Métrica</th>
-        ${weekThs}
-        <th class="geral-th">Geral</th>
-        <th class="meta-th">Meta</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${metaRows}
-      ${googleRows}
-      ${duqueRows}
-      ${orgRows}
-      ${closerRows}
-      ${totalRows}
-    </tbody>
-  </table>`;
+  // Cada canal em seu próprio card
+  document.getElementById('mens-table-wrap').innerHTML = [
+    channelCard('🎯','META ADS · act_2352574621900370', metaRows),
+    channelCard('📱','GOOGLE ADS',                       googleRows),
+    channelCard('📣','DUQUE (Outbound)',                 duqueRows),
+    channelCard('🌱','ORGÂNICO',                         orgRows),
+    channelCard('🏆','CLOSER · Pipeline de Vendas',      closerRows),
+    channelCard('🌐','TOTAL INBOUND · Meta + Google + Orgânico', totalRows),
+  ].join('');
 
   // ── Charts ────────────────────────────────────────────────────────────────
   const wkLbls = lbls.map(l => l.split('·')[0].trim());
