@@ -6,7 +6,7 @@ Saída: data/kommo_leads.json
 """
 
 import json, os, requests
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from pathlib import Path
 
 def _load_env():
@@ -60,9 +60,9 @@ LOST = 143   # built-in "Venda perdida"
 # Tags (lowercase) que indicam "Reunião Agendada" por regra do cliente
 TAGS_REUNIAO = {"reunião-agendada", "reunião-realizada", "reagendar-reunião"}
 
-# Period: April 2026
+# Período: desde início da operação (01/04/2026) até hoje.
 PERIOD_START = date(2026, 4, 1)
-PERIOD_END   = date(2026, 4, 30)
+PERIOD_END   = date.today()
 
 def week_of(ts):
     d = datetime.fromtimestamp(ts).date()
@@ -371,7 +371,7 @@ def main():
     for k,v in metrics.items(): print(f"  {k:20s}: {v}")
 
     output = {
-        "fetched_at": datetime.now().isoformat(),
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
         "period":     {"start": str(PERIOD_START), "end": str(PERIOD_END)},
         "status_map": {str(k): v for k, v in status_map.items()},
         "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},

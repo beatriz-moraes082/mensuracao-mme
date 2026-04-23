@@ -4,7 +4,7 @@ Saída: data/meta_spend.json
 """
 
 import json, os, requests
-from datetime import date
+from datetime import date, datetime, timezone
 from collections import defaultdict
 from pathlib import Path
 
@@ -21,18 +21,19 @@ _load_env()
 
 TOKEN   = os.environ["META_TOKEN"]
 ACCOUNT = os.environ["META_ACCOUNT"]
-SINCE   = '2026-04-01'
-UNTIL   = '2026-04-30'
 
-WEEK_MAP = {
-    '2026-04-01': 'w1',
-    '2026-04-08': 'w2',
-    '2026-04-15': 'w3',
-    '2026-04-22': 'w4',
-}
+# Período: desde início da operação (01/04/2026) até hoje.
+SINCE   = '2026-04-01'
+UNTIL   = date.today().isoformat()
 
 def week_of(date_str):
-    return WEEK_MAP.get(date_str[:10], 'w4')
+    """Bucket w1-w4 por dia do mês — alinhado com a lógica do dashboard."""
+    if not date_str: return 'w4'
+    day = int(date_str[8:10])
+    if day <= 7:  return 'w1'
+    if day <= 14: return 'w2'
+    if day <= 21: return 'w3'
+    return 'w4'
 
 def normalize_creative(name):
     """Normalise creative names: 'VD02', 'BN01 | Ana' → 'BN01', etc."""
@@ -101,7 +102,7 @@ def main():
 
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
-        'fetched_at': date.today().isoformat(),
+        'fetched_at': datetime.now(timezone.utc).isoformat(),
         'period':     {'since': SINCE, 'until': UNTIL},
         'adset':      {k: dict(v) for k, v in adset_spend.items()},
         'creative':   {k: dict(v) for k, v in cri_spend.items()},
