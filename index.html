@@ -1375,7 +1375,78 @@ function renderAnalises() {
 </div>
 `;
 
-  document.getElementById('analises-main').innerHTML = canalQualifSection + `
+  // ── Análise de Bot (concluído vs incompleto) ─────────────────────────────
+  const botConcluido  = sdr.filter(l => (l.tags || []).includes('bot-concluído'));
+  const botIncompleto = sdr.filter(l => (l.tags || []).includes('bot-incompleto') && !(l.tags || []).includes('bot-concluído'));
+  const botSemTag     = sdr.filter(l => !(l.tags || []).some(t => t.startsWith('bot-')));
+  const totalBotLeads = sdr.length;
+
+  const botStats = (group, icon, label, color) => {
+    const n = group.length;
+    const q = group.filter(l => l.qualified).length;
+    const a = group.filter(l => l.reuniao_agendada).length;
+    const r = group.filter(l => l.reuniao_realizada).length;
+    return { icon, label, color, n, q, a, r,
+             pct: totalBotLeads > 0 ? n/totalBotLeads*100 : 0,
+             txQ: n > 0 ? q/n*100 : 0,
+             txA: n > 0 ? a/n*100 : 0,
+             txR: n > 0 ? r/n*100 : 0 };
+  };
+
+  const botGroups = [
+    botStats(botConcluido, '✅', 'Bot concluído', '#22c55e'),
+    botStats(botIncompleto, '⚠️', 'Bot incompleto', '#ef4444'),
+    botStats(botSemTag, '❓', 'Sem tag bot', '#6b7069'),
+  ].filter(g => g.n > 0);
+
+  const maxPct = Math.max(...botGroups.map(g => g.pct), 1);
+  const botHtml = botGroups.map(g => {
+    const w = (g.pct / maxPct * 100).toFixed(0);
+    return `
+      <div style="margin-bottom:18px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:700">${g.icon} ${g.label}</div>
+          <div style="font-size:11px;color:var(--muted)">
+            <b style="color:var(--text);font-size:16px">${g.n}</b>
+            <span>leads · <b style="color:var(--text)">${g.pct.toFixed(1)}%</b> do SDR</span>
+          </div>
+        </div>
+        <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden;margin-bottom:6px">
+          <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${g.color},${g.color}cc);border-radius:6px"></div>
+        </div>
+        <div style="display:flex;gap:18px;font-size:11px;color:var(--muted)">
+          <span>✅ Qualif: <b style="color:var(--text)">${g.q}</b> (${g.txQ.toFixed(1)}%)</span>
+          <span>📅 Agend: <b style="color:var(--text)">${g.a}</b> (${g.txA.toFixed(1)}%)</span>
+          <span>🤝 Realiz: <b style="color:var(--text)">${g.r}</b> (${g.txR.toFixed(1)}%)</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Insight comparativo
+  const bc = botGroups.find(g => g.label === 'Bot concluído');
+  const bi = botGroups.find(g => g.label === 'Bot incompleto');
+  let botInsight = '';
+  if (bc && bi && bc.n > 0 && bi.n > 0) {
+    const mult = bc.txQ > 0 && bi.txQ > 0 ? (bc.txQ/bi.txQ).toFixed(1) : null;
+    botInsight = `
+      <div class="insight green" style="margin-top:10px">
+        💡 <b>Leads que completam o bot qualificam ${mult ? mult + 'x' : 'mais'}</b>:
+        ${bc.txQ.toFixed(1)}% (bot-concluído) vs ${bi.txQ.toFixed(1)}% (bot-incompleto).
+        Reunião realizada também ${bc.txR > 0 && bi.txR > 0 ? (bc.txR/bi.txR).toFixed(1)+'x' : 'maior'}:
+        ${bc.txR.toFixed(1)}% vs ${bi.txR.toFixed(1)}%.
+      </div>`;
+  }
+
+  const botSection = `
+<div class="sec">🤖 Performance do Bot de Qualificação</div>
+<div class="tcard">
+  <div class="thead"><h3>% de leads que concluem o bot vs incompleto (${periodLbl})</h3></div>
+  <div style="padding:18px 20px">${botHtml}${botInsight}</div>
+  <p class="source-note" style="padding:0 20px 12px">Filtro via tags Kommo <code>bot-concluído</code> e <code>bot-incompleto</code>. ${totalBotLeads} leads SDR no período.</p>
+</div>
+`;
+
+  document.getElementById('analises-main').innerHTML = canalQualifSection + botSection + `
 
 <div class="sec">Etapa 0 · Verificação de Campos</div>
 <div class="tcard">
