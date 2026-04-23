@@ -575,7 +575,7 @@ window.addEventListener('scroll', () => {
 });
 
 /* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
-const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
+const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
 let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), '30d': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
@@ -650,12 +650,13 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 
   const sdrInP = (kommo.sdr || []).filter(l => _inWindow(l.created_at, win));
   const sdr = {
-    total:    sdrInP.length,
-    qualif:   sdrInP.filter(l => l.qualified).length,
-    lq:       sdrInP.filter(l => l.status === 98147491).length,
-    agend:    sdrInP.filter(l => l.reuniao_agendada).length,
-    concret:  sdrInP.filter(l => l.reuniao_realizada).length,
-    perdidos: sdrInP.filter(l => l.perda).length,
+    total:        sdrInP.length,
+    qualificacao: sdrInP.filter(l => l.status === 98147487).length, // etapa Kommo "Qualificação" (em triagem)
+    qualif:       sdrInP.filter(l => l.qualified).length,          // soma das 3 etapas: LQ + RA + VG
+    lq:           sdrInP.filter(l => l.status === 98147491).length,
+    agend:        sdrInP.filter(l => l.reuniao_agendada).length,
+    concret:      sdrInP.filter(l => l.reuniao_realizada).length,
+    perdidos:     sdrInP.filter(l => l.perda).length,
   };
 
   const closerCreated = (kommo.closer || []).filter(l => _inWindow(l.created_at, win));
@@ -750,12 +751,14 @@ function renderPyramid(containerId, steps) {
 /* ── Build step arrays ───────────────────────────────── */
 function sdrSteps(d) {
   const s = d.sdr;
+  // Etapas do Kommo SDR (preservadas conforme rule do cliente):
+  // Leads → Qualificação (em triagem) → Lead Qualificado (soma: LQ + RA + VG) → Reunião Agendada → Reunião Realizada
   return [
-    {name:'Leads',              count:s.total,   col:'#3b82f6', rate:null,                      meta:null},
-    {name:'Qualificados',       count:s.qualif,  col:'#6366f1', rate:pct(s.qualif,s.total),     meta:META.qualif},
-    {name:'Lead Qualificado',   count:s.lq,      col:'#8b5cf6', rate:pct(s.lq,s.qualif),        meta:META.qualif_to_agend},
-    {name:'Reunião Agendada',   count:s.agend,   col:'#e85d28', rate:pct(s.agend,s.total),      meta:META.tx_agend},
-    {name:'Reunião Concret.',   count:s.concret, col:'#22c55e', rate:pct(s.concret,s.agend),    meta:META.comparec},
+    {name:'Leads',             count:s.total,        col:'#3b82f6', rate:null,                                meta:null},
+    {name:'Qualificação',      count:s.qualificacao, col:'#a855f7', rate:pct(s.qualificacao,s.total),         meta:null},
+    {name:'Lead Qualificado',  count:s.qualif,       col:'#6366f1', rate:pct(s.qualif,s.total),               meta:META.qualif},
+    {name:'Reunião Agendada',  count:s.agend,        col:'#e85d28', rate:pct(s.agend,s.qualif),               meta:META.qualif_to_agend},
+    {name:'Reunião Realizada', count:s.concret,      col:'#22c55e', rate:pct(s.concret,s.agend),              meta:META.comparec},
   ];
 }
 
@@ -772,12 +775,13 @@ function closerSteps(d) {
 function fullSteps(d) {
   const s = d.sdr, c = d.closer;
   return [
-    {name:'Leads SDR',          count:s.total,   col:'#3b82f6', rate:null,                   meta:null},
-    {name:'Qualificados',       count:s.qualif,  col:'#6366f1', rate:pct(s.qualif,s.total),  meta:META.qualif},
-    {name:'Reunião Agendada',   count:s.agend,   col:'#e85d28', rate:pct(s.agend,s.total),   meta:META.tx_agend},
-    {name:'Reunião Realizada',  count:c.total,   col:'#f5a623', rate:pct(c.total,s.agend),   meta:META.comparec},
-    {name:'Proposta',           count:c.prop,    col:'#8b5cf6', rate:pct(c.prop,c.total),    meta:null},
-    {name:'Venda Ganha',        count:c.vendas,  col:'#22c55e', rate:pct(c.vendas,c.prop),   meta:META.prop_venda},
+    {name:'Leads SDR',          count:s.total,        col:'#3b82f6', rate:null,                                meta:null},
+    {name:'Qualificação',       count:s.qualificacao, col:'#a855f7', rate:pct(s.qualificacao,s.total),         meta:null},
+    {name:'Lead Qualificado',   count:s.qualif,       col:'#6366f1', rate:pct(s.qualif,s.total),               meta:META.qualif},
+    {name:'Reunião Agendada',   count:s.agend,        col:'#e85d28', rate:pct(s.agend,s.qualif),               meta:META.qualif_to_agend},
+    {name:'Reunião Realizada',  count:s.concret,      col:'#f5a623', rate:pct(s.concret,s.agend),              meta:META.comparec},
+    {name:'Proposta',           count:c.prop,         col:'#8b5cf6', rate:pct(c.prop,c.total),                 meta:null},
+    {name:'Venda Ganha',        count:c.vendas,       col:'#22c55e', rate:pct(c.vendas,c.prop),                meta:META.prop_venda},
   ];
 }
 
