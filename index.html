@@ -159,6 +159,19 @@
       border-top:1px solid var(--border);margin-top:28px}
     footer b{color:var(--text)}
 
+    /* ── Month bar (navegação entre meses) ──────────── */
+    .month-bar{display:flex;gap:6px;padding:10px 22px;
+      background:var(--surface);border-bottom:1px solid var(--border);
+      align-items:center;flex-wrap:wrap}
+    .month-bar .lbl{font-size:11px;color:var(--muted);margin-right:4px;
+      font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .month-btn{background:var(--surface2);border:1px solid var(--border);
+      color:var(--text);padding:5px 12px;border-radius:999px;cursor:pointer;
+      font-size:12px;transition:background .15s}
+    .month-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+    .month-btn:hover:not(.active){background:var(--border)}
+    .month-btn.compare{border-style:dashed}
+
     /* ── Mensuração ─────────────────────────────────── */
     .mens-kpi{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
     @media(max-width:960px){.mens-kpi{grid-template-columns:repeat(3,1fr)}}
@@ -366,6 +379,11 @@
   <button onclick="switchTab('outbound',this)">Duque &amp; BDR</button>
   <button onclick="switchTab('mensuracao',this)">Mensuração</button>
 </nav>
+
+<!-- ================================================================ MONTH BAR -->
+<div class="month-bar" id="month-bar" style="display:none">
+  <!-- botões de mês + Comparativo preenchidos dinamicamente em renderMonthBar() -->
+</div>
 
 <!-- ================================================================
      TAB 1 — 15 ANÁLISES
@@ -1779,13 +1797,41 @@ const MENS_GOALS = {txQ:50, qToA:60, txA:40, txComp:65, pToV:13, txConv:2.5};
 function _weekFromTs(ts) {
   if (!ts) return 'w4';
   const d = new Date(ts * 1000);
-  const day = d.getUTCDate(), month = d.getUTCMonth() + 1;
-  if (month < 4) return 'w1';         // antes de abril → conta em w1
-  if (month > 4) return 'w4';         // depois → w4
+  const day = d.getUTCDate();
   if (day <= 7)  return 'w1';
   if (day <= 14) return 'w2';
   if (day <= 21) return 'w3';
   return 'w4';
+}
+
+function _monthFromTs(ts) {
+  if (!ts) return '2026-04';
+  const d = new Date(ts * 1000);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}`;
+}
+
+function _getLeadMonth(l) {
+  return l.month || _monthFromTs(l.created_at);
+}
+
+// Detecta formato do meta spend: novo = {nome:{YYYY-MM:{w:spend}}}, antigo = {nome:{w:spend}}
+function _metaIsNewFormat(spendObj) {
+  if (!spendObj) return false;
+  return Object.keys(spendObj).some(k => /^\d{4}-\d{2}$/.test(k));
+}
+function _metaMonthWeeks(spendObj, month) {
+  if (_metaIsNewFormat(spendObj)) return spendObj[month] || {};
+  // Legacy: só existia abril 2026
+  return (month === '2026-04') ? (spendObj || {}) : {};
+}
+
+// Mês atualmente selecionado na barra de meses. Populado em loadDashboardData().
+let currentMonth = '2026-04';
+let AVAILABLE_MONTHS = ['2026-04'];
+const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+function _monthLabel(m) {
+  const [y, mo] = m.split('-');
+  return `${MONTH_NAMES[parseInt(mo,10)-1]} ${y}`;
 }
 
 function _classifyOrigem(origem) {
@@ -1802,8 +1848,9 @@ function _fmtFetchedDate(iso) {
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// Recalcula MENS_DATA a partir dos JSONs
-function computeMensData(kommo, meta) {
+// Recalcula MENS_DATA a partir dos JSONs, filtrando pelo mês informado
+function computeMensData(kommo, meta, month) {
+  month = month || currentMonth;
   const D = {
     meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
     google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
@@ -1812,8 +1859,9 @@ function computeMensData(kommo, meta) {
     closer: {w1:{leads:0,prop:0,vendas:0,fat:0}, w2:{leads:0,prop:0,vendas:0,fat:0}, w3:{leads:0,prop:0,vendas:0,fat:0}, w4:{leads:0,prop:0,vendas:0,fat:0}}
   };
 
-  // ── SDR leads → Meta/Google/Org por origem
+  // ── SDR leads → Meta/Google/Org por origem (filtrado por mês)
   for (const l of (kommo.sdr || [])) {
+    if (_getLeadMonth(l) !== month) continue;
     const ch = _classifyOrigem(l.origem);
     const w = l.week || 'w4';
     if (!D[ch][w]) continue;
@@ -1823,17 +1871,19 @@ function computeMensData(kommo, meta) {
     if (l.reuniao_realizada) D[ch][w].realiz++;
   }
 
-  // ── Meta spend → por semana (adset sums)
-  for (const weeks of Object.values(meta.adset || {})) {
+  // ── Meta spend → por semana (estrutura mês-aware com fallback)
+  for (const spendObj of Object.values(meta.adset || {})) {
+    const weeks = _metaMonthWeeks(spendObj, month);
     for (const [w, v] of Object.entries(weeks)) {
-      if (D.meta[w]) D.meta[w].invest += v;
+      if (D.meta[w] && typeof v === 'number') D.meta[w].invest += v;
     }
   }
 
-  // ── Duque: todos = disparos; leads = responderam (passaram de "Leads Entrantes"); realiz = Nutrição Closer
+  // ── Duque: todos = disparos; leads = responderam; realiz = Nutrição Closer (filtrado por mês)
   const STATUS_LEADS_ENTRANTES_DUQUE = 98164999;
   const STATUS_NUTR_CLOSER_DUQUE     = 98524255;
   for (const l of (kommo.duque || [])) {
+    if (_getLeadMonth(l) !== month) continue;
     const w = l.week || 'w4';
     if (!D.duque[w]) continue;
     D.duque[w].disparo++;
@@ -1841,18 +1891,23 @@ function computeMensData(kommo, meta) {
     if (l.status === STATUS_NUTR_CLOSER_DUQUE)     D.duque[w].realiz++;
   }
 
-  // ── Closer: leads (criados na semana), prop (propostas), vendas (por closed_at)
+  // ── Closer: leads (criados no mês), prop (propostas), vendas (fechadas no mês)
   for (const l of (kommo.closer || [])) {
-    const w = l.week || 'w4';  // semana de criação
-    if (D.closer[w]) {
-      D.closer[w].leads++;
-      if (l.proposta) D.closer[w].prop++;
+    if (_getLeadMonth(l) === month) {
+      const w = l.week || 'w4';
+      if (D.closer[w]) {
+        D.closer[w].leads++;
+        if (l.proposta) D.closer[w].prop++;
+      }
     }
-    if (l.venda) {
-      const wv = _weekFromTs(l.closed_at);  // semana de fechamento
-      if (D.closer[wv]) {
-        D.closer[wv].vendas++;
-        D.closer[wv].fat += (l.price || 0);
+    if (l.venda && l.closed_at) {
+      const closedMonth = _monthFromTs(l.closed_at);
+      if (closedMonth === month) {
+        const wv = _weekFromTs(l.closed_at);
+        if (D.closer[wv]) {
+          D.closer[wv].vendas++;
+          D.closer[wv].fat += (l.price || 0);
+        }
       }
     }
   }
@@ -1860,28 +1915,82 @@ function computeMensData(kommo, meta) {
   return D;
 }
 
+// Detecta meses presentes nos dados (Kommo + Meta).
+// Limitado ao período de operação (>= 2026-04) — alguns leads do Closer podem
+// ter created_at anterior porque a query usa closed_at, não poluem a navegação.
+const OP_START_MONTH = '2026-04';
+function detectAvailableMonths(kommo, meta) {
+  const months = new Set();
+  for (const list of ['sdr','closer','duque']) {
+    for (const l of (kommo[list] || [])) {
+      const m = _getLeadMonth(l);
+      if (m >= OP_START_MONTH) months.add(m);
+    }
+  }
+  for (const spendObj of Object.values(meta.adset || {})) {
+    if (_metaIsNewFormat(spendObj)) {
+      Object.keys(spendObj).forEach(m => { if (m >= OP_START_MONTH) months.add(m); });
+    } else {
+      months.add('2026-04'); // legacy
+    }
+  }
+  if (months.size === 0) months.add('2026-04');
+  return [...months].sort();
+}
+
+// Renderiza a barra de meses (aparece só com 2+ meses)
+function renderMonthBar() {
+  const bar = document.getElementById('month-bar');
+  if (!bar) return;
+  if (AVAILABLE_MONTHS.length <= 1) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  const buttons = AVAILABLE_MONTHS.map(m => {
+    const cls = (m === currentMonth) ? 'active' : '';
+    return `<button class="month-btn ${cls}" data-month="${m}" onclick="switchMonth('${m}')">${_monthLabel(m)}</button>`;
+  }).join('');
+  // TODO futuro: botão "Comparativo" quando houver 2+ meses
+  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}`;
+}
+
+// Troca o mês ativo e re-renderiza tudo que depende do mês
+function switchMonth(m) {
+  if (!AVAILABLE_MONTHS.includes(m)) return;
+  currentMonth = m;
+  document.querySelectorAll('.month-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.month === m);
+  });
+  if (KOMMO_RAW && META_RAW) {
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
+    if (typeof renderMensuracao === 'function') renderMensuracao();
+  }
+}
+
 // Calcula investimento Meta + Google por período (soma de leads com origem correta)
 function computeInvestForPeriod(kommo, meta, periodKey, refDate) {
   const win = periodWindow(periodKey, refDate);
-  // Meta spend: temos dados semanais, aproximamos proporcionalmente aos dias dentro da janela
   let metaInvest = 0;
-  const weekRanges = {
-    w1: [new Date(refDate.getFullYear(),refDate.getMonth(),1),  new Date(refDate.getFullYear(),refDate.getMonth(),7,23,59,59)],
-    w2: [new Date(refDate.getFullYear(),refDate.getMonth(),8),  new Date(refDate.getFullYear(),refDate.getMonth(),14,23,59,59)],
-    w3: [new Date(refDate.getFullYear(),refDate.getMonth(),15), new Date(refDate.getFullYear(),refDate.getMonth(),21,23,59,59)],
-    w4: [new Date(refDate.getFullYear(),refDate.getMonth(),22), new Date(refDate.getFullYear(),refDate.getMonth()+1,0,23,59,59)],
-  };
-  for (const adset of Object.values(meta.adset || {})) {
-    for (const [w, v] of Object.entries(adset)) {
-      const [ws, we] = weekRanges[w] || [null,null];
-      if (!ws) continue;
-      // Quanto da semana cai na janela do período?
-      const overlapStart = ws > win.from ? ws : win.from;
-      const overlapEnd   = we < win.to ? we : win.to;
-      if (overlapEnd < overlapStart) continue;
-      const weekDays    = (we - ws) / 86400000 + 1;
-      const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
-      metaInvest += (v || 0) * (overlapDays / weekDays);
+  // Itera por TODOS os meses disponíveis dentro da janela
+  for (const spendObj of Object.values(meta.adset || {})) {
+    const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
+    for (const [month, weeks] of Object.entries(monthsMap)) {
+      const [yr, mo] = month.split('-').map(Number);
+      const weekRanges = {
+        w1: [new Date(yr, mo-1, 1),  new Date(yr, mo-1, 7,23,59,59)],
+        w2: [new Date(yr, mo-1, 8),  new Date(yr, mo-1, 14,23,59,59)],
+        w3: [new Date(yr, mo-1, 15), new Date(yr, mo-1, 21,23,59,59)],
+        w4: [new Date(yr, mo-1, 22), new Date(yr, mo,   0,23,59,59)],
+      };
+      for (const [w, v] of Object.entries(weeks)) {
+        if (typeof v !== 'number') continue;
+        const [ws, we] = weekRanges[w] || [null,null];
+        if (!ws) continue;
+        const overlapStart = ws > win.from ? ws : win.from;
+        const overlapEnd   = we < win.to ? we : win.to;
+        if (overlapEnd < overlapStart) continue;
+        const weekDays    = (we - ws) / 86400000 + 1;
+        const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+        metaInvest += v * (overlapDays / weekDays);
+      }
     }
   }
   return Math.round(metaInvest);
@@ -1916,7 +2025,13 @@ async function loadDashboardData() {
     ]);
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
-    MENS_DATA = computeMensData(kommoRes, metaRes);
+
+    // Detecta meses disponíveis e define o mês padrão (mais recente)
+    AVAILABLE_MONTHS = detectAvailableMonths(kommoRes, metaRes);
+    currentMonth = AVAILABLE_MONTHS[AVAILABLE_MONTHS.length - 1];
+    renderMonthBar();
+
+    MENS_DATA = computeMensData(kommoRes, metaRes, currentMonth);
 
     // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
     rebuildAllFunnels(kommoRes);

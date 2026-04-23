@@ -35,6 +35,10 @@ def week_of(date_str):
     if day <= 21: return 'w3'
     return 'w4'
 
+def month_of(date_str):
+    """Retorna 'YYYY-MM' a partir de 'YYYY-MM-DD'."""
+    return date_str[:7] if date_str else '2026-04'
+
 def normalize_creative(name):
     """Normalise creative names: 'VD02', 'BN01 | Ana' → 'BN01', etc."""
     if not name: return '—'
@@ -75,37 +79,43 @@ def main():
     # ── Adset level ───────────────────────────────────────────────────────────
     print('Fetching adset insights...')
     adset_rows = fetch_insights('adset')
-    adset_spend = defaultdict(lambda: defaultdict(float))  # {adset_name: {week: spend}}
+    # {adset_name: {month: {week: spend}}}
+    adset_spend = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
     for row in adset_rows:
         name  = normalize_adset(row.get('adset_name', '—'))
         spend = float(row.get('spend', 0))
-        week  = week_of(row.get('date_start', ''))
-        adset_spend[name][week] += spend
+        ds    = row.get('date_start', '')
+        adset_spend[name][month_of(ds)][week_of(ds)] += spend
     print(f'  {len(adset_spend)} adsets')
-    for name, wks in adset_spend.items():
-        total = sum(wks.values())
+    for name, months in adset_spend.items():
+        total = sum(s for m in months.values() for s in m.values())
         print(f'  {name[:50]} → R${total:.2f}')
 
     # ── Ad (creative) level ────────────────────────────────────────────────────
     print('\nFetching ad insights...')
     ad_rows = fetch_insights('ad')
-    cri_spend = defaultdict(lambda: defaultdict(float))    # {creative_name: {week: spend}}
+    # {creative_name: {month: {week: spend}}}
+    cri_spend = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
     for row in ad_rows:
         name  = normalize_creative(row.get('ad_name', '—'))
         spend = float(row.get('spend', 0))
-        week  = week_of(row.get('date_start', ''))
-        cri_spend[name][week] += spend
+        ds    = row.get('date_start', '')
+        cri_spend[name][month_of(ds)][week_of(ds)] += spend
     print(f'  {len(cri_spend)} creatives (normalized)')
-    for name, wks in cri_spend.items():
-        total = sum(wks.values())
+    for name, months in cri_spend.items():
+        total = sum(s for m in months.values() for s in m.values())
         print(f'  {name} → R${total:.2f}')
+
+    # Converte defaultdict → dict normal
+    def _unwrap(d):
+        return {k: {m: dict(wks) for m, wks in months.items()} for k, months in d.items()}
 
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
         'fetched_at': datetime.now(timezone.utc).isoformat(),
         'period':     {'since': SINCE, 'until': UNTIL},
-        'adset':      {k: dict(v) for k, v in adset_spend.items()},
-        'creative':   {k: dict(v) for k, v in cri_spend.items()},
+        'adset':      _unwrap(adset_spend),
+        'creative':   _unwrap(cri_spend),
     }
 
     out_path = Path(__file__).resolve().parent / 'data/meta_spend.json'

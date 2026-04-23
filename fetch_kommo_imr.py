@@ -65,11 +65,17 @@ PERIOD_START = date(2026, 4, 1)
 PERIOD_END   = date.today()
 
 def week_of(ts):
+    """w1-w4 por dia do mês — genérico (funciona em qualquer mês)."""
     d = datetime.fromtimestamp(ts).date()
-    if d <= date(2026, 4, 7):  return "w1"
-    if d <= date(2026, 4, 14): return "w2"
-    if d <= date(2026, 4, 21): return "w3"
+    if d.day <= 7:  return "w1"
+    if d.day <= 14: return "w2"
+    if d.day <= 21: return "w3"
     return "w4"
+
+def month_of(ts):
+    """Retorna 'YYYY-MM' do timestamp."""
+    d = datetime.fromtimestamp(ts).date()
+    return f"{d.year:04d}-{d.month:02d}"
 
 def hdrs():
     return {"Authorization": f"Bearer {TOKEN}"}
@@ -198,6 +204,7 @@ def process_lead(lead, contacts_map):
         "closed_at":  closed_at,
         "closed_in_period": closed_in_period,
         "week":      week_of(ts) if ts else "w4",
+        "month":     month_of(ts) if ts else "2026-04",
         "status":    status,
         "pipeline":  pipeline,
         "loss_reason_id": lead.get("loss_reason_id") or 0,
