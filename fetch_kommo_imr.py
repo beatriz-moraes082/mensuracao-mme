@@ -165,7 +165,9 @@ def classify(pipeline, status, tags, closed_in_period):
     tag_set = set(tags)
     if pipeline == PIPELINE_SDR:
         reuniao_agendada  = bool(tag_set & TAGS_REUNIAO)
-        reuniao_realizada = status == WON
+        # Reunião realizada: status 142 OU tem tag "reunião-realizada"
+        # (lead pode estar em outro status após a reunião — ex: Follow-up pós-meeting)
+        reuniao_realizada = (status == WON) or ("reunião-realizada" in tag_set)
         # Qualificado = está numa etapa qualificada OU já passou pela reunião (tags)
         qualified = (status in {SDR_QUALIF, SDR_REUNIAO, WON}) or reuniao_agendada
     elif pipeline == PIPELINE_CLOSER:

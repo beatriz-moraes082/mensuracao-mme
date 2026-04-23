@@ -374,6 +374,7 @@
     <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
     <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
     <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
     <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
   </div>
   <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Exibindo: <b id="analises-period-lbl">Últimos 30 dias · 17/03–15/04</b></div>
@@ -400,6 +401,7 @@
     <span class="plbl">Período:</span>
     <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
     <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
     <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
     <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
     <div class="custom-range">
@@ -502,6 +504,7 @@
   <div class="period-bar">
     <span class="plbl">Período:</span>
     <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
     <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
     <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
     <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
@@ -572,12 +575,8 @@ window.addEventListener('scroll', () => {
 });
 
 /* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
-let FUNNEL = {
-  '7d':  { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
-  '14d': { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
-  'w3':  { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
-  '30d': { label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} },
-};
+const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
+let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), '30d': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
@@ -591,7 +590,7 @@ function periodWindow(periodKey, refDate) {
   if (periodKey === '7d')       { fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 6); }
   else if (periodKey === '14d') { fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 13); }
   else if (periodKey === 'w3')  {
-    // "Esta semana" = semana calendar corrente (ref cai em qual das 4 semanas do mês)
+    // "Esta semana" = bucket calendar corrente (w1/w2/w3/w4)
     const d = ref.getDate();
     let startDay;
     if      (d <= 7)  startDay = 1;
@@ -599,7 +598,23 @@ function periodWindow(periodKey, refDate) {
     else if (d <= 21) startDay = 15;
     else              startDay = 22;
     fromTs = new Date(ref.getFullYear(), ref.getMonth(), startDay);
-  } else { // 30d
+  }
+  else if (periodKey === 'wlast') {
+    // "Semana passada" = bucket calendar anterior (pra cruzar com Kommo)
+    const d = ref.getDate();
+    let prevStart, prevEnd;
+    if      (d <= 7)  {
+      const pm = new Date(ref.getFullYear(), ref.getMonth(), 0); // último dia do mês anterior
+      prevStart = new Date(pm.getFullYear(), pm.getMonth(), 22);
+      prevEnd = pm;
+    } else if (d <= 14) { prevStart = new Date(ref.getFullYear(), ref.getMonth(), 1);  prevEnd = new Date(ref.getFullYear(), ref.getMonth(), 7); }
+    else if (d <= 21)   { prevStart = new Date(ref.getFullYear(), ref.getMonth(), 8);  prevEnd = new Date(ref.getFullYear(), ref.getMonth(), 14); }
+    else                { prevStart = new Date(ref.getFullYear(), ref.getMonth(), 15); prevEnd = new Date(ref.getFullYear(), ref.getMonth(), 21); }
+    prevStart.setHours(0,0,0,0);
+    prevEnd.setHours(23,59,59,999);
+    return { from: prevStart, to: prevEnd };
+  }
+  else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
   fromTs.setHours(0,0,0,0);
@@ -619,10 +634,11 @@ function _fmtDDMM(d) {
 function periodLabel(periodKey, win, isPartial) {
   const s = _fmtDDMM(win.from), e = _fmtDDMM(win.to);
   const p = isPartial ? ' (parcial — até hoje)' : '';
-  if (periodKey === '7d')  return `Últimos 7 dias · ${s}–${e}${p}`;
-  if (periodKey === '14d') return `Últimos 14 dias · ${s}–${e}${p}`;
-  if (periodKey === 'w3')  return `Esta semana · ${s}–${e}${p}`;
-  if (periodKey === '30d') return `Últimos 30 dias · ${s}–${e}${p}`;
+  if (periodKey === '7d')    return `Últimos 7 dias · ${s}–${e}${p}`;
+  if (periodKey === '14d')   return `Últimos 14 dias · ${s}–${e}${p}`;
+  if (periodKey === 'w3')    return `Esta semana · ${s}–${e}${p}`;
+  if (periodKey === 'wlast') return `Semana passada · ${s}–${e}`;
+  if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
   return `${s}–${e}`;
 }
 
@@ -672,7 +688,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
 function rebuildAllFunnels(kommo) {
   const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
-  for (const k of ['7d','14d','w3','30d']) {
+  for (const k of ['7d','14d','w3','wlast','30d']) {
     FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
     PERIOD_LABELS[k] = FUNNEL[k].label;
   }
@@ -1619,6 +1635,7 @@ renderMensuracao();
 <div class="main">
   <div class="period-bar">
     <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
     <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
     <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
     <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
@@ -1824,6 +1841,7 @@ async function loadDashboardData() {
 
     // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
     rebuildAllFunnels(kommoRes);
+    if (typeof rebuildMensPeriodMap === 'function') rebuildMensPeriodMap(kommoRes.fetched_at || new Date());
 
     // Atualiza "Última atualização" em todas as barras
     const dateStr = _fmtFetchedDate(kommoRes.fetched_at);
@@ -1856,12 +1874,50 @@ if (document.readyState === 'loading') {
 }
 
 // Mapeamento período → semanas do Mensuracao
-const MENS_PERIOD_MAP = {
-  '7d':  { ws:['w3'],                  lbls:['W3 · 15–21/04'] },
-  '14d': { ws:['w2','w3'],             lbls:['W2 · 08–14/04','W3 · 15–21/04'] },
-  'w3':  { ws:['w3'],                  lbls:['W3 · 15–21/04'] },
-  '30d': { ws:['w1','w2','w3','w4'],   lbls:['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] },
+// MENS_PERIOD_MAP agora é recomputado em rebuildMensPeriodMap() quando os dados carregam
+let MENS_PERIOD_MAP = {
+  '7d':   { ws:['w4'],                  lbls:['W4 · 22–30/04'] },
+  '14d':  { ws:['w3','w4'],             lbls:['W3 · 15–21/04','W4 · 22–30/04'] },
+  'w3':   { ws:['w4'],                  lbls:['W4 · 22–30/04'] },
+  'wlast':{ ws:['w3'],                  lbls:['W3 · 15–21/04'] },
+  '30d':  { ws:['w1','w2','w3','w4'],   lbls:['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] },
 };
+
+function rebuildMensPeriodMap(refDate) {
+  const ref = new Date(refDate);
+  const day = ref.getDate();
+  let cur, prev;
+  if      (day <= 7)  { cur = 'w1'; prev = 'w4-prev'; }
+  else if (day <= 14) { cur = 'w2'; prev = 'w1'; }
+  else if (day <= 21) { cur = 'w3'; prev = 'w2'; }
+  else                { cur = 'w4'; prev = 'w3'; }
+
+  const weekLabel = w => ({
+    w1: 'W1 · 01–07/04', w2: 'W2 · 08–14/04',
+    w3: 'W3 · 15–21/04', w4: 'W4 · 22–30/04'
+  }[w] || w);
+
+  // Últimos 7 e 14 dias: semanas que intersectam a janela
+  const weeksInRange = (daysBack) => {
+    const from = new Date(ref); from.setDate(ref.getDate() - (daysBack - 1));
+    const weeks = [];
+    for (const w of ['w1','w2','w3','w4']) {
+      const [s, e] = { w1:[1,7], w2:[8,14], w3:[15,21], w4:[22,30] }[w];
+      const ws = new Date(ref.getFullYear(), ref.getMonth(), s);
+      const we = new Date(ref.getFullYear(), ref.getMonth(), e, 23,59,59);
+      if (we >= from && ws <= ref) weeks.push(w);
+    }
+    return weeks;
+  };
+  const w7 = weeksInRange(7);
+  const w14 = weeksInRange(14);
+
+  MENS_PERIOD_MAP['7d']    = { ws: w7,        lbls: w7.map(weekLabel) };
+  MENS_PERIOD_MAP['14d']   = { ws: w14,       lbls: w14.map(weekLabel) };
+  MENS_PERIOD_MAP['w3']    = { ws: [cur],     lbls: [weekLabel(cur)] };
+  MENS_PERIOD_MAP['wlast'] = { ws: prev.startsWith('w4') ? ['w4'] : [prev], lbls: [weekLabel(prev.replace('-prev',''))] };
+  MENS_PERIOD_MAP['30d']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] };
+}
 
 function renderMensuracao(){
   const D=MENS_DATA, G=MENS_GOALS;
