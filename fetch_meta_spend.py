@@ -62,13 +62,21 @@ def fetch_insights(level):
         'time_increment': 7,
         'limit':         500,
     }
+    print(f'  GET {url}')
+    print(f'  account={ACCOUNT} token=***{TOKEN[-6:]} level={level} since={SINCE} until={UNTIL}')
     while url:
         r = requests.get(url, params=params)
+        print(f'  HTTP {r.status_code}')
         data = r.json()
         if 'error' in data:
-            print(f'  Error: {data["error"]["message"]}')
+            err = data['error']
+            print(f'  ❌ ERROR: code={err.get("code")} type={err.get("type")} subcode={err.get("error_subcode")}')
+            print(f'     message: {err.get("message")}')
+            print(f'     fbtrace_id: {err.get("fbtrace_id")}')
             break
-        rows.extend(data.get('data', []))
+        batch = data.get('data', [])
+        rows.extend(batch)
+        print(f'  batch: {len(batch)} rows (total {len(rows)})')
         url    = data.get('paging', {}).get('next')
         params = {}   # next page URL already has all params
     return rows
