@@ -1090,9 +1090,12 @@ function renderAnalises() {
   // Analysis 3: CPL qualificado por público
   function cplByAudience(leads, ws) {
     if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
-    // Build spend map: normalizedMetaName → spend for selected weeks
+    // Build spend map: normalizedMetaName → spend for selected weeks (mês-aware)
     const spendMap = {};
-    Object.entries(META_SPEND.adset).forEach(([mName, weeks]) => {
+    Object.entries(META_SPEND.adset).forEach(([mName, spendObj]) => {
+      const weeks = (typeof _metaMonthWeeks === 'function')
+        ? _metaMonthWeeks(spendObj, currentMonth)
+        : spendObj;
       spendMap[normMetaName(mName)] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
     });
     const byAud = groupBy(leads, l => l.audience);
@@ -1123,7 +1126,10 @@ function renderAnalises() {
   function cplByCreative(leads, ws) {
     if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
     const spendMap = {};
-    Object.entries(META_SPEND.creative).forEach(([cName, weeks]) => {
+    Object.entries(META_SPEND.creative).forEach(([cName, spendObj]) => {
+      const weeks = (typeof _metaMonthWeeks === 'function')
+        ? _metaMonthWeeks(spendObj, currentMonth)
+        : spendObj;
       spendMap[cName] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
     });
     const byCri = groupBy(leads.filter(l => l.creative), l => l.creative);
@@ -1267,8 +1273,7 @@ function renderAnalises() {
   const txReu     = pct(nReu, nQual);
 
   const stageRows = STAGE_ORDER.map(s => {
-    const cnt = stageCounts[s.id];
-    if (!cnt) return '';
+    const cnt = stageCounts[s.id] || 0;
     const pctOfTotal = fp(pct(cnt, totalForStage || 1));
     const isGanha = s.id === 142;
     const isPerda = s.id === 143;
