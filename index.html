@@ -1953,21 +1953,153 @@ function renderMonthBar() {
     const cls = (m === currentMonth) ? 'active' : '';
     return `<button class="month-btn ${cls}" data-month="${m}" onclick="switchMonth('${m}')">${_monthLabel(m)}</button>`;
   }).join('');
-  // TODO futuro: botão "Comparativo" quando houver 2+ meses
-  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}`;
+  // Botão Comparativo aparece a partir de 2 meses
+  const cmpCls = (currentMonth === 'compare') ? 'active' : '';
+  const cmpBtn = `<button class="month-btn compare ${cmpCls}" data-month="compare" onclick="switchMonth('compare')">📊 Comparativo</button>`;
+  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}${cmpBtn}`;
 }
 
 // Troca o mês ativo e re-renderiza tudo que depende do mês
 function switchMonth(m) {
-  if (!AVAILABLE_MONTHS.includes(m)) return;
+  const valid = m === 'compare' || AVAILABLE_MONTHS.includes(m);
+  if (!valid) return;
   currentMonth = m;
   document.querySelectorAll('.month-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.month === m);
   });
-  if (KOMMO_RAW && META_RAW) {
+  if (!KOMMO_RAW || !META_RAW) return;
+
+  if (m === 'compare') {
+    // No modo comparativo, KPIs ficam do mês mais recente (referência)
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, AVAILABLE_MONTHS[AVAILABLE_MONTHS.length - 1]);
+    renderComparativo();
+  } else {
     MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
+    // Reexibe charts (que ficam ocultos no modo comparativo)
+    document.querySelectorAll('#tab-mensuracao .grid canvas').forEach(c => {
+      const card = c.closest('.card');
+      if (card) card.style.display = '';
+    });
     if (typeof renderMensuracao === 'function') renderMensuracao();
   }
+}
+
+// Renderiza vista comparativa entre todos os meses disponíveis.
+function renderComparativo() {
+  const months = AVAILABLE_MONTHS;
+  // Computa MENS_DATA por mês
+  const byMonth = {};
+  months.forEach(m => { byMonth[m] = computeMensData(KOMMO_RAW, META_RAW, m); });
+
+  // Soma totais por canal/mês: { mes: { canal: {invest, leads, qualif, agend, realiz, prop, vendas, fat} } }
+  const totals = {};
+  for (const m of months) {
+    totals[m] = {};
+    for (const ch of ['meta', 'google', 'duque', 'org', 'closer']) {
+      const acc = {};
+      for (const w of ['w1','w2','w3','w4']) {
+        const wk = byMonth[m][ch][w] || {};
+        for (const k of Object.keys(wk)) acc[k] = (acc[k] || 0) + (wk[k] || 0);
+      }
+      totals[m][ch] = acc;
+    }
+    // Total inbound (Meta+Google+Org)
+    const merge = (a, b) => Object.fromEntries(new Set([...Object.keys(a),...Object.keys(b)]).values()
+      ? [...new Set([...Object.keys(a),...Object.keys(b)])].map(k => [k, (a[k]||0)+(b[k]||0)]) : []);
+    totals[m].inbound = ['leads','qualif','agend','realiz','invest'].reduce((acc,k) => {
+      acc[k] = (totals[m].meta[k]||0) + (totals[m].google[k]||0) + (totals[m].org[k]||0);
+      return acc;
+    }, {});
+  }
+
+  // Helper de variação % entre 2 meses (último vs anterior)
+  const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fmtN   = v => (v||0).toLocaleString('pt-BR');
+  const delta = (curr, prev) => {
+    if (!prev) return '<span class="tc-muted">—</span>';
+    const d = (curr - prev) / prev * 100;
+    if (!isFinite(d)) return '<span class="tc-muted">—</span>';
+    const sign = d > 0 ? '+' : '';
+    const cls = d > 0 ? 'tc-g' : d < 0 ? 'tc-r' : 'tc-muted';
+    return `<span class="${cls} fw7">${sign}${d.toFixed(1)}%</span>`;
+  };
+
+  // Cabeçalho: Métrica | Mês1 | Mês2 | ... | Δ% (último vs primeiro)
+  const monthThs = months.map(m => `<th>${_monthLabel(m)}</th>`).join('');
+  const showDelta = months.length >= 2;
+  const deltaTh = showDelta ? `<th>Δ% (vs ${_monthLabel(months[0])})</th>` : '';
+
+  // Linhas: agrupadas por canal
+  const rowsForChannel = (chKey, chLabel, chIcon, metricList) => {
+    const headerRow = `<tr class="ch-hdr"><td colspan="${months.length + 2}" style="font-weight:800">${chIcon} ${chLabel}</td></tr>`;
+    const metricRows = metricList.map(({key, label, fmt}) => {
+      const cells = months.map(m => `<td class="num">${fmt(totals[m][chKey][key])}</td>`).join('');
+      const dCell = showDelta
+        ? `<td class="num">${delta(totals[months[months.length-1]][chKey][key], totals[months[0]][chKey][key])}</td>`
+        : '';
+      return `<tr><td class="metric">${label}</td>${cells}${dCell}</tr>`;
+    }).join('');
+    return headerRow + metricRows;
+  };
+
+  const tableHtml = `
+    <div class="mens-channel-card">
+      <div class="mens-channel-header">📊 Comparativo entre meses</div>
+      <table class="mens-table">
+        <thead>
+          <tr>
+            <th class="ch-col">Métrica</th>
+            ${monthThs}
+            ${deltaTh}
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsForChannel('meta', 'META ADS', '🎯', [
+            {key:'invest', label:'Investimento', fmt:fmtBRL},
+            {key:'leads',  label:'Leads',        fmt:fmtN},
+            {key:'qualif', label:'Qualificados', fmt:fmtN},
+            {key:'agend',  label:'Reunião Agendada', fmt:fmtN},
+            {key:'realiz', label:'Reunião Realizada', fmt:fmtN},
+          ])}
+          ${rowsForChannel('google', 'GOOGLE ADS', '📱', [
+            {key:'invest', label:'Investimento', fmt:fmtBRL},
+            {key:'leads',  label:'Leads',        fmt:fmtN},
+            {key:'qualif', label:'Qualificados', fmt:fmtN},
+            {key:'agend',  label:'Reunião Agendada', fmt:fmtN},
+          ])}
+          ${rowsForChannel('duque', 'NUTRIÇÃO (DUQUE)', '📣', [
+            {key:'leads',   label:'Leads abordados', fmt:fmtN},
+            {key:'disparo', label:'Disparos',         fmt:fmtN},
+            {key:'realiz',  label:'Reunião Realizada', fmt:fmtN},
+          ])}
+          ${rowsForChannel('org', 'ORGÂNICO', '🌱', [
+            {key:'leads',  label:'Leads',        fmt:fmtN},
+            {key:'qualif', label:'Qualificados', fmt:fmtN},
+            {key:'agend',  label:'Reunião Agendada', fmt:fmtN},
+          ])}
+          ${rowsForChannel('closer', 'CLOSER', '🏆', [
+            {key:'leads',  label:'Leads (Reuniões)', fmt:fmtN},
+            {key:'prop',   label:'Propostas',         fmt:fmtN},
+            {key:'vendas', label:'Vendas',            fmt:fmtN},
+            {key:'fat',    label:'Faturamento',       fmt:fmtBRL},
+          ])}
+          ${rowsForChannel('inbound', 'TOTAL INBOUND (Meta+Google+Org)', '🌐', [
+            {key:'invest', label:'Investimento Total', fmt:fmtBRL},
+            {key:'leads',  label:'Leads SDR',          fmt:fmtN},
+            {key:'qualif', label:'Qualificados',       fmt:fmtN},
+            {key:'agend',  label:'Reunião Agendada',   fmt:fmtN},
+          ])}
+        </tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('mens-table-wrap').innerHTML = tableHtml;
+
+  // Esconde charts no modo comparativo (são por mês corrente, não comparam)
+  document.querySelectorAll('#tab-mensuracao .grid canvas').forEach(c => {
+    const card = c.closest('.card');
+    if (card) card.style.display = 'none';
+  });
 }
 
 // Calcula investimento Meta + Google por período (soma de leads com origem correta)
