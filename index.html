@@ -1093,6 +1093,52 @@ function renderAnalises() {
     return !a || /\{\{.*?\}\}/.test(a) || a.trim() === '' || a.trim() === '—';
   }
 
+  // Normaliza nome (lowercase, sem acento, espaços únicos) pra comparação fuzzy.
+  function _normForMatch(s) {
+    return (s || '').toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')   // remove acentos
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  // Levenshtein distance — usado pra tolerar typos pequenos
+  // (ex: "LokaLike" vs "LookaLike" tem distância 1).
+  function _levenshtein(a, b) {
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    const m = [];
+    for (let i = 0; i <= b.length; i++) m[i] = [i];
+    for (let j = 0; j <= a.length; j++) m[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        m[i][j] = b[i-1] === a[j-1]
+          ? m[i-1][j-1]
+          : Math.min(m[i-1][j-1], m[i][j-1], m[i-1][j]) + 1;
+      }
+    }
+    return m[b.length][a.length];
+  }
+
+  // Procura spend de um nome no spendMap, tentando: (1) match exato,
+  // (2) match após normalizar acentos/espaços/case, (3) match fuzzy
+  // com distância Levenshtein <= 2 (cobre typos pequenos, mas não
+  // confunde nomes parecidos tipo "90D" vs "365D" que diferem em 3+ chars).
+  function _fuzzyMatchSpend(name, spendMap) {
+    if (spendMap[name] !== undefined && spendMap[name] !== 0) return spendMap[name];
+    const target = _normForMatch(name);
+    let exactNormHit = null;
+    let bestDist = 3;   // só aceita distância <= 2
+    let bestVal  = null;
+    for (const [key, val] of Object.entries(spendMap)) {
+      const k = _normForMatch(key);
+      if (k === target) { exactNormHit = val; break; }
+      const d = _levenshtein(target, k);
+      if (d < bestDist) { bestDist = d; bestVal = val; }
+    }
+    if (exactNormHit !== null) return exactNormHit;
+    return bestVal !== null ? bestVal : 0;
+  }
+
   // Analysis 3: CPL qualificado por público
   function cplByAudience(leads, ws) {
     if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
@@ -1108,7 +1154,7 @@ function renderAnalises() {
     const rows = [];
     byAud.forEach((ls, aud) => {
       const qualif = ls.filter(l => l.qualified).length;
-      const spend  = spendMap[aud] || 0;
+      const spend  = _fuzzyMatchSpend(aud, spendMap);
       const cpl    = qualif > 0 && spend > 0 ? spend / qualif : null;
       rows.push({ aud, total: ls.length, qualif, spend, cpl });
     });
@@ -1138,11 +1184,17 @@ function renderAnalises() {
         : spendObj;
       spendMap[cName] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
     });
-    const byCri = groupBy(leads.filter(l => l.creative), l => l.creative);
+    // Normaliza nome do criativo (mesma lógica do fetcher Python):
+    // "BN01 | Ana" → "BN01", "VD03 | IMR - Não é hosp..." → "VD03"
+    const _normCre = c => (c || '').split('|')[0].trim();
+    const byCri = groupBy(
+      leads.filter(l => l.creative && !isInvalidAud(l.creative)),
+      l => _normCre(l.creative)
+    );
     const rows = [];
     byCri.forEach((ls, cri) => {
       const qualif = ls.filter(l => l.qualified).length;
-      const spend  = spendMap[cri] || 0;
+      const spend  = _fuzzyMatchSpend(cri, spendMap);
       const cpl    = qualif > 0 && spend > 0 ? spend / qualif : null;
       rows.push({ cri, total: ls.length, qualif, spend, cpl });
     });
