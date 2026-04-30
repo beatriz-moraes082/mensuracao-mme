@@ -1216,7 +1216,10 @@ function renderAnalises() {
 
   // Score by dimension table rows — sorted by pct of target score
   function scoreRows(leads, scoreTarget, topN=8) {
-    const byDim = groupBy(leads, l => l.audience || l.creative || '—');
+    const byDim = groupBy(
+      leads.filter(l => !isInvalidAud(l.audience) || (l.creative && !isInvalidAud(l.creative))),
+      l => l.audience || l.creative || '—'
+    );
     const rows = [];
     byDim.forEach((ls, dim) => {
       const cnt = ls.filter(l => l.score === scoreTarget).length;
@@ -1236,7 +1239,11 @@ function renderAnalises() {
 
   // Score by creative table rows
   function scoreByCreative(leads, scoreTarget, topN=8) {
-    const byDim = groupBy(leads.filter(l => l.creative), l => l.creative);
+    const _normCre = c => (c || '').split('|')[0].trim();
+    const byDim = groupBy(
+      leads.filter(l => l.creative && !isInvalidAud(l.creative)),
+      l => _normCre(l.creative)
+    );
     const rows = [];
     byDim.forEach((ls, dim) => {
       const cnt = ls.filter(l => l.score === scoreTarget).length;
@@ -1373,7 +1380,7 @@ function renderAnalises() {
   // ── Analysis 15: Public × Creative combo ────────────────────────────────
   function comboRows(leads) {
     const byCombo = new Map();
-    leads.filter(l => l.audience && l.creative).forEach(l => {
+    leads.filter(l => l.audience && l.creative && !isInvalidAud(l.audience) && !isInvalidAud(l.creative)).forEach(l => {
       const k = `${l.audience}|${l.creative}`;
       if (!byCombo.has(k)) byCombo.set(k, {aud: l.audience, cri: l.creative, total:0, ab:0});
       const e = byCombo.get(k);
