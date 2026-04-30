@@ -1087,6 +1087,12 @@ function renderAnalises() {
   // Strip asterisk from Meta adset names for matching against Kommo audience names
   function normMetaName(n) { return n.replace(/\*/g, '').trim(); }
 
+  // Filtra públicos inválidos: placeholders Meta não-substituídos ({{...}}),
+  // nomes vazios e variações de "—" (lixo de captura).
+  function isInvalidAud(a) {
+    return !a || /\{\{.*?\}\}/.test(a) || a.trim() === '' || a.trim() === '—';
+  }
+
   // Analysis 3: CPL qualificado por público
   function cplByAudience(leads, ws) {
     if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
@@ -1098,7 +1104,7 @@ function renderAnalises() {
         : spendObj;
       spendMap[normMetaName(mName)] = ws.reduce((s, w) => s + (weeks[w] || 0), 0);
     });
-    const byAud = groupBy(leads, l => l.audience);
+    const byAud = groupBy(leads.filter(l => !isInvalidAud(l.audience)), l => l.audience);
     const rows = [];
     byAud.forEach((ls, aud) => {
       const qualif = ls.filter(l => l.qualified).length;
@@ -1205,7 +1211,7 @@ function renderAnalises() {
 
   // ── Analysis 4: Funnel progress by public (qualified or beyond) ──────────
   function funnelRows(leads) {
-    const byAud = groupBy(leads, l => l.audience);
+    const byAud = groupBy(leads.filter(l => !isInvalidAud(l.audience)), l => l.audience);
     const rows = [];
     byAud.forEach((ls, aud) => {
       const adv = ls.filter(l => l.qualified || l.reuniao || l.venda).length;
