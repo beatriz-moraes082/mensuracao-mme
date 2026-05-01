@@ -2189,8 +2189,8 @@ function renderDiagnostico() {
 
   // ── Render: Funil hero ─────────────────────────────────
   const formCompletes = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
-  const periodTxt = ws.length === 1 ? `Semana ${ws[0].toUpperCase()}` : ws.length === 2 ? '14d' : '30d';
-  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR no período (${periodTxt}) · ${qualif} qualificaram (${fmtP(txQ)})`;
+  const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
+  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR · ${periodTxt} · ${qualif} qualificaram (${fmtP(txQ)})`;
   const steps = [
     {name:'Lead novo (entrada)',     count:total,         col:'#3b82f6', rate:null,                meta:null},
     {name:'Concluiu bot',            count:formCompletes, col:'#a855f7', rate:total>0?formCompletes/total*100:0,    meta:null},
