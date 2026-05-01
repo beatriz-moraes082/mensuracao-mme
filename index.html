@@ -200,14 +200,39 @@
     .mens-table tr.fw-row td{font-weight:700;color:var(--text)}
     /* Cards separados por canal (substitui tabela única) */
     .mens-channel-card{background:var(--surface);border:1px solid var(--border);
-      border-radius:10px;overflow:hidden;margin-bottom:18px;
-      box-shadow:0 1px 2px rgba(0,0,0,.03)}
-    .mens-channel-header{padding:14px 18px;
-      background:linear-gradient(to right, rgba(232,93,40,.10), transparent);
+      border-radius:12px;overflow:hidden;margin-bottom:20px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.04)}
+    .mens-channel-header{padding:14px 20px;
+      background:linear-gradient(135deg, rgba(232,93,40,.12), rgba(232,93,40,.02) 65%, transparent);
       border-bottom:2px solid var(--accent);
-      font-weight:800;font-size:14px;color:var(--text);letter-spacing:.02em}
-    .mens-channel-card .mens-table thead th{position:static}
-    .mens-channel-card .mens-table tbody td:first-child{position:static;background:transparent}
+      font-weight:800;font-size:14px;color:var(--text);letter-spacing:.02em;
+      display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .mens-channel-header .ch-meta{font-weight:500;font-size:11px;color:var(--muted)}
+    .mens-channel-card .mens-table{font-size:12px}
+    .mens-channel-card .mens-table thead th{position:static;
+      padding:11px 14px;font-size:10.5px;text-transform:uppercase;
+      letter-spacing:.06em;color:var(--muted);background:var(--surface2);
+      border-bottom:2px solid var(--border)}
+    .mens-channel-card .mens-table tbody td{padding:9px 14px;border-top:1px solid var(--border)}
+    .mens-channel-card .mens-table tbody td:first-child{position:static;background:transparent;
+      color:var(--text);font-weight:500}
+    .mens-channel-card .mens-table tbody tr:hover td{background:rgba(238,77,32,.04)}
+    .mens-channel-card .mens-table tbody tr.fw-row td{
+      font-weight:800;color:var(--text);background:rgba(238,77,32,.04)!important}
+    .mens-channel-card .mens-table tbody tr.fw-row td:first-child::before{
+      content:'';display:inline-block;width:3px;height:14px;background:var(--accent);
+      vertical-align:middle;margin-right:8px;border-radius:2px}
+    /* Bloco visual de separação entre grupos (volumes / custos / taxas) */
+    .mens-channel-card .mens-table tr.sep-row td{height:18px;background:var(--bg)!important;
+      border:none;padding:0;position:static;
+      box-shadow:inset 0 1px 0 var(--border),inset 0 -1px 0 var(--border)}
+    .mens-channel-card .mens-table tr.group-label td{
+      background:rgba(0,0,0,.025)!important;color:var(--muted);
+      font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;
+      font-weight:700;padding:6px 14px;border-top:1px solid var(--border)}
+    .mens-channel-card .mens-table .geral-val{font-weight:800;color:var(--text)}
+    .mens-channel-card .mens-table .meta-val{font-style:normal;color:var(--muted)!important;
+      font-size:11px;font-weight:600}
     .tc-muted{color:var(--muted)}
     .fw7{font-weight:700}
     .meta-val{font-style:italic;color:var(--muted)!important}
@@ -374,11 +399,11 @@
 
 <!-- ================================================================ TAB NAV -->
 <nav class="tabnav">
-  <button class="active" onclick="switchTab('diagnostico',this)">🎯 Diagnóstico</button>
-  <button onclick="switchTab('analises',this)">👤 Perfil do Qualificado</button>
-  <button onclick="switchTab('funis',this)">🔁 Funis Comerciais</button>
-  <button onclick="switchTab('outbound',this)">📣 Outbound (Duque/BDR)</button>
-  <button onclick="switchTab('mensuracao',this)">📈 Evolução Semanal</button>
+  <button class="active" onclick="switchTab('diagnostico',this)">Diagnóstico</button>
+  <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
+  <button onclick="switchTab('funis',this)">Funis Comerciais</button>
+  <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
+  <button onclick="switchTab('mensuracao',this)">Evolução Semanal</button>
 </nav>
 
 <!-- ================================================================ MONTH BAR -->
@@ -579,8 +604,16 @@
     </div>
   </div>
 
+  <!-- ── Vendas por Canal ─────────────────────────────────────── -->
+  <div class="sec">Vendas por Canal de Origem</div>
+  <div class="card">
+    <h3>De qual canal vieram as vendas no período?</h3>
+    <div class="sub" id="vendas-canal-sub">—</div>
+    <div id="vendas-canal-content" style="margin-top:12px"></div>
+  </div>
+
   <!-- ── Motivos de Perda ──────────────────────────────────────── -->
-  <div class="sec">📉 Análise de Motivos de Perda</div>
+  <div class="sec">Análise de Motivos de Perda</div>
   <div class="g2" style="align-items:start">
     <div class="card">
       <h3>🔴 Perdas no Funil SDR</h3>
@@ -973,7 +1006,100 @@ function renderFunis() {
   renderPyramid('pyr-full',   fullSteps(d));
   document.getElementById('sdr-rates').innerHTML    = sdrRateHtml(d);
   document.getElementById('closer-rates').innerHTML = closerRateHtml(d);
+  renderVendasCanal();
   renderLossReasons();
+}
+
+/* ── Vendas por canal de origem ──────────────────────────── */
+function renderVendasCanal() {
+  if (!KOMMO_RAW) return;
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const vendas = (KOMMO_RAW.closer || []).filter(l => l.venda && _inWindow(l.closed_at, win));
+
+  const fmtBRL = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
+  const sub = document.getElementById('vendas-canal-sub');
+  const cont = document.getElementById('vendas-canal-content');
+  if (!sub || !cont) return;
+
+  if (vendas.length === 0) {
+    sub.textContent = `0 vendas no período · ${(FUNNEL[currentPeriod]||{}).label||''}`;
+    cont.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem vendas no período selecionado.</div>';
+    return;
+  }
+
+  // Classifica origem da venda
+  const classify = o => {
+    const s = (o||'').toLowerCase();
+    if (s.includes('meta'))   return {k:'meta',   l:'Meta Ads',   c:'#3b82f6'};
+    if (s.includes('google')) return {k:'google', l:'Google Ads', c:'#22c55e'};
+    if (s.includes('duque') || s.includes('outbound') || s.includes('bdr')) return {k:'duque', l:'Duque/BDR', c:'#8b5cf6'};
+    return {k:'org', l:'Orgânico/Outros', c:'#f5a623'};
+  };
+
+  const totFat = vendas.reduce((s,v) => s + (v.price||0), 0);
+  const groups = {};
+  vendas.forEach(v => {
+    const ch = classify(v.origem);
+    if (!groups[ch.k]) groups[ch.k] = {...ch, n:0, fat:0, items:[]};
+    groups[ch.k].n++;
+    groups[ch.k].fat += (v.price || 0);
+    groups[ch.k].items.push(v);
+  });
+  const list = Object.values(groups).sort((a,b) => b.fat - a.fat);
+
+  sub.textContent = `${vendas.length} venda(s) · Faturamento ${fmtBRL(totFat)} · ${(FUNNEL[currentPeriod]||{}).label||''}`;
+  const maxFat = Math.max(...list.map(g => g.fat), 1);
+
+  cont.innerHTML = `
+    <div style="display:grid;gap:12px">
+      ${list.map(g => {
+        const w = (g.fat/maxFat*100).toFixed(0);
+        const pct = (g.fat/totFat*100).toFixed(1);
+        const ticket = g.n > 0 ? g.fat/g.n : 0;
+        return `
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+              <div style="font-size:13px;font-weight:700">${g.l}</div>
+              <div style="font-size:11px;color:var(--muted)">
+                <b style="color:var(--text);font-size:16px">${g.n}</b> venda(s) ·
+                <b style="color:${g.c};font-size:14px">${fmtBRL(g.fat)}</b> ·
+                ticket <b style="color:var(--text)">${fmtBRL(ticket)}</b> ·
+                <b style="color:${g.c}">${pct}%</b> do faturamento
+              </div>
+            </div>
+            <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
+              <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${g.c},${g.c}cc);border-radius:6px"></div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Detalhe das vendas</div>
+      <table style="width:100%;font-size:11px">
+        <thead><tr>
+          <th>Canal</th><th>Público</th><th>Criativo</th>
+          <th style="text-align:right">Valor</th><th style="text-align:right">Fechado em</th>
+        </tr></thead>
+        <tbody>
+          ${vendas.sort((a,b) => (b.closed_at||0)-(a.closed_at||0)).map(v => {
+            const ch = classify(v.origem);
+            const d = v.closed_at ? new Date(v.closed_at*1000) : null;
+            const dStr = d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '—';
+            const aud = (v.audience || '').substring(0,40) || '—';
+            const cre = ((v.creative || '').split('|')[0].trim()) || '—';
+            return `<tr>
+              <td><span style="display:inline-block;width:8px;height:8px;background:${ch.c};border-radius:50%;margin-right:6px"></span>${ch.l}</td>
+              <td class="nm">${aud}</td>
+              <td>${cre}</td>
+              <td class="num" style="text-align:right">${fmtBRL(v.price||0)}</td>
+              <td class="num" style="text-align:right;color:var(--muted)">${dStr}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 /* ── Render motivos de perda ─────────────────────────── */
@@ -1140,11 +1266,15 @@ Promise.all([
 
 function renderAnalises() {
   if (!KOMMO_DATA) return;
+  // Filtra por janela de datas (consistente com Funis); ws ainda é usado pelo CPL
+  // semana-a-semana do Meta — mantemos o mapping por compatibilidade.
+  const ref = KOMMO_DATA.fetched_at ? new Date(KOMMO_DATA.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
   const {ws} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
 
-  // Filter leads by selected weeks
-  const sdr    = KOMMO_DATA.sdr.filter(l => ws.includes(l.week));
-  const closer = KOMMO_DATA.closer.filter(l => ws.includes(l.week));
+  // Filter leads by date window (created_at)
+  const sdr    = KOMMO_DATA.sdr.filter(l => _inWindow(l.created_at, win));
+  const closer = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
 
   // Leads with Meta audience (UTM attribution)
   const metaLeads = sdr.filter(l => l.audience && l.audience.trim());
@@ -1319,6 +1449,59 @@ function renderAnalises() {
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
     }).join('');
+  }
+
+  // Score off-profile (D/E/F) por dimensão (público) — leads desqualificados
+  function offProfileRows(leads, topN=8) {
+    const OFF = new Set(['D','E','F']);
+    const byDim = groupBy(
+      leads.filter(l => !isInvalidAud(l.audience)),
+      l => l.audience || '—'
+    );
+    const rows = [];
+    byDim.forEach((ls, dim) => {
+      const cnt = ls.filter(l => OFF.has(l.score)).length;
+      const total = ls.length;
+      rows.push({dim, cnt, total, pct: pct(cnt, total)});
+    });
+    // Ordena por VOLUME absoluto de off-profile (quem mais traz desqualificados)
+    rows.sort((a, b) => b.cnt - a.cnt);
+    return rows.slice(0, topN).map((r, i) => {
+      // Inverso: alta % off-profile é RUIM (vermelho)
+      const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
+      const warn = i === 0 ? ' class="row-gold"' : '';
+      const flag = i === 0 ? ' ⚠️' : '';
+      return `<tr${warn}><td class="nm">${r.dim}${flag}</td>
+        <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
+        <td class="num">${r.total}</td>
+        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sem dados</td></tr>';
+  }
+
+  // Score off-profile por criativo
+  function offProfileByCreative(leads, topN=8) {
+    const OFF = new Set(['D','E','F']);
+    const _normCre = c => (c || '').split('|')[0].trim();
+    const byDim = groupBy(
+      leads.filter(l => l.creative && !isInvalidAud(l.creative)),
+      l => _normCre(l.creative)
+    );
+    const rows = [];
+    byDim.forEach((ls, dim) => {
+      const cnt = ls.filter(l => OFF.has(l.score)).length;
+      const total = ls.length;
+      rows.push({dim, cnt, total, pct: pct(cnt, total)});
+    });
+    rows.sort((a, b) => b.cnt - a.cnt);
+    return rows.slice(0, topN).map((r, i) => {
+      const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
+      const warn = i === 0 ? ' class="row-gold"' : '';
+      const flag = i === 0 ? ' ⚠️' : '';
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}</td>
+        <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
+        <td class="num">${r.total}</td>
+        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+    }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sem dados</td></tr>';
   }
 
   // Score by creative table rows
@@ -1662,18 +1845,26 @@ function renderAnalises() {
   </div>
 </div>
 
-<div class="sec">Perguntas 1 & 2 · Score A e B por Público</div>
-<div class="g2">
+<div class="sec">Perguntas 1, 2 & 2b · Score A, B e Fora do Perfil (D/E/F) por Público</div>
+<div class="g3">
   <div class="tcard">
-    <div class="thead"><h3>1. Qual público traz mais leads Score A?</h3></div>
-    <table><thead><tr><th>Público</th><th>Qtd Score A</th><th>Total leads</th><th>% Score A</th></tr></thead>
+    <div class="thead"><h3>1. Público traz mais Score A</h3><span class="bdg g">qualidade</span></div>
+    <table><thead><tr><th>Público</th><th>Score A</th><th>Total</th><th>% A</th></tr></thead>
     <tbody>${scoreRows(metaLeads, 'A')}</tbody></table>
   </div>
   <div class="tcard">
-    <div class="thead"><h3>2. Qual público traz mais leads Score B?</h3></div>
-    <table><thead><tr><th>Público</th><th>Qtd Score B</th><th>Total leads</th><th>% Score B</th></tr></thead>
+    <div class="thead"><h3>2. Público traz mais Score B</h3><span class="bdg b">decente</span></div>
+    <table><thead><tr><th>Público</th><th>Score B</th><th>Total</th><th>% B</th></tr></thead>
     <tbody>${scoreRows(metaLeads, 'B')}</tbody></table>
   </div>
+  <div class="tcard">
+    <div class="thead"><h3>2b. Público traz mais Fora do Perfil</h3><span class="bdg r">D · E · F</span></div>
+    <table><thead><tr><th>Público</th><th>Off-perfil</th><th>Total</th><th>% off</th></tr></thead>
+    <tbody>${offProfileRows(metaLeads)}</tbody></table>
+  </div>
+</div>
+<div class="insight orange" style="margin-top:8px">
+  ⚠️ <b>Pergunta 2b:</b> Público no topo desta tabela é o que mais traz leads desqualificados (Score D/E/F). Avaliar pausar ou ajustar copy para reduzir desperdício de verba.
 </div>
 
 <div class="sec">Perguntas 3 & 4 · CPL Qualificado e Avanço no Funil por Público</div>
@@ -1779,18 +1970,26 @@ function renderAnalises() {
   </div>
 </div>
 
-<div class="sec">Perguntas 12 & 13 · Score A e B por Criativo</div>
-<div class="g2">
+<div class="sec">Perguntas 12, 13 & 13b · Score A, B e Fora do Perfil (D/E/F) por Criativo</div>
+<div class="g3">
   <div class="tcard">
-    <div class="thead"><h3>12. Qual criativo gera mais leads Score A?</h3></div>
-    <table><thead><tr><th>Criativo</th><th>Qtd Score A</th><th>Total leads</th><th>% Score A</th></tr></thead>
+    <div class="thead"><h3>12. Criativo gera mais Score A</h3><span class="bdg g">qualidade</span></div>
+    <table><thead><tr><th>Criativo</th><th>Score A</th><th>Total</th><th>% A</th></tr></thead>
     <tbody>${scoreByCreative(metaLeads, 'A')}</tbody></table>
   </div>
   <div class="tcard">
-    <div class="thead"><h3>13. Qual criativo gera mais leads Score B?</h3></div>
-    <table><thead><tr><th>Criativo</th><th>Qtd Score B</th><th>Total leads</th><th>% Score B</th></tr></thead>
+    <div class="thead"><h3>13. Criativo gera mais Score B</h3><span class="bdg b">decente</span></div>
+    <table><thead><tr><th>Criativo</th><th>Score B</th><th>Total</th><th>% B</th></tr></thead>
     <tbody>${scoreByCreative(metaLeads, 'B')}</tbody></table>
   </div>
+  <div class="tcard">
+    <div class="thead"><h3>13b. Criativo gera mais Fora do Perfil</h3><span class="bdg r">D · E · F</span></div>
+    <table><thead><tr><th>Criativo</th><th>Off-perfil</th><th>Total</th><th>% off</th></tr></thead>
+    <tbody>${offProfileByCreative(metaLeads)}</tbody></table>
+  </div>
+</div>
+<div class="insight orange" style="margin-top:8px">
+  ⚠️ <b>Pergunta 13b:</b> Criativo no topo é o que mais traz Score D/E/F. Considere pausar, refazer copy ou refinar segmentação antes de continuar veiculando.
 </div>
 
 <div class="sec">Pergunta 14 · CPL Qualificado por Criativo</div>
@@ -1879,8 +2078,10 @@ function renderDiagnostico() {
   if (!KOMMO_DATA) return;
   const META_TX_QUALIF = 50; // %
 
-  const {ws} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
-  const sdr  = KOMMO_DATA.sdr.filter(l => ws.includes(l.week));
+  // Filtro por janela de datas (created_at) — alinhado com Funis Comerciais
+  const ref = KOMMO_DATA.fetched_at ? new Date(KOMMO_DATA.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const sdr = KOMMO_DATA.sdr.filter(l => _inWindow(l.created_at, win));
   const total = sdr.length;
   if (total === 0) {
     document.getElementById('diag-pyr').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Sem leads no período selecionado.</div>';
@@ -1891,8 +2092,10 @@ function renderDiagnostico() {
   const qualif  = sdr.filter(l => l.qualified).length;
   const agend   = sdr.filter(l => l.reuniao_agendada).length;
   const realiz  = sdr.filter(l => l.reuniao_realizada).length;
-  const closer  = KOMMO_DATA.closer.filter(l => ws.includes(l.week));
-  const vendas  = closer.filter(l => l.venda).length;
+  // Closer: vendas filtradas por closed_at, demais por created_at
+  const closerC = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
+  const closerVendas = KOMMO_DATA.closer.filter(l => l.venda && _inWindow(l.closed_at, win));
+  const vendas  = closerVendas.length;
   const txQ     = total > 0 ? qualif/total*100 : 0;
   const txA     = total > 0 ? agend/total*100  : 0;
   const txR     = total > 0 ? realiz/total*100 : 0;
@@ -2785,7 +2988,8 @@ function renderMensuracao(){
 
   // Row & header builders
   const totalCols = ws.length + 3; // label + N weeks + geral + meta
-  const sep=`<tr class="sep-row"><td colspan="${totalCols}" style="height:5px;border:none;background:var(--bg)"></td></tr>`;
+  const sep=`<tr class="sep-row"><td colspan="${totalCols}"></td></tr>`;
+  const grpLbl = txt => `<tr class="group-label"><td colspan="${totalCols}">${txt}</td></tr>`;
 
   const trow=(label,vals,goalTxt,isBold)=>{
     const cells=vals.map((v,i)=>`<td class="num${i===vals.length-1?' geral-val':''}">${v}</td>`).join('');
@@ -2816,15 +3020,16 @@ function renderMensuracao(){
   // ── META ADS ─────────────────────────────────────────────────────────────
   const d1=D.meta;
   const metaRows=[
-    trow('Valor Investido',    [...ws.map(w=>fc(d1[w].invest)),    fc(mg.invest)]),
+    grpLbl('Volumes & Investimento'),
+    trow('Valor Investido',    [...ws.map(w=>fc(d1[w].invest)),    fc(mg.invest)],  null, true),
     trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d1[w].leads)),    fn(mg.leads)],  null, true),
     trow('Qualificados',       [...ws.map(w=>fn(d1[w].qualif)),   fn(mg.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d1[w].agend)),    fn(mg.agend)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d1[w].realiz)),  fn(mg.realiz)]),
-    sep,
+    grpLbl('Custos por Resultado'),
     trow('CPL',                [...ws.map(w=>fcpu(d1[w].invest,d1[w].leads)),  fcpu(mg.invest,mg.leads)]),
-    trow('CPO',                [...ws.map(w=>fcpu(d1[w].invest,d1[w].agend)),  fcpu(mg.invest,mg.agend)]),
-    sep,
+    trow('CPO (custo p/ agend.)',[...ws.map(w=>fcpu(d1[w].invest,d1[w].agend)),fcpu(mg.invest,mg.agend)]),
+    grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...ws.map(w=>fp(d1[w].qualif,d1[w].leads,G.txQ)),   fp(mg.qualif,mg.leads,G.txQ)],   G.txQ+'%'),
     trow('Qualif → Agendado',  [...ws.map(w=>fp(d1[w].agend,d1[w].qualif,G.qToA)),  fp(mg.agend,mg.qualif,G.qToA)],  G.qToA+'%'),
     trow('Tx. Agendamento',    [...ws.map(w=>fp(d1[w].agend,d1[w].leads,G.txA)),    fp(mg.agend,mg.leads,G.txA)],    G.txA+'%'),
@@ -2834,15 +3039,16 @@ function renderMensuracao(){
   // ── GOOGLE ADS ───────────────────────────────────────────────────────────
   const d2=D.google;
   const googleRows=[
-    trow('Valor Investido',    [...ws.map(w=>fc(d2[w].invest)),    fc(gg.invest)]),
+    grpLbl('Volumes & Investimento'),
+    trow('Valor Investido',    [...ws.map(w=>fc(d2[w].invest)),    fc(gg.invest)],  null, true),
     trow('Leads (Kommo CRM)', [...ws.map(w=>fn(d2[w].leads)),    fn(gg.leads)],  null, true),
     trow('Qualificados',       [...ws.map(w=>fn(d2[w].qualif)),   fn(gg.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d2[w].agend)),    fn(gg.agend)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d2[w].realiz)),  fn(gg.realiz)]),
-    sep,
+    grpLbl('Custos por Resultado'),
     trow('CPL',                [...ws.map(w=>fcpu(d2[w].invest,d2[w].leads)),  fcpu(gg.invest,gg.leads)]),
-    trow('CPO',                [...ws.map(w=>fcpu(d2[w].invest,d2[w].agend)),  fcpu(gg.invest,gg.agend)]),
-    sep,
+    trow('CPO (custo p/ agend.)',[...ws.map(w=>fcpu(d2[w].invest,d2[w].agend)),fcpu(gg.invest,gg.agend)]),
+    grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...ws.map(w=>fp(d2[w].qualif,d2[w].leads,G.txQ)),   fp(gg.qualif,gg.leads,G.txQ)],   G.txQ+'%'),
     trow('Qualif → Agendado',  [...ws.map(w=>fp(d2[w].agend,d2[w].qualif,G.qToA)),  fp(gg.agend,gg.qualif,G.qToA)],  G.qToA+'%'),
     trow('Tx. Agendamento',    [...ws.map(w=>fp(d2[w].agend,d2[w].leads,G.txA)),    fp(gg.agend,gg.leads,G.txA)],    G.txA+'%'),
@@ -2852,10 +3058,11 @@ function renderMensuracao(){
   // ── DUQUE ─────────────────────────────────────────────────────────────────
   const d3=D.duque;
   const duqueRows=[
-    trow('Leads Abordados',     [...ws.map(w=>fn(d3[w].leads)),   fn(dg.leads)]),
+    grpLbl('Volumes'),
+    trow('Leads Abordados',     [...ws.map(w=>fn(d3[w].leads)),   fn(dg.leads)],  null, true),
     trow('Disparos (Contato)',  [...ws.map(w=>fn(d3[w].disparo)), fn(dg.disparo)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d3[w].realiz)),  fn(dg.realiz)]),
-    sep,
+    grpLbl('Taxas'),
     trow('Tx. Abordagem',      [...ws.map(w=>fp(d3[w].disparo,d3[w].leads)),fp(dg.disparo,dg.leads)]),
     trow('Tx. Reunião',        [...ws.map(w=>fp(d3[w].realiz,d3[w].leads)), fp(dg.realiz,dg.leads)]),
   ].join('');
@@ -2863,7 +3070,8 @@ function renderMensuracao(){
   // ── ORGÂNICO ──────────────────────────────────────────────────────────────
   const d4=D.org;
   const orgRows=[
-    trow('Leads',              [...ws.map(w=>fn(d4[w].leads)),  fn(og.leads)]),
+    grpLbl('Volumes'),
+    trow('Leads',              [...ws.map(w=>fn(d4[w].leads)),  fn(og.leads)],  null, true),
     trow('Qualificados',       [...ws.map(w=>fn(d4[w].qualif)), fn(og.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d4[w].agend)),  fn(og.agend)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d4[w].realiz)), fn(og.realiz)]),
@@ -2872,45 +3080,47 @@ function renderMensuracao(){
   // ── CLOSER ────────────────────────────────────────────────────────────────
   const d5=D.closer;
   const closerRows=[
+    grpLbl('Volumes & Receita'),
     trow('Leads (Reuniões)',   [...ws.map(w=>fn(d5[w].leads)),  fn(cg.leads)]),
     trow('Propostas',          [...ws.map(w=>fn(d5[w].prop)),   fn(cg.prop)]),
     trow('Vendas',             [...ws.map(w=>fn(d5[w].vendas)), fn(cg.vendas)], null, true),
     trow('Faturamento',        [...ws.map(w=>fc(d5[w].fat)),    fc(cg.fat)],    null, true),
-    sep,
+    grpLbl('Conversão'),
     trow('Propostas → Vendas', [...ws.map(w=>fp(d5[w].vendas,d5[w].prop,G.pToV)),fp(cg.vendas,cg.prop,G.pToV)],G.pToV+'%'),
   ].join('');
 
   // ── TOTAL INBOUND ─────────────────────────────────────────────────────────
   const totalRows=[
-    trow('💰 Invest Total',         [...tot.map(t=>fc(t.invest)),  fc(tg.invest)],  null, true),
-    trow('📥 Leads SDR',            [...tot.map(t=>fn(t.leads)),   fn(tg.leads)],   null, true),
-    trow('✅ Qualificados',          [...tot.map(t=>fn(t.qualif)),  fn(tg.qualif)]),
-    trow('📅 Reunião Agendada',      [...tot.map(t=>fn(t.agend)),   fn(tg.agend)]),
-    trow('🤝 Reunião Concretizada',  [...tot.map(t=>fn(t.realiz)),  fn(tg.realiz)]),
-    trow('📋 Propostas (Closer)',    [...tot.map(t=>fn(t.prop)),    fn(tg.prop)]),
-    trow('🏆 Vendas',               [...tot.map(t=>fn(t.vendas)),  fn(tg.vendas)],  null, true),
-    trow('💵 Faturamento',          [...tot.map(t=>fc(t.fat)),     fc(tg.fat)],     null, true),
-    sep,
+    grpLbl('Investimento & Volumes'),
+    trow('Invest Total',           [...tot.map(t=>fc(t.invest)),  fc(tg.invest)],  null, true),
+    trow('Leads SDR',              [...tot.map(t=>fn(t.leads)),   fn(tg.leads)],   null, true),
+    trow('Qualificados',           [...tot.map(t=>fn(t.qualif)),  fn(tg.qualif)]),
+    trow('Reunião Agendada',       [...tot.map(t=>fn(t.agend)),   fn(tg.agend)]),
+    trow('Reunião Concretizada',   [...tot.map(t=>fn(t.realiz)),  fn(tg.realiz)]),
+    trow('Propostas (Closer)',     [...tot.map(t=>fn(t.prop)),    fn(tg.prop)]),
+    trow('Vendas',                 [...tot.map(t=>fn(t.vendas)),  fn(tg.vendas)],  null, true),
+    trow('Faturamento',            [...tot.map(t=>fc(t.fat)),     fc(tg.fat)],     null, true),
+    grpLbl('Custos por Resultado'),
     trow('CPL',  [...tot.map(t=>fcpu(t.invest,t.leads)),  fcpu(tg.invest,tg.leads)]),
-    trow('CPO',  [...tot.map(t=>fcpu(t.invest,t.agend)),  fcpu(tg.invest,tg.agend)]),
-    trow('CAC',  [...tot.map(t=>fcpu(t.invest,t.vendas)), fcpu(tg.invest,tg.vendas)]),
-    sep,
+    trow('CPO (custo p/ agend.)',  [...tot.map(t=>fcpu(t.invest,t.agend)),  fcpu(tg.invest,tg.agend)]),
+    trow('CAC (custo p/ venda)',   [...tot.map(t=>fcpu(t.invest,t.vendas)), fcpu(tg.invest,tg.vendas)]),
+    grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...tot.map(t=>fp(t.qualif,t.leads,G.txQ)),    fp(tg.qualif,tg.leads,G.txQ)],    G.txQ+'%'),
     trow('Qualif → Agendado',  [...tot.map(t=>fp(t.agend,t.qualif,G.qToA)),   fp(tg.agend,tg.qualif,G.qToA)],   G.qToA+'%'),
     trow('Tx. Agendamento',    [...tot.map(t=>fp(t.agend,t.leads,G.txA)),     fp(tg.agend,tg.leads,G.txA)],     G.txA+'%'),
     trow('Tx. Comparecimento', [...tot.map(t=>fp(t.realiz,t.agend,G.txComp)), fp(tg.realiz,tg.agend,G.txComp)], G.txComp+'%'),
     trow('Propostas → Vendas', [...tot.map(t=>fp(t.vendas,t.prop,G.pToV)),    fp(tg.vendas,tg.prop,G.pToV)],    G.pToV+'%'),
-    trow('Tx. Conversão',      [...tot.map(t=>fp(t.vendas,t.leads,G.txConv)), fp(tg.vendas,tg.leads,G.txConv)], G.txConv+'%'),
+    trow('Tx. Conversão Geral',[...tot.map(t=>fp(t.vendas,t.leads,G.txConv)), fp(tg.vendas,tg.leads,G.txConv)], G.txConv+'%'),
   ].join('');
 
   // Cada canal em seu próprio card
   document.getElementById('mens-table-wrap').innerHTML = [
-    channelCard('🎯','META ADS · act_2352574621900370', metaRows),
-    channelCard('📱','GOOGLE ADS',                       googleRows),
-    channelCard('📣','DUQUE (Outbound)',                 duqueRows),
-    channelCard('🌱','ORGÂNICO',                         orgRows),
-    channelCard('🏆','CLOSER · Pipeline de Vendas',      closerRows),
-    channelCard('🌐','TOTAL INBOUND · Meta + Google + Orgânico', totalRows),
+    channelCard('','META ADS · act_2352574621900370', metaRows),
+    channelCard('','GOOGLE ADS',                       googleRows),
+    channelCard('','DUQUE (Outbound)',                 duqueRows),
+    channelCard('','ORGÂNICO',                         orgRows),
+    channelCard('','CLOSER · Pipeline de Vendas',      closerRows),
+    channelCard('','TOTAL INBOUND · Meta + Google + Orgânico', totalRows),
   ].join('');
 
   // ── Charts ────────────────────────────────────────────────────────────────
