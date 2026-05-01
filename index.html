@@ -12,7 +12,8 @@
       /* ── Trilha Brand Colors · Light ── */
       --bg:#f4f5f2;--surface:#ffffff;--surface2:#eceeed;--border:#d8dbd5;
       --accent:#ee4d20;--accent2:#d97706;--green:#16a34a;--blue:#2563eb;
-      --purple:#7c3aed;--text:#343a32;--muted:#6b7069;--danger:#dc2626;--r:12px;
+      --purple:#7c3aed;--text:#343a32;--muted:#6b7069;--danger:#dc2626;
+      --r:12px;--r-lg:18px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif}
@@ -382,6 +383,84 @@
     }
     .update-bar b{color:var(--text);font-weight:700}
 
+    /* ════════════════════════════════════════════
+       Modern Dashboard · Estilo InvestIQ / Finexy
+    ════════════════════════════════════════════ */
+    /* Hero · Welcome card */
+    .hero-modern{
+      background:linear-gradient(135deg,#fff 0%,#fefcfb 60%,#fff5f0 100%);
+      border:1px solid var(--border);border-radius:var(--r-lg);
+      padding:28px 32px;margin-bottom:22px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04),0 8px 30px rgba(238,77,32,.05);
+      display:grid;grid-template-columns:1.5fr 1fr;gap:32px;align-items:center;
+    }
+    @media(max-width:900px){.hero-modern{grid-template-columns:1fr;gap:18px}}
+    .hero-modern .hl-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--accent);margin-bottom:10px;
+      display:flex;align-items:center;gap:8px}
+    .hero-modern .hl-eyebrow::before{content:'';width:8px;height:8px;
+      background:var(--accent);border-radius:50%}
+    .hero-modern h2{font-size:30px;font-weight:800;letter-spacing:-.02em;
+      line-height:1.15;margin-bottom:10px;color:var(--text)}
+    .hero-modern .hl-sub{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:540px}
+    .hero-modern .hl-pills{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+
+    /* Highlight KPI card · Dark/orange foco principal */
+    .kpi-highlight{
+      background:linear-gradient(135deg,#1a1a1a 0%,#2a1810 60%,#3a1c0c 100%);
+      color:#fff;border-radius:var(--r-lg);padding:22px 26px;
+      box-shadow:0 4px 18px rgba(238,77,32,.18),0 12px 40px rgba(0,0,0,.18);
+      position:relative;overflow:hidden;
+    }
+    .kpi-highlight::after{content:'';position:absolute;top:-30px;right:-30px;
+      width:120px;height:120px;background:radial-gradient(circle,rgba(238,77,32,.35),transparent 70%);
+      pointer-events:none}
+    .kpi-highlight .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:10px}
+    .kpi-highlight .val{font-size:46px;font-weight:900;line-height:1;
+      letter-spacing:-.02em;color:#fff;margin:8px 0}
+    .kpi-highlight .meta-line{font-size:12px;color:rgba(255,255,255,.7);margin-top:8px}
+    .kpi-highlight .meta-line b{color:var(--accent)}
+    .kpi-highlight .gauge-wrap{margin-top:14px;height:6px;background:rgba(255,255,255,.1);
+      border-radius:3px;overflow:hidden}
+    .kpi-highlight .gauge-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#ee4d20);
+      border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+    /* KPI Tile · Modern */
+    .kpi-tile{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-lg);padding:18px 22px;
+      box-shadow:0 1px 2px rgba(0,0,0,.03),0 6px 20px rgba(0,0,0,.04);
+      transition:transform .18s,box-shadow .2s;display:flex;flex-direction:column;gap:8px;
+    }
+    .kpi-tile:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.07),0 14px 36px rgba(0,0,0,.06)}
+    .kpi-tile .tile-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .kpi-tile .tile-lbl{font-size:11px;font-weight:700;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted);line-height:1.3}
+    .kpi-tile .tile-icon{width:32px;height:32px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .kpi-tile .tile-val{font-size:32px;font-weight:900;line-height:1.05;
+      letter-spacing:-.02em;color:var(--text)}
+    .kpi-tile .tile-sub{font-size:11.5px;color:var(--muted);line-height:1.4;
+      display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .kpi-tile .tile-trend{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .kpi-tile .tile-trend.up{background:rgba(34,197,94,.12);color:var(--green)}
+    .kpi-tile .tile-trend.down{background:rgba(239,68,68,.12);color:var(--danger)}
+    .kpi-tile .tile-trend.neut{background:rgba(107,112,105,.12);color:var(--muted)}
+    .kpi-tile canvas.spark{width:100%!important;height:36px!important;margin-top:4px}
+
+    .kpi-grid-modern{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+    }
+    @media(max-width:1100px){.kpi-grid-modern{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.kpi-grid-modern{grid-template-columns:1fr}}
+
+    /* Section header modern */
+    .sec-modern{font-size:13px;font-weight:800;letter-spacing:-.005em;
+      color:var(--text);margin:30px 0 14px;display:flex;align-items:center;gap:10px}
+    .sec-modern .badge-num{font-size:10px;font-weight:700;background:var(--surface2);
+      padding:3px 9px;border-radius:20px;color:var(--muted);letter-spacing:.04em}
+
     /* ── Scroll-to-top button ── */
     #scrollTop{
       position:fixed;bottom:24px;right:24px;width:40px;height:40px;
@@ -436,29 +515,31 @@
 <div id="tab-diagnostico" class="tab-pane active">
 <div class="main">
 
-  <div class="period-bar">
-    <span class="plbl">Período:</span>
-    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
-    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
-  </div>
-  <div class="update-bar">🕐 Última atualização: <b id="diag-fetched">—</b> · Pergunta-chave: <b>Como aumentar a qualificação?</b></div>
-
-  <!-- Hero · pergunta macro + KPI principal -->
-  <div class="card" style="margin-bottom:20px;border-top:3px solid var(--accent);background:linear-gradient(135deg,rgba(238,77,32,.04),transparent)">
-    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center" class="g2">
-      <div>
-        <div style="font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:6px">🎯 Pergunta-Chave</div>
-        <h2 style="font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.25;margin-bottom:10px">Como aumentar a qualificação dos leads?</h2>
-        <div style="font-size:13px;color:var(--muted);line-height:1.6">
-          Analisamos onde os leads estão sendo perdidos no funil de qualificação,
-          o perfil dos que qualificam e as alavancas com maior impacto na taxa.
-        </div>
+  <!-- Hero moderno com pergunta macro + filtros de período -->
+  <div class="hero-modern">
+    <div>
+      <div class="hl-eyebrow">Pergunta-chave</div>
+      <h2>Como aumentar a qualificação dos leads?</h2>
+      <div class="hl-sub">
+        Diagnóstico do funil: onde os leads são perdidos, perfil dos que qualificam
+        e alavancas com maior impacto na taxa de qualificação.
       </div>
-      <div id="diag-hero-kpi" style="text-align:center"></div>
+      <div class="hl-pills">
+        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px">
+        Última atualização: <b id="diag-fetched" style="color:var(--text)">—</b>
+      </div>
     </div>
+    <div id="diag-hero-kpi"></div>
+  </div>
+
+  <!-- KPI Grid moderna com sparklines semanais -->
+  <div class="kpi-grid-modern" id="diag-kpi-grid">
+    <!-- preenchido por JS · 4 tiles + 1 destaque -->
   </div>
 
   <!-- 1. Funil de Qualificação Hero -->
@@ -2213,16 +2294,111 @@ function renderDiagnostico() {
     .sort((a,b) => b.txQ - a.txQ)
     .slice(0,3);
 
-  // ── Render: Hero KPI ───────────────────────────────────
+  // ── Render: Hero KPI · card destaque dark/laranja ──────
   const fmtP = v => v.toFixed(1)+'%';
   const gap = META_TX_QUALIF - txQ;
-  const heroColor = txQ >= META_TX_QUALIF ? '#22c55e' : txQ >= META_TX_QUALIF*0.6 ? '#f5a623' : '#ef4444';
-  const heroIcon  = txQ >= META_TX_QUALIF ? '✅' : txQ >= META_TX_QUALIF*0.6 ? '⚠️' : '❌';
+  const gaugePct = Math.min(txQ/META_TX_QUALIF*100, 100);
   document.getElementById('diag-hero-kpi').innerHTML = `
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px">Tx. Qualificação Atual</div>
-    <div style="font-size:64px;font-weight:900;color:${heroColor};line-height:1;margin:6px 0">${heroIcon} ${fmtP(txQ)}</div>
-    <div style="font-size:13px;color:var(--muted)">Meta: <b style="color:var(--text)">${META_TX_QUALIF}%</b> · ${qualif} de ${total} leads · <b style="color:${heroColor}">${gap > 0 ? 'gap de '+gap.toFixed(1)+'pp' : 'meta atingida'}</b></div>
+    <div class="kpi-highlight">
+      <div class="lbl">Tx. Qualificação · agora</div>
+      <div class="val">${fmtP(txQ)}</div>
+      <div class="meta-line">${qualif} de ${total} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
+      <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
+    </div>
   `;
+
+  // ── Render: KPI Grid moderno com sparklines ────────────
+  // Calcula evolução semanal (W1..W4) usando MENS_DATA já agregado
+  const wkArr = ['w1','w2','w3','w4'];
+  const D = (typeof MENS_DATA === 'object' && MENS_DATA) ? MENS_DATA : null;
+  const wkTot = D ? wkArr.map(w => ({
+    leads: (D.meta[w]?.leads||0) + (D.google[w]?.leads||0) + (D.org[w]?.leads||0),
+    qualif: (D.meta[w]?.qualif||0) + (D.google[w]?.qualif||0) + (D.org[w]?.qualif||0),
+    invest: (D.meta[w]?.invest||0) + (D.google[w]?.invest||0),
+    realiz: (D.meta[w]?.realiz||0) + (D.google[w]?.realiz||0) + (D.org[w]?.realiz||0),
+    vendas: D.closer[w]?.vendas||0,
+    fat: D.closer[w]?.fat||0,
+  })) : [];
+
+  // Deltas (W1 → W4)
+  const deltaTrend = (a, b) => {
+    if (!a && !b) return {pct:0, cls:'neut', txt:'—'};
+    if (!a) return {pct:100, cls:'up', txt:'novo'};
+    const d = (b - a) / a * 100;
+    return {pct:d, cls:d>1?'up':d<-1?'down':'neut', txt:(d>0?'+':'')+d.toFixed(0)+'%'};
+  };
+
+  const totalInvest = wkTot.reduce((s,w)=>s+w.invest,0);
+  const totalRealiz = wkTot.reduce((s,w)=>s+w.realiz,0);
+  const totalVendas = wkTot.reduce((s,w)=>s+w.vendas,0);
+  const totalFat    = wkTot.reduce((s,w)=>s+w.fat,0);
+
+  const tdLeads  = deltaTrend(wkTot[0]?.leads, wkTot[wkTot.length-1]?.leads);
+  const tdQualif = deltaTrend(wkTot[0]?.qualif, wkTot[wkTot.length-1]?.qualif);
+  const tdRealiz = deltaTrend(wkTot[0]?.realiz, wkTot[wkTot.length-1]?.realiz);
+  const tdInv    = deltaTrend(wkTot[0]?.invest, wkTot[wkTot.length-1]?.invest);
+
+  const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fmtN   = v => (v||0).toLocaleString('pt-BR');
+
+  const tiles = [
+    {lbl:'Leads totais',     val:fmtN(total),         icon:'L', iconBg:'rgba(59,130,246,.12)', iconColor:'#3b82f6',
+     trend:tdLeads, sub:'no período · semanal abaixo', sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
+    {lbl:'Investimento',     val:fmtBRL(totalInvest), icon:'$', iconBg:'rgba(245,166,35,.12)', iconColor:'#d97706',
+     trend:tdInv, sub:'Meta + Google · ' + (total > 0 ? 'CPL R$ '+(totalInvest/total).toFixed(0) : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
+    {lbl:'Reuniões realizadas', val:fmtN(realiz),     icon:'R', iconBg:'rgba(124,58,237,.12)', iconColor:'#7c3aed',
+     trend:tdRealiz, sub:fmtP(txR)+' do total de leads', sparkData:wkTot.map(w=>w.realiz), sparkColor:'#7c3aed'},
+    {lbl:'Vendas Closer',    val:fmtN(vendas),        icon:'V', iconBg:'rgba(34,197,94,.12)', iconColor:'#16a34a',
+     trend:{pct:0,cls:'neut',txt:fmtBRL(closerVendas.reduce((s,v)=>s+(v.price||0),0))},
+     sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
+  ];
+
+  document.getElementById('diag-kpi-grid').innerHTML = tiles.map((t, i) => `
+    <div class="kpi-tile">
+      <div class="tile-top">
+        <div>
+          <div class="tile-lbl">${t.lbl}</div>
+          <div class="tile-val">${t.val}</div>
+        </div>
+        <div class="tile-icon" style="background:${t.iconBg};color:${t.iconColor}">${t.icon}</div>
+      </div>
+      <div class="tile-sub">
+        <span class="tile-trend ${t.trend.cls}">${t.trend.txt}</span>
+        <span>${t.sub}</span>
+      </div>
+      <canvas class="spark" id="spark-${i}"></canvas>
+    </div>
+  `).join('');
+
+  // Render sparklines (simple line chart sem labels)
+  setTimeout(() => {
+    tiles.forEach((t, i) => {
+      const c = document.getElementById('spark-'+i);
+      if (!c || typeof Chart === 'undefined') return;
+      if (window._diagSparks && window._diagSparks[i]) window._diagSparks[i].destroy();
+      window._diagSparks = window._diagSparks || [];
+      window._diagSparks[i] = new Chart(c, {
+        type:'line',
+        data:{
+          labels:['W1','W2','W3','W4'],
+          datasets:[{
+            data:t.sparkData,
+            borderColor:t.sparkColor,
+            backgroundColor:t.sparkColor+'18',
+            fill:true,tension:0.4,borderWidth:2,
+            pointRadius:0,pointHoverRadius:3,
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{enabled:true,
+            callbacks:{label:ctx=>String(ctx.parsed.y.toLocaleString('pt-BR'))}}},
+          scales:{x:{display:false},y:{display:false,beginAtZero:true}},
+          elements:{line:{borderCapStyle:'round'}}
+        }
+      });
+    });
+  }, 100);
 
   // ── Render: Funil hero ─────────────────────────────────
   const formCompletes = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
