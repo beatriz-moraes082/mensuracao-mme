@@ -374,10 +374,11 @@
 
 <!-- ================================================================ TAB NAV -->
 <nav class="tabnav">
-  <button class="active" onclick="switchTab('analises',this)">15 Análises Meta Ads</button>
-  <button onclick="switchTab('funis',this)">Funis SDR + Closer</button>
-  <button onclick="switchTab('outbound',this)">Duque &amp; BDR</button>
-  <button onclick="switchTab('mensuracao',this)">Mensuração</button>
+  <button class="active" onclick="switchTab('diagnostico',this)">🎯 Diagnóstico</button>
+  <button onclick="switchTab('analises',this)">👤 Perfil do Qualificado</button>
+  <button onclick="switchTab('funis',this)">🔁 Funis Comerciais</button>
+  <button onclick="switchTab('outbound',this)">📣 Outbound (Duque/BDR)</button>
+  <button onclick="switchTab('mensuracao',this)">📈 Evolução Semanal</button>
 </nav>
 
 <!-- ================================================================ MONTH BAR -->
@@ -386,9 +387,89 @@
 </div>
 
 <!-- ================================================================
-     TAB 1 — 15 ANÁLISES
+     TAB 0 — 🎯 DIAGNÓSTICO DE QUALIFICAÇÃO
 ================================================================ -->
-<div id="tab-analises" class="tab-pane active">
+<div id="tab-diagnostico" class="tab-pane active">
+<div class="main">
+
+  <div class="period-bar">
+    <span class="plbl">Período:</span>
+    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
+    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+  </div>
+  <div class="update-bar">🕐 Última atualização: <b id="diag-fetched">—</b> · Pergunta-chave: <b>Como aumentar a qualificação?</b></div>
+
+  <!-- Hero · pergunta macro + KPI principal -->
+  <div class="card" style="margin-bottom:20px;border-top:3px solid var(--accent);background:linear-gradient(135deg,rgba(238,77,32,.04),transparent)">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:center" class="g2">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:6px">🎯 Pergunta-Chave</div>
+        <h2 style="font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.25;margin-bottom:10px">Como aumentar a qualificação dos leads?</h2>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">
+          Analisamos onde os leads estão sendo perdidos no funil de qualificação,
+          o perfil dos que qualificam e as alavancas com maior impacto na taxa.
+        </div>
+      </div>
+      <div id="diag-hero-kpi" style="text-align:center"></div>
+    </div>
+  </div>
+
+  <!-- 1. Funil de Qualificação Hero -->
+  <div class="sec">📊 Funil de Qualificação · Onde estamos perdendo leads?</div>
+  <div class="card">
+    <h3>Da entrada do lead até a reunião realizada</h3>
+    <div class="sub" id="diag-funnel-sub">—</div>
+    <div class="pyramid-wrap" id="diag-pyr" style="max-width:880px;margin:0 auto"></div>
+    <div class="insight orange" id="diag-funnel-insight" style="margin-top:14px"></div>
+  </div>
+
+  <!-- 2. Top 3 alavancas para aumentar qualificação -->
+  <div class="sec">🚀 Top Alavancas · O que mais aumenta a qualificação?</div>
+  <div class="g3" id="diag-alavancas">
+    <!-- preenchido por JS -->
+  </div>
+
+  <!-- 3. Bot de qualificação · gargalo crítico -->
+  <div class="sec">🤖 Performance do Bot · Principal gargalo de qualificação</div>
+  <div class="card">
+    <h3>Quem completa o bot qualifica mais?</h3>
+    <div class="sub" id="diag-bot-sub">Comparativo: leads com bot-concluído vs bot-incompleto</div>
+    <div id="diag-bot-content"></div>
+  </div>
+
+  <!-- 4. Comparativo Meta vs Google · qual canal qualifica mais? -->
+  <div class="sec">🎯 Comparativo de Canais · Qual canal qualifica mais?</div>
+  <div class="card">
+    <h3>Meta Ads vs Google Ads vs Orgânico</h3>
+    <div class="sub">Tx. de qualificação por canal · ranking</div>
+    <div id="diag-canal-content"></div>
+  </div>
+
+  <!-- 5. Sinais preditivos de qualificação -->
+  <div class="sec">🔍 Sinais Preditivos · O que diferencia um lead qualificado?</div>
+  <div class="card">
+    <h3>Campos do formulário com maior poder preditivo</h3>
+    <div class="sub">Diferença entre % no grupo qualificado vs não-qualificado</div>
+    <div id="diag-sinais-content"></div>
+  </div>
+
+  <!-- 6. Recomendações finais -->
+  <div class="sec">✅ Plano de Ação · Como aumentar a qualificação</div>
+  <div class="card" id="diag-plano">
+    <!-- preenchido por JS -->
+  </div>
+
+</div>
+</div><!-- /tab-diagnostico -->
+
+
+<!-- ================================================================
+     TAB 1 — 15 ANÁLISES (PERFIL DO QUALIFICADO)
+================================================================ -->
+<div id="tab-analises" class="tab-pane">
 <div class="main">
 
   <div class="period-bar">
@@ -585,6 +666,7 @@ function switchTab(id, btn) {
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
+  if (id === 'diagnostico') renderDiagnostico();
   if (id === 'funis') renderFunis();
   if (id === 'outbound') renderOutbound();
 }
@@ -960,6 +1042,7 @@ function setGlobalPeriod(key, btn) {
   renderOutbound();
   renderMensuracao();
   renderAnalises();
+  if (typeof renderDiagnostico === 'function') renderDiagnostico();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
 
@@ -1049,6 +1132,7 @@ Promise.all([
   KOMMO_DATA = kommo;
   META_SPEND = meta;
   renderAnalises();
+  if (typeof renderDiagnostico === 'function') renderDiagnostico();
 }).catch(() => {
   document.getElementById('analises-main').innerHTML =
     '<div style="padding:40px;text-align:center;color:var(--danger)">⚠️ Erro ao carregar dados. Verifique se o servidor está rodando corretamente.</div>';
@@ -1295,9 +1379,9 @@ function renderAnalises() {
 
     const checks = [
       { label: 'Como se hospeda: <b>Resorts All-Inclusive</b>', field: 'hospedagem', match: v => v && v.toLowerCase().includes('resort') },
-      { label: 'Viaja mais: <b>Com família</b>',                field: 'viaja_mais', match: v => v && v.toLowerCase().includes('famíl') },
-      { label: 'Investe/ano: <b>R$ 5.001–R$ 10.000</b>',       field: 'investimento', match: v => v && (v.includes('5.001') || v.includes('7.001')) },
-      { label: 'Interesse All-inclusive: <b>Sim</b>',           field: 'interesse_ai', match: v => v && v.toLowerCase().startsWith('sim') },
+      { label: 'Viaja: <b>Com família ou em casal</b>',         field: 'viaja_mais', match: v => v && (v.toLowerCase().includes('famíl') || v.toLowerCase().includes('casal')) },
+      { label: 'Investe/ano: <b>≥ R$ 5.001</b>',                field: 'investimento', match: v => v && (v.includes('5.001') || v.includes('7.001') || v.includes('10.001')) },
+      { label: 'Interesse: <b>Não disse "Depende da oferta"</b>', field: 'interesse_ai', match: v => v && !v.toLowerCase().includes('depende') },
     ];
 
     return checks.map(c => {
@@ -1329,9 +1413,11 @@ function renderAnalises() {
   const totalForStage = sdr.length;
 
   // Compute conversion rates between adjacent meaningful stages
-  const nQual  = stageCounts[98147491] + stageCounts[98162603] + stageCounts[142];
+  // Usa l.qualified (status + tags) — corrige discrepância onde lead com tag
+  // "reunião-agendada" está em outro status (ex: Follow-up).
+  const nQual  = sdr.filter(l => l.qualified).length;
   const nQStage= stageCounts[98147487];
-  const nReu   = stageCounts[98162603] + stageCounts[142];
+  const nReu   = sdr.filter(l => l.reuniao_realizada).length;
   const nGanha = stageCounts[142];
   const nPerda = stageCounts[143];
   const txQualif  = pct(nQual, nQStage + nQual);
@@ -1782,6 +1868,313 @@ function renderAnalises() {
     renderStackChart('cStackPub', metaLeads, l => l.audience);
     renderStackChart('cStackCri', metaLeads.filter(l => l.creative), l => l.creative);
   }, 50);
+}
+
+/* ══════════════════════════════════════════════════════════════
+ * 🎯 DIAGNÓSTICO DE QUALIFICAÇÃO — pergunta-chave do dashboard
+ *    Reorganiza dados existentes sob uma única pergunta:
+ *    "Como aumentar a qualificação dos leads?"
+ * ══════════════════════════════════════════════════════════════ */
+function renderDiagnostico() {
+  if (!KOMMO_DATA) return;
+  const META_TX_QUALIF = 50; // %
+
+  const {ws} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
+  const sdr  = KOMMO_DATA.sdr.filter(l => ws.includes(l.week));
+  const total = sdr.length;
+  if (total === 0) {
+    document.getElementById('diag-pyr').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Sem leads no período selecionado.</div>';
+    return;
+  }
+
+  // ── Métricas base ───────────────────────────────────────
+  const qualif  = sdr.filter(l => l.qualified).length;
+  const agend   = sdr.filter(l => l.reuniao_agendada).length;
+  const realiz  = sdr.filter(l => l.reuniao_realizada).length;
+  const closer  = KOMMO_DATA.closer.filter(l => ws.includes(l.week));
+  const vendas  = closer.filter(l => l.venda).length;
+  const txQ     = total > 0 ? qualif/total*100 : 0;
+  const txA     = total > 0 ? agend/total*100  : 0;
+  const txR     = total > 0 ? realiz/total*100 : 0;
+
+  // ── Bot ────────────────────────────────────────────────
+  const botC = sdr.filter(l => (l.tags||[]).includes('bot-concluído'));
+  const botI = sdr.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído'));
+  const botCQual = botC.filter(l => l.qualified).length;
+  const botIQual = botI.filter(l => l.qualified).length;
+  const txBotC = botC.length > 0 ? botCQual/botC.length*100 : 0;
+  const txBotI = botI.length > 0 ? botIQual/botI.length*100 : 0;
+
+  // ── Por canal ──────────────────────────────────────────
+  const byCh = {meta:[], google:[], org:[]};
+  sdr.forEach(l => {
+    const o = (l.origem||'').toLowerCase();
+    if (o.includes('meta')) byCh.meta.push(l);
+    else if (o.includes('google')) byCh.google.push(l);
+    else byCh.org.push(l);
+  });
+  const chRows = [
+    {key:'meta',   label:'🎯 Meta Ads',   color:'#3b82f6', list:byCh.meta},
+    {key:'google', label:'📱 Google Ads', color:'#22c55e', list:byCh.google},
+    {key:'org',    label:'🌱 Orgânico',   color:'#f5a623', list:byCh.org},
+  ].map(r => ({...r,
+    n: r.list.length,
+    q: r.list.filter(l => l.qualified).length,
+    a: r.list.filter(l => l.reuniao_agendada).length,
+    txQ: r.list.length > 0 ? r.list.filter(l=>l.qualified).length/r.list.length*100 : 0,
+  })).sort((a,b) => b.txQ - a.txQ);
+
+  // ── Sinais preditivos ──────────────────────────────────
+  const qualGroup = sdr.filter(l => l.qualified);
+  const naoGroup  = sdr.filter(l => !l.qualified);
+  const nQ = qualGroup.length, nN = naoGroup.length;
+  const sinais = [
+    {l:'Hospeda em Resort All-Inclusive', f:'hospedagem',  m:v=>v&&v.toLowerCase().includes('resort')},
+    {l:'Viaja com família ou em casal',   f:'viaja_mais',  m:v=>v&&(v.toLowerCase().includes('famíl')||v.toLowerCase().includes('casal'))},
+    {l:'Investe ≥ R$ 5.001/ano em viagens',f:'investimento',m:v=>v&&(v.includes('5.001')||v.includes('7.001')||v.includes('10.001'))},
+    {l:'NÃO disse "Depende da oferta" (interesse firme)', f:'interesse_ai', m:v=>v && !v.toLowerCase().includes('depende')},
+    {l:'Concluiu o bot de qualificação',  f:'__bot__',     m:l=>(l.tags||[]).includes('bot-concluído')},
+  ].map(s => {
+    const pQ = nQ > 0 ? (s.f === '__bot__'
+      ? qualGroup.filter(s.m).length/nQ*100
+      : qualGroup.filter(l=>s.m(l[s.f])).length/nQ*100) : 0;
+    const pN = nN > 0 ? (s.f === '__bot__'
+      ? naoGroup.filter(s.m).length/nN*100
+      : naoGroup.filter(l=>s.m(l[s.f])).length/nN*100) : 0;
+    return {...s, pQ, pN, diff: pQ - pN};
+  }).sort((a,b) => b.diff - a.diff);
+
+  // ── Top públicos que qualificam ────────────────────────
+  const audMap = {};
+  sdr.filter(l => l.audience && !/\{\{.*?\}\}/.test(l.audience) && l.audience.trim() && l.audience.trim() !== '—').forEach(l => {
+    if (!audMap[l.audience]) audMap[l.audience] = {tot:0, q:0};
+    audMap[l.audience].tot++;
+    if (l.qualified) audMap[l.audience].q++;
+  });
+  const topAud = Object.entries(audMap)
+    .filter(([,d]) => d.tot >= 5)
+    .map(([aud,d]) => ({aud, tot:d.tot, q:d.q, txQ: d.q/d.tot*100}))
+    .sort((a,b) => b.txQ - a.txQ)
+    .slice(0,3);
+
+  // ── Top criativos que qualificam ───────────────────────
+  const _normCre = c => (c||'').split('|')[0].trim();
+  const criMap = {};
+  sdr.filter(l => l.creative && !/\{\{.*?\}\}/.test(l.creative)).forEach(l => {
+    const c = _normCre(l.creative);
+    if (!c) return;
+    if (!criMap[c]) criMap[c] = {tot:0, q:0};
+    criMap[c].tot++;
+    if (l.qualified) criMap[c].q++;
+  });
+  const topCri = Object.entries(criMap)
+    .filter(([,d]) => d.tot >= 5)
+    .map(([c,d]) => ({c, tot:d.tot, q:d.q, txQ: d.q/d.tot*100}))
+    .sort((a,b) => b.txQ - a.txQ)
+    .slice(0,3);
+
+  // ── Render: Hero KPI ───────────────────────────────────
+  const fmtP = v => v.toFixed(1)+'%';
+  const gap = META_TX_QUALIF - txQ;
+  const heroColor = txQ >= META_TX_QUALIF ? '#22c55e' : txQ >= META_TX_QUALIF*0.6 ? '#f5a623' : '#ef4444';
+  const heroIcon  = txQ >= META_TX_QUALIF ? '✅' : txQ >= META_TX_QUALIF*0.6 ? '⚠️' : '❌';
+  document.getElementById('diag-hero-kpi').innerHTML = `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px">Tx. Qualificação Atual</div>
+    <div style="font-size:64px;font-weight:900;color:${heroColor};line-height:1;margin:6px 0">${heroIcon} ${fmtP(txQ)}</div>
+    <div style="font-size:13px;color:var(--muted)">Meta: <b style="color:var(--text)">${META_TX_QUALIF}%</b> · ${qualif} de ${total} leads · <b style="color:${heroColor}">${gap > 0 ? 'gap de '+gap.toFixed(1)+'pp' : 'meta atingida'}</b></div>
+  `;
+
+  // ── Render: Funil hero ─────────────────────────────────
+  const formCompletes = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
+  const periodTxt = ws.length === 1 ? `Semana ${ws[0].toUpperCase()}` : ws.length === 2 ? '14d' : '30d';
+  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR no período (${periodTxt}) · ${qualif} qualificaram (${fmtP(txQ)})`;
+  const steps = [
+    {name:'Lead novo (entrada)',     count:total,         col:'#3b82f6', rate:null,                meta:null},
+    {name:'Concluiu bot',            count:formCompletes, col:'#a855f7', rate:total>0?formCompletes/total*100:0,    meta:null},
+    {name:'Lead qualificado',        count:qualif,        col:'#6366f1', rate:total>0?qualif/total*100:0,           meta:META_TX_QUALIF},
+    {name:'Reunião agendada',        count:agend,         col:'#e85d28', rate:qualif>0?agend/qualif*100:0,          meta:60},
+    {name:'Reunião realizada',       count:realiz,        col:'#22c55e', rate:agend>0?realiz/agend*100:0,           meta:65},
+    {name:'Venda Closer',            count:vendas,        col:'#16a34a', rate:realiz>0?vendas/realiz*100:0,         meta:null},
+  ];
+  renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
+
+  // Identifica gargalo do funil
+  const transitions = [
+    {name:'Lead → Bot Concluído', from:total, to:formCompletes},
+    {name:'Bot → Qualificado',    from:formCompletes, to:qualif},
+    {name:'Qualif → Agendamento', from:qualif, to:agend},
+    {name:'Agend → Realizada',    from:agend,  to:realiz},
+  ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: t.from - t.to}));
+  const gargalo = transitions.filter(t => t.from > 0).sort((a,b) => a.txt - b.txt)[0];
+  document.getElementById('diag-funnel-insight').innerHTML = `
+    ⚡ <b>Maior gargalo:</b> ${gargalo.name} — apenas <b>${fmtP(gargalo.txt)}</b> avançam
+    (~${gargalo.lost} leads perdidos nesta transição). Resolver este ponto tem o maior impacto na qualificação.
+  `;
+
+  // ── Render: Top Alavancas (3 cards) ────────────────────
+  const alavancas = [
+    {
+      titulo: '🤖 Conclusão do Bot',
+      kpi: fmtP(txBotC) + ' vs ' + fmtP(txBotI),
+      sub: `Bot concluído qualifica ${txBotI > 0 ? (txBotC/txBotI).toFixed(1)+'×' : 'mais'} que incompleto`,
+      acao: `Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Reduzir abandono é a alavanca #1.`,
+      color: '#a855f7'
+    },
+    {
+      titulo: topAud.length > 0 ? '🎯 Público de Alta Qualif.' : '🎯 Públicos',
+      kpi: topAud.length > 0 ? fmtP(topAud[0].txQ) : '—',
+      sub: topAud.length > 0 ? topAud[0].aud.substring(0,55) : 'sem dados',
+      acao: topAud.length > 0 ? `Escalar este público pode trazer +${Math.round(topAud[0].txQ - txQ)}pp em tx. qualif.` : 'Sem amostra suficiente.',
+      color: '#3b82f6'
+    },
+    {
+      titulo: chRows[0].label,
+      kpi: fmtP(chRows[0].txQ),
+      sub: `${chRows[0].n} leads · ${chRows[0].q} qualif`,
+      acao: chRows.length > 1 ? `Qualifica ${(chRows[0].txQ/Math.max(chRows[1].txQ,0.01)).toFixed(1)}× mais que ${chRows[1].label.replace(/^\W+/,'')}` : '',
+      color: chRows[0].color
+    }
+  ];
+  document.getElementById('diag-alavancas').innerHTML = alavancas.map(a => `
+    <div class="card" style="border-top:3px solid ${a.color}">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">${a.titulo}</div>
+      <div style="font-size:32px;font-weight:900;color:${a.color};line-height:1.1;margin:6px 0">${a.kpi}</div>
+      <div style="font-size:12px;color:var(--text);margin-bottom:8px">${a.sub}</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">${a.acao}</div>
+    </div>
+  `).join('');
+
+  // ── Render: Bot ────────────────────────────────────────
+  const maxBot = Math.max(botC.length, botI.length, 1);
+  document.getElementById('diag-bot-content').innerHTML = `
+    <div style="padding:14px 0">
+      ${[
+        {n:'✅ Bot concluído',  c:botC.length, q:botCQual, tx:txBotC, color:'#22c55e'},
+        {n:'⚠️ Bot incompleto', c:botI.length, q:botIQual, tx:txBotI, color:'#ef4444'},
+      ].map(b => `
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+            <div style="font-size:13px;font-weight:700">${b.n}</div>
+            <div style="font-size:11px;color:var(--muted)">
+              <b style="color:var(--text);font-size:16px">${b.c}</b> leads ·
+              <b style="color:${b.color};font-size:16px">${b.q}</b> qualif ·
+              <b style="color:${b.color}">${fmtP(b.tx)}</b> tx. qualif
+            </div>
+          </div>
+          <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
+            <div style="width:${(b.c/maxBot*100).toFixed(0)}%;height:100%;background:linear-gradient(90deg,${b.color},${b.color}cc);border-radius:6px"></div>
+          </div>
+        </div>
+      `).join('')}
+      <div class="insight green">
+        💡 <b>Insight:</b> Quem completa o bot qualifica
+        <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'muito mais'}</b>.
+        Hoje, ${fmtP(botC.length/total*100)} concluem (${botC.length} de ${total}).
+        Se 70% concluíssem (vs ${(botC.length/total*100).toFixed(0)}%), a qualificação total subiria de
+        <b>${qualif}</b> para ~<b>${Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100)}</b>
+        leads qualificados (${fmtP((total*0.70*txBotC/100 + total*0.30*txBotI/100)/total*100)} tx. qualif).
+      </div>
+    </div>`;
+
+  // ── Render: Canais ─────────────────────────────────────
+  const maxCh = Math.max(...chRows.map(r => r.n), 1);
+  document.getElementById('diag-canal-content').innerHTML = `
+    <div style="padding:14px 0">
+      ${chRows.map((r,i) => {
+        const w = (r.n/maxCh*100).toFixed(0);
+        const medal = i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
+        return `
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+              <div style="font-size:13px;font-weight:700">${medal}${r.label}</div>
+              <div style="font-size:11px;color:var(--muted)">
+                <b style="color:var(--text);font-size:16px">${r.q}</b> qualif ·
+                <b style="color:${r.color}">${fmtP(r.txQ)}</b> tx. qualif · ${r.n} leads
+              </div>
+            </div>
+            <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
+              <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${r.color},${r.color}cc);border-radius:6px"></div>
+            </div>
+          </div>`;
+      }).join('')}
+      <div class="insight blue">
+        🎯 <b>Insight:</b> ${chRows[0].label} lidera com ${fmtP(chRows[0].txQ)} de qualificação.
+        ${chRows.length > 1 && chRows[chRows.length-1].txQ > 0 ? `Investir em ${chRows[0].label} ao invés de ${chRows[chRows.length-1].label.replace(/^\W+/,'')} pode aumentar qualif em ${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(1)}pp.` : ''}
+      </div>
+    </div>`;
+
+  // ── Render: Sinais preditivos ──────────────────────────
+  document.getElementById('diag-sinais-content').innerHTML = `
+    <table style="margin-top:8px"><thead><tr>
+      <th>Sinal preditivo</th><th>% nos qualificados</th><th>% nos não-qualificados</th><th>Diferença</th>
+    </tr></thead><tbody>
+      ${sinais.map(s => {
+        const cls = s.diff > 15 ? 'tc-g' : s.diff > 5 ? 'tc-o' : 'tc-p';
+        const rowCls = s.diff > 15 ? ' class="row-green"' : s.diff > 5 ? '' : '';
+        const sig = s.diff >= 0 ? '+' : '';
+        return `<tr${rowCls}>
+          <td><b>${s.l}</b></td>
+          <td class="num ${cls}">${fmtP(s.pQ)}</td>
+          <td class="num">${fmtP(s.pN)}</td>
+          <td class="num ${cls}"><b>${sig}${s.diff.toFixed(1)}pp</b></td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>
+    <div class="insight green" style="margin-top:14px">
+      💡 <b>Perfil ideal:</b> ${sinais.filter(s => s.diff > 10).map(s => s.l.replace(/<[^>]*>/g,'')).slice(0,3).join(' · ') || '—'}.
+      Leads com 3+ sinais têm <b>${(txQ * 2).toFixed(0)}%+ de chance</b> de qualificar.
+    </div>
+  `;
+
+  // ── Render: Plano de ação ──────────────────────────────
+  const acoes = [
+    {
+      n: '1', titulo: 'Reduzir abandono no bot de qualificação',
+      detalhe: `Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Investigar onde abandonam — em que pergunta? Encurtar fluxo, melhorar mensagens, retomar quem parou. Esta é a alavanca de maior impacto.`,
+      impacto: `Levar conclusão de ${(botC.length/total*100).toFixed(0)}% para 70% gera +${Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100 - qualif)} qualif/mês.`,
+      color: '#a855f7'
+    },
+    {
+      n: '2', titulo: `Escalar canal com maior taxa de qualificação`,
+      detalhe: `${chRows[0].label} qualifica ${fmtP(chRows[0].txQ)} (vs ${fmtP(chRows[chRows.length-1].txQ)} do canal mais fraco). Realocar verba do pior para o melhor canal.`,
+      impacto: chRows.length > 1 ? `+${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(0)}pp de tx. qualif por R$ realocado.` : '—',
+      color: chRows[0].color
+    },
+    {
+      n: '3', titulo: 'Priorizar públicos/criativos com perfil preditivo',
+      detalhe: topAud.length > 0
+        ? `Top 3 públicos com >5 leads: ${topAud.map(a => a.aud.substring(0,40)+' ('+fmtP(a.txQ)+')').join(' · ')}`
+        : 'Sem amostra suficiente — necessário mais leads por público.',
+      impacto: topAud.length > 0 ? `Concentrar verba em públicos top reduz CPL qualificado e aumenta volume qualif.` : '—',
+      color: '#3b82f6'
+    },
+    {
+      n: '4', titulo: 'Refinar formulário com base nos sinais preditivos',
+      detalhe: `Os campos com Δ > 15pp (qualif vs não-qualif) são os mais preditivos. Ajustar copy do anúncio e qualificação para reforçar perfil: ${sinais.filter(s => s.diff > 10).slice(0,2).map(s => s.l).join(' + ') || '—'}.`,
+      impacto: 'Aumenta densidade de leads do perfil ideal.',
+      color: '#22c55e'
+    },
+  ];
+  document.getElementById('diag-plano').innerHTML = `
+    <h3>Quatro alavancas priorizadas para subir a tx. qualificação</h3>
+    <div class="sub">Ordenadas por impacto estimado · use as métricas das outras abas para detalhar cada ação</div>
+    <div style="display:grid;gap:12px;margin-top:16px">
+      ${acoes.map(a => `
+        <div style="display:grid;grid-template-columns:48px 1fr;gap:14px;padding:14px;background:var(--surface2);border-radius:10px;border-left:4px solid ${a.color}">
+          <div style="font-size:24px;font-weight:900;color:${a.color};text-align:center">${a.n}</div>
+          <div>
+            <div style="font-size:14px;font-weight:800;margin-bottom:4px">${a.titulo}</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">${a.detalhe}</div>
+            <div style="font-size:11px;color:${a.color};font-weight:700">📈 ${a.impacto}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // Atualiza data de fetch no header
+  const f = document.getElementById('diag-fetched');
+  if (f && KOMMO_DATA.fetched_at) f.textContent = _fmtFetchedDate(KOMMO_DATA.fetched_at);
 }
 
 /* Init all renders on load */
@@ -2257,6 +2650,7 @@ async function loadDashboardData() {
     if (typeof renderFunis === 'function')      renderFunis();
     if (typeof renderOutbound === 'function')   renderOutbound();
     if (typeof renderAnalises === 'function')   renderAnalises();
+    if (typeof renderDiagnostico === 'function') renderDiagnostico();
     console.log('[dashboard] dados carregados:', kommoRes.fetched_at);
   } catch (e) {
     console.error('[dashboard] erro ao carregar dados:', e);
