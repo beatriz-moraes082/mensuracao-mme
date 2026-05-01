@@ -233,6 +233,25 @@
     .mens-channel-card .mens-table .geral-val{font-weight:800;color:var(--text)}
     .mens-channel-card .mens-table .meta-val{font-style:normal;color:var(--muted)!important;
       font-size:11px;font-weight:600}
+    /* Sticky primeira coluna em scroll horizontal */
+    .mens-channel-card{overflow-x:auto}
+    .mens-channel-card .mens-table thead th:first-child,
+    .mens-channel-card .mens-table tbody td:first-child{
+      position:sticky;left:0;background:var(--surface);z-index:2;
+      box-shadow:1px 0 0 var(--border)}
+    .mens-channel-card .mens-table thead th:first-child{background:var(--surface2);z-index:3}
+    .mens-channel-card .mens-table tr.fw-row td:first-child{background:rgba(238,77,32,.06)!important}
+    .mens-channel-card .mens-table tr.group-label td:first-child{background:rgba(0,0,0,.025)!important}
+    .mens-channel-card .mens-table tr.sep-row td:first-child{background:var(--bg)!important}
+    /* Coluna Δ% */
+    .mens-channel-card .mens-table .delta-th{background:rgba(245,166,35,.12)!important;color:var(--accent2);font-weight:800}
+    .mens-channel-card .mens-table .delta-cell{background:rgba(245,166,35,.04);font-weight:700;font-size:11px}
+    /* Mini-barra nas taxas */
+    .mini-bar{display:inline-block;height:3px;border-radius:2px;
+      background:linear-gradient(to right,#22c55e var(--bw,0%),rgba(107,112,105,.18) 0);
+      margin-top:3px;width:60px;vertical-align:middle}
+    .mens-channel-card .mens-table td.rate-cell{white-space:nowrap}
+    .mens-channel-card .mens-table td.rate-cell .mb-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
     .tc-muted{color:var(--muted)}
     .fw7{font-weight:700}
     .meta-val{font-style:italic;color:var(--muted)!important}
@@ -1845,8 +1864,8 @@ function renderAnalises() {
   </div>
 </div>
 
-<div class="sec">Perguntas 1, 2 & 2b · Score A, B e Fora do Perfil (D/E/F) por Público</div>
-<div class="g3">
+<div class="sec">Perguntas 1 & 2 · Score A e Score B por Público</div>
+<div class="g2">
   <div class="tcard">
     <div class="thead"><h3>1. Público traz mais Score A</h3><span class="bdg g">qualidade</span></div>
     <table><thead><tr><th>Público</th><th>Score A</th><th>Total</th><th>% A</th></tr></thead>
@@ -1857,14 +1876,23 @@ function renderAnalises() {
     <table><thead><tr><th>Público</th><th>Score B</th><th>Total</th><th>% B</th></tr></thead>
     <tbody>${scoreRows(metaLeads, 'B')}</tbody></table>
   </div>
-  <div class="tcard">
-    <div class="thead"><h3>2b. Público traz mais Fora do Perfil</h3><span class="bdg r">D · E · F</span></div>
-    <table><thead><tr><th>Público</th><th>Off-perfil</th><th>Total</th><th>% off</th></tr></thead>
-    <tbody>${offProfileRows(metaLeads)}</tbody></table>
-  </div>
 </div>
-<div class="insight orange" style="margin-top:8px">
-  ⚠️ <b>Pergunta 2b:</b> Público no topo desta tabela é o que mais traz leads desqualificados (Score D/E/F). Avaliar pausar ou ajustar copy para reduzir desperdício de verba.
+
+<div class="sec">Pergunta 2b · Público traz mais leads Fora do Perfil (D · E · F)</div>
+<div class="tcard">
+  <div class="thead">
+    <h3>Onde a verba está sendo desperdiçada</h3>
+    <span class="bdg r">D · E · F = desqualificados</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Público</th><th>Score D/E/F</th><th>Total leads</th><th>% Off-perfil</th>
+    </tr></thead>
+    <tbody>${offProfileRows(metaLeads)}</tbody>
+  </table>
+  <div class="insight orange" style="margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0">
+    ⚠️ Público no topo desta tabela é o que mais traz leads desqualificados — avaliar pausar ou ajustar copy para reduzir desperdício de verba.
+  </div>
 </div>
 
 <div class="sec">Perguntas 3 & 4 · CPL Qualificado e Avanço no Funil por Público</div>
@@ -1970,8 +1998,8 @@ function renderAnalises() {
   </div>
 </div>
 
-<div class="sec">Perguntas 12, 13 & 13b · Score A, B e Fora do Perfil (D/E/F) por Criativo</div>
-<div class="g3">
+<div class="sec">Perguntas 12 & 13 · Score A e Score B por Criativo</div>
+<div class="g2">
   <div class="tcard">
     <div class="thead"><h3>12. Criativo gera mais Score A</h3><span class="bdg g">qualidade</span></div>
     <table><thead><tr><th>Criativo</th><th>Score A</th><th>Total</th><th>% A</th></tr></thead>
@@ -1982,14 +2010,23 @@ function renderAnalises() {
     <table><thead><tr><th>Criativo</th><th>Score B</th><th>Total</th><th>% B</th></tr></thead>
     <tbody>${scoreByCreative(metaLeads, 'B')}</tbody></table>
   </div>
-  <div class="tcard">
-    <div class="thead"><h3>13b. Criativo gera mais Fora do Perfil</h3><span class="bdg r">D · E · F</span></div>
-    <table><thead><tr><th>Criativo</th><th>Off-perfil</th><th>Total</th><th>% off</th></tr></thead>
-    <tbody>${offProfileByCreative(metaLeads)}</tbody></table>
-  </div>
 </div>
-<div class="insight orange" style="margin-top:8px">
-  ⚠️ <b>Pergunta 13b:</b> Criativo no topo é o que mais traz Score D/E/F. Considere pausar, refazer copy ou refinar segmentação antes de continuar veiculando.
+
+<div class="sec">Pergunta 13b · Criativo gera mais leads Fora do Perfil (D · E · F)</div>
+<div class="tcard">
+  <div class="thead">
+    <h3>Criativos que mais geram leads desqualificados</h3>
+    <span class="bdg r">D · E · F = desqualificados</span>
+  </div>
+  <table>
+    <thead><tr>
+      <th>Criativo</th><th>Score D/E/F</th><th>Total leads</th><th>% Off-perfil</th>
+    </tr></thead>
+    <tbody>${offProfileByCreative(metaLeads)}</tbody>
+  </table>
+  <div class="insight orange" style="margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0">
+    ⚠️ Criativo no topo é o que mais traz Score D/E/F. Considere pausar, refazer copy ou refinar segmentação antes de continuar veiculando.
+  </div>
 </div>
 
 <div class="sec">Pergunta 14 · CPL Qualificado por Criativo</div>
@@ -2931,7 +2968,10 @@ function renderMensuracao(){
     const s=v.toFixed(1)+'%';
     if(goal===undefined||goal===null)return s;
     const cls=v>=goal?'tc-g':v>=goal*0.7?'tc-o':'tc-r';
-    return`<span class="${cls} fw7">${s}</span>`;
+    // Mini-barra: quanto da meta foi atingido (cap 100%)
+    const w = Math.min(v/goal*100, 100).toFixed(0);
+    const barColor = v >= goal ? '#22c55e' : v >= goal*0.7 ? '#f5a623' : '#ef4444';
+    return `<span class="mb-wrap"><span class="${cls} fw7">${s}</span><span class="mini-bar" style="--bw:${w}%;background:linear-gradient(to right,${barColor} ${w}%,rgba(107,112,105,.18) ${w}%)"></span></span>`;
   };
 
   // Geral totals by channel
@@ -2987,28 +3027,70 @@ function renderMensuracao(){
     </div>`).join('');
 
   // Row & header builders
-  const totalCols = ws.length + 3; // label + N weeks + geral + meta
+  // Coluna Δ% só faz sentido com 2+ semanas
+  const showDelta = ws.length >= 2;
+  const totalCols = ws.length + 3 + (showDelta ? 1 : 0); // label + N weeks + Δ? + geral + meta
   const sep=`<tr class="sep-row"><td colspan="${totalCols}"></td></tr>`;
   const grpLbl = txt => `<tr class="group-label"><td colspan="${totalCols}">${txt}</td></tr>`;
 
-  const trow=(label,vals,goalTxt,isBold)=>{
-    const cells=vals.map((v,i)=>`<td class="num${i===vals.length-1?' geral-val':''}">${v}</td>`).join('');
-    const gc=goalTxt?`<td class="num meta-val">${goalTxt}</td>`:`<td></td>`;
-    const boldCls=isBold?' class="fw-row"':'';
-    const lblCls='metric'+(isBold?' bld':'');
-    return`<tr${boldCls}><td class="${lblCls}">${label}</td>${cells}${gc}</tr>`;
+  // Δ% entre primeira e última semana selecionadas
+  const deltaCell = (firstVal, lastVal, isPct) => {
+    if (!showDelta) return '';
+    const a = parseFloat(firstVal) || 0;
+    const b = parseFloat(lastVal)  || 0;
+    if (a === 0 && b === 0) return '<td class="num delta-cell"><span class="tc-muted">—</span></td>';
+    if (a === 0) return `<td class="num delta-cell"><span class="tc-g">+novo</span></td>`;
+    const d = isPct ? (b - a) : ((b - a) / a * 100);
+    const sign = d > 0 ? '+' : '';
+    const cls = d > 1 ? 'tc-g' : d < -1 ? 'tc-r' : 'tc-muted';
+    const suffix = isPct ? 'pp' : '%';
+    return `<td class="num delta-cell"><span class="${cls}">${sign}${d.toFixed(1)}${suffix}</span></td>`;
+  };
+
+  // Extrai número puro de uma célula formatada (R$ 839,39 → 839.39).
+  // Strip HTML antes; pega o primeiro número que cruzar.
+  const num = v => {
+    if (typeof v === 'number') return v;
+    const text = String(v).replace(/<[^>]+>/g,'').replace(/&nbsp;| /g,' ');
+    const m = text.match(/-?[\d.]+(?:,\d+)?/);
+    if (!m) return 0;
+    const s = m[0].replace(/\./g,'').replace(',','.');
+    const n = parseFloat(s);
+    return isFinite(n) ? n : 0;
+  };
+
+  const trow=(label,vals,goalTxt,isBold,opts)=>{
+    opts = opts || {};
+    const isRate = !!goalTxt; // linhas com goal são taxas (%)
+    const tdCls = isRate ? 'num rate-cell' : 'num';
+    const weekVals = vals.slice(0, ws.length);
+    const geralVal = vals[vals.length - 1];
+    const cells = weekVals.map(v => `<td class="${tdCls}">${v}</td>`).join('');
+    const dCell = showDelta ? deltaCell(num(weekVals[0]), num(weekVals[weekVals.length-1]), isRate) : '';
+    const geralCell = `<td class="${tdCls} geral-val">${geralVal}</td>`;
+    const gc = goalTxt ? `<td class="num meta-val">${goalTxt}</td>` : `<td></td>`;
+    const boldCls = isBold ? ' class="fw-row"' : '';
+    const lblCls = 'metric' + (isBold ? ' bld' : '');
+    return `<tr${boldCls}><td class="${lblCls}">${label}</td>${cells}${dCell}${geralCell}${gc}</tr>`;
   };
 
   // Wrapper de canal em card com tabela própria
   const weekThs = lbls.map(l=>`<th>${l}</th>`).join('');
-  const channelCard=(icon,name,bodyRows)=>`
+  const deltaTh = showDelta
+    ? `<th class="delta-th" title="Variação entre primeira e última semana">Δ ${ws[0].toUpperCase()}→${ws[ws.length-1].toUpperCase()}</th>`
+    : '';
+  const channelCard=(icon,name,bodyRows,subtitle)=>`
     <div class="mens-channel-card">
-      <div class="mens-channel-header">${icon} ${name}</div>
+      <div class="mens-channel-header">
+        <span>${icon ? icon+' ' : ''}${name}</span>
+        ${subtitle ? `<span class="ch-meta">${subtitle}</span>` : ''}
+      </div>
       <table class="mens-table">
         <thead>
           <tr>
             <th class="ch-col">Métrica</th>
             ${weekThs}
+            ${deltaTh}
             <th class="geral-th">Geral</th>
             <th class="meta-th">Meta</th>
           </tr>
