@@ -681,13 +681,10 @@
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
-  <button onclick="switchTab('mensuracao',this)">Evolução Semanal</button>
 </nav>
 
-<!-- ================================================================ MONTH BAR -->
-<div class="month-bar" id="month-bar" style="display:none">
-  <!-- botões de mês + Comparativo preenchidos dinamicamente em renderMonthBar() -->
-</div>
+<!-- Month bar agora é renderizado dentro da seção 'Evolução semanal' do Diagnóstico -->
+
 
 <!-- ================================================================
      TAB 0 — 🎯 DIAGNÓSTICO DE QUALIFICAÇÃO
@@ -762,6 +759,58 @@
   <!-- Plano de ação · 4 cards · #1 preto sólido -->
   <div class="ds-sec"><h3>Plano de ação</h3><span class="sub">Quatro alavancas priorizadas</span></div>
   <div id="diag-plano"></div>
+
+  <!-- ════════════════════════════════════════════════════════
+       EVOLUÇÃO SEMANAL · integrada como bloco final do Diagnóstico
+       ════════════════════════════════════════════════════════ -->
+  <div class="ds-sec" style="margin-top:48px;padding-top:36px;border-top:1px solid var(--border)">
+    <h3>Evolução semanal</h3>
+    <span class="sub">Aquisição · Qualificação · Conversão · semana a semana</span>
+  </div>
+
+  <!-- Seletor de mês (afeta SÓ esta seção · semanas dentro do mês) -->
+  <div id="evol-month-bar-wrap" style="margin-bottom:18px"></div>
+
+  <!-- Hero KPIs semanais -->
+  <div class="ds-grid-4" id="evol-hero-kpis"></div>
+
+  <div class="ds-sec"><h3>Aquisição</h3><span class="sub">Investimento → Leads</span></div>
+  <div class="ds-grid-3" id="evol-aquisicao"></div>
+
+  <div class="ds-sec"><h3>Qualificação</h3><span class="sub">Volume e taxa vs meta</span></div>
+  <div class="ds-grid-2" id="evol-qualificacao"></div>
+
+  <div class="ds-sec"><h3>Conversão</h3><span class="sub">Reuniões agendadas → realizadas → propostas → vendas</span></div>
+  <div class="ds-grid-3" id="evol-conversao"></div>
+
+  <div class="ds-sec"><h3>Visão semanal por canal</h3></div>
+  <div class="ds-grid-2">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Leads por Canal</h4><span class="sub">Meta · Google · Duque · Orgânico</span></div>
+      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensLeads"></canvas></div>
+    </div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil de Conversão</h4><span class="sub">Inbound · Qualificados · Realizadas · Vendas</span></div>
+      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensFunil"></canvas></div>
+    </div>
+  </div>
+  <div class="ds-card" style="margin-top:18px">
+    <div class="ds-card-h"><h4>Investimento e CPL</h4><span class="sub">Meta vs Google · invest. total e CPL</span></div>
+    <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
+  </div>
+
+  <details class="ds-accordion">
+    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
+    <div class="acc-body">
+      <div id="mens-table-wrap" style="overflow-x:auto"></div>
+      <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
+        Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads CSV
+      </p>
+    </div>
+  </details>
+
+  <!-- KPI legado (oculto, mantido p/ compat) -->
+  <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
 
 </div>
 </div><!-- /tab-diagnostico -->
@@ -2941,75 +2990,8 @@ renderOutbound();
 renderMensuracao();
 </script>
 
-<!-- ================================================================
-     TAB 4 — MENSURAÇÃO
-================================================================ -->
-<div id="tab-mensuracao" class="tab-pane">
-<div class="main">
+<!-- Aba 'Evolução Semanal' migrou para dentro do Diagnóstico (primeira aba). -->
 
-  <!-- Hero compacto -->
-  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
-    <div>
-      <div class="hl-eyebrow">Evolução Semanal</div>
-      <h2>Como o funil performou semana a semana</h2>
-      <div class="hl-sub">Investimento, leads, qualificação e vendas por semana — com sparkline de tendência e barra de progresso vs meta.</div>
-      <div class="hl-pills">
-        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
-      </div>
-    </div>
-    <div></div>
-  </div>
-
-  <!-- Hero KPIs · 4 cards grandes (1 laranja sólido) -->
-  <div class="ds-grid-4" id="evol-hero-kpis">
-    <!-- preenchido por JS · 4 KPIs com sparkline + Δ -->
-  </div>
-
-  <!-- Aquisição · Qualificação · Conversão -->
-  <div class="ds-sec"><h3>Aquisição</h3><span class="sub">Investimento → Leads</span></div>
-  <div class="ds-grid-3" id="evol-aquisicao"></div>
-
-  <div class="ds-sec"><h3>Qualificação</h3><span class="sub">Volume e taxa vs meta</span></div>
-  <div class="ds-grid-2" id="evol-qualificacao"></div>
-
-  <div class="ds-sec"><h3>Conversão</h3><span class="sub">Reuniões agendadas → realizadas → propostas → vendas</span></div>
-  <div class="ds-grid-3" id="evol-conversao"></div>
-
-  <!-- Charts (mantidos) -->
-  <div class="ds-sec"><h3>Visão semanal por canal</h3></div>
-  <div class="ds-grid-2">
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Leads por Canal</h4><span class="sub">Meta · Google · Duque · Orgânico</span></div>
-      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensLeads"></canvas></div>
-    </div>
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Funil de Conversão</h4><span class="sub">Inbound · Qualificados · Realizadas · Vendas</span></div>
-      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensFunil"></canvas></div>
-    </div>
-  </div>
-  <div class="ds-card" style="margin-top:18px">
-    <div class="ds-card-h"><h4>Investimento e CPL</h4><span class="sub">Meta vs Google · invest. total e CPL</span></div>
-    <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
-  </div>
-
-  <!-- Tabela completa em accordion (default fechado) -->
-  <details class="ds-accordion">
-    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
-    <div class="acc-body">
-      <div id="mens-table-wrap" style="overflow-x:auto"></div>
-      <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
-        Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads CSV
-      </p>
-    </div>
-  </details>
-
-  <!-- KPI legado (oculto, populado para compatibilidade) -->
-  <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
-</div>
-</div>
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
@@ -3173,19 +3155,26 @@ function detectAvailableMonths(kommo, meta) {
   return [...months].sort();
 }
 
-// Renderiza a barra de meses (aparece só com 2+ meses).
-// Removido o sub-modo "Comparativo entre meses" — Evolução Semanal é
-// uma aba única sem toggle; comparação fica via filtros de período (7d/14d/wlast/30d).
+// Renderiza a barra de meses dentro da seção 'Evolução semanal' do Diagnóstico
+// (única seção que depende do mês). O bar global #month-bar foi descontinuado.
 function renderMonthBar() {
-  const bar = document.getElementById('month-bar');
-  if (!bar) return;
-  if (AVAILABLE_MONTHS.length <= 1) { bar.style.display = 'none'; return; }
-  bar.style.display = 'flex';
+  const oldBar = document.getElementById('month-bar');
+  if (oldBar) oldBar.style.display = 'none';
+  const wrap = document.getElementById('evol-month-bar-wrap');
+  if (!wrap) return;
+  if (AVAILABLE_MONTHS.length <= 1) { wrap.innerHTML = ''; return; }
   const buttons = AVAILABLE_MONTHS.map(m => {
     const cls = (m === currentMonth) ? 'active' : '';
     return `<button class="month-btn ${cls}" data-month="${m}" onclick="switchMonth('${m}')">${_monthLabel(m)}</button>`;
   }).join('');
-  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}`;
+  wrap.innerHTML = `
+    <div class="month-bar" style="display:flex;border-radius:var(--r);background:var(--surface);
+         padding:10px 16px;border:1px solid var(--border);align-items:center">
+      <span class="lbl">Mês:</span>${buttons}
+      <span style="margin-left:auto;font-size:10.5px;color:var(--muted);font-weight:500">
+        Filtra apenas a seção semanal abaixo
+      </span>
+    </div>`;
 }
 
 // Troca o mês ativo e re-renderiza tudo que depende do mês
@@ -3199,17 +3188,18 @@ function switchMonth(m) {
   if (!KOMMO_RAW || !META_RAW) return;
 
   if (m === 'compare') {
-    // No modo comparativo, KPIs ficam do mês mais recente (referência)
-    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, AVAILABLE_MONTHS[AVAILABLE_MONTHS.length - 1]);
-    renderComparativo();
+    // Modo comparativo descontinuado — fallback no mês corrente
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
+    if (typeof renderMensuracao === 'function') renderMensuracao();
   } else {
     MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
-    // Reexibe charts (que ficam ocultos no modo comparativo)
-    document.querySelectorAll('#tab-mensuracao .grid canvas').forEach(c => {
-      const card = c.closest('.card');
-      if (card) card.style.display = '';
+    // Sincroniza botões do month-bar
+    document.querySelectorAll('.month-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.month === m);
     });
     if (typeof renderMensuracao === 'function') renderMensuracao();
+    // Re-render Diagnóstico para atualizar sparklines W1-W4 do mês escolhido
+    if (typeof renderDiagnostico === 'function') renderDiagnostico();
   }
 }
 
