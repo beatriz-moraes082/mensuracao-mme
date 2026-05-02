@@ -745,6 +745,14 @@
     <div id="diag-canal-content"></div>
   </div>
 
+  <!-- Reativados · leads que voltaram a converter -->
+  <div class="ds-sec"><h3>Reativados</h3><span class="sub">Leads com tag "lead reativado" · trazidos de volta da base</span></div>
+  <div class="ds-grid-3" id="diag-reativados-kpis"></div>
+  <div class="ds-card" style="margin-top:18px">
+    <div class="ds-card-h"><h4>Performance dos reativados</h4><span class="sub">Comparativo · reativados vs leads novos</span></div>
+    <div class="ds-card-b" id="diag-reativados-content"></div>
+  </div>
+
   <!-- Sinais preditivos · ranking horizontal -->
   <div class="ds-sec"><h3>Sinais preditivos</h3><span class="sub">Diferença entre qualificados e não-qualificados</span></div>
   <div class="ds-card">
@@ -2775,6 +2783,89 @@ function renderDiagnostico() {
         </div>`
       : ''}`;
 
+  // ── Render: Reativados · leads com tag "lead reativado" ────
+  (function renderReativados() {
+    const TAG = 'lead reativado';
+    const hasTag = l => (l.tags || []).some(t => (t||'').toLowerCase() === TAG);
+    const sdrReat    = sdr.filter(hasTag);
+    const closerReat = (KOMMO_RAW.closer || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
+    const duqueReat  = (KOMMO_RAW.duque  || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
+    const totalReat  = sdrReat.length + closerReat.length + duqueReat.length;
+    const sdrReatQ   = sdrReat.filter(l => l.qualified).length;
+    const sdrNovos   = sdr.filter(l => !hasTag(l));
+    const sdrNovosQ  = sdrNovos.filter(l => l.qualified).length;
+    const txReat  = sdrReat.length > 0 ? sdrReatQ / sdrReat.length * 100 : 0;
+    const txNovos = sdrNovos.length > 0 ? sdrNovosQ / sdrNovos.length * 100 : 0;
+
+    const kpisEl = document.getElementById('diag-reativados-kpis');
+    if (kpisEl) {
+      kpisEl.innerHTML = [
+        {lbl:'Total reativados (período)', val:totalReat,
+         sub: `${sdrReat.length} SDR · ${closerReat.length} Closer · ${duqueReat.length} Duque`,
+         variant:'accent'},
+        {lbl:'Tx. qualif · reativados', val:fmtP(txReat),
+         sub: `${sdrReatQ} qualificados de ${sdrReat.length}`,
+         variant:''},
+        {lbl:'Tx. qualif · leads novos', val:fmtP(txNovos),
+         sub: `${sdrNovosQ} qualificados de ${sdrNovos.length}`,
+         variant:''},
+      ].map(k => `
+        <div class="ds-kpi ${k.variant}">
+          <div class="lbl">${k.lbl}</div>
+          <div class="val">${k.val}</div>
+          <div class="sub">${k.sub}</div>
+        </div>
+      `).join('');
+    }
+
+    const contentEl = document.getElementById('diag-reativados-content');
+    if (contentEl) {
+      if (totalReat === 0) {
+        contentEl.innerHTML = `<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px 0">
+          Nenhum lead reativado no período selecionado.
+        </div>`;
+      } else {
+        // Comparativo reativados vs novos como ranking bars
+        const compareItems = [
+          {lbl:'Reativados', n:sdrReat.length, q:sdrReatQ, tx:txReat, cls: txReat >= txNovos ? 'success' : 'muted'},
+          {lbl:'Leads novos', n:sdrNovos.length, q:sdrNovosQ, tx:txNovos, cls: txNovos >= txReat ? 'success' : 'muted'},
+        ];
+        const maxN = Math.max(...compareItems.map(c => c.n), 1);
+        // Por canal de origem (SDR reativados)
+        const reatByCh = {meta:0, google:0, org:0};
+        sdrReat.forEach(l => {
+          const o = (l.origem||'').toLowerCase();
+          if (o.includes('meta')) reatByCh.meta++;
+          else if (o.includes('google')) reatByCh.google++;
+          else reatByCh.org++;
+        });
+        const insightTxt = txReat > txNovos
+          ? `Reativados qualificam <b>${(txReat/Math.max(txNovos,0.01)).toFixed(1)}×</b> mais que leads novos · vale a pena escalar a operação de reativação.`
+          : txReat > 0
+            ? `Reativados qualificam <b>${(txReat - txNovos).toFixed(1)}pp ${txReat < txNovos ? 'abaixo' : 'acima'}</b> dos leads novos no período.`
+            : 'Sem qualificações entre reativados — investigar fluxo de retomada.';
+
+        contentEl.innerHTML = `
+          <div class="ds-rank">
+            ${compareItems.map(c => `
+              <div class="item ${c.cls}">
+                <div class="row1">
+                  <div class="lbl">${c.lbl}</div>
+                  <div class="meta"><b>${c.n}</b> leads · <b>${c.q}</b> qualif · <b>${fmtP(c.tx)}</b> tx. qualif</div>
+                </div>
+                <div class="bar"><div class="fill" style="width:${(c.n/maxN*100).toFixed(0)}%"></div></div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
+            <div style="margin-bottom:8px"><b>Origem dos reativados SDR:</b>
+              Meta ${reatByCh.meta} · Google ${reatByCh.google} · Orgânico/outros ${reatByCh.org}</div>
+            ${insightTxt}
+          </div>`;
+      }
+    }
+  })();
+
   // ── Render: Sinais preditivos · ranking horizontal ─────
   const maxDiff = Math.max(...sinais.map(s => Math.abs(s.diff)), 1);
   document.getElementById('diag-sinais-content').innerHTML = `
@@ -3082,7 +3173,9 @@ function detectAvailableMonths(kommo, meta) {
   return [...months].sort();
 }
 
-// Renderiza a barra de meses (aparece só com 2+ meses)
+// Renderiza a barra de meses (aparece só com 2+ meses).
+// Removido o sub-modo "Comparativo entre meses" — Evolução Semanal é
+// uma aba única sem toggle; comparação fica via filtros de período (7d/14d/wlast/30d).
 function renderMonthBar() {
   const bar = document.getElementById('month-bar');
   if (!bar) return;
@@ -3092,10 +3185,7 @@ function renderMonthBar() {
     const cls = (m === currentMonth) ? 'active' : '';
     return `<button class="month-btn ${cls}" data-month="${m}" onclick="switchMonth('${m}')">${_monthLabel(m)}</button>`;
   }).join('');
-  // Botão Comparativo aparece a partir de 2 meses
-  const cmpCls = (currentMonth === 'compare') ? 'active' : '';
-  const cmpBtn = `<button class="month-btn compare ${cmpCls}" data-month="compare" onclick="switchMonth('compare')">📊 Comparativo</button>`;
-  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}${cmpBtn}`;
+  bar.innerHTML = `<span class="lbl">Mês:</span>${buttons}`;
 }
 
 // Troca o mês ativo e re-renderiza tudo que depende do mês
