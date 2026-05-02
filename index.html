@@ -10,10 +10,13 @@
   <style>
     :root{
       /* ── Trilha Brand Colors · Light ── */
-      --bg:#f4f5f2;--surface:#ffffff;--surface2:#eceeed;--border:#d8dbd5;
-      --accent:#ee4d20;--accent2:#d97706;--green:#16a34a;--blue:#2563eb;
-      --purple:#7c3aed;--text:#343a32;--muted:#6b7069;--danger:#dc2626;
-      --r:12px;--r-lg:18px;
+      /* Design system unificado · cinza/branco/laranja com 1 destaque preto */
+      --bg:#FAFAFA;--surface:#ffffff;--surface2:#F4F5F2;--border:#ECECEC;
+      --accent:#EE4D20;--accent2:#EE4D20;
+      --ink:#1A1A1A;--text:#1A1A1A;--muted:#6B7069;
+      --up:#16a34a;--down:#dc2626;--green:#16a34a;--danger:#dc2626;
+      --blue:#2563eb;--purple:#7c3aed;
+      --r:14px;--r-lg:18px;--r-sm:10px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif}
@@ -461,6 +464,182 @@
     .sec-modern .badge-num{font-size:10px;font-weight:700;background:var(--surface2);
       padding:3px 9px;border-radius:20px;color:var(--muted);letter-spacing:.04em}
 
+    /* ════════════════════════════════════════════
+       Design System v2 · Componentes reutilizáveis
+       (override do legado · aplicar em todas as abas)
+    ════════════════════════════════════════════ */
+
+    /* Body / fundo da página */
+    body{background:var(--bg);color:var(--text)}
+
+    /* Layout container */
+    .main{padding:24px 32px;max-width:1320px;margin:0 auto}
+
+    /* Topbar limpa */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);
+      box-shadow:none;padding:14px 32px}
+
+    /* Tabnav limpa */
+    .tabnav{background:var(--surface);border-bottom:1px solid var(--border);
+      padding:0 32px}
+    .tabnav button{padding:14px 18px;font-size:13px;font-weight:600;
+      color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;
+      cursor:pointer;letter-spacing:.005em}
+    .tabnav button:hover{color:var(--text);background:transparent}
+    .tabnav button.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+
+    /* ── Section ── */
+    .ds-sec{margin:36px 0 16px;display:flex;align-items:baseline;gap:12px}
+    .ds-sec h3{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--text)}
+    .ds-sec .sub{font-size:13px;color:var(--muted)}
+    .ds-sec .badge-num{font-size:10.5px;font-weight:700;background:var(--surface2);
+      padding:4px 10px;border-radius:20px;color:var(--muted);letter-spacing:.04em}
+
+    /* ── KPICard (3 variantes: default/accent/ink) ── */
+    .ds-kpi{
+      background:var(--surface);border-radius:var(--r-lg);padding:24px 26px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 24px rgba(0,0,0,.04);
+      display:flex;flex-direction:column;gap:10px;
+      transition:transform .18s,box-shadow .2s;position:relative;overflow:hidden;
+    }
+    .ds-kpi:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.06),0 14px 36px rgba(0,0,0,.05)}
+    .ds-kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--muted);line-height:1.3}
+    .ds-kpi .val{font-size:40px;font-weight:800;line-height:1.05;letter-spacing:-.025em;color:var(--text)}
+    .ds-kpi .val.big{font-size:56px}
+    .ds-kpi .sub{font-size:12px;color:var(--muted);line-height:1.5;display:flex;
+      align-items:center;gap:8px;flex-wrap:wrap}
+    .ds-kpi canvas.spark{width:100%!important;height:38px!important}
+
+    /* Variant: accent (laranja sólido) */
+    .ds-kpi.accent{
+      background:var(--accent);color:#fff;
+      box-shadow:0 6px 24px rgba(238,77,32,.22),0 16px 48px rgba(238,77,32,.12);
+    }
+    .ds-kpi.accent .lbl{color:rgba(255,255,255,.75)}
+    .ds-kpi.accent .val{color:#fff}
+    .ds-kpi.accent .sub{color:rgba(255,255,255,.85)}
+    .ds-kpi.accent .delta-pill{background:rgba(255,255,255,.18);color:#fff}
+    .ds-kpi.accent::after{content:'';position:absolute;bottom:-40px;right:-40px;
+      width:160px;height:160px;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%);
+      pointer-events:none}
+
+    /* Variant: ink (preto sólido) */
+    .ds-kpi.ink{
+      background:var(--ink);color:#fff;
+      box-shadow:0 6px 24px rgba(0,0,0,.18),0 16px 48px rgba(0,0,0,.14);
+    }
+    .ds-kpi.ink .lbl{color:rgba(255,255,255,.55)}
+    .ds-kpi.ink .val{color:#fff}
+    .ds-kpi.ink .sub{color:rgba(255,255,255,.7)}
+    .ds-kpi.ink .delta-pill{background:rgba(255,255,255,.12);color:#fff}
+    .ds-kpi.ink::after{content:'';position:absolute;top:-30px;right:-30px;
+      width:120px;height:120px;background:radial-gradient(circle,rgba(238,77,32,.32),transparent 65%);
+      pointer-events:none}
+
+    /* Δ-pill */
+    .delta-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;
+      background:var(--surface2);color:var(--muted);letter-spacing:.01em}
+    .delta-pill.up{background:rgba(22,163,74,.12);color:var(--up)}
+    .delta-pill.down{background:rgba(220,38,38,.12);color:var(--down)}
+
+    /* ── MetricCard (com progress bar vs meta) ── */
+    .ds-metric{
+      background:var(--surface);border-radius:var(--r);padding:20px 22px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.03);
+      display:flex;flex-direction:column;gap:8px;
+    }
+    .ds-metric .lbl{font-size:11px;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--muted)}
+    .ds-metric .val{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.02em}
+    .ds-metric .sub{font-size:11.5px;color:var(--muted)}
+
+    /* ── ProgressBar (4px, marker em 100% da meta) ── */
+    .ds-prog{position:relative;height:6px;background:rgba(107,112,105,.12);
+      border-radius:3px;overflow:hidden;margin-top:2px}
+    .ds-prog .fill{height:100%;border-radius:3px;background:var(--up);
+      transition:width .5s cubic-bezier(.4,0,.2,1)}
+    .ds-prog .fill.below{background:var(--down)}
+    .ds-prog .fill.partial{background:var(--accent)}
+    .ds-prog-meta{font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;
+      margin-top:5px;font-weight:600}
+    .ds-prog-meta b{color:var(--text)}
+
+    /* ── Sparkline wrapper ── */
+    .ds-spark{height:42px;position:relative}
+    .ds-spark canvas{width:100%!important;height:100%!important}
+
+    /* ── RankingBar (lista label · barra · valor) ── */
+    .ds-rank{display:flex;flex-direction:column;gap:14px}
+    .ds-rank .item{display:grid;grid-template-columns:1fr;gap:6px}
+    .ds-rank .row1{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+    .ds-rank .lbl{font-size:13px;font-weight:600;color:var(--text);
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:62%}
+    .ds-rank .meta{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+    .ds-rank .meta b{color:var(--text);font-size:14px;font-weight:800}
+    .ds-rank .bar{height:8px;background:rgba(107,112,105,.1);border-radius:4px;overflow:hidden}
+    .ds-rank .bar .fill{height:100%;border-radius:4px;
+      background:linear-gradient(90deg,var(--accent),#f97316);
+      transition:width .5s cubic-bezier(.4,0,.2,1)}
+    .ds-rank .item.muted .fill{background:rgba(107,112,105,.4)}
+    .ds-rank .item.danger .fill{background:linear-gradient(90deg,var(--down),#f87171)}
+    .ds-rank .item.success .fill{background:linear-gradient(90deg,var(--up),#4ade80)}
+    .ds-rank .item.medal-1 .lbl::before{content:'1.';color:var(--accent);font-weight:800;margin-right:6px}
+    .ds-rank .item.medal-2 .lbl::before{content:'2.';color:var(--muted);font-weight:800;margin-right:6px}
+    .ds-rank .item.medal-3 .lbl::before{content:'3.';color:var(--muted);font-weight:800;margin-right:6px}
+
+    /* ── ChannelChip (mini card por canal) ── */
+    .ds-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    @media(max-width:900px){.ds-chips{grid-template-columns:repeat(2,1fr)}}
+    .ds-chip{background:var(--surface);border-radius:var(--r);padding:18px 20px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.03);
+      border-top:3px solid var(--muted);display:flex;flex-direction:column;gap:4px}
+    .ds-chip.meta{border-top-color:#3b82f6}
+    .ds-chip.google{border-top-color:#22c55e}
+    .ds-chip.duque{border-top-color:#8b5cf6}
+    .ds-chip.org{border-top-color:#f5a623}
+    .ds-chip .ch-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .ds-chip .ch-val{font-size:24px;font-weight:800;line-height:1.1;color:var(--text);margin-top:4px}
+    .ds-chip .ch-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+    /* ── DataAccordion ── */
+    .ds-accordion{background:var(--surface);border-radius:var(--r);
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.03);
+      overflow:hidden;margin-top:16px}
+    .ds-accordion summary{cursor:pointer;padding:16px 22px;
+      font-size:13px;font-weight:700;color:var(--text);
+      display:flex;align-items:center;justify-content:space-between;list-style:none;
+      transition:background .15s}
+    .ds-accordion summary::-webkit-details-marker{display:none}
+    .ds-accordion summary::after{content:'+';font-size:18px;font-weight:400;color:var(--muted);
+      transition:transform .2s}
+    .ds-accordion[open] summary::after{content:'×';font-size:22px;line-height:.6}
+    .ds-accordion summary:hover{background:var(--surface2)}
+    .ds-accordion .acc-body{padding:0 22px 22px;border-top:1px solid var(--border)}
+    .ds-accordion .acc-body > *:first-child{margin-top:18px}
+
+    /* ── Card genérico unificado ── */
+    .ds-card{background:var(--surface);border-radius:var(--r);padding:22px 24px;
+      box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.03);
+      transition:box-shadow .2s}
+    .ds-card.flush{padding:0;overflow:hidden}
+    .ds-card .ds-card-h{padding:18px 22px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+    .ds-card .ds-card-h h4{font-size:15px;font-weight:700;color:var(--text)}
+    .ds-card .ds-card-h .sub{font-size:12px;color:var(--muted)}
+    .ds-card .ds-card-b{padding:20px 22px}
+
+    /* Grids */
+    .ds-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .ds-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .ds-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    @media(max-width:1100px){.ds-grid-4{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:900px){.ds-grid-4,.ds-grid-3,.ds-grid-2{grid-template-columns:1fr}}
+
+    /* Footer cleanup */
+    footer{background:var(--surface);border-top:1px solid var(--border);
+      padding:24px 32px;text-align:center;color:var(--muted);font-size:11.5px}
+
     /* ── Scroll-to-top button ── */
     #scrollTop{
       position:fixed;bottom:24px;right:24px;width:40px;height:40px;
@@ -542,50 +721,38 @@
     <!-- preenchido por JS · 4 tiles + 1 destaque -->
   </div>
 
-  <!-- 1. Funil de Qualificação Hero -->
-  <div class="sec">📊 Funil de Qualificação · Onde estamos perdendo leads?</div>
-  <div class="card">
-    <h3>Da entrada do lead até a reunião realizada</h3>
-    <div class="sub" id="diag-funnel-sub">—</div>
+  <!-- Funil de Qualificação -->
+  <div class="ds-sec"><h3>Funil de Qualificação</h3><span class="sub" id="diag-funnel-sub">—</span></div>
+  <div class="ds-card">
     <div class="pyramid-wrap" id="diag-pyr" style="max-width:880px;margin:0 auto"></div>
-    <div class="insight orange" id="diag-funnel-insight" style="margin-top:14px"></div>
+    <div id="diag-funnel-insight" style="margin-top:14px"></div>
   </div>
 
-  <!-- 2. Top 3 alavancas para aumentar qualificação -->
-  <div class="sec">🚀 Top Alavancas · O que mais aumenta a qualificação?</div>
-  <div class="g3" id="diag-alavancas">
-    <!-- preenchido por JS -->
-  </div>
+  <!-- Top alavancas -->
+  <div class="ds-sec"><h3>Top alavancas para aumentar qualificação</h3><span class="sub">Onde focar primeiro</span></div>
+  <div class="ds-grid-3" id="diag-alavancas"><!-- preenchido por JS · 1 laranja sólido --></div>
 
-  <!-- 3. Bot de qualificação · gargalo crítico -->
-  <div class="sec">🤖 Performance do Bot · Principal gargalo de qualificação</div>
-  <div class="card">
-    <h3>Quem completa o bot qualifica mais?</h3>
-    <div class="sub" id="diag-bot-sub">Comparativo: leads com bot-concluído vs bot-incompleto</div>
+  <!-- Bot · ranking horizontal -->
+  <div class="ds-sec"><h3>Performance do Bot</h3><span class="sub">Conclusão vs incompleto · gargalo de qualificação</span></div>
+  <div class="ds-card">
     <div id="diag-bot-content"></div>
   </div>
 
-  <!-- 4. Comparativo Meta vs Google · qual canal qualifica mais? -->
-  <div class="sec">🎯 Comparativo de Canais · Qual canal qualifica mais?</div>
-  <div class="card">
-    <h3>Meta Ads vs Google Ads vs Orgânico</h3>
-    <div class="sub">Tx. de qualificação por canal · ranking</div>
+  <!-- Canais · ranking horizontal -->
+  <div class="ds-sec"><h3>Qualificação por canal</h3><span class="sub">Meta · Google · Orgânico</span></div>
+  <div class="ds-card">
     <div id="diag-canal-content"></div>
   </div>
 
-  <!-- 5. Sinais preditivos de qualificação -->
-  <div class="sec">🔍 Sinais Preditivos · O que diferencia um lead qualificado?</div>
-  <div class="card">
-    <h3>Campos do formulário com maior poder preditivo</h3>
-    <div class="sub">Diferença entre % no grupo qualificado vs não-qualificado</div>
+  <!-- Sinais preditivos · ranking horizontal -->
+  <div class="ds-sec"><h3>Sinais preditivos</h3><span class="sub">Diferença entre qualificados e não-qualificados</span></div>
+  <div class="ds-card">
     <div id="diag-sinais-content"></div>
   </div>
 
-  <!-- 6. Recomendações finais -->
-  <div class="sec">✅ Plano de Ação · Como aumentar a qualificação</div>
-  <div class="card" id="diag-plano">
-    <!-- preenchido por JS -->
-  </div>
+  <!-- Plano de ação · 4 cards · #1 preto sólido -->
+  <div class="ds-sec"><h3>Plano de ação</h3><span class="sub">Quatro alavancas priorizadas</span></div>
+  <div id="diag-plano"></div>
 
 </div>
 </div><!-- /tab-diagnostico -->
@@ -597,22 +764,49 @@
 <div id="tab-analises" class="tab-pane">
 <div class="main">
 
-  <div class="period-bar">
-    <span class="plbl">Período:</span>
-    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
-    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+  <!-- Hero -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Perfil do Qualificado</div>
+      <h2>O que diferencia um lead que qualifica</h2>
+      <div class="hl-sub">Score, públicos e criativos que mais qualificam — e onde a verba está sendo desperdiçada com leads fora do perfil.</div>
+      <div class="hl-pills">
+        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
+    </div>
+    <div></div>
   </div>
-  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Exibindo: <b id="analises-period-lbl">Últimos 30 dias · 17/03–15/04</b></div>
 
-<div id="analises-main">
-  <div style="padding:60px;text-align:center;color:var(--muted)">
-    <div style="font-size:28px;margin-bottom:8px">⏳</div>
-    Carregando dados do Kommo CRM...
+  <!-- 4 KPIs de Score -->
+  <div class="ds-grid-4" id="perfil-score-kpis"></div>
+
+  <!-- Top 3 públicos · Top 3 criativos -->
+  <div class="ds-grid-2">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Top 3 públicos por Score A+B</h4><span class="sub">Qualidade de qualificação</span></div>
+      <div class="ds-card-b" id="perfil-top-aud"></div>
+    </div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Top 3 criativos por Score A+B</h4><span class="sub">Qualidade de qualificação</span></div>
+      <div class="ds-card-b" id="perfil-top-cri"></div>
+    </div>
   </div>
-</div>
+
+  <!-- Detalhamento das 15 análises em accordion -->
+  <details class="ds-accordion" style="margin-top:18px">
+    <summary><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
+    <div class="acc-body">
+      <div id="analises-main">
+        <div style="padding:60px;text-align:center;color:var(--muted)">
+          Carregando dados do Kommo CRM...
+        </div>
+      </div>
+    </div>
+  </details>
 
 </div><!-- /main -->
 </div><!-- /tab-analises -->
@@ -624,106 +818,90 @@
 <div id="tab-funis" class="tab-pane">
 <div class="main">
 
-  <!-- Period selector -->
-  <div class="period-bar">
-    <span class="plbl">Período:</span>
-    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
-    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
-    <div class="custom-range">
-      <input type="date" id="dt-from" value="2026-03-17">
-      <span style="color:var(--muted);font-size:11px">até</span>
-      <input type="date" id="dt-to" value="2026-04-16">
-      <button onclick="applyCustom()">Aplicar</button>
-    </div>
-  </div>
-  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM + Meta Ads API</div>
-
-  <!-- Metas reference -->
-  <div class="insight blue" style="margin-bottom:20px">
-    🎯 <b>Metas operacionais:</b>
-    Tx. Qualificação <b>50%</b> · Qual→Agendado <b>60%</b> · Tx. Agendamento <b>40%</b> ·
-    Tx. Comparecimento <b>65%</b> · Proposta→Venda <b>13%</b> · Tx. Conversão geral <b>2,5%</b>
-  </div>
-
-  <!-- KPIs dinâmicos -->
-  <div class="kpi3" id="kpi-row">
-    <div class="kpi-box">
-      <div class="klbl">Leads SDR</div>
-      <div class="val tc-b" id="kpi-leads">372</div>
-      <div class="note">entradas no período</div>
-    </div>
-    <div class="kpi-box">
-      <div class="klbl">Reuniões Closer</div>
-      <div class="val tc-p" id="kpi-reunioes">83</div>
-      <div class="note">multi-canal (SDR+Duque+BDR)</div>
-    </div>
-    <div class="kpi-box">
-      <div class="klbl">Vendas</div>
-      <div class="val tc-g" id="kpi-vendas">7</div>
-      <div class="note" id="kpi-receita">R$ 233.239</div>
-    </div>
-  </div>
-
-  <!-- Pyramids side by side -->
-  <div class="g2" style="align-items:start">
-
-    <!-- SDR Funnel -->
-    <div class="card">
-      <h3>Funil SDR</h3>
-      <div class="sub" id="sdr-sub">Lead Novo → Venda Ganha (reunião concretizada) · 30d</div>
-      <div class="pyramid-wrap" id="pyr-sdr"></div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
-        <div id="sdr-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+  <!-- Hero -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Funis Comerciais</div>
+      <h2>SDR · Closer · Combinado</h2>
+      <div class="hl-sub">Da entrada do lead até a venda fechada — gargalos por etapa, vendas por canal e motivos de perda.</div>
+      <div class="hl-pills">
+        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
       </div>
     </div>
+    <div></div>
+  </div>
 
-    <!-- Closer Funnel -->
-    <div class="card">
-      <h3>Funil Closer</h3>
-      <div class="sub" id="closer-sub">Reunião Realizada → Venda Ganha (financeira) · 30d</div>
-      <div class="pyramid-wrap" id="pyr-closer"></div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
-        <div id="closer-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+  <!-- 3 KPIs hero (Vendas como card laranja sólido) -->
+  <div class="ds-grid-3">
+    <div class="ds-kpi">
+      <div class="lbl">Leads SDR</div>
+      <div class="val" id="kpi-leads">—</div>
+      <div class="sub">entradas no período</div>
+    </div>
+    <div class="ds-kpi">
+      <div class="lbl">Reuniões Closer</div>
+      <div class="val" id="kpi-reunioes">—</div>
+      <div class="sub">multi-canal (SDR + Duque + BDR)</div>
+    </div>
+    <div class="ds-kpi accent">
+      <div class="lbl">Vendas Closer</div>
+      <div class="val" id="kpi-vendas">—</div>
+      <div class="sub" id="kpi-receita">—</div>
+    </div>
+  </div>
+
+  <!-- Funil SDR + Closer lado a lado -->
+  <div class="ds-grid-2" style="align-items:start">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil SDR</h4><span class="sub" id="sdr-sub">Lead Novo → Reunião Realizada</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-sdr"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+          <div id="sdr-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil Closer</h4><span class="sub" id="closer-sub">Reunião Realizada → Venda Ganha</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-closer"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+          <div id="closer-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Funil completo (combinado) -->
-  <div class="sec">Funil Completo SDR → Closer (combinado)</div>
-  <div class="card">
-    <h3>Jornada completa do lead: da entrada até a venda</h3>
-    <div class="sub">SDR Digital → Reunião → Closer → Proposta → Venda Ganha</div>
+  <!-- Funil completo combinado -->
+  <div class="ds-sec"><h3>Funil completo · SDR → Closer</h3><span class="sub">Da entrada do lead até a venda</span></div>
+  <div class="ds-card">
     <div class="pyramid-wrap" id="pyr-full" style="max-width:860px;margin:0 auto"></div>
-    <div style="font-size:10px;color:var(--muted);margin-top:12px;text-align:center">
-      * Entradas Closer = leads de todos os canais (SDR + Duque + BDR). Para funil exclusivo Meta Ads ver aba 15 Análises.
+    <div style="font-size:11px;color:var(--muted);margin-top:14px;text-align:center">
+      Entradas Closer = leads de todos os canais (SDR + Duque + BDR). Para funil exclusivo Meta Ads ver aba Perfil do Qualificado.
     </div>
   </div>
 
-  <!-- ── Vendas por Canal ─────────────────────────────────────── -->
-  <div class="sec">Vendas por Canal de Origem</div>
-  <div class="card">
-    <h3>De qual canal vieram as vendas no período?</h3>
-    <div class="sub" id="vendas-canal-sub">—</div>
-    <div id="vendas-canal-content" style="margin-top:12px"></div>
+  <!-- Vendas por canal (ChannelChips) -->
+  <div class="ds-sec"><h3>Vendas por canal de origem</h3><span class="sub" id="vendas-canal-sub">—</span></div>
+  <div class="ds-card">
+    <div id="vendas-canal-content"></div>
   </div>
 
-  <!-- ── Motivos de Perda ──────────────────────────────────────── -->
-  <div class="sec">Análise de Motivos de Perda</div>
-  <div class="g2" style="align-items:start">
-    <div class="card">
-      <h3>🔴 Perdas no Funil SDR</h3>
-      <div class="sub" id="loss-sdr-sub">—</div>
-      <div id="loss-sdr-list" style="margin-top:14px"></div>
+  <!-- Motivos de Perda · ranking horizontal -->
+  <div class="ds-sec"><h3>Motivos de perda</h3><span class="sub">Onde os leads param de avançar</span></div>
+  <div class="ds-grid-2" style="align-items:start">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Perdas no funil SDR</h4><span class="sub" id="loss-sdr-sub">—</span></div>
+      <div class="ds-card-b" id="loss-sdr-list"></div>
     </div>
-    <div class="card">
-      <h3>🔴 Perdas no Funil Closer</h3>
-      <div class="sub" id="loss-closer-sub">—</div>
-      <div id="loss-closer-list" style="margin-top:14px"></div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Perdas no funil Closer</h4><span class="sub" id="loss-closer-sub">—</span></div>
+      <div class="ds-card-b" id="loss-closer-list"></div>
     </div>
   </div>
 
@@ -737,45 +915,45 @@
 <div id="tab-outbound" class="tab-pane">
 <div class="main">
 
-  <div class="period-bar">
-    <span class="plbl">Período:</span>
-    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
-    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
-  </div>
-
-  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM</div>
-
-  <div class="insight orange" style="margin-bottom:20px">
-    ⚠️ <b>Canais outbound isolados:</b> Duque e BDR operam de forma independente do SDR digital.
-    Taxas de conversão são naturalmente diferentes — não comparar diretamente com Meta Ads.
-  </div>
-
-  <!-- Comparison overview -->
-  <div class="sec">Comparativo de Eficiência por Canal</div>
-  <div class="cmp-grid" id="cmp-grid">
-    <!-- rendered by JS -->
-  </div>
-
-  <!-- Duque + BDR Pyramids -->
-  <div class="sec">Pirâmides por Canal Outbound</div>
-  <div class="g2" style="align-items:start">
-    <div class="card">
-      <h3>Funil Duque</h3>
-      <div class="sub" id="duque-sub">Outbound → Contato → Reunião</div>
-      <div class="pyramid-wrap" id="pyr-duque"></div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div id="duque-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+  <!-- Hero -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Outbound · Duque/BDR</div>
+      <h2>Canais outbound · operação independente do SDR</h2>
+      <div class="hl-sub">Taxas de conversão de Duque e BDR são naturalmente diferentes do SDR digital. Comparar entre si, não com Meta Ads.</div>
+      <div class="hl-pills">
+        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
       </div>
     </div>
-    <div class="card">
-      <h3>Funil BDR</h3>
-      <div class="sub" id="bdr-sub">Base de contatos → Qualificação → Reunião</div>
-      <div class="pyramid-wrap" id="pyr-bdr"></div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-        <div id="bdr-rates" style="font-size:11px;line-height:2;color:var(--muted)"></div>
+    <div></div>
+  </div>
+
+  <!-- Comparativo de eficiência por canal (4 ChannelChips) -->
+  <div class="ds-sec"><h3>Comparativo de eficiência por canal</h3><span class="sub">SDR · Closer · Duque · BDR</span></div>
+  <div class="ds-chips" id="cmp-grid"><!-- preenchido por JS --></div>
+
+  <!-- Pirâmides Duque + BDR -->
+  <div class="ds-sec"><h3>Pirâmides por canal outbound</h3></div>
+  <div class="ds-grid-2" style="align-items:start">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil Duque</h4><span class="sub" id="duque-sub">Outbound → Contato → Reunião</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-duque"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div id="duque-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil BDR</h4><span class="sub" id="bdr-sub">Base de contatos → Qualificação → Reunião</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-bdr"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div id="bdr-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -943,18 +1121,17 @@ function pct(a, b) { return b > 0 ? +(a/b*100).toFixed(1) : 0; }
 function fmt(n)    { return n.toLocaleString('pt-BR'); }
 function fmtR(n)   { return 'R$ '+n.toLocaleString('pt-BR'); }
 
+/* Sistema 2-estados: atingiu (verde) ou não (cinza/vermelho).
+   Removido o estado intermediário amarelo. */
 function rateColor(v, m) {
-  if (m === null || m === undefined) return '#6b7069';
-  return v >= m ? '#22c55e' : v >= m*0.7 ? '#f5a623' : '#ef4444';
+  if (m === null || m === undefined) return '#6B7069';
+  return v >= m ? '#16a34a' : '#6B7069';
 }
 function rateBg(v, m) {
-  if (m === null || m === undefined) return 'rgba(139,144,168,.12)';
-  return v >= m ? 'rgba(34,197,94,.15)' : v >= m*0.7 ? 'rgba(245,166,35,.15)' : 'rgba(239,68,68,.15)';
+  if (m === null || m === undefined) return 'rgba(107,112,105,.10)';
+  return v >= m ? 'rgba(22,163,74,.12)' : 'rgba(107,112,105,.10)';
 }
-function rateIcon(v, m) {
-  if (m === null || m === undefined) return '';
-  return v >= m ? '✅' : v >= m*0.7 ? '⚠️' : '❌';
-}
+function rateIcon() { return ''; /* não usar emojis nos números */ }
 
 /* ── Pyramid renderer ────────────────────────────────── */
 function renderPyramid(containerId, steps) {
@@ -1223,22 +1400,22 @@ function renderLossReasons() {
     if (sub) sub.textContent = `${total} perda(s) · ${label}`;
     const list = document.getElementById(listId);
     if (!list) return;
-    if (total === 0) { list.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:22px">Sem perdas no período</div>'; return; }
+    if (total === 0) { list.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:32px 0">Sem perdas no período.</div>'; return; }
     const max = sorted[0][1];
-    list.innerHTML = sorted.map(([reason, n]) => {
-      const pct = (n/total*100).toFixed(0);
-      const w   = (n/max*100).toFixed(0);
-      return `
-        <div style="margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
-            <span style="color:var(--text);font-weight:500">${reason}</span>
-            <span style="color:var(--muted);font-variant-numeric:tabular-nums"><b style="color:var(--text)">${n}</b> · ${pct}%</span>
-          </div>
-          <div style="height:6px;background:rgba(239,68,68,.08);border-radius:4px;overflow:hidden">
-            <div style="width:${w}%;height:100%;background:linear-gradient(90deg,#ef4444,#f87171);border-radius:4px"></div>
-          </div>
-        </div>`;
-    }).join('');
+    list.innerHTML = `
+      <div class="ds-rank">
+        ${sorted.map(([reason, n]) => {
+          const pct = (n/total*100).toFixed(0);
+          const w   = (n/max*100).toFixed(0);
+          return `<div class="item danger">
+            <div class="row1">
+              <div class="lbl">${reason}</div>
+              <div class="meta"><b>${n}</b> · ${pct}%</div>
+            </div>
+            <div class="bar"><div class="fill" style="width:${w}%"></div></div>
+          </div>`;
+        }).join('')}
+      </div>`;
   };
   tallyAndRender(sdrLosses, 'loss-sdr-list', 'loss-sdr-sub', 'filtro por data de criação do lead');
   tallyAndRender(closerLosses, 'loss-closer-list', 'loss-closer-sub', 'filtro por data de fechamento');
@@ -1326,12 +1503,16 @@ function renderComparison(d) {
       ['Perdidos',    fmt(b.lost)+' ('+pct(b.lost,b.total)+'%)'],
     ]},
   ];
+  const chMap = {'SDR Digital':'meta','Closer':'duque','Duque':'org','BDR':'google'};
   document.getElementById('cmp-grid').innerHTML = cols.map(col => `
-    <div class="cmp-col" style="border-top:3px solid ${col.color}">
-      <div class="ch" style="color:${col.color}">${col.name}</div>
-      ${col.rows.map(([k,v]) => `
-        <div class="cmp-row"><span class="ck">${k}</span><span class="cv">${v}</span></div>
-      `).join('')}
+    <div class="ds-chip ${chMap[col.name]||''}" style="border-top-color:${col.color}">
+      <div class="ch-lbl">${col.name}</div>
+      ${col.rows.map(([k,v], i) => i === 0
+        ? `<div class="ch-val">${v}</div><div class="ch-sub">${k}</div>`
+        : `<div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:5px 0;border-top:1px solid var(--border)">
+            <span>${k}</span><span style="color:var(--text);font-weight:600">${v}</span>
+          </div>`
+      ).join('')}
     </div>`).join('');
 }
 
@@ -1777,6 +1958,99 @@ function renderAnalises() {
         <td>${flag}</td></tr>`;
     }).join('');
   }
+
+  // ════════════════════════════════════════════════════════
+  // Hero KPIs e Top 3 do Perfil do Qualificado (sistema novo)
+  // ════════════════════════════════════════════════════════
+  (function renderPerfilHero() {
+    const OFF = new Set(['D','E','F']);
+    const validAud = sdr.filter(l => !isInvalidAud(l.audience));
+    const valid = sdr.filter(l => l.score);
+    const scoreA = valid.filter(l => l.score === 'A').length;
+    const scoreB = valid.filter(l => l.score === 'B').length;
+    const offN   = valid.filter(l => OFF.has(l.score)).length;
+    const totalQualif = sdr.filter(l => l.qualified).length;
+
+    const kpisEl = document.getElementById('perfil-score-kpis');
+    if (kpisEl) {
+      const kpis = [
+        {lbl:'Score A · alta qualidade',  val:scoreA, sub: valid.length > 0 ? (scoreA/valid.length*100).toFixed(1)+'% dos com score' : '—', variant:'accent'},
+        {lbl:'Score B · decente',         val:scoreB, sub: valid.length > 0 ? (scoreB/valid.length*100).toFixed(1)+'% dos com score' : '—', variant:''},
+        {lbl:'Fora do perfil · D/E/F',    val:offN,   sub: valid.length > 0 ? (offN/valid.length*100).toFixed(1)+'% desqualificados' : '—', variant:''},
+        {lbl:'Qualificados (total)',      val:totalQualif, sub: sdr.length > 0 ? (totalQualif/sdr.length*100).toFixed(1)+'% dos leads' : '—', variant:''},
+      ];
+      kpisEl.innerHTML = kpis.map(k => `
+        <div class="ds-kpi ${k.variant}">
+          <div class="lbl">${k.lbl}</div>
+          <div class="val">${k.val}</div>
+          <div class="sub">${k.sub}</div>
+        </div>
+      `).join('');
+    }
+
+    // Top 3 públicos por Score A+B
+    const audMap = {};
+    validAud.forEach(l => {
+      if (!audMap[l.audience]) audMap[l.audience] = {tot:0, ab:0};
+      audMap[l.audience].tot++;
+      if (l.score === 'A' || l.score === 'B') audMap[l.audience].ab++;
+    });
+    const topAudList = Object.entries(audMap)
+      .filter(([,d]) => d.tot >= 5)
+      .map(([aud,d]) => ({aud, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
+      .sort((a,b) => b.pct - a.pct)
+      .slice(0,3);
+    const audEl = document.getElementById('perfil-top-aud');
+    if (audEl) {
+      const maxAB = Math.max(...topAudList.map(t => t.ab), 1);
+      audEl.innerHTML = topAudList.length > 0 ? `
+        <div class="ds-rank">
+          ${topAudList.map((r, i) => `
+            <div class="item medal-${i+1}">
+              <div class="row1">
+                <div class="lbl">${r.aud}</div>
+                <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
+              </div>
+              <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">Sem amostra suficiente (mínimo 5 leads/público).</div>';
+    }
+
+    // Top 3 criativos por Score A+B
+    const _normCre = c => (c||'').split('|')[0].trim();
+    const criMap = {};
+    sdr.filter(l => l.creative && !isInvalidAud(l.creative)).forEach(l => {
+      const c = _normCre(l.creative);
+      if (!c) return;
+      if (!criMap[c]) criMap[c] = {tot:0, ab:0};
+      criMap[c].tot++;
+      if (l.score === 'A' || l.score === 'B') criMap[c].ab++;
+    });
+    const topCriList = Object.entries(criMap)
+      .filter(([,d]) => d.tot >= 5)
+      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
+      .sort((a,b) => b.pct - a.pct)
+      .slice(0,3);
+    const criEl = document.getElementById('perfil-top-cri');
+    if (criEl) {
+      const maxAB = Math.max(...topCriList.map(t => t.ab), 1);
+      criEl.innerHTML = topCriList.length > 0 ? `
+        <div class="ds-rank">
+          ${topCriList.map((r, i) => `
+            <div class="item medal-${i+1}">
+              <div class="row1">
+                <div class="lbl">${r.c}</div>
+                <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
+              </div>
+              <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">Sem amostra suficiente (mínimo 5 leads/criativo).</div>';
+    }
+  })();
 
   // ── Render HTML ───────────────────────────────────────────────────────────
   const periodLbl = ws.length <= 1 ? 'W3 (7d)' : ws.length <= 2 ? 'W2–W3 (14d)' : 'Abril (30d)';
@@ -2427,161 +2701,142 @@ function renderDiagnostico() {
     (~${gargalo.lost} leads perdidos nesta transição). Resolver este ponto tem o maior impacto na qualificação.
   `;
 
-  // ── Render: Top Alavancas (3 cards) ────────────────────
+  // ── Render: Top Alavancas · 3 cards (1 laranja sólido) ────
+  const botMult = txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'mais';
   const alavancas = [
     {
-      titulo: '🤖 Conclusão do Bot',
-      kpi: fmtP(txBotC) + ' vs ' + fmtP(txBotI),
-      sub: `Bot concluído qualifica ${txBotI > 0 ? (txBotC/txBotI).toFixed(1)+'×' : 'mais'} que incompleto`,
-      acao: `Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Reduzir abandono é a alavanca #1.`,
-      color: '#a855f7'
+      lbl: 'Conclusão do Bot',
+      val: fmtP(txBotC) + ' vs ' + fmtP(txBotI),
+      sub: `Bot concluído qualifica ${botMult} que incompleto · hoje ${fmtP(botC.length/total*100)} concluem`,
+      variant: 'accent'  // alavanca de maior impacto
     },
     {
-      titulo: topAud.length > 0 ? '🎯 Público de Alta Qualif.' : '🎯 Públicos',
-      kpi: topAud.length > 0 ? fmtP(topAud[0].txQ) : '—',
-      sub: topAud.length > 0 ? topAud[0].aud.substring(0,55) : 'sem dados',
-      acao: topAud.length > 0 ? `Escalar este público pode trazer +${Math.round(topAud[0].txQ - txQ)}pp em tx. qualif.` : 'Sem amostra suficiente.',
-      color: '#3b82f6'
+      lbl: topAud.length > 0 ? 'Público top' : 'Públicos',
+      val: topAud.length > 0 ? fmtP(topAud[0].txQ) : '—',
+      sub: topAud.length > 0
+        ? topAud[0].aud.substring(0,55) + ' · escalar pode trazer +' + Math.round(topAud[0].txQ - txQ) + 'pp'
+        : 'sem amostra suficiente',
+      variant: ''
     },
     {
-      titulo: chRows[0].label,
-      kpi: fmtP(chRows[0].txQ),
-      sub: `${chRows[0].n} leads · ${chRows[0].q} qualif`,
-      acao: chRows.length > 1 ? `Qualifica ${(chRows[0].txQ/Math.max(chRows[1].txQ,0.01)).toFixed(1)}× mais que ${chRows[1].label.replace(/^\W+/,'')}` : '',
-      color: chRows[0].color
+      lbl: chRows[0].label.replace(/^\W+/,''),
+      val: fmtP(chRows[0].txQ),
+      sub: `${chRows[0].n} leads · ${chRows[0].q} qualif` +
+           (chRows.length > 1
+             ? ` · qualifica ${(chRows[0].txQ/Math.max(chRows[1].txQ,0.01)).toFixed(1)}× mais que ${chRows[1].label.replace(/^\W+/,'')}`
+             : ''),
+      variant: ''
     }
   ];
   document.getElementById('diag-alavancas').innerHTML = alavancas.map(a => `
-    <div class="card" style="border-top:3px solid ${a.color}">
-      <div style="font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">${a.titulo}</div>
-      <div style="font-size:32px;font-weight:900;color:${a.color};line-height:1.1;margin:6px 0">${a.kpi}</div>
-      <div style="font-size:12px;color:var(--text);margin-bottom:8px">${a.sub}</div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">${a.acao}</div>
+    <div class="ds-kpi ${a.variant}">
+      <div class="lbl">${a.lbl}</div>
+      <div class="val">${a.val}</div>
+      <div class="sub">${a.sub}</div>
     </div>
   `).join('');
 
-  // ── Render: Bot ────────────────────────────────────────
+  // ── Render: Bot · ranking horizontal ────────────────────
   const maxBot = Math.max(botC.length, botI.length, 1);
+  const botItems = [
+    {n:'Bot concluído',  c:botC.length, q:botCQual, tx:txBotC, cls:'success'},
+    {n:'Bot incompleto', c:botI.length, q:botIQual, tx:txBotI, cls:'danger'},
+  ];
+  const ifBot70 = Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100);
   document.getElementById('diag-bot-content').innerHTML = `
-    <div style="padding:14px 0">
-      ${[
-        {n:'✅ Bot concluído',  c:botC.length, q:botCQual, tx:txBotC, color:'#22c55e'},
-        {n:'⚠️ Bot incompleto', c:botI.length, q:botIQual, tx:txBotI, color:'#ef4444'},
-      ].map(b => `
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-            <div style="font-size:13px;font-weight:700">${b.n}</div>
-            <div style="font-size:11px;color:var(--muted)">
-              <b style="color:var(--text);font-size:16px">${b.c}</b> leads ·
-              <b style="color:${b.color};font-size:16px">${b.q}</b> qualif ·
-              <b style="color:${b.color}">${fmtP(b.tx)}</b> tx. qualif
-            </div>
+    <div class="ds-rank">
+      ${botItems.map(b => `
+        <div class="item ${b.cls}">
+          <div class="row1">
+            <div class="lbl">${b.n}</div>
+            <div class="meta"><b>${b.c}</b> leads · <b>${b.q}</b> qualif · <b>${fmtP(b.tx)}</b> tx. qualif</div>
           </div>
-          <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
-            <div style="width:${(b.c/maxBot*100).toFixed(0)}%;height:100%;background:linear-gradient(90deg,${b.color},${b.color}cc);border-radius:6px"></div>
-          </div>
+          <div class="bar"><div class="fill" style="width:${(b.c/maxBot*100).toFixed(0)}%"></div></div>
         </div>
       `).join('')}
-      <div class="insight green">
-        💡 <b>Insight:</b> Quem completa o bot qualifica
-        <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'muito mais'}</b>.
-        Hoje, ${fmtP(botC.length/total*100)} concluem (${botC.length} de ${total}).
-        Se 70% concluíssem (vs ${(botC.length/total*100).toFixed(0)}%), a qualificação total subiria de
-        <b>${qualif}</b> para ~<b>${Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100)}</b>
-        leads qualificados (${fmtP((total*0.70*txBotC/100 + total*0.30*txBotI/100)/total*100)} tx. qualif).
-      </div>
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
+      Quem completa o bot qualifica <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'muito mais'}</b>.
+      Hoje, ${fmtP(botC.length/total*100)} concluem (${botC.length} de ${total}).
+      Se 70% concluíssem, a qualificação total subiria de <b>${qualif}</b> para ~<b>${ifBot70}</b>
+      leads (${fmtP(ifBot70/total*100)} tx. qualif).
     </div>`;
 
-  // ── Render: Canais ─────────────────────────────────────
-  const maxCh = Math.max(...chRows.map(r => r.n), 1);
+  // ── Render: Canais · ranking horizontal ─────────────────
+  const maxChQ = Math.max(...chRows.map(r => r.q), 1);
   document.getElementById('diag-canal-content').innerHTML = `
-    <div style="padding:14px 0">
-      ${chRows.map((r,i) => {
-        const w = (r.n/maxCh*100).toFixed(0);
-        const medal = i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'';
-        return `
-          <div style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:700">${medal}${r.label}</div>
-              <div style="font-size:11px;color:var(--muted)">
-                <b style="color:var(--text);font-size:16px">${r.q}</b> qualif ·
-                <b style="color:${r.color}">${fmtP(r.txQ)}</b> tx. qualif · ${r.n} leads
-              </div>
-            </div>
-            <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
-              <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${r.color},${r.color}cc);border-radius:6px"></div>
-            </div>
-          </div>`;
-      }).join('')}
-      <div class="insight blue">
-        🎯 <b>Insight:</b> ${chRows[0].label} lidera com ${fmtP(chRows[0].txQ)} de qualificação.
-        ${chRows.length > 1 && chRows[chRows.length-1].txQ > 0 ? `Investir em ${chRows[0].label} ao invés de ${chRows[chRows.length-1].label.replace(/^\W+/,'')} pode aumentar qualif em ${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(1)}pp.` : ''}
-      </div>
-    </div>`;
+    <div class="ds-rank">
+      ${chRows.map((r, i) => `
+        <div class="item medal-${i+1}">
+          <div class="row1">
+            <div class="lbl">${r.label.replace(/^\W+/,'')}</div>
+            <div class="meta"><b>${r.q}</b> qualif · <b>${fmtP(r.txQ)}</b> tx. qualif · ${r.n} leads</div>
+          </div>
+          <div class="bar"><div class="fill" style="width:${(r.q/maxChQ*100).toFixed(0)}%"></div></div>
+        </div>
+      `).join('')}
+    </div>
+    ${chRows.length > 1 && chRows[chRows.length-1].txQ > 0
+      ? `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
+          ${chRows[0].label.replace(/^\W+/,'')} lidera com ${fmtP(chRows[0].txQ)}. Realocar verba do canal mais fraco
+          (${chRows[chRows.length-1].label.replace(/^\W+/,'')}, ${fmtP(chRows[chRows.length-1].txQ)}) pode aumentar
+          qualif em <b>${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(1)}pp</b>.
+        </div>`
+      : ''}`;
 
-  // ── Render: Sinais preditivos ──────────────────────────
+  // ── Render: Sinais preditivos · ranking horizontal ─────
+  const maxDiff = Math.max(...sinais.map(s => Math.abs(s.diff)), 1);
   document.getElementById('diag-sinais-content').innerHTML = `
-    <table style="margin-top:8px"><thead><tr>
-      <th>Sinal preditivo</th><th>% nos qualificados</th><th>% nos não-qualificados</th><th>Diferença</th>
-    </tr></thead><tbody>
+    <div class="ds-rank">
       ${sinais.map(s => {
-        const cls = s.diff > 15 ? 'tc-g' : s.diff > 5 ? 'tc-o' : 'tc-p';
-        const rowCls = s.diff > 15 ? ' class="row-green"' : s.diff > 5 ? '' : '';
+        const cls = s.diff > 15 ? 'success' : s.diff > 5 ? '' : 'muted';
         const sig = s.diff >= 0 ? '+' : '';
-        return `<tr${rowCls}>
-          <td><b>${s.l}</b></td>
-          <td class="num ${cls}">${fmtP(s.pQ)}</td>
-          <td class="num">${fmtP(s.pN)}</td>
-          <td class="num ${cls}"><b>${sig}${s.diff.toFixed(1)}pp</b></td>
-        </tr>`;
+        return `<div class="item ${cls}">
+          <div class="row1">
+            <div class="lbl">${s.l}</div>
+            <div class="meta">qualif <b>${fmtP(s.pQ)}</b> · não-q ${fmtP(s.pN)} · Δ <b>${sig}${s.diff.toFixed(1)}pp</b></div>
+          </div>
+          <div class="bar"><div class="fill" style="width:${(Math.abs(s.diff)/maxDiff*100).toFixed(0)}%"></div></div>
+        </div>`;
       }).join('')}
-    </tbody></table>
-    <div class="insight green" style="margin-top:14px">
-      💡 <b>Perfil ideal:</b> ${sinais.filter(s => s.diff > 10).map(s => s.l.replace(/<[^>]*>/g,'')).slice(0,3).join(' · ') || '—'}.
-      Leads com 3+ sinais têm <b>${(txQ * 2).toFixed(0)}%+ de chance</b> de qualificar.
+    </div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
+      <b>Perfil ideal:</b> ${sinais.filter(s => s.diff > 10).map(s => s.l).slice(0,3).join(' · ') || '—'}.
+      Leads com 3+ sinais têm chance bem acima da média de qualificar.
     </div>
   `;
 
-  // ── Render: Plano de ação ──────────────────────────────
+  // ── Render: Plano de ação · 4 cards (#1 preto sólido) ────
+  const ifBotImpacto = Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100 - qualif);
   const acoes = [
-    {
-      n: '1', titulo: 'Reduzir abandono no bot de qualificação',
-      detalhe: `Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Investigar onde abandonam — em que pergunta? Encurtar fluxo, melhorar mensagens, retomar quem parou. Esta é a alavanca de maior impacto.`,
-      impacto: `Levar conclusão de ${(botC.length/total*100).toFixed(0)}% para 70% gera +${Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100 - qualif)} qualif/mês.`,
-      color: '#a855f7'
-    },
-    {
-      n: '2', titulo: `Escalar canal com maior taxa de qualificação`,
-      detalhe: `${chRows[0].label} qualifica ${fmtP(chRows[0].txQ)} (vs ${fmtP(chRows[chRows.length-1].txQ)} do canal mais fraco). Realocar verba do pior para o melhor canal.`,
-      impacto: chRows.length > 1 ? `+${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(0)}pp de tx. qualif por R$ realocado.` : '—',
-      color: chRows[0].color
-    },
-    {
-      n: '3', titulo: 'Priorizar públicos/criativos com perfil preditivo',
-      detalhe: topAud.length > 0
-        ? `Top 3 públicos com >5 leads: ${topAud.map(a => a.aud.substring(0,40)+' ('+fmtP(a.txQ)+')').join(' · ')}`
-        : 'Sem amostra suficiente — necessário mais leads por público.',
-      impacto: topAud.length > 0 ? `Concentrar verba em públicos top reduz CPL qualificado e aumenta volume qualif.` : '—',
-      color: '#3b82f6'
-    },
-    {
-      n: '4', titulo: 'Refinar formulário com base nos sinais preditivos',
-      detalhe: `Os campos com Δ > 15pp (qualif vs não-qualif) são os mais preditivos. Ajustar copy do anúncio e qualificação para reforçar perfil: ${sinais.filter(s => s.diff > 10).slice(0,2).map(s => s.l).join(' + ') || '—'}.`,
-      impacto: 'Aumenta densidade de leads do perfil ideal.',
-      color: '#22c55e'
-    },
+    {n:'01', titulo:'Reduzir abandono no bot',
+     detalhe:`Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Investigar onde abandonam, encurtar fluxo, retomar quem parou. Alavanca de maior impacto.`,
+     impacto:`Conclusão de ${(botC.length/total*100).toFixed(0)}% → 70% gera +${ifBotImpacto} qualif/mês`,
+     variant:'ink'},
+    {n:'02', titulo:'Escalar canal de maior tx. qualificação',
+     detalhe:`${chRows[0].label.replace(/^\W+/,'')} qualifica ${fmtP(chRows[0].txQ)} vs ${fmtP(chRows[chRows.length-1].txQ)} do mais fraco. Realocar verba do pior para o melhor.`,
+     impacto: chRows.length > 1 ? `+${(chRows[0].txQ - chRows[chRows.length-1].txQ).toFixed(0)}pp de tx. qualif por R$ realocado` : '—',
+     variant:''},
+    {n:'03', titulo:'Priorizar públicos/criativos preditivos',
+     detalhe: topAud.length > 0
+       ? `Top 3 públicos: ${topAud.map(a => a.aud.substring(0,30)+' ('+fmtP(a.txQ)+')').join(' · ')}`
+       : 'Sem amostra suficiente — necessário mais leads por público.',
+     impacto: topAud.length > 0 ? 'Concentra verba em públicos com maior densidade qualif' : '—',
+     variant:''},
+    {n:'04', titulo:'Refinar formulário com sinais preditivos',
+     detalhe:`Campos com Δ > 15pp são os mais preditivos: ${sinais.filter(s => s.diff > 10).slice(0,2).map(s => s.l).join(' + ') || '—'}. Ajustar copy do anúncio para reforçar esse perfil.`,
+     impacto:'Aumenta densidade de leads do perfil ideal',
+     variant:''},
   ];
   document.getElementById('diag-plano').innerHTML = `
-    <h3>Quatro alavancas priorizadas para subir a tx. qualificação</h3>
-    <div class="sub">Ordenadas por impacto estimado · use as métricas das outras abas para detalhar cada ação</div>
-    <div style="display:grid;gap:12px;margin-top:16px">
+    <div class="ds-grid-2">
       ${acoes.map(a => `
-        <div style="display:grid;grid-template-columns:48px 1fr;gap:14px;padding:14px;background:var(--surface2);border-radius:10px;border-left:4px solid ${a.color}">
-          <div style="font-size:24px;font-weight:900;color:${a.color};text-align:center">${a.n}</div>
-          <div>
-            <div style="font-size:14px;font-weight:800;margin-bottom:4px">${a.titulo}</div>
-            <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">${a.detalhe}</div>
-            <div style="font-size:11px;color:${a.color};font-weight:700">📈 ${a.impacto}</div>
+        <div class="ds-kpi ${a.variant}">
+          <div class="lbl">${a.n} · ${a.titulo}</div>
+          <div style="font-size:14px;font-weight:500;line-height:1.55;margin:6px 0">${a.detalhe}</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.02em;padding-top:10px;
+            border-top:1px solid ${a.variant ? 'rgba(255,255,255,.18)' : 'var(--border)'}">
+            ${a.impacto}
           </div>
         </div>
       `).join('')}
@@ -2609,49 +2864,68 @@ renderMensuracao();
 ================================================================ -->
 <div id="tab-mensuracao" class="tab-pane">
 <div class="main">
-  <div class="period-bar">
-    <span class="plbl">Período:</span>
-    <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-    <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-    <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-    <button class="pbtn" data-period="w3" onclick="setGlobalPeriod('w3',this)">Esta semana</button>
-    <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
-  </div>
-  <div class="update-bar">🕐 Última atualização: <b>18/04/2026</b> · Fonte: Kommo CRM + Meta Ads API</div>
 
-  <div class="sec">Mensuração · Abril 2026 · Kommo CRM + Meta Ads API</div>
-  <div class="mens-kpi" id="mens-kpi"></div>
-  <div class="tcard" style="overflow-x:auto;margin-bottom:20px">
-    <div class="thead" style="flex-wrap:wrap;gap:8px">
-      <h3>📊 Mensuração por Canal · Semana a Semana</h3>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <span class="bdg g">▲ Acima da meta</span>
-        <span class="bdg o">◉ Próximo da meta</span>
-        <span class="bdg r">▼ Abaixo da meta</span>
+  <!-- Hero compacto -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Evolução Semanal</div>
+      <h2>Como o funil performou semana a semana</h2>
+      <div class="hl-sub">Investimento, leads, qualificação e vendas por semana — com sparkline de tendência e barra de progresso vs meta.</div>
+      <div class="hl-pills">
+        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
+        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
+        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
+        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
       </div>
     </div>
-    <div id="mens-table-wrap" style="overflow-x:auto"></div>
-    <p class="source-note" style="padding:8px 16px">
-      📡 Leads: Kommo CRM · 💰 Investimento: Meta Ads API (act_2352574621900370) · Google Ads W2 manual (CSV) · Dados de 01/04 a 18/04/2026
-    </p>
+    <div></div>
   </div>
-  <div class="g2" style="margin-top:16px">
-    <div class="card">
-      <h3>📊 Leads por Canal · Semana a Semana</h3>
-      <div class="sub">Meta · Google · Duque · Orgânico</div>
-      <div class="cw" style="height:230px"><canvas id="cMensLeads"></canvas></div>
+
+  <!-- Hero KPIs · 4 cards grandes (1 laranja sólido) -->
+  <div class="ds-grid-4" id="evol-hero-kpis">
+    <!-- preenchido por JS · 4 KPIs com sparkline + Δ -->
+  </div>
+
+  <!-- Aquisição · Qualificação · Conversão -->
+  <div class="ds-sec"><h3>Aquisição</h3><span class="sub">Investimento → Leads</span></div>
+  <div class="ds-grid-3" id="evol-aquisicao"></div>
+
+  <div class="ds-sec"><h3>Qualificação</h3><span class="sub">Volume e taxa vs meta</span></div>
+  <div class="ds-grid-2" id="evol-qualificacao"></div>
+
+  <div class="ds-sec"><h3>Conversão</h3><span class="sub">Reuniões agendadas → realizadas → propostas → vendas</span></div>
+  <div class="ds-grid-3" id="evol-conversao"></div>
+
+  <!-- Charts (mantidos) -->
+  <div class="ds-sec"><h3>Visão semanal por canal</h3></div>
+  <div class="ds-grid-2">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Leads por Canal</h4><span class="sub">Meta · Google · Duque · Orgânico</span></div>
+      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensLeads"></canvas></div>
     </div>
-    <div class="card">
-      <h3>📈 Funil de Conversão · Semana a Semana</h3>
-      <div class="sub">Total inbound · Qualificados · Reuniões realizadas · Vendas</div>
-      <div class="cw" style="height:230px"><canvas id="cMensFunil"></canvas></div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil de Conversão</h4><span class="sub">Inbound · Qualificados · Realizadas · Vendas</span></div>
+      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensFunil"></canvas></div>
     </div>
   </div>
-  <div class="card" style="margin-top:16px">
-    <h3>💰 Investimento e CPL · Semana a Semana</h3>
-    <div class="sub">Meta vs Google — investimento total e custo por lead</div>
-    <div class="cw" style="height:200px"><canvas id="cMensInvest"></canvas></div>
+  <div class="ds-card" style="margin-top:18px">
+    <div class="ds-card-h"><h4>Investimento e CPL</h4><span class="sub">Meta vs Google · invest. total e CPL</span></div>
+    <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
   </div>
+
+  <!-- Tabela completa em accordion (default fechado) -->
+  <details class="ds-accordion">
+    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
+    <div class="acc-body">
+      <div id="mens-table-wrap" style="overflow-x:auto"></div>
+      <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
+        Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads CSV
+      </p>
+    </div>
+  </details>
+
+  <!-- KPI legado (oculto, populado para compatibilidade) -->
+  <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
 </div>
 </div>
 
@@ -3380,6 +3654,199 @@ function renderMensuracao(){
     channelCard('','CLOSER · Pipeline de Vendas',      closerRows),
     channelCard('','TOTAL INBOUND · Meta + Google + Orgânico', totalRows),
   ].join('');
+
+  // ════════════════════════════════════════════════════════
+  // Design System v2 · Hero KPIs + Aquisição / Qualif / Conversão
+  // ════════════════════════════════════════════════════════
+  const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fmtNum = v => (v||0).toLocaleString('pt-BR');
+  const _delta = (a, b) => {
+    if (!a && !b) return {cls:'',  txt:'—'};
+    if (!a) return {cls:'up',   txt:'+novo'};
+    const d = (b - a) / a * 100;
+    const sign = d > 0 ? '+' : '';
+    const cls = d > 1 ? 'up' : d < -1 ? 'down' : '';
+    return {cls, txt: sign + d.toFixed(0) + '%'};
+  };
+
+  // Hero KPIs (1 sólido laranja: Reuniões Concretizadas — resultado final do funil)
+  const heroKpis = [
+    {
+      lbl:'Investimento',
+      val:fmtBRL(tg.invest),
+      sub: 'Meta ' + fmtBRL(mg.invest) + ' · Google ' + fmtBRL(gg.invest),
+      delta: _delta(tot[0]?.invest, tot[tot.length-1]?.invest),
+      spark: tot.map(t => t.invest),
+      color: '#1a1a1a',
+      variant: ''
+    },
+    {
+      lbl:'Leads totais',
+      val:fmtNum(tg.leads),
+      sub: 'Meta ' + mg.leads + ' · Google ' + gg.leads + ' · Org ' + og.leads,
+      delta: _delta(tot[0]?.leads, tot[tot.length-1]?.leads),
+      spark: tot.map(t => t.leads),
+      color: '#3b82f6',
+      variant: ''
+    },
+    {
+      lbl:'Reuniões concretizadas',
+      val:fmtNum(tg.realiz),
+      sub: tg.leads > 0 ? (tg.realiz/tg.leads*100).toFixed(1) + '% do total de leads' : 'sem leads',
+      delta: _delta(tot[0]?.realiz, tot[tot.length-1]?.realiz),
+      spark: tot.map(t => t.realiz),
+      color: '#fff',
+      variant: 'accent'
+    },
+    {
+      lbl:'CPO · custo por agendamento',
+      val: tg.agend > 0 ? fmtBRL(tg.invest/tg.agend) : '—',
+      sub: 'Investimento ÷ ' + tg.agend + ' agendamentos',
+      delta: tot.length > 1 && tot[0].agend > 0 && tot[tot.length-1].agend > 0
+        ? _delta(tot[0].invest/tot[0].agend, tot[tot.length-1].invest/tot[tot.length-1].agend)
+        : {cls:'', txt:'—'},
+      spark: tot.map(t => t.agend > 0 ? t.invest/t.agend : 0),
+      color: '#1a1a1a',
+      variant: ''
+    },
+  ];
+
+  // Render hero KPIs
+  const evolHero = document.getElementById('evol-hero-kpis');
+  if (evolHero) {
+    evolHero.innerHTML = heroKpis.map((k, i) => `
+      <div class="ds-kpi ${k.variant}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="lbl">${k.lbl}</div>
+          ${k.delta.txt !== '—' ? `<span class="delta-pill ${k.delta.cls}">${k.delta.txt}</span>` : ''}
+        </div>
+        <div class="val">${k.val}</div>
+        <div class="sub">${k.sub}</div>
+        <canvas class="spark" id="evol-spark-${i}"></canvas>
+      </div>
+    `).join('');
+
+    // Sparklines
+    setTimeout(() => {
+      heroKpis.forEach((k, i) => {
+        const c = document.getElementById('evol-spark-'+i);
+        if (!c || typeof Chart === 'undefined') return;
+        if (window._evolSparks?.[i]) window._evolSparks[i].destroy();
+        window._evolSparks = window._evolSparks || [];
+        const isAccent = k.variant === 'accent';
+        const lineColor = isAccent ? '#fff' : (k.color === '#1a1a1a' ? '#1a1a1a' : k.color);
+        const fillColor = isAccent ? 'rgba(255,255,255,.25)' : (k.color === '#1a1a1a' ? 'rgba(26,26,26,.08)' : k.color+'18');
+        window._evolSparks[i] = new Chart(c, {
+          type:'line',
+          data:{labels:lbls.map(l=>l.split('·')[0].trim()),
+            datasets:[{data:k.spark, borderColor:lineColor, backgroundColor:fillColor,
+              fill:true, tension:.4, borderWidth:2,
+              pointRadius:(_,ctx)=>ctx.dataIndex===k.spark.length-1?4:0,
+              pointBackgroundColor:lineColor, pointBorderColor:'#fff', pointBorderWidth:2}]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false},tooltip:{enabled:true,
+              callbacks:{label:ctx=>String(Math.round(ctx.parsed.y).toLocaleString('pt-BR'))}}},
+            scales:{x:{display:false},y:{display:false,beginAtZero:true}},
+            elements:{line:{borderCapStyle:'round'}}}
+        });
+      });
+    }, 100);
+  }
+
+  // ── MetricCard helper (com progress bar opcional vs meta) ──
+  const metricCard = ({lbl, val, sub, delta, progPct, progMeta}) => {
+    const dPill = delta && delta.txt !== '—' ? `<span class="delta-pill ${delta.cls}">${delta.txt}</span>` : '';
+    const prog = (progPct !== undefined) ? (() => {
+      const cls = progPct >= 100 ? '' : 'below';
+      return `
+        <div class="ds-prog"><div class="fill ${cls}" style="width:${Math.min(progPct,100).toFixed(0)}%"></div></div>
+        <div class="ds-prog-meta"><span>0%</span><span>Meta <b>${progMeta}%</b></span></div>`;
+    })() : '';
+    return `
+      <div class="ds-metric">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div class="lbl">${lbl}</div>${dPill}
+        </div>
+        <div class="val">${val}</div>
+        ${sub ? `<div class="sub">${sub}</div>` : ''}
+        ${prog}
+      </div>`;
+  };
+
+  // ── Aquisição (Invest, Leads, CPL) ──
+  const evolAq = document.getElementById('evol-aquisicao');
+  if (evolAq) {
+    const cpl = tg.leads > 0 ? tg.invest/tg.leads : 0;
+    const cplPrev = tot[0].leads > 0 && tot[tot.length-1].leads > 0
+      ? _delta(tot[0].invest/tot[0].leads, tot[tot.length-1].invest/tot[tot.length-1].leads)
+      : {cls:'',txt:'—'};
+    evolAq.innerHTML = [
+      metricCard({lbl:'Valor investido', val:fmtBRL(tg.invest), sub:'Meta + Google',
+        delta:_delta(tot[0]?.invest, tot[tot.length-1]?.invest)}),
+      metricCard({lbl:'Leads (Kommo CRM)', val:fmtNum(tg.leads), sub:'Inbound · todos os canais',
+        delta:_delta(tot[0]?.leads, tot[tot.length-1]?.leads)}),
+      metricCard({lbl:'CPL · custo por lead', val:cpl > 0 ? fmtBRL(cpl) : '—',
+        sub:'Investimento ÷ leads', delta:cplPrev}),
+    ].join('');
+  }
+
+  // ── Qualificação (Qualif volume + % Qualif vs meta 50%) ──
+  const evolQu = document.getElementById('evol-qualificacao');
+  if (evolQu) {
+    const txQ = tg.leads > 0 ? tg.qualif/tg.leads*100 : 0;
+    const txQDelta = tot.length > 1 && tot[0].leads > 0 && tot[tot.length-1].leads > 0
+      ? (() => {
+          const a = tot[0].qualif/tot[0].leads*100;
+          const b = tot[tot.length-1].qualif/tot[tot.length-1].leads*100;
+          const d = b - a;
+          return {cls: d>1?'up':d<-1?'down':'', txt:(d>0?'+':'')+d.toFixed(1)+'pp'};
+        })()
+      : {cls:'',txt:'—'};
+    evolQu.innerHTML = [
+      metricCard({lbl:'Qualificados (volume)', val:fmtNum(tg.qualif),
+        sub:'Leads que avançaram para qualif.',
+        delta:_delta(tot[0]?.qualif, tot[tot.length-1]?.qualif)}),
+      metricCard({lbl:'Tx. Qualificação', val:txQ.toFixed(1)+'%',
+        sub:`${tg.qualif} de ${tg.leads} leads`,
+        delta:txQDelta, progPct: txQ/G.txQ*100, progMeta:G.txQ}),
+    ].join('');
+  }
+
+  // ── Conversão (Agend, Realiz, CPO, %Agend vs 40%, %Comp vs 65%, Qualif→Agend vs 60%) ──
+  const evolCv = document.getElementById('evol-conversao');
+  if (evolCv) {
+    const txA = tg.leads > 0 ? tg.agend/tg.leads*100 : 0;
+    const txC = tg.agend > 0 ? tg.realiz/tg.agend*100 : 0;
+    const qToA = tg.qualif > 0 ? tg.agend/tg.qualif*100 : 0;
+    const cpo = tg.agend > 0 ? tg.invest/tg.agend : 0;
+    const ppDelta = (a, b) => {
+      if (a == null || b == null || !isFinite(a) || !isFinite(b)) return {cls:'',txt:'—'};
+      const d = b - a;
+      return {cls: d>1?'up':d<-1?'down':'', txt:(d>0?'+':'')+d.toFixed(1)+'pp'};
+    };
+    const _txA0 = tot[0].leads > 0 ? tot[0].agend/tot[0].leads*100 : null;
+    const _txAL = tot[tot.length-1].leads > 0 ? tot[tot.length-1].agend/tot[tot.length-1].leads*100 : null;
+    const _txC0 = tot[0].agend > 0 ? tot[0].realiz/tot[0].agend*100 : null;
+    const _txCL = tot[tot.length-1].agend > 0 ? tot[tot.length-1].realiz/tot[tot.length-1].agend*100 : null;
+    const _qta0 = tot[0].qualif > 0 ? tot[0].agend/tot[0].qualif*100 : null;
+    const _qtaL = tot[tot.length-1].qualif > 0 ? tot[tot.length-1].agend/tot[tot.length-1].qualif*100 : null;
+
+    evolCv.innerHTML = [
+      metricCard({lbl:'Reuniões agendadas', val:fmtNum(tg.agend),
+        delta:_delta(tot[0]?.agend, tot[tot.length-1]?.agend)}),
+      metricCard({lbl:'Reuniões concretizadas', val:fmtNum(tg.realiz),
+        delta:_delta(tot[0]?.realiz, tot[tot.length-1]?.realiz)}),
+      metricCard({lbl:'CPO', val:cpo > 0 ? fmtBRL(cpo) : '—',
+        sub:'Investimento ÷ agendadas',
+        delta:tot.length > 1 ? _delta(tot[0].agend>0?tot[0].invest/tot[0].agend:0, tot[tot.length-1].agend>0?tot[tot.length-1].invest/tot[tot.length-1].agend:0) : {cls:'',txt:'—'}}),
+      metricCard({lbl:'Tx. Agendamento', val:txA.toFixed(1)+'%',
+        delta:ppDelta(_txA0, _txAL), progPct: txA/G.txA*100, progMeta:G.txA}),
+      metricCard({lbl:'Tx. Comparecimento', val:txC.toFixed(1)+'%',
+        delta:ppDelta(_txC0, _txCL), progPct: txC/G.txComp*100, progMeta:G.txComp}),
+      metricCard({lbl:'Qualif → Agendado', val:qToA.toFixed(1)+'%',
+        delta:ppDelta(_qta0, _qtaL), progPct: qToA/G.qToA*100, progMeta:G.qToA}),
+    ].join('');
+  }
 
   // ── Charts ────────────────────────────────────────────────────────────────
   const wkLbls = lbls.map(l => l.split('·')[0].trim());
