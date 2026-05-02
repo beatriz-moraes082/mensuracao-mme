@@ -453,10 +453,11 @@
     .kpi-tile canvas.spark{width:100%!important;height:36px!important;margin-top:4px}
 
     .kpi-grid-modern{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;
     }
     @media(max-width:1100px){.kpi-grid-modern{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:600px){.kpi-grid-modern{grid-template-columns:1fr}}
+    .kpi-grid-modern .ds-kpi canvas.spark{height:38px!important;width:100%!important;margin-top:4px}
 
     /* Section header modern */
     .sec-modern{font-size:13px;font-weight:800;letter-spacing:-.005em;
@@ -1531,19 +1532,10 @@ let META_SPEND  = null;
 let _analCharts = {};
 let _mensCharts = {};
 
-// Fetch Kommo + Meta Spend in parallel
-Promise.all([
-  fetch('data/kommo_leads.json').then(r => r.json()),
-  fetch('data/meta_spend.json').then(r => r.json()).catch(() => null),
-]).then(([kommo, meta]) => {
-  KOMMO_DATA = kommo;
-  META_SPEND = meta;
-  renderAnalises();
-  if (typeof renderDiagnostico === 'function') renderDiagnostico();
-}).catch(() => {
-  document.getElementById('analises-main').innerHTML =
-    '<div style="padding:40px;text-align:center;color:var(--danger)">⚠️ Erro ao carregar dados. Verifique se o servidor está rodando corretamente.</div>';
-});
+// Carregamento unificado em loadDashboardData (logo abaixo).
+// KOMMO_DATA / KOMMO_RAW e META_SPEND / META_RAW agora apontam pro mesmo
+// objeto, evitando race entre 2 fetchs em URLs diferentes (com e sem
+// cache-busting), que antes deixavam abas renderizando contagens diferentes.
 
 function renderAnalises() {
   if (!KOMMO_DATA) return;
@@ -2602,10 +2594,14 @@ function renderDiagnostico() {
     return {pct:d, cls:d>1?'up':d<-1?'down':'neut', txt:(d>0?'+':'')+d.toFixed(0)+'%'};
   };
 
-  const totalInvest = wkTot.reduce((s,w)=>s+w.invest,0);
   const totalRealiz = wkTot.reduce((s,w)=>s+w.realiz,0);
   const totalVendas = wkTot.reduce((s,w)=>s+w.vendas,0);
   const totalFat    = wkTot.reduce((s,w)=>s+w.fat,0);
+  // Investimento total pelo PERÍODO selecionado (não só o mês corrente)
+  // Função existente que cruza Meta+Google e respeita janela de datas.
+  const totalInvest = (typeof computeInvestForPeriod === 'function' && KOMMO_RAW && META_RAW)
+    ? computeInvestForPeriod(KOMMO_RAW, META_RAW, currentPeriod, ref)
+    : wkTot.reduce((s,w)=>s+w.invest,0);
 
   const tdLeads  = deltaTrend(wkTot[0]?.leads, wkTot[wkTot.length-1]?.leads);
   const tdQualif = deltaTrend(wkTot[0]?.qualif, wkTot[wkTot.length-1]?.qualif);
@@ -2628,18 +2624,13 @@ function renderDiagnostico() {
   ];
 
   document.getElementById('diag-kpi-grid').innerHTML = tiles.map((t, i) => `
-    <div class="kpi-tile">
-      <div class="tile-top">
-        <div>
-          <div class="tile-lbl">${t.lbl}</div>
-          <div class="tile-val">${t.val}</div>
-        </div>
-        <div class="tile-icon" style="background:${t.iconBg};color:${t.iconColor}">${t.icon}</div>
+    <div class="ds-kpi">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div class="lbl">${t.lbl}</div>
+        ${t.trend.txt && t.trend.txt !== '—' ? `<span class="delta-pill ${t.trend.cls}">${t.trend.txt}</span>` : ''}
       </div>
-      <div class="tile-sub">
-        <span class="tile-trend ${t.trend.cls}">${t.trend.txt}</span>
-        <span>${t.sub}</span>
-      </div>
+      <div class="val">${t.val}</div>
+      <div class="sub">${t.sub}</div>
       <canvas class="spark" id="spark-${i}"></canvas>
     </div>
   `).join('');
@@ -3310,10 +3301,27 @@ async function loadDashboardData() {
     ]);
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
+    // Aliases compartilhados pelo restante do dashboard — mesma fonte de verdade.
+    KOMMO_DATA = kommoRes;
+    META_SPEND = metaRes;
 
-    // Detecta meses disponíveis e define o mês padrão (mais recente)
+    // Detecta meses disponíveis. Default = mês com maior volume de leads SDR
+    // (evita cair num mês recém-virado com 1-2 leads e zero spend Meta).
     AVAILABLE_MONTHS = detectAvailableMonths(kommoRes, metaRes);
-    currentMonth = AVAILABLE_MONTHS[AVAILABLE_MONTHS.length - 1];
+    const _leadsByMonth = {};
+    for (const l of (kommoRes.sdr || [])) {
+      const m = l.month || '2026-04';
+      _leadsByMonth[m] = (_leadsByMonth[m] || 0) + 1;
+    }
+    let _bestMonth = AVAILABLE_MONTHS[0];
+    let _bestCount = -1;
+    for (const m of AVAILABLE_MONTHS) {
+      if ((_leadsByMonth[m] || 0) > _bestCount) {
+        _bestCount = _leadsByMonth[m] || 0;
+        _bestMonth = m;
+      }
+    }
+    currentMonth = _bestMonth;
     renderMonthBar();
 
     MENS_DATA = computeMensData(kommoRes, metaRes, currentMonth);
