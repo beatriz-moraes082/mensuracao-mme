@@ -59,7 +59,9 @@ def fetch_insights(level):
         'level':         level,
         'fields':        f'{level}_name,spend,impressions,clicks',
         'time_range':    f'{{"since":"{SINCE}","until":"{UNTIL}"}}',
-        'time_increment': 7,
+        # Daily: buckets de 7 dias da API desalinham com o calendário; o
+        # bucketing manual via month_of()/week_of() exige date_start diário.
+        'time_increment': 1,
         'limit':         500,
     }
     print(f'  GET {url}')

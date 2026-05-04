@@ -31,18 +31,20 @@ LOGIN_CUSTOMER_ID = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID") or None
 
 # ── Período ──────────────────────────────────────────────────────────────────
 SINCE = "2026-04-01"
-UNTIL = "2026-04-30"
+UNTIL = date.today().isoformat()
 
-WEEK_MAP = {
-    "2026-03-30": "w1", "2026-03-31": "w1", "2026-04-01": "w1", "2026-04-02": "w1",
-    "2026-04-03": "w1", "2026-04-04": "w1", "2026-04-05": "w1", "2026-04-06": "w2",
-    "2026-04-07": "w2", "2026-04-08": "w2", "2026-04-09": "w2", "2026-04-10": "w2",
-    "2026-04-11": "w2", "2026-04-12": "w2", "2026-04-13": "w3", "2026-04-14": "w3",
-    "2026-04-15": "w3", "2026-04-16": "w3", "2026-04-17": "w3", "2026-04-18": "w3",
-    "2026-04-19": "w3", "2026-04-20": "w4", "2026-04-21": "w4", "2026-04-22": "w4",
-    "2026-04-23": "w4", "2026-04-24": "w4", "2026-04-25": "w4", "2026-04-26": "w4",
-    "2026-04-27": "w4", "2026-04-28": "w4", "2026-04-29": "w4", "2026-04-30": "w4",
-}
+def week_of(date_str):
+    """Bucket w1-w4 por dia do mês — alinhado com a lógica do dashboard."""
+    if not date_str: return "w4"
+    day = int(date_str[8:10])
+    if day <= 7:  return "w1"
+    if day <= 14: return "w2"
+    if day <= 21: return "w3"
+    return "w4"
+
+def month_of(date_str):
+    """Retorna 'YYYY-MM' a partir de 'YYYY-MM-DD'."""
+    return date_str[:7] if date_str else "2026-04"
 
 # ── OAuth ────────────────────────────────────────────────────────────────────
 SCOPE = "https://www.googleapis.com/auth/adwords"
@@ -166,8 +168,8 @@ def main():
     print("Consultando ad_groups...")
     chunks = google_ads_search(access_token, query)
 
-    campaign_spend = defaultdict(lambda: defaultdict(float))
-    adgroup_spend  = defaultdict(lambda: defaultdict(float))
+    campaign_spend = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+    adgroup_spend  = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
 
     for chunk in chunks:
         for row in chunk.get("results", []):
@@ -175,21 +177,26 @@ def main():
             ag_name   = row.get("adGroup",  {}).get("name", "—")
             date_str  = row.get("segments", {}).get("date", "")
             cost      = int(row.get("metrics", {}).get("costMicros", 0)) / 1_000_000
-            week      = WEEK_MAP.get(date_str, "w4")
-            campaign_spend[camp_name][week] += cost
-            adgroup_spend[ag_name][week]    += cost
+            month     = month_of(date_str)
+            week      = week_of(date_str)
+            campaign_spend[camp_name][month][week] += cost
+            adgroup_spend[ag_name][month][week]    += cost
 
-    total = sum(sum(v.values()) for v in campaign_spend.values())
+    total = sum(s for camps in campaign_spend.values() for wks in camps.values() for s in wks.values())
     print(f"  {len(campaign_spend)} campanhas | {len(adgroup_spend)} ad groups")
     print(f"  Gasto total: R${total:,.2f}")
-    for name, wks in campaign_spend.items():
-        print(f"    {name[:55]} → R${sum(wks.values()):.2f}")
+    for name, months in campaign_spend.items():
+        camp_total = sum(s for wks in months.values() for s in wks.values())
+        print(f"    {name[:55]} → R${camp_total:.2f}")
+
+    def _unwrap(d):
+        return {k: {m: dict(wks) for m, wks in months.items()} for k, months in d.items()}
 
     out = {
         "fetched_at": date.today().isoformat(),
         "period":     {"since": SINCE, "until": UNTIL},
-        "campaign":   {k: dict(v) for k, v in campaign_spend.items()},
-        "adgroup":    {k: dict(v) for k, v in adgroup_spend.items()},
+        "campaign":   _unwrap(campaign_spend),
+        "adgroup":    _unwrap(adgroup_spend),
     }
 
     out_path = Path(__file__).resolve().parent / "data/google_ads_spend.json"
