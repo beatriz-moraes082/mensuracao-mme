@@ -678,6 +678,7 @@
 <!-- ================================================================ TAB NAV -->
 <nav class="tabnav">
   <button class="active" onclick="switchTab('diagnostico',this)">Diagnóstico</button>
+  <button onclick="switchTab('evolucao',this)">Evolução Semanal</button>
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
@@ -760,10 +761,17 @@
   <div class="ds-sec"><h3>Plano de ação</h3><span class="sub">Quatro alavancas priorizadas</span></div>
   <div id="diag-plano"></div>
 
-  <!-- ════════════════════════════════════════════════════════
-       EVOLUÇÃO SEMANAL · integrada como bloco final do Diagnóstico
-       ════════════════════════════════════════════════════════ -->
-  <div class="ds-sec" style="margin-top:48px;padding-top:36px;border-top:1px solid var(--border)">
+</div>
+</div><!-- /tab-diagnostico -->
+
+
+<!-- ================================================================
+     TAB · EVOLUÇÃO SEMANAL
+================================================================ -->
+<div id="tab-evolucao" class="tab-pane">
+<div class="main">
+
+  <div class="ds-sec">
     <h3>Evolução semanal</h3>
     <span class="sub">Aquisição · Qualificação · Conversão · semana a semana</span>
   </div>
@@ -813,7 +821,7 @@
   <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
 
 </div>
-</div><!-- /tab-diagnostico -->
+</div><!-- /tab-evolucao -->
 
 
 <!-- ================================================================
@@ -1036,6 +1044,7 @@ function switchTab(id, btn) {
   btn.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (id === 'diagnostico') renderDiagnostico();
+  if (id === 'evolucao') renderMensuracao();
   if (id === 'funis') renderFunis();
   if (id === 'outbound') renderOutbound();
 }
@@ -2990,7 +2999,6 @@ renderOutbound();
 renderMensuracao();
 </script>
 
-<!-- Aba 'Evolução Semanal' migrou para dentro do Diagnóstico (primeira aba). -->
 
 
 <script>
@@ -3315,7 +3323,7 @@ function renderComparativo() {
   document.getElementById('mens-table-wrap').innerHTML = tableHtml;
 
   // Esconde charts no modo comparativo (são por mês corrente, não comparam)
-  document.querySelectorAll('#tab-mensuracao .grid canvas').forEach(c => {
+  document.querySelectorAll('#tab-evolucao .grid canvas').forEach(c => {
     const card = c.closest('.card');
     if (card) card.style.display = 'none';
   });
