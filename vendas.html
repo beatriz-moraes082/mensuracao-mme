@@ -256,6 +256,10 @@ function originBucket(o){
 
 // ── Build datasets ───────────────────────────────────
 // Retorna { vendas: [...], negociacao: [...] } enriquecidos com SDR match
+function normName(s){
+  if (!s) return '';
+  return s.normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+}
 function buildDatasets(){
   const sdr = RAW.sdr || [];
   const closer = RAW.closer || [];
@@ -263,18 +267,40 @@ function buildDatasets(){
   for (const l of sdr) if (l.contact_id) sdrByCid[l.contact_id] = l;
   const closerByCid = {};
   for (const l of closer) if (l.contact_id) closerByCid[l.contact_id] = l;
+  // Index SDR por nome (pra fallback quando contact_id duplica entre pipelines)
+  const sdrByName = {};
+  for (const l of sdr) {
+    const n = normName(l.name);
+    if (!n) continue;
+    // Quando há vários SDR com mesmo nome, prioriza o que TEM respostas do bot
+    const existing = sdrByName[n];
+    const score = (l.hospedagem?1:0)+(l.viaja_mais?1:0)+(l.investimento?1:0);
+    const existingScore = existing ? (existing.hospedagem?1:0)+(existing.viaja_mais?1:0)+(existing.investimento?1:0) : -1;
+    if (score > existingScore) sdrByName[n] = l;
+  }
+  // Lookup que tenta contact_id primeiro, depois nome
+  function findSdrMatch(cl){
+    if (cl.contact_id && sdrByCid[cl.contact_id]) return { sdr: sdrByCid[cl.contact_id], via: 'cid' };
+    const n = normName(cl.name);
+    if (n && sdrByName[n]) return { sdr: sdrByName[n], via: 'name' };
+    return { sdr: null, via: null };
+  }
 
   // Vendas confirmadas: TODAS as Closer venda=True são atribuídas ao Meta
   // (origem do Closer está incompleta no JSON; o time confirmou que todas vieram de Meta).
+  // Match SDR: tenta contact_id primeiro, depois nome normalizado (lead duplicado entre pipelines).
   const vendas = (closer.filter(l => l.venda)).map(cl => {
-    const sm = cl.contact_id ? sdrByCid[cl.contact_id] : null;
+    const { sdr: sm, via: matchVia } = findSdrMatch(cl);
+    const respondeu = !!(sm && (sm.hospedagem || sm.viaja_mais || sm.investimento));
     return {
       tipo: 'venda',
       closer_id: cl.id,
       sdr_id: sm ? sm.id : null,
+      name: cl.name || (sm && sm.name) || '',
       origem: 'Meta Ads',
       bucket: 'meta',
       origem_raw: (sm && sm.origem) || cl.origem || '',
+      match_via: matchVia,
       audience: (sm && sm.audience) || cl.audience || '',
       creative: (sm && sm.creative) || cl.creative || '',
       campaign: (sm && sm.campaign) || cl.campaign || '',
@@ -286,7 +312,8 @@ function buildDatasets(){
       price: cl.price || 0,
       closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
       created_at: cl.created_at,
-      has_sdr: !!sm
+      has_sdr: !!sm,
+      respondeu_bot: respondeu
     };
   });
 
@@ -373,11 +400,16 @@ function renderVendas(ds){
     return;
   }
 
-  // Note se algumas vendas não têm SDR match (não passaram pelo bot)
-  const semBot = vendas.filter(v => !v.has_sdr).length;
-  const noteHtml = semBot > 0
-    ? `<div class="note">⚠️ <b>${semBot} de ${vendas.length}</b> vendas Meta foram criadas direto no Closer (sem passar pelo bot SDR · sala IBR / indicação / base reativada). As respostas do bot ficam em branco nessas linhas — tentei localizá-las no SDR via contact_id, last4 do telefone e pipeline Duque, todos sem match.</div>`
-    : '';
+  // Quebra das vendas em 3 grupos: sem SDR, com SDR mas sem respostas, respondeu bot
+  const semSdr   = vendas.filter(v => !v.has_sdr).length;
+  const semResp  = vendas.filter(v =>  v.has_sdr && !v.respondeu_bot).length;
+  const comResp  = vendas.filter(v =>  v.respondeu_bot).length;
+  const noteHtml = `<div class="note">
+    📊 Das <b>${vendas.length}</b> vendas Meta: <b>${comResp}</b> com respostas do bot ·
+    <b>${semResp}</b> têm match no SDR mas sem respostas (leads anteriores ao bot) ·
+    <b>${semSdr}</b> sem match no SDR (criadas direto no Closer · sala IBR / indicação / base).
+    <br><span style="font-size:11px">Match SDR↔Closer feito via <code>contact_id</code> ou nome normalizado do contato.</span>
+  </div>`;
 
   c.innerHTML = `${noteHtml}<div class="table-card">
     <div class="table-head">
@@ -391,29 +423,28 @@ function renderVendas(ds){
         <thead>
           <tr>
             <th>Closer id</th>
+            <th>Nome</th>
             <th>Data fechamento</th>
-            <th>Origem</th>
             <th>Audience</th>
             <th>Criativo</th>
             <th>Preço</th>
-            <th>Passou bot?</th>
+            <th>Bot</th>
             <th>Hospedagem</th>
             <th>Com quem viaja</th>
             <th>Investimento</th>
           </tr>
         </thead>
         <tbody>${vendas.map(v => {
-          const tag = v.bucket === 'meta' ? '<span class="tag meta">Meta Ads</span>'
-                    : v.bucket === 'google' ? '<span class="tag google">Google Ads</span>'
-                    : `<span class="tag other">${v.origem || '—'}</span>`;
           const cel = x => x ? x : '<span class="empty">—</span>';
-          const bot = v.has_sdr ? '<span class="tag" style="background:rgba(34,197,94,.12);color:var(--up)">sim</span>'
-                                 : '<span class="tag" style="background:rgba(220,38,38,.12);color:var(--down)">não</span>';
+          let bot;
+          if (v.respondeu_bot)      bot = '<span class="tag" style="background:rgba(34,197,94,.14);color:var(--up)" title="Match no SDR via '+(v.match_via||'?')+'">respondeu</span>';
+          else if (v.has_sdr)       bot = '<span class="tag" style="background:rgba(217,119,6,.14);color:#d97706" title="Match no SDR via '+(v.match_via||'?')+', mas campos vazios — provavelmente lead anterior ao bot">sem respostas</span>';
+          else                       bot = '<span class="tag" style="background:rgba(220,38,38,.12);color:var(--down)" title="Sem match no SDR — criado direto no Closer">não passou</span>';
           const price = v.price > 0 ? 'R$ ' + v.price.toLocaleString('pt-BR') : '<span class="empty">—</span>';
           return `<tr>
             <td>${v.closer_id}</td>
+            <td>${cel(v.name)}</td>
             <td>${fmtDate(v.closed_at)}</td>
-            <td>${tag}</td>
             <td>${cel(v.audience)}</td>
             <td>${cel(v.creative)}</td>
             <td>${price}</td>
