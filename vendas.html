@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Vendas · Respostas do Bot | IMR</title>
+  <title>Vendas e Closer · Respostas do Bot | IMR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -18,7 +18,6 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;min-height:100vh}
 
-    /* Topbar */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);
       padding:13px 28px;display:flex;align-items:center;justify-content:space-between;
       position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
@@ -33,9 +32,8 @@
 
     .main{padding:24px 28px;max-width:1320px;margin:0 auto}
 
-    /* Hero */
     .hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-      padding:24px 28px;margin-bottom:20px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+      padding:24px 28px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
     .hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
     .hero .sub{font-size:13px;color:var(--muted);line-height:1.5}
     .filters{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
@@ -50,35 +48,36 @@
     .kpi .lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
     .kpi .val{font-size:24px;font-weight:800;margin-top:4px;line-height:1}
     .kpi .sub2{font-size:11px;color:var(--muted);margin-top:4px}
-    .kpi.meta .val{color:var(--meta)}
-    .kpi.google .val{color:var(--google)}
+    .kpi.green .val{color:var(--up)}
+    .kpi.amber .val{color:#d97706}
 
-    /* Section header */
-    .sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-      color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
-    .sec::after{content:'';flex:1;height:1px;background:var(--border)}
+    .section{margin-bottom:36px}
+    .sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+    .sec-h h3{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .sec-h .pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+      padding:4px 10px;font-size:11px;color:var(--muted)}
+    .sec-h .pill b{color:var(--text)}
+    .sec-h .desc{font-size:12px;color:var(--muted);flex:1;min-width:220px}
 
-    /* Cards */
     .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:1100px){.grid4{grid-template-columns:1fr 1fr}}
     @media(max-width:700px){.grid4,.grid2,.hero{grid-template-columns:1fr}}
 
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
-    .card h3{font-size:13px;font-weight:700;margin-bottom:4px}
+    .card h4{font-size:13px;font-weight:700;margin-bottom:4px}
     .card .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
     .chart-wrap{position:relative;height:220px}
 
-    /* Tabela */
     .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-      padding:18px;margin-top:12px}
+      padding:18px}
     .table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
     .search{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
       padding:8px 12px;font-size:12px;font-family:inherit;min-width:240px;color:var(--text)}
     .search:focus{outline:none;border-color:var(--accent)}
 
     table{width:100%;border-collapse:collapse;font-size:12px}
-    thead{position:sticky;top:0}
+    thead{position:sticky;top:0;background:var(--surface);z-index:1}
     th{text-align:left;padding:10px 8px;font-size:10px;font-weight:700;letter-spacing:.06em;
       text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border)}
     td{padding:12px 8px;border-bottom:1px solid var(--border);vertical-align:top}
@@ -86,12 +85,17 @@
     .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;white-space:nowrap}
     .tag.meta{background:rgba(24,119,242,.12);color:var(--meta)}
     .tag.google{background:rgba(34,197,94,.12);color:var(--google)}
+    .tag.other{background:var(--surface2);color:var(--muted)}
     .tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
     .tag.score-b{background:rgba(34,197,94,.12);color:var(--up)}
     .tag.score-other{background:var(--surface2);color:var(--muted)}
+    .tag.stage{background:rgba(217,119,6,.12);color:#d97706}
     .empty{color:var(--muted);font-style:italic;font-size:11px}
 
-    .table-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
+    .table-scroll{overflow-x:auto;max-height:560px;overflow-y:auto}
+
+    .note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;
+      padding:10px 14px;font-size:12px;color:#78350F;margin-bottom:14px}
 
     .footer{padding:24px 28px;text-align:center;font-size:11px;color:var(--muted)}
     .loading{padding:60px;text-align:center;color:var(--muted)}
@@ -103,7 +107,7 @@
   <div class="tl">
     <div class="badge">IMR</div>
     <div>
-      <h1>Vendas · Respostas do Bot</h1>
+      <h1>Vendas e Closer · Respostas do Bot</h1>
       <p>Ipioca Mar Resort · Meta Ads + Google Ads</p>
     </div>
   </div>
@@ -112,17 +116,19 @@
 
 <div class="main">
 
-  <!-- Hero com KPIs -->
+  <!-- Hero -->
   <div class="hero">
     <div>
-      <h2>Quem são as pessoas que compram da gente?</h2>
+      <h2>Quem chegou ao fim do funil?</h2>
       <div class="sub">
-        Cada venda vinda de Meta ou Google passou pelo bot de pré-atendimento e respondeu até 4 perguntas
-        (tipo de hospedagem, com quem viaja, faixa de investimento e interesse). Esse dash mostra o perfil
-        de quem chegou no fim do funil.
+        Cruzamento entre o <b>pipeline SDR</b> (onde o bot coleta as respostas) e o <b>pipeline Closer</b>
+        (onde a venda é fechada), feito pelo <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code>.
+        Mostra dois grupos:
+        <br>• <b style="color:var(--up)">Vendas confirmadas</b> — Closer com venda fechada
+        <br>• <b style="color:#d97706">Em negociação no Closer</b> — passaram pelo bot e estão em proposta, follow-up ou reunião
       </div>
       <div class="filters">
-        <button class="filter-btn active" data-filter="all">Todas as vendas</button>
+        <button class="filter-btn active" data-filter="all">Meta + Google</button>
         <button class="filter-btn" data-filter="meta">Apenas Meta Ads</button>
         <button class="filter-btn" data-filter="google">Apenas Google Ads</button>
       </div>
@@ -131,66 +137,82 @@
       </div>
     </div>
     <div class="kpis">
-      <div class="kpi"><div class="lbl">Vendas totais</div><div class="val" id="kpi-total">—</div><div class="sub2">Inbound (Meta + Google)</div></div>
-      <div class="kpi"><div class="lbl">Score A</div><div class="val" id="kpi-scorea">—</div><div class="sub2" id="kpi-scorea-pct">— do total</div></div>
-      <div class="kpi meta"><div class="lbl">Meta Ads</div><div class="val" id="kpi-meta">—</div><div class="sub2" id="kpi-meta-pct">— do total</div></div>
-      <div class="kpi google"><div class="lbl">Google Ads</div><div class="val" id="kpi-google">—</div><div class="sub2" id="kpi-google-pct">— do total</div></div>
+      <div class="kpi green"><div class="lbl">Vendas confirmadas</div><div class="val" id="kpi-vendas">—</div><div class="sub2" id="kpi-vendas-sub">Inbound</div></div>
+      <div class="kpi amber"><div class="lbl">Em negociação</div><div class="val" id="kpi-nego">—</div><div class="sub2" id="kpi-nego-sub">Avançou pro Closer</div></div>
+      <div class="kpi"><div class="lbl">Score A</div><div class="val" id="kpi-scorea">—</div><div class="sub2" id="kpi-scorea-sub">Entre negociação</div></div>
+      <div class="kpi"><div class="lbl">Taxa avanço→venda</div><div class="val" id="kpi-conv">—</div><div class="sub2">Vendas / (Vendas + Negociação)</div></div>
     </div>
   </div>
 
-  <!-- Gráficos -->
-  <div class="sec">Perfil das vendas · respostas do bot</div>
-  <div class="grid4">
-    <div class="card">
-      <h3>Tipo de hospedagem</h3>
-      <div class="csub">"Onde costuma se hospedar?"</div>
-      <div class="chart-wrap"><canvas id="ch-hospedagem"></canvas></div>
+  <!-- SEÇÃO 1: Vendas confirmadas -->
+  <div class="section">
+    <div class="sec-h">
+      <h3>🟢 Vendas confirmadas</h3>
+      <span class="pill"><b id="count-vendas">—</b> vendas</span>
+      <div class="desc">Leads no pipeline Closer com <code>venda=True</code>. Inbound: vieram do bot SDR (com respostas) OU foram criadas direto no Closer com origem Meta/Google.</div>
     </div>
-    <div class="card">
-      <h3>Com quem viaja</h3>
-      <div class="csub">"Você viaja mais..."</div>
-      <div class="chart-wrap"><canvas id="ch-viaja"></canvas></div>
-    </div>
-    <div class="card">
-      <h3>Faixa de investimento</h3>
-      <div class="csub">"Quanto investe em viagens por ano?"</div>
-      <div class="chart-wrap"><canvas id="ch-investimento"></canvas></div>
-    </div>
-    <div class="card">
-      <h3>Score do lead</h3>
-      <div class="csub">Score atribuído pelo bot (A–F)</div>
-      <div class="chart-wrap"><canvas id="ch-score"></canvas></div>
-    </div>
+
+    <div id="vendas-content"></div>
   </div>
 
-  <!-- Tabela detalhada -->
-  <div class="sec">Detalhe por venda</div>
-  <div class="table-card">
-    <div class="table-head">
-      <div>
-        <h3 style="font-size:14px;font-weight:700">Lista completa de vendas inbound</h3>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="table-count">—</span> vendas no filtro atual</div>
+  <!-- SEÇÃO 2: Em negociação -->
+  <div class="section">
+    <div class="sec-h">
+      <h3>🟡 Em negociação no Closer</h3>
+      <span class="pill"><b id="count-nego">—</b> leads</span>
+      <div class="desc">SDR concluiu o atendimento (passou pro Closer), o lead está em proposta/reunião/follow-up e ainda não fechou nem perdeu. Todos têm respostas do bot.</div>
+    </div>
+
+    <div class="grid4" style="margin-bottom:14px">
+      <div class="card">
+        <h4>Tipo de hospedagem</h4>
+        <div class="csub">"Onde costuma se hospedar?"</div>
+        <div class="chart-wrap"><canvas id="ch-hospedagem"></canvas></div>
       </div>
-      <input type="text" class="search" id="search" placeholder="🔍 Buscar por audience, criativo, telefone...">
+      <div class="card">
+        <h4>Com quem viaja</h4>
+        <div class="csub">"Você viaja mais..."</div>
+        <div class="chart-wrap"><canvas id="ch-viaja"></canvas></div>
+      </div>
+      <div class="card">
+        <h4>Faixa de investimento</h4>
+        <div class="csub">"Quanto investe em viagens por ano?"</div>
+        <div class="chart-wrap"><canvas id="ch-investimento"></canvas></div>
+      </div>
+      <div class="card">
+        <h4>Score do lead</h4>
+        <div class="csub">Score atribuído pelo bot (A–F)</div>
+        <div class="chart-wrap"><canvas id="ch-score"></canvas></div>
+      </div>
     </div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Data</th>
-            <th>Origem</th>
-            <th>Audience</th>
-            <th>Criativo</th>
-            <th>Score</th>
-            <th>Hospedagem</th>
-            <th>Com quem viaja</th>
-            <th>Investimento</th>
-            <th>Interesse</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+
+    <div class="table-card">
+      <div class="table-head">
+        <div>
+          <h4 style="font-size:14px;font-weight:700">Detalhe de cada lead em negociação</h4>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="nego-table-count">—</span> leads no filtro atual</div>
+        </div>
+        <input type="text" class="search" id="search" placeholder="🔍 Buscar por audience, criativo, telefone...">
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>SDR id</th>
+              <th>Closer id</th>
+              <th>Stage no Closer</th>
+              <th>Origem</th>
+              <th>Audience</th>
+              <th>Criativo</th>
+              <th>Score</th>
+              <th>Hospedagem</th>
+              <th>Com quem viaja</th>
+              <th>Investimento</th>
+            </tr>
+          </thead>
+          <tbody id="nego-tbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -198,8 +220,8 @@
 </div>
 
 <div class="footer">
-  Dados: Kommo CRM · Pipeline SDR · Status "Venda ganha"<br>
-  Filtro de origem: leads com origem contendo "Meta" ou "Google"
+  Dados: Kommo CRM · cruzamento SDR ↔ Closer via <code>contact_id</code><br>
+  Vendas = Closer com <code>venda=True</code> · Em negociação = SDR status "passou pro Closer" + Closer em proposta/reunião/follow-up
 </div>
 
 <script>
@@ -207,10 +229,21 @@ let RAW = null;
 let CHARTS = {};
 let currentFilter = 'all';
 
+// SDR pipeline status: passou pro Closer
+const SDR_PASSED = 142;
+// Closer status que indicam "ainda no jogo" (não venda nem perda)
+const CLOSER_STAGES_OPEN = {
+  98169055: 'Proposta enviada',
+  98168239: 'Reunião realizada',
+  98169059: 'Follow-up',
+  98334563: 'Sinal verde'
+};
+
 // ── Utils ─────────────────────────────────────────────
 function fmtN(n){return n.toLocaleString('pt-BR')}
 function fmtPct(n){return n.toFixed(0)+'%'}
 function fmtDate(ts){
+  if (!ts) return '—';
   const d = new Date(ts*1000);
   return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
 }
@@ -220,37 +253,171 @@ function fmtFetched(iso){
   const pad = n => String(n).padStart(2,'0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-function originBucket(l){
-  const o = (l.origem || '').toLowerCase();
-  if (o.includes('meta')) return 'meta';
-  if (o.includes('google')) return 'google';
+function originBucket(o){
+  const s = (o || '').toLowerCase();
+  if (s.includes('meta')) return 'meta';
+  if (s.includes('google')) return 'google';
   return null;
 }
-function isInbound(l){return originBucket(l) !== null}
 
-// Filtra vendas inbound (status=142) conforme filtro atual
-function getFiltered(){
-  const vendas = (RAW.sdr || []).filter(l => l.status === 142 && isInbound(l));
-  if (currentFilter === 'meta')   return vendas.filter(l => originBucket(l) === 'meta');
-  if (currentFilter === 'google') return vendas.filter(l => originBucket(l) === 'google');
-  return vendas;
+// ── Build datasets ───────────────────────────────────
+// Retorna { vendas: [...], negociacao: [...] } enriquecidos com SDR match
+function buildDatasets(){
+  const sdr = RAW.sdr || [];
+  const closer = RAW.closer || [];
+  const sdrByCid = {};
+  for (const l of sdr) if (l.contact_id) sdrByCid[l.contact_id] = l;
+  const closerByCid = {};
+  for (const l of closer) if (l.contact_id) closerByCid[l.contact_id] = l;
+
+  // Vendas confirmadas: Closer venda=True. Origem via SDR-match se houver, senão Closer.
+  const vendas = (closer.filter(l => l.venda)).map(cl => {
+    const sm = cl.contact_id ? sdrByCid[cl.contact_id] : null;
+    const origem = (sm && sm.origem) || cl.origem || '';
+    return {
+      tipo: 'venda',
+      closer_id: cl.id,
+      sdr_id: sm ? sm.id : null,
+      origem,
+      bucket: originBucket(origem),
+      audience: (sm && sm.audience) || cl.audience || '',
+      creative: (sm && sm.creative) || cl.creative || '',
+      campaign: (sm && sm.campaign) || cl.campaign || '',
+      score: (sm && sm.score) || '',
+      hospedagem: (sm && sm.hospedagem) || '',
+      viaja_mais: (sm && sm.viaja_mais) || '',
+      investimento: (sm && sm.investimento) || '',
+      interesse_ai: (sm && sm.interesse_ai) || '',
+      price: cl.price || 0,
+      closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
+      created_at: cl.created_at,
+      has_sdr: !!sm
+    };
+  });
+
+  // Em negociação: SDR status=142 que tem match no Closer em stage aberto
+  const negociacao = [];
+  for (const sm of sdr) {
+    if (sm.status !== SDR_PASSED) continue;
+    if (!sm.contact_id) continue;
+    const cl = closerByCid[sm.contact_id];
+    if (!cl) continue;
+    if (!(cl.status in CLOSER_STAGES_OPEN)) continue; // só stages abertos
+    const origem = sm.origem || '';
+    negociacao.push({
+      tipo: 'negociacao',
+      sdr_id: sm.id,
+      closer_id: cl.id,
+      origem,
+      bucket: originBucket(origem),
+      audience: sm.audience || '',
+      creative: sm.creative || '',
+      campaign: sm.campaign || '',
+      score: sm.score || '',
+      hospedagem: sm.hospedagem || '',
+      viaja_mais: sm.viaja_mais || '',
+      investimento: sm.investimento || '',
+      interesse_ai: sm.interesse_ai || '',
+      closer_stage: CLOSER_STAGES_OPEN[cl.status],
+      created_at: sm.created_at,
+      phone: sm.phone
+    });
+  }
+  return { vendas, negociacao };
+}
+
+function applyFilter(arr){
+  if (currentFilter === 'meta')   return arr.filter(x => x.bucket === 'meta');
+  if (currentFilter === 'google') return arr.filter(x => x.bucket === 'google');
+  return arr.filter(x => x.bucket === 'meta' || x.bucket === 'google');
 }
 
 // ── KPIs ──────────────────────────────────────────────
-function renderKPIs(){
-  const all = (RAW.sdr || []).filter(l => l.status === 142 && isInbound(l));
-  const meta = all.filter(l => originBucket(l) === 'meta');
-  const goog = all.filter(l => originBucket(l) === 'google');
-  const scoreA = all.filter(l => (l.score||'') === 'A');
+function renderKPIs(ds){
+  const vendas = applyFilter(ds.vendas);
+  const nego   = applyFilter(ds.negociacao);
+  const scoreA = nego.filter(x => (x.score||'').toUpperCase() === 'A').length;
+  const total  = vendas.length + nego.length;
+  const conv   = total > 0 ? (vendas.length / total * 100) : 0;
 
-  document.getElementById('kpi-total').textContent  = all.length;
-  document.getElementById('kpi-meta').textContent   = meta.length;
-  document.getElementById('kpi-google').textContent = goog.length;
-  document.getElementById('kpi-scorea').textContent = scoreA.length;
+  document.getElementById('kpi-vendas').textContent = vendas.length;
+  document.getElementById('kpi-nego').textContent   = nego.length;
+  document.getElementById('kpi-scorea').textContent = scoreA;
+  document.getElementById('kpi-conv').textContent   = conv.toFixed(0) + '%';
+  document.getElementById('kpi-vendas-sub').textContent = `Closer venda=True (filtrado)`;
+  document.getElementById('kpi-nego-sub').textContent   = `SDR → Closer em proposta/reunião/follow-up`;
+  document.getElementById('kpi-scorea-sub').textContent = nego.length > 0 ? `${(scoreA/nego.length*100).toFixed(0)}% dos em negociação` : '—';
 
-  document.getElementById('kpi-meta-pct').textContent   = fmtPct(meta.length/all.length*100) + ' do total';
-  document.getElementById('kpi-google-pct').textContent = fmtPct(goog.length/all.length*100) + ' do total';
-  document.getElementById('kpi-scorea-pct').textContent = fmtPct(scoreA.length/all.length*100) + ' do total';
+  document.getElementById('count-vendas').textContent = vendas.length;
+  document.getElementById('count-nego').textContent   = nego.length;
+}
+
+// ── Vendas section ───────────────────────────────────
+function renderVendas(ds){
+  const vendas = applyFilter(ds.vendas);
+  const c = document.getElementById('vendas-content');
+
+  if (vendas.length === 0) {
+    c.innerHTML = `<div class="card" style="text-align:center;padding:30px;color:var(--muted)">
+      <div style="font-size:14px;margin-bottom:6px">Sem vendas confirmadas no filtro atual.</div>
+      <div style="font-size:12px">A maioria das vendas atuais foi criada direto no Closer, sem passar pelo bot SDR — por isso aparecem aqui só se a origem foi declarada como Meta ou Google.</div>
+    </div>`;
+    return;
+  }
+
+  // Note se algumas vendas não têm SDR match (não passaram pelo bot)
+  const semBot = vendas.filter(v => !v.has_sdr).length;
+  const noteHtml = semBot > 0
+    ? `<div class="note">⚠️ <b>${semBot} de ${vendas.length}</b> vendas confirmadas foram criadas direto no Closer (não passaram pelo bot SDR). As respostas do bot ficam em branco nessas linhas.</div>`
+    : '';
+
+  c.innerHTML = `${noteHtml}<div class="table-card">
+    <div class="table-head">
+      <div>
+        <h4 style="font-size:14px;font-weight:700">Vendas detalhadas</h4>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${vendas.length} vendas confirmadas no filtro atual</div>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Closer id</th>
+            <th>Data fechamento</th>
+            <th>Origem</th>
+            <th>Audience</th>
+            <th>Criativo</th>
+            <th>Preço</th>
+            <th>Passou bot?</th>
+            <th>Hospedagem</th>
+            <th>Com quem viaja</th>
+            <th>Investimento</th>
+          </tr>
+        </thead>
+        <tbody>${vendas.map(v => {
+          const tag = v.bucket === 'meta' ? '<span class="tag meta">Meta Ads</span>'
+                    : v.bucket === 'google' ? '<span class="tag google">Google Ads</span>'
+                    : `<span class="tag other">${v.origem || '—'}</span>`;
+          const cel = x => x ? x : '<span class="empty">—</span>';
+          const bot = v.has_sdr ? '<span class="tag" style="background:rgba(34,197,94,.12);color:var(--up)">sim</span>'
+                                 : '<span class="tag" style="background:rgba(220,38,38,.12);color:var(--down)">não</span>';
+          const price = v.price > 0 ? 'R$ ' + v.price.toLocaleString('pt-BR') : '<span class="empty">—</span>';
+          return `<tr>
+            <td>${v.closer_id}</td>
+            <td>${fmtDate(v.closed_at)}</td>
+            <td>${tag}</td>
+            <td>${cel(v.audience)}</td>
+            <td>${cel(v.creative)}</td>
+            <td>${price}</td>
+            <td>${bot}</td>
+            <td>${cel(v.hospedagem)}</td>
+            <td>${cel(v.viaja_mais)}</td>
+            <td>${cel(v.investimento)}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
 }
 
 // ── Charts ───────────────────────────────────────────
@@ -259,13 +426,13 @@ const PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#dc2626','#6
 function countBy(leads, field){
   const c = {};
   for (const l of leads){
-    const v = (l[field] || '').trim() || 'Não respondeu';
+    const v = (l[field] || '').toString().trim() || 'Não respondeu';
     c[v] = (c[v]||0) + 1;
   }
   return Object.entries(c).sort((a,b) => b[1]-a[1]);
 }
 
-function makeChart(canvasId, leads, field, kind='doughnut'){
+function makeChart(canvasId, leads, field){
   const data = countBy(leads, field);
   const ctx = document.getElementById(canvasId);
   if (CHARTS[canvasId]) CHARTS[canvasId].destroy();
@@ -274,29 +441,16 @@ function makeChart(canvasId, leads, field, kind='doughnut'){
   const colors = labels.map((l,i) => l === 'Não respondeu' ? '#D1D5DB' : PALETTE[i % PALETTE.length]);
 
   CHARTS[canvasId] = new Chart(ctx, {
-    type: kind,
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderWidth: 2,
-        borderColor: '#fff'
-      }]
-    },
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      cutout: kind === 'doughnut' ? '55%' : 0,
+      cutout: '55%',
       plugins: {
         legend: {
           position: 'bottom',
-          labels: {
-            font: { size: 10, family: 'Plus Jakarta Sans' },
-            padding: 8,
-            boxWidth: 10,
-            boxHeight: 10
-          }
+          labels: { font: { size: 10, family: 'Plus Jakarta Sans' }, padding: 8, boxWidth: 10, boxHeight: 10 }
         },
         tooltip: {
           callbacks: {
@@ -312,73 +466,80 @@ function makeChart(canvasId, leads, field, kind='doughnut'){
   });
 }
 
-function renderCharts(){
-  const leads = getFiltered();
+function renderCharts(ds){
+  const leads = applyFilter(ds.negociacao);
   makeChart('ch-hospedagem',  leads, 'hospedagem');
   makeChart('ch-viaja',       leads, 'viaja_mais');
   makeChart('ch-investimento',leads, 'investimento');
   makeChart('ch-score',       leads, 'score');
 }
 
-// ── Tabela ───────────────────────────────────────────
-function renderTable(){
+// ── Tabela negociação ────────────────────────────────
+function renderNegoTable(ds){
   const search = (document.getElementById('search').value || '').toLowerCase().trim();
-  let leads = getFiltered().slice();
+  let leads = applyFilter(ds.negociacao).slice();
   if (search) {
     leads = leads.filter(l => {
-      const blob = [l.audience, l.creative, l.campaign, l.phone, l.hospedagem, l.viaja_mais, l.investimento, l.interesse_ai]
+      const blob = [l.audience, l.creative, l.campaign, l.phone, l.hospedagem, l.viaja_mais, l.investimento, l.interesse_ai, l.closer_stage]
         .map(x => (x||'').toString().toLowerCase()).join(' ');
       return blob.includes(search);
     });
   }
-  leads.sort((a,b) => (b.closed_at||b.created_at||0) - (a.closed_at||a.created_at||0));
+  leads.sort((a,b) => (b.created_at||0) - (a.created_at||0));
 
-  document.getElementById('table-count').textContent = leads.length;
+  document.getElementById('nego-table-count').textContent = leads.length;
 
-  const tbody = document.getElementById('tbody');
+  const tbody = document.getElementById('nego-tbody');
   if (!leads.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty" style="text-align:center;padding:24px">Nenhuma venda encontrada com o filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="empty" style="text-align:center;padding:24px">Nenhum lead em negociação com o filtro/busca atual</td></tr>';
     return;
   }
 
   tbody.innerHTML = leads.map(l => {
-    const ob = originBucket(l);
-    const origTag = ob === 'meta'
-      ? '<span class="tag meta">Meta Ads</span>'
-      : '<span class="tag google">Google Ads</span>';
-    const score = (l.score || '').trim();
+    const tag = l.bucket === 'meta' ? '<span class="tag meta">Meta Ads</span>' : '<span class="tag google">Google Ads</span>';
+    const score = (l.score || '').toUpperCase().trim();
     const scoreTag = score
       ? `<span class="tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span>`
       : '<span class="empty">—</span>';
     const cel = v => v ? v : '<span class="empty">não respondeu</span>';
-    const dt = l.closed_at ? fmtDate(l.closed_at) : (l.created_at ? fmtDate(l.created_at) : '—');
+    const stage = l.closer_stage ? `<span class="tag stage">${l.closer_stage}</span>` : '<span class="empty">—</span>';
     return `<tr>
-      <td>${l.id}</td>
-      <td>${dt}</td>
-      <td>${origTag}</td>
+      <td>${l.sdr_id}</td>
+      <td>${l.closer_id}</td>
+      <td>${stage}</td>
+      <td>${tag}</td>
       <td>${cel(l.audience)}</td>
       <td>${cel(l.creative)}</td>
       <td>${scoreTag}</td>
       <td>${cel(l.hospedagem)}</td>
       <td>${cel(l.viaja_mais)}</td>
       <td>${cel(l.investimento)}</td>
-      <td>${cel(l.interesse_ai)}</td>
     </tr>`;
   }).join('');
 }
 
-// ── Eventos ──────────────────────────────────────────
+// ── Eventos / Render ────────────────────────────────
+function renderAll(){
+  const ds = buildDatasets();
+  renderKPIs(ds);
+  renderVendas(ds);
+  renderCharts(ds);
+  renderNegoTable(ds);
+}
+
 function setFilter(f){
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
-  renderCharts();
-  renderTable();
+  renderAll();
 }
 
 document.querySelectorAll('.filter-btn').forEach(b => {
   b.addEventListener('click', () => setFilter(b.dataset.filter));
 });
-document.getElementById('search').addEventListener('input', renderTable);
+document.getElementById('search').addEventListener('input', () => {
+  const ds = buildDatasets();
+  renderNegoTable(ds);
+});
 
 // ── Init ─────────────────────────────────────────────
 fetch('data/kommo_leads.json?t=' + Date.now())
@@ -387,9 +548,7 @@ fetch('data/kommo_leads.json?t=' + Date.now())
     RAW = json;
     document.getElementById('loading').style.display = 'none';
     document.getElementById('updated').textContent = fmtFetched(json.fetched_at);
-    renderKPIs();
-    renderCharts();
-    renderTable();
+    renderAll();
   })
   .catch(err => {
     document.getElementById('loading').innerHTML = '<span style="color:var(--down)">Erro ao carregar dados: ' + err.message + '</span>';
