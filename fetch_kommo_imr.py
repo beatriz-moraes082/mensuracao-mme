@@ -61,8 +61,14 @@ LOST = 143   # built-in "Venda perdida"
 TAGS_REUNIAO = {"reunião-agendada", "reunião-realizada", "reagendar-reunião"}
 
 # Período: desde início da operação (01/04/2026) até hoje.
-PERIOD_START = date(2026, 4, 1)
+PERIOD_START = date(2026, 1, 1)
 PERIOD_END   = date.today()
+
+# Debug: nomes dos contatos pra inspecionar custom fields (lead + contact)
+DEBUG_CONTACT_NAMES = {
+    "josé claudio c da silva", "stanley silvestre", "david lima gonçalves",
+    "gelza sabrina", "adriana rocha"
+}
 
 def week_of(ts):
     """w1-w4 por dia do mês — genérico (funciona em qualquer mês)."""
@@ -354,6 +360,39 @@ def main():
             l["duplicated"] = False
     if venda_dups:
         print(f"\n⚠️  {venda_dups} venda(s) duplicada(s) removida(s) (mesmo contato + mesma data de fechamento)")
+
+    # ── DEBUG temporário: inspeciona custom_fields dos leads alvo ─────────
+    import unicodedata as _u
+    def _strip(s):
+        return _u.normalize('NFKD', (s or '').strip().lower()).encode('ascii','ignore').decode('ascii')
+    debug_targets = []
+    all_processed = deduped_sdr + processed_closer + processed_duque
+    for l in all_processed:
+        n = _strip(l.get('name'))
+        for t in DEBUG_CONTACT_NAMES:
+            if n == _strip(t):
+                debug_targets.append(l); break
+    print(f"\n🔍 DEBUG: {len(debug_targets)} lead(s) alvo encontrados (deduplicar nomes)")
+    seen_ids = set()
+    for l in debug_targets:
+        if l['id'] in seen_ids: continue
+        seen_ids.add(l['id'])
+        print(f"\n--- lead id={l['id']}  pipeline={l.get('pipeline')}  status={l.get('status')}  name={l.get('name')!r}  contact_id={l.get('contact_id')} ---")
+        try:
+            ld = kommo_get(f"/api/v4/leads/{l['id']}", params={"with": "contacts"})
+            print("  LEAD custom_fields_values:")
+            for cf in (ld.get('custom_fields_values') or []):
+                print(f"    fid={cf.get('field_id')} name={cf.get('field_name')!r} values={cf.get('values')}")
+            cs = ld.get('_embedded',{}).get('contacts') or []
+            if cs:
+                cid = cs[0]['id']
+                cd = kommo_get(f"/api/v4/contacts/{cid}")
+                print(f"  CONTACT id={cid} name={cd.get('name')!r} custom_fields_values:")
+                for cf in (cd.get('custom_fields_values') or []):
+                    print(f"    fid={cf.get('field_id')} name={cf.get('field_name')!r} values={cf.get('values')}")
+        except Exception as e:
+            print(f"  erro debug: {e}")
+    print(f"\n🔍 fim DEBUG\n")
 
     # Métricas agregadas (regras do cliente)
     total_leads       = len(deduped_sdr) + len(processed_duque)
