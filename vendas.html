@@ -107,13 +107,14 @@
     <div>
       <h2>Quem comprou da gente?</h2>
       <div class="sub">
-        Perfil das vendas inbound do Meta Ads, com as respostas do bot de pré-atendimento.
+        Perfil das vendas inbound do <b>Meta Ads</b>, com as respostas do bot de pré-atendimento.
         Os campos vêm do <b>bot antigo</b> (vigente até ~30/04/2026): idade, custo/ano em viagens,
         maior desafio, profissão, conhece Timeshare, viagem programada.
         <br><br>
         <span style="font-size:11.5px;color:var(--muted)">
-          Match SDR ↔ Closer feito via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
-          Algumas vendas vieram direto pro Closer (sala IBR / indicação) e não têm respostas registradas.
+          Filtro aplicado: só vendas com origem "Meta Ads" (no SDR ou no Closer).
+          Exclui sala IBR, indicação e origem em branco. Match SDR↔Closer via
+          <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
         </span>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:14px">
@@ -190,7 +191,7 @@
 
 <div class="footer">
   Dados: Kommo CRM · Bot antigo (vigente até ~30/04/2026)<br>
-  Match SDR ↔ Closer via <code>contact_id</code> + nome do contato · todas as vendas atribuídas ao Meta Ads
+  Vendas = Closer com <code>venda=True</code> · filtro: origem "Meta Ads" no SDR ou Closer · match via <code>contact_id</code> + nome do contato
 </div>
 
 <script>
@@ -232,9 +233,18 @@ function buildVendas(){
     const exScore = ex ? botFields.reduce((s,f) => s + (ex[f] ? 1 : 0), 0) : -1;
     if (score > exScore) sdrByName[n] = l;
   }
-  // Pra cada venda Closer, junta com SDR match
+  // Pra cada venda Closer, junta com SDR match.
+  // Filtra: SÓ vendas cuja origem (SDR ou Closer) contém "Meta" — exclui
+  // vendas que vieram da sala IBR, indicação, ou origem em branco.
+  const isMeta = (cl, sm) => {
+    const oc = (cl.origem || '').toLowerCase();
+    const os = ((sm && sm.origem) || '').toLowerCase();
+    return oc.includes('meta') || os.includes('meta');
+  };
   return (closer.filter(l => l.venda)).map(cl => {
     const sm = sdrByCid[cl.contact_id] || sdrByName[normName(cl.name)] || null;
+    return { cl, sm };
+  }).filter(({cl,sm}) => isMeta(cl, sm)).map(({cl, sm}) => {
     // Pega o campo do SDR se tiver valor, senão do Closer
     const pick = f => (sm && sm[f]) || cl[f] || '';
     const respondeu = botFields.some(f => sm && sm[f]);
