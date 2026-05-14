@@ -216,6 +216,9 @@ function normName(s){
   return s.normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 }
 
+// IDs de vendas a excluir (duplicatas do mesmo contato — confirmado com o time)
+const EXCLUDE_CLOSER_IDS = new Set([79457570, 79459150]);
+
 // ── Build vendas enriquecidas com SDR match ──────────
 function buildVendas(){
   const sdr = RAW.sdr || [];
@@ -241,7 +244,7 @@ function buildVendas(){
     const os = ((sm && sm.origem) || '').toLowerCase();
     return oc.includes('meta') || os.includes('meta');
   };
-  return (closer.filter(l => l.venda)).map(cl => {
+  return (closer.filter(l => l.venda && !EXCLUDE_CLOSER_IDS.has(l.id))).map(cl => {
     const sm = sdrByCid[cl.contact_id] || sdrByName[normName(cl.name)] || null;
     return { cl, sm };
   }).filter(({cl,sm}) => isMeta(cl, sm)).map(({cl, sm}) => {
