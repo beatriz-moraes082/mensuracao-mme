@@ -200,6 +200,7 @@ def process_lead(lead, contacts_map):
 
     return {
         "id":        lead["id"],
+        "contact_id": cid,
         "created_at": ts,
         "closed_at":  closed_at,
         "closed_in_period": closed_in_period,
