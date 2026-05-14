@@ -136,6 +136,8 @@ def get_contacts_map(contact_ids):
                 val = str(vals[0].get("value", "")) if vals else ""
                 if val:
                     cf_map[cf["field_id"]] = val
+            # `name` é top-level (não custom_field); guardamos sob chave sentinela
+            cf_map["_name"] = (c.get("name") or "").strip()
             result[c["id"]] = cf_map
     return result
 
@@ -201,6 +203,7 @@ def process_lead(lead, contacts_map):
     return {
         "id":        lead["id"],
         "contact_id": cid,
+        "name":      contact.get("_name", ""),
         "created_at": ts,
         "closed_at":  closed_at,
         "closed_in_period": closed_in_period,
