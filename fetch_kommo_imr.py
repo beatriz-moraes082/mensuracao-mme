@@ -61,7 +61,7 @@ LOST = 143   # built-in "Venda perdida"
 TAGS_REUNIAO = {"reunião-agendada", "reunião-realizada", "reagendar-reunião"}
 
 # Período: desde início da operação (01/04/2026) até hoje.
-PERIOD_START = date(2026, 4, 1)
+PERIOD_START = date(2026, 1, 1)
 PERIOD_END   = date.today()
 
 def week_of(ts):
