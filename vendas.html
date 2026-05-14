@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Vendas · Respostas do Bot | IMR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#FAFAFA;--surface:#ffffff;--surface2:#F4F5F2;--border:#ECECEC;
+      --accent:#EE4D20;--ink:#1A1A1A;--text:#1A1A1A;--muted:#6B7069;
+      --up:#16a34a;--down:#dc2626;
+      --meta:#1877F2;--google:#22c55e;
+      --r:14px;--r-sm:10px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+    /* Topbar */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);
+      padding:13px 28px;display:flex;align-items:center;justify-content:space-between;
+      position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
+    .tl{display:flex;align-items:center;gap:12px}
+    .badge{width:38px;height:38px;border-radius:10px;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff}
+    .tl h1{font-size:15px;font-weight:700}
+    .tl p{font-size:11px;color:var(--muted)}
+    .back{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;padding:6px 12px;
+      border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+    .back:hover{background:var(--surface2)}
+
+    .main{padding:24px 28px;max-width:1320px;margin:0 auto}
+
+    /* Hero */
+    .hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:24px 28px;margin-bottom:20px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+    .hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
+    .hero .sub{font-size:13px;color:var(--muted);line-height:1.5}
+    .filters{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+    .filter-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+      padding:6px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+      transition:all .15s;font-family:inherit}
+    .filter-btn:hover{color:var(--text)}
+    .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .kpi{background:var(--surface2);border-radius:var(--r-sm);padding:14px 16px}
+    .kpi .lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .kpi .val{font-size:24px;font-weight:800;margin-top:4px;line-height:1}
+    .kpi .sub2{font-size:11px;color:var(--muted);margin-top:4px}
+    .kpi.meta .val{color:var(--meta)}
+    .kpi.google .val{color:var(--google)}
+
+    /* Section header */
+    .sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+    .sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* Cards */
+    .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:1100px){.grid4{grid-template-columns:1fr 1fr}}
+    @media(max-width:700px){.grid4,.grid2,.hero{grid-template-columns:1fr}}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+    .card h3{font-size:13px;font-weight:700;margin-bottom:4px}
+    .card .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
+    .chart-wrap{position:relative;height:220px}
+
+    /* Tabela */
+    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+      padding:18px;margin-top:12px}
+    .table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+    .search{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+      padding:8px 12px;font-size:12px;font-family:inherit;min-width:240px;color:var(--text)}
+    .search:focus{outline:none;border-color:var(--accent)}
+
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    thead{position:sticky;top:0}
+    th{text-align:left;padding:10px 8px;font-size:10px;font-weight:700;letter-spacing:.06em;
+      text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border)}
+    td{padding:12px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+    tr:hover td{background:var(--surface2)}
+    .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;white-space:nowrap}
+    .tag.meta{background:rgba(24,119,242,.12);color:var(--meta)}
+    .tag.google{background:rgba(34,197,94,.12);color:var(--google)}
+    .tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
+    .tag.score-b{background:rgba(34,197,94,.12);color:var(--up)}
+    .tag.score-other{background:var(--surface2);color:var(--muted)}
+    .empty{color:var(--muted);font-style:italic;font-size:11px}
+
+    .table-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
+
+    .footer{padding:24px 28px;text-align:center;font-size:11px;color:var(--muted)}
+    .loading{padding:60px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tl">
+    <div class="badge">IMR</div>
+    <div>
+      <h1>Vendas · Respostas do Bot</h1>
+      <p>Ipioca Mar Resort · Meta Ads + Google Ads</p>
+    </div>
+  </div>
+  <a href="index.html" class="back">← Voltar ao dashboard</a>
+</div>
+
+<div class="main">
+
+  <!-- Hero com KPIs -->
+  <div class="hero">
+    <div>
+      <h2>Quem são as pessoas que compram da gente?</h2>
+      <div class="sub">
+        Cada venda vinda de Meta ou Google passou pelo bot de pré-atendimento e respondeu até 4 perguntas
+        (tipo de hospedagem, com quem viaja, faixa de investimento e interesse). Esse dash mostra o perfil
+        de quem chegou no fim do funil.
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todas as vendas</button>
+        <button class="filter-btn" data-filter="meta">Apenas Meta Ads</button>
+        <button class="filter-btn" data-filter="google">Apenas Google Ads</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:14px">
+        Última atualização: <b id="updated" style="color:var(--text)">—</b>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Vendas totais</div><div class="val" id="kpi-total">—</div><div class="sub2">Inbound (Meta + Google)</div></div>
+      <div class="kpi"><div class="lbl">Score A</div><div class="val" id="kpi-scorea">—</div><div class="sub2" id="kpi-scorea-pct">— do total</div></div>
+      <div class="kpi meta"><div class="lbl">Meta Ads</div><div class="val" id="kpi-meta">—</div><div class="sub2" id="kpi-meta-pct">— do total</div></div>
+      <div class="kpi google"><div class="lbl">Google Ads</div><div class="val" id="kpi-google">—</div><div class="sub2" id="kpi-google-pct">— do total</div></div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="sec">Perfil das vendas · respostas do bot</div>
+  <div class="grid4">
+    <div class="card">
+      <h3>Tipo de hospedagem</h3>
+      <div class="csub">"Onde costuma se hospedar?"</div>
+      <div class="chart-wrap"><canvas id="ch-hospedagem"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Com quem viaja</h3>
+      <div class="csub">"Você viaja mais..."</div>
+      <div class="chart-wrap"><canvas id="ch-viaja"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Faixa de investimento</h3>
+      <div class="csub">"Quanto investe em viagens por ano?"</div>
+      <div class="chart-wrap"><canvas id="ch-investimento"></canvas></div>
+    </div>
+    <div class="card">
+      <h3>Score do lead</h3>
+      <div class="csub">Score atribuído pelo bot (A–F)</div>
+      <div class="chart-wrap"><canvas id="ch-score"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Tabela detalhada -->
+  <div class="sec">Detalhe por venda</div>
+  <div class="table-card">
+    <div class="table-head">
+      <div>
+        <h3 style="font-size:14px;font-weight:700">Lista completa de vendas inbound</h3>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="table-count">—</span> vendas no filtro atual</div>
+      </div>
+      <input type="text" class="search" id="search" placeholder="🔍 Buscar por audience, criativo, telefone...">
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Origem</th>
+            <th>Audience</th>
+            <th>Criativo</th>
+            <th>Score</th>
+            <th>Hospedagem</th>
+            <th>Com quem viaja</th>
+            <th>Investimento</th>
+            <th>Interesse</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">Carregando dados...</div>
+</div>
+
+<div class="footer">
+  Dados: Kommo CRM · Pipeline SDR · Status "Venda ganha"<br>
+  Filtro de origem: leads com origem contendo "Meta" ou "Google"
+</div>
+
+<script>
+let RAW = null;
+let CHARTS = {};
+let currentFilter = 'all';
+
+// ── Utils ─────────────────────────────────────────────
+function fmtN(n){return n.toLocaleString('pt-BR')}
+function fmtPct(n){return n.toFixed(0)+'%'}
+function fmtDate(ts){
+  const d = new Date(ts*1000);
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+function fmtFetched(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function originBucket(l){
+  const o = (l.origem || '').toLowerCase();
+  if (o.includes('meta')) return 'meta';
+  if (o.includes('google')) return 'google';
+  return null;
+}
+function isInbound(l){return originBucket(l) !== null}
+
+// Filtra vendas inbound (status=142) conforme filtro atual
+function getFiltered(){
+  const vendas = (RAW.sdr || []).filter(l => l.status === 142 && isInbound(l));
+  if (currentFilter === 'meta')   return vendas.filter(l => originBucket(l) === 'meta');
+  if (currentFilter === 'google') return vendas.filter(l => originBucket(l) === 'google');
+  return vendas;
+}
+
+// ── KPIs ──────────────────────────────────────────────
+function renderKPIs(){
+  const all = (RAW.sdr || []).filter(l => l.status === 142 && isInbound(l));
+  const meta = all.filter(l => originBucket(l) === 'meta');
+  const goog = all.filter(l => originBucket(l) === 'google');
+  const scoreA = all.filter(l => (l.score||'') === 'A');
+
+  document.getElementById('kpi-total').textContent  = all.length;
+  document.getElementById('kpi-meta').textContent   = meta.length;
+  document.getElementById('kpi-google').textContent = goog.length;
+  document.getElementById('kpi-scorea').textContent = scoreA.length;
+
+  document.getElementById('kpi-meta-pct').textContent   = fmtPct(meta.length/all.length*100) + ' do total';
+  document.getElementById('kpi-google-pct').textContent = fmtPct(goog.length/all.length*100) + ' do total';
+  document.getElementById('kpi-scorea-pct').textContent = fmtPct(scoreA.length/all.length*100) + ' do total';
+}
+
+// ── Charts ───────────────────────────────────────────
+const PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#dc2626','#6B7069','#1A1A1A'];
+
+function countBy(leads, field){
+  const c = {};
+  for (const l of leads){
+    const v = (l[field] || '').trim() || 'Não respondeu';
+    c[v] = (c[v]||0) + 1;
+  }
+  return Object.entries(c).sort((a,b) => b[1]-a[1]);
+}
+
+function makeChart(canvasId, leads, field, kind='doughnut'){
+  const data = countBy(leads, field);
+  const ctx = document.getElementById(canvasId);
+  if (CHARTS[canvasId]) CHARTS[canvasId].destroy();
+  const labels = data.map(d => d[0]);
+  const values = data.map(d => d[1]);
+  const colors = labels.map((l,i) => l === 'Não respondeu' ? '#D1D5DB' : PALETTE[i % PALETTE.length]);
+
+  CHARTS[canvasId] = new Chart(ctx, {
+    type: kind,
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: kind === 'doughnut' ? '55%' : 0,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { size: 10, family: 'Plus Jakarta Sans' },
+            padding: 8,
+            boxWidth: 10,
+            boxHeight: 10
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              const total = values.reduce((a,b)=>a+b,0);
+              const pct = (c.parsed/total*100).toFixed(0);
+              return `${c.label}: ${c.parsed} (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderCharts(){
+  const leads = getFiltered();
+  makeChart('ch-hospedagem',  leads, 'hospedagem');
+  makeChart('ch-viaja',       leads, 'viaja_mais');
+  makeChart('ch-investimento',leads, 'investimento');
+  makeChart('ch-score',       leads, 'score');
+}
+
+// ── Tabela ───────────────────────────────────────────
+function renderTable(){
+  const search = (document.getElementById('search').value || '').toLowerCase().trim();
+  let leads = getFiltered().slice();
+  if (search) {
+    leads = leads.filter(l => {
+      const blob = [l.audience, l.creative, l.campaign, l.phone, l.hospedagem, l.viaja_mais, l.investimento, l.interesse_ai]
+        .map(x => (x||'').toString().toLowerCase()).join(' ');
+      return blob.includes(search);
+    });
+  }
+  leads.sort((a,b) => (b.closed_at||b.created_at||0) - (a.closed_at||a.created_at||0));
+
+  document.getElementById('table-count').textContent = leads.length;
+
+  const tbody = document.getElementById('tbody');
+  if (!leads.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="empty" style="text-align:center;padding:24px">Nenhuma venda encontrada com o filtro/busca atual</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = leads.map(l => {
+    const ob = originBucket(l);
+    const origTag = ob === 'meta'
+      ? '<span class="tag meta">Meta Ads</span>'
+      : '<span class="tag google">Google Ads</span>';
+    const score = (l.score || '').trim();
+    const scoreTag = score
+      ? `<span class="tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span>`
+      : '<span class="empty">—</span>';
+    const cel = v => v ? v : '<span class="empty">não respondeu</span>';
+    const dt = l.closed_at ? fmtDate(l.closed_at) : (l.created_at ? fmtDate(l.created_at) : '—');
+    return `<tr>
+      <td>${l.id}</td>
+      <td>${dt}</td>
+      <td>${origTag}</td>
+      <td>${cel(l.audience)}</td>
+      <td>${cel(l.creative)}</td>
+      <td>${scoreTag}</td>
+      <td>${cel(l.hospedagem)}</td>
+      <td>${cel(l.viaja_mais)}</td>
+      <td>${cel(l.investimento)}</td>
+      <td>${cel(l.interesse_ai)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Eventos ──────────────────────────────────────────
+function setFilter(f){
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  renderCharts();
+  renderTable();
+}
+
+document.querySelectorAll('.filter-btn').forEach(b => {
+  b.addEventListener('click', () => setFilter(b.dataset.filter));
+});
+document.getElementById('search').addEventListener('input', renderTable);
+
+// ── Init ─────────────────────────────────────────────
+fetch('data/kommo_leads.json?t=' + Date.now())
+  .then(r => r.json())
+  .then(json => {
+    RAW = json;
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('updated').textContent = fmtFetched(json.fetched_at);
+    renderKPIs();
+    renderCharts();
+    renderTable();
+  })
+  .catch(err => {
+    document.getElementById('loading').innerHTML = '<span style="color:var(--down)">Erro ao carregar dados: ' + err.message + '</span>';
+  });
+</script>
+</body>
+</html>
