@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Vendas e Closer · Respostas do Bot | IMR</title>
+  <title>Vendas Meta · Respostas do Bot | IMR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -108,8 +108,8 @@
   <div class="tl">
     <div class="badge">IMR</div>
     <div>
-      <h1>Vendas e Closer · Respostas do Bot</h1>
-      <p>Ipioca Mar Resort · Meta Ads + Google Ads</p>
+      <h1>Vendas Meta · Respostas do Bot</h1>
+      <p>Ipioca Mar Resort · Meta Ads</p>
     </div>
   </div>
   <a href="index.html" class="back">← Voltar ao dashboard</a>
@@ -120,18 +120,13 @@
   <!-- Hero -->
   <div class="hero">
     <div>
-      <h2>Quem chegou ao fim do funil?</h2>
+      <h2>Quem chegou ao fim do funil pelo Meta?</h2>
       <div class="sub">
         Cruzamento entre o <b>pipeline SDR</b> (onde o bot coleta as respostas) e o <b>pipeline Closer</b>
         (onde a venda é fechada), feito pelo <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code>.
         Mostra dois grupos:
-        <br>• <b style="color:var(--up)">Vendas confirmadas</b> — Closer com venda fechada
-        <br>• <b style="color:#d97706">Em negociação no Closer</b> — passaram pelo bot e estão em proposta, follow-up ou reunião
-      </div>
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">Meta + Google</button>
-        <button class="filter-btn" data-filter="meta">Apenas Meta Ads</button>
-        <button class="filter-btn" data-filter="google">Apenas Google Ads</button>
+        <br>• <b style="color:var(--up)">Vendas confirmadas</b> — Closer com venda fechada (atribuídas ao Meta)
+        <br>• <b style="color:#d97706">Em negociação no Closer</b> — passaram pelo bot Meta e estão em proposta, follow-up ou reunião
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:14px">
         Última atualização: <b id="updated" style="color:var(--text)">—</b>
@@ -221,13 +216,12 @@
 
 <div class="footer">
   Dados: Kommo CRM · cruzamento SDR ↔ Closer via <code>contact_id</code><br>
-  Vendas = Closer com <code>venda=True</code> · Em negociação = SDR status "passou pro Closer" + Closer em proposta/reunião/follow-up
+  Vendas = Closer com <code>venda=True</code> (todas atribuídas ao Meta) · Em negociação = SDR status "passou pro Closer" + Closer em proposta/reunião/follow-up + origem Meta
 </div>
 
 <script>
 let RAW = null;
 let CHARTS = {};
-let currentFilter = 'all';
 
 // SDR pipeline status: passou pro Closer
 const SDR_PASSED = 142;
@@ -270,16 +264,17 @@ function buildDatasets(){
   const closerByCid = {};
   for (const l of closer) if (l.contact_id) closerByCid[l.contact_id] = l;
 
-  // Vendas confirmadas: Closer venda=True. Origem via SDR-match se houver, senão Closer.
+  // Vendas confirmadas: TODAS as Closer venda=True são atribuídas ao Meta
+  // (origem do Closer está incompleta no JSON; o time confirmou que todas vieram de Meta).
   const vendas = (closer.filter(l => l.venda)).map(cl => {
     const sm = cl.contact_id ? sdrByCid[cl.contact_id] : null;
-    const origem = (sm && sm.origem) || cl.origem || '';
     return {
       tipo: 'venda',
       closer_id: cl.id,
       sdr_id: sm ? sm.id : null,
-      origem,
-      bucket: originBucket(origem),
+      origem: 'Meta Ads',
+      bucket: 'meta',
+      origem_raw: (sm && sm.origem) || cl.origem || '',
       audience: (sm && sm.audience) || cl.audience || '',
       creative: (sm && sm.creative) || cl.creative || '',
       campaign: (sm && sm.campaign) || cl.campaign || '',
@@ -295,21 +290,21 @@ function buildDatasets(){
     };
   });
 
-  // Em negociação: SDR status=142 que tem match no Closer em stage aberto
+  // Em negociação: SDR status=142 + match no Closer em stage aberto + origem Meta
   const negociacao = [];
   for (const sm of sdr) {
     if (sm.status !== SDR_PASSED) continue;
     if (!sm.contact_id) continue;
     const cl = closerByCid[sm.contact_id];
     if (!cl) continue;
-    if (!(cl.status in CLOSER_STAGES_OPEN)) continue; // só stages abertos
-    const origem = sm.origem || '';
+    if (!(cl.status in CLOSER_STAGES_OPEN)) continue;
+    if (originBucket(sm.origem) !== 'meta') continue; // só Meta
     negociacao.push({
       tipo: 'negociacao',
       sdr_id: sm.id,
       closer_id: cl.id,
-      origem,
-      bucket: originBucket(origem),
+      origem: 'Meta Ads',
+      bucket: 'meta',
       audience: sm.audience || '',
       creative: sm.creative || '',
       campaign: sm.campaign || '',
@@ -326,11 +321,8 @@ function buildDatasets(){
   return { vendas, negociacao };
 }
 
-function applyFilter(arr){
-  if (currentFilter === 'meta')   return arr.filter(x => x.bucket === 'meta');
-  if (currentFilter === 'google') return arr.filter(x => x.bucket === 'google');
-  return arr.filter(x => x.bucket === 'meta' || x.bucket === 'google');
-}
+// Sem filtros (página é Meta-only), mantém função pra evitar quebrar callers.
+function applyFilter(arr){ return arr; }
 
 // ── KPIs ──────────────────────────────────────────────
 function renderKPIs(ds){
@@ -384,7 +376,7 @@ function renderVendas(ds){
   // Note se algumas vendas não têm SDR match (não passaram pelo bot)
   const semBot = vendas.filter(v => !v.has_sdr).length;
   const noteHtml = semBot > 0
-    ? `<div class="note">⚠️ <b>${semBot} de ${vendas.length}</b> vendas confirmadas foram criadas direto no Closer (não passaram pelo bot SDR). As respostas do bot ficam em branco nessas linhas.</div>`
+    ? `<div class="note">⚠️ <b>${semBot} de ${vendas.length}</b> vendas Meta foram criadas direto no Closer (sem passar pelo bot SDR · sala IBR / indicação / base reativada). As respostas do bot ficam em branco nessas linhas — tentei localizá-las no SDR via contact_id, last4 do telefone e pipeline Duque, todos sem match.</div>`
     : '';
 
   c.innerHTML = `${noteHtml}<div class="table-card">
@@ -543,15 +535,6 @@ function renderAll(){
   renderNegoTable(ds);
 }
 
-function setFilter(f){
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
-  renderAll();
-}
-
-document.querySelectorAll('.filter-btn').forEach(b => {
-  b.addEventListener('click', () => setFilter(b.dataset.filter));
-});
 document.getElementById('search').addEventListener('input', () => {
   const ds = buildDatasets();
   renderNegoTable(ds);
