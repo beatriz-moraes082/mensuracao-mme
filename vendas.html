@@ -11,8 +11,7 @@
     :root{
       --bg:#FAFAFA;--surface:#ffffff;--surface2:#F4F5F2;--border:#ECECEC;
       --accent:#EE4D20;--ink:#1A1A1A;--text:#1A1A1A;--muted:#6B7069;
-      --up:#16a34a;--down:#dc2626;
-      --meta:#1877F2;--google:#22c55e;
+      --up:#16a34a;--down:#dc2626;--meta:#1877F2;
       --r:14px;--r-sm:10px;
     }
     *{box-sizing:border-box;margin:0;padding:0}
@@ -35,13 +34,7 @@
     .hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
       padding:24px 28px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
     .hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
-    .hero .sub{font-size:13px;color:var(--muted);line-height:1.5}
-    .filters{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-    .filter-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-      padding:6px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
-      transition:all .15s;font-family:inherit}
-    .filter-btn:hover{color:var(--text)}
-    .filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .hero .sub{font-size:13px;color:var(--muted);line-height:1.55}
 
     .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     @media(max-width:600px){.kpis{grid-template-columns:1fr}}
@@ -50,28 +43,21 @@
     .kpi .val{font-size:24px;font-weight:800;margin-top:4px;line-height:1}
     .kpi .sub2{font-size:11px;color:var(--muted);margin-top:4px}
     .kpi.green .val{color:var(--up)}
-    .kpi.amber .val{color:#d97706}
 
-    .section{margin-bottom:36px}
-    .sec-h{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
-    .sec-h h3{font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px}
-    .sec-h .pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-      padding:4px 10px;font-size:11px;color:var(--muted)}
-    .sec-h .pill b{color:var(--text)}
-    .sec-h .desc{font-size:12px;color:var(--muted);flex:1;min-width:220px}
+    .sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+    .sec::after{content:'';flex:1;height:1px;background:var(--border)}
 
     .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:1100px){.grid4{grid-template-columns:1fr 1fr}}
-    @media(max-width:700px){.grid4,.grid2,.hero{grid-template-columns:1fr}}
+    @media(max-width:700px){.grid4,.hero{grid-template-columns:1fr}}
 
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
     .card h4{font-size:13px;font-weight:700;margin-bottom:4px}
     .card .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
     .chart-wrap{position:relative;height:220px}
 
-    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-      padding:18px}
+    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
     .table-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
     .search{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
       padding:8px 12px;font-size:12px;font-family:inherit;min-width:240px;color:var(--text)}
@@ -85,15 +71,14 @@
     tr:hover td{background:var(--surface2)}
     .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;white-space:nowrap}
     .tag.meta{background:rgba(24,119,242,.12);color:var(--meta)}
-    .tag.google{background:rgba(34,197,94,.12);color:var(--google)}
-    .tag.other{background:var(--surface2);color:var(--muted)}
+    .tag.bot-y{background:rgba(34,197,94,.14);color:var(--up)}
+    .tag.bot-n{background:rgba(220,38,38,.12);color:var(--down)}
     .tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
     .tag.score-b{background:rgba(34,197,94,.12);color:var(--up)}
     .tag.score-other{background:var(--surface2);color:var(--muted)}
-    .tag.stage{background:rgba(217,119,6,.12);color:#d97706}
     .empty{color:var(--muted);font-style:italic;font-size:11px}
 
-    .table-scroll{overflow-x:auto;max-height:560px;overflow-y:auto}
+    .table-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
 
     .note{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;
       padding:10px 14px;font-size:12px;color:#78350F;margin-bottom:14px}
@@ -120,94 +105,83 @@
   <!-- Hero -->
   <div class="hero">
     <div>
-      <h2>Quem chegou ao fim do funil pelo Meta?</h2>
+      <h2>Quem comprou da gente?</h2>
       <div class="sub">
-        Cruzamento entre o <b>pipeline SDR</b> (onde o bot coleta as respostas) e o <b>pipeline Closer</b>
-        (onde a venda é fechada), feito pelo <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code>.
-        Mostra dois grupos:
-        <br>• <b style="color:var(--up)">Vendas confirmadas</b> — Closer com venda fechada (atribuídas ao Meta)
-        <br>• <b style="color:#d97706">Em negociação no Closer</b> — passaram pelo bot Meta e estão em proposta, follow-up ou reunião
+        Perfil das vendas inbound do Meta Ads, com as respostas do bot de pré-atendimento.
+        Os campos vêm do <b>bot antigo</b> (vigente até ~30/04/2026): idade, custo/ano em viagens,
+        maior desafio, profissão, conhece Timeshare, viagem programada.
+        <br><br>
+        <span style="font-size:11.5px;color:var(--muted)">
+          Match SDR ↔ Closer feito via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
+          Algumas vendas vieram direto pro Closer (sala IBR / indicação) e não têm respostas registradas.
+        </span>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:14px">
         Última atualização: <b id="updated" style="color:var(--text)">—</b>
       </div>
     </div>
     <div class="kpis">
-      <div class="kpi green"><div class="lbl">Vendas confirmadas</div><div class="val" id="kpi-vendas">—</div><div class="sub2" id="kpi-vendas-sub">Inbound</div></div>
-      <div class="kpi"><div class="lbl">Score A</div><div class="val" id="kpi-scorea">—</div><div class="sub2" id="kpi-scorea-sub">Entre negociação</div></div>
-      <div class="kpi"><div class="lbl">Período do relatório</div><div class="val" id="kpi-periodo" style="font-size:15px;line-height:1.3">—</div><div class="sub2" id="kpi-periodo-sub">—</div></div>
+      <div class="kpi green"><div class="lbl">Vendas Meta</div><div class="val" id="kpi-vendas">—</div><div class="sub2" id="kpi-vendas-sub">—</div></div>
+      <div class="kpi"><div class="lbl">Receita total</div><div class="val" id="kpi-receita" style="font-size:18px">—</div><div class="sub2" id="kpi-ticket">ticket médio: —</div></div>
+      <div class="kpi"><div class="lbl">Período</div><div class="val" id="kpi-periodo" style="font-size:15px;line-height:1.3">—</div><div class="sub2" id="kpi-periodo-sub">—</div></div>
     </div>
   </div>
 
-  <!-- SEÇÃO 1: Vendas confirmadas -->
-  <div class="section">
-    <div class="sec-h">
-      <h3>🟢 Vendas confirmadas</h3>
-      <span class="pill"><b id="count-vendas">—</b> vendas</span>
-      <div class="desc">Leads no pipeline Closer com <code>venda=True</code>. Inbound: vieram do bot SDR (com respostas) OU foram criadas direto no Closer com origem Meta/Google.</div>
+  <!-- Gráficos -->
+  <div class="sec">Perfil das vendas · respostas do bot</div>
+  <div class="grid4">
+    <div class="card">
+      <h4>Custo/ano em viagens</h4>
+      <div class="csub">"Quanto você costuma investir em viagens por ano?"</div>
+      <div class="chart-wrap"><canvas id="ch-custo"></canvas></div>
     </div>
-
-    <div id="vendas-content"></div>
+    <div class="card">
+      <h4>Conhece Timeshare</h4>
+      <div class="csub">"Você conhece o modelo Timeshare?"</div>
+      <div class="chart-wrap"><canvas id="ch-timeshare"></canvas></div>
+    </div>
+    <div class="card">
+      <h4>Maior desafio</h4>
+      <div class="csub">"Qual é seu maior desafio em viajar?"</div>
+      <div class="chart-wrap"><canvas id="ch-desafio"></canvas></div>
+    </div>
+    <div class="card">
+      <h4>Viagem programada?</h4>
+      <div class="csub">"Tem viagem programada nos próximos meses?"</div>
+      <div class="chart-wrap"><canvas id="ch-viagem"></canvas></div>
+    </div>
   </div>
 
-  <!-- SEÇÃO 2: Em negociação -->
-  <div class="section">
-    <div class="sec-h">
-      <h3>🟡 Em negociação no Closer</h3>
-      <span class="pill"><b id="count-nego">—</b> leads</span>
-      <div class="desc">SDR concluiu o atendimento (passou pro Closer), o lead está em proposta/reunião/follow-up e ainda não fechou nem perdeu. Todos têm respostas do bot.</div>
+  <!-- Tabela -->
+  <div class="sec">Detalhe por venda</div>
+  <div class="table-card">
+    <div class="table-head">
+      <div>
+        <h4 style="font-size:14px;font-weight:700">Lista completa de vendas</h4>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="tcount">—</span> vendas Meta no período</div>
+      </div>
+      <input type="text" class="search" id="search" placeholder="🔍 Buscar por nome, profissão, audience...">
     </div>
-
-    <div class="grid4" style="margin-bottom:14px">
-      <div class="card">
-        <h4>Tipo de hospedagem</h4>
-        <div class="csub">"Onde costuma se hospedar?"</div>
-        <div class="chart-wrap"><canvas id="ch-hospedagem"></canvas></div>
-      </div>
-      <div class="card">
-        <h4>Com quem viaja</h4>
-        <div class="csub">"Você viaja mais..."</div>
-        <div class="chart-wrap"><canvas id="ch-viaja"></canvas></div>
-      </div>
-      <div class="card">
-        <h4>Faixa de investimento</h4>
-        <div class="csub">"Quanto investe em viagens por ano?"</div>
-        <div class="chart-wrap"><canvas id="ch-investimento"></canvas></div>
-      </div>
-      <div class="card">
-        <h4>Score do lead</h4>
-        <div class="csub">Score atribuído pelo bot (A–F)</div>
-        <div class="chart-wrap"><canvas id="ch-score"></canvas></div>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="table-head">
-        <div>
-          <h4 style="font-size:14px;font-weight:700">Detalhe de cada lead em negociação</h4>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="nego-table-count">—</span> leads no filtro atual</div>
-        </div>
-        <input type="text" class="search" id="search" placeholder="🔍 Buscar por audience, criativo, telefone...">
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>SDR id</th>
-              <th>Closer id</th>
-              <th>Stage no Closer</th>
-              <th>Origem</th>
-              <th>Audience</th>
-              <th>Criativo</th>
-              <th>Score</th>
-              <th>Hospedagem</th>
-              <th>Com quem viaja</th>
-              <th>Investimento</th>
-            </tr>
-          </thead>
-          <tbody id="nego-tbody"></tbody>
-        </table>
-      </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Data fech.</th>
+            <th>Preço</th>
+            <th>Bot</th>
+            <th>Idade</th>
+            <th>Custo/ano</th>
+            <th>Profissão</th>
+            <th>Maior desafio</th>
+            <th>Timeshare</th>
+            <th>Viagem prog.</th>
+            <th>Produto</th>
+            <th>Audience</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
     </div>
   </div>
 
@@ -215,27 +189,16 @@
 </div>
 
 <div class="footer">
-  Dados: Kommo CRM · cruzamento SDR ↔ Closer via <code>contact_id</code><br>
-  Vendas = Closer com <code>venda=True</code> (todas atribuídas ao Meta) · Em negociação = SDR status "passou pro Closer" + Closer em proposta/reunião/follow-up + origem Meta
+  Dados: Kommo CRM · Bot antigo (vigente até ~30/04/2026)<br>
+  Match SDR ↔ Closer via <code>contact_id</code> + nome do contato · todas as vendas atribuídas ao Meta Ads
 </div>
 
 <script>
 let RAW = null;
 let CHARTS = {};
 
-// SDR pipeline status: passou pro Closer
-const SDR_PASSED = 142;
-// Closer status que indicam "ainda no jogo" (não venda nem perda)
-const CLOSER_STAGES_OPEN = {
-  98169055: 'Proposta enviada',
-  98168239: 'Reunião realizada',
-  98169059: 'Follow-up',
-  98334563: 'Sinal verde'
-};
-
-// ── Utils ─────────────────────────────────────────────
 function fmtN(n){return n.toLocaleString('pt-BR')}
-function fmtPct(n){return n.toFixed(0)+'%'}
+function fmtBRL(n){return 'R$ '+n.toLocaleString('pt-BR',{maximumFractionDigits:0})}
 function fmtDate(ts){
   if (!ts) return '—';
   const d = new Date(ts*1000);
@@ -247,238 +210,97 @@ function fmtFetched(iso){
   const pad = n => String(n).padStart(2,'0');
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
-function originBucket(o){
-  const s = (o || '').toLowerCase();
-  if (s.includes('meta')) return 'meta';
-  if (s.includes('google')) return 'google';
-  return null;
-}
-
-// ── Build datasets ───────────────────────────────────
-// Retorna { vendas: [...], negociacao: [...] } enriquecidos com SDR match
 function normName(s){
   if (!s) return '';
   return s.normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 }
-function buildDatasets(){
+
+// ── Build vendas enriquecidas com SDR match ──────────
+function buildVendas(){
   const sdr = RAW.sdr || [];
   const closer = RAW.closer || [];
   const sdrByCid = {};
   for (const l of sdr) if (l.contact_id) sdrByCid[l.contact_id] = l;
-  const closerByCid = {};
-  for (const l of closer) if (l.contact_id) closerByCid[l.contact_id] = l;
-  // Index SDR por nome (pra fallback quando contact_id duplica entre pipelines)
+  // Index por nome — escolhe lead com MAIS campos do bot preenchidos
   const sdrByName = {};
+  const botFields = ['idade','custo_ano','desafio','profissao','timeshare','viagem_prog','cep'];
   for (const l of sdr) {
     const n = normName(l.name);
     if (!n) continue;
-    // Quando há vários SDR com mesmo nome, prioriza o que TEM respostas do bot
-    const existing = sdrByName[n];
-    const score = (l.hospedagem?1:0)+(l.viaja_mais?1:0)+(l.investimento?1:0);
-    const existingScore = existing ? (existing.hospedagem?1:0)+(existing.viaja_mais?1:0)+(existing.investimento?1:0) : -1;
-    if (score > existingScore) sdrByName[n] = l;
+    const score = botFields.reduce((s,f) => s + (l[f] ? 1 : 0), 0);
+    const ex = sdrByName[n];
+    const exScore = ex ? botFields.reduce((s,f) => s + (ex[f] ? 1 : 0), 0) : -1;
+    if (score > exScore) sdrByName[n] = l;
   }
-  // Lookup que tenta contact_id primeiro, depois nome
-  function findSdrMatch(cl){
-    if (cl.contact_id && sdrByCid[cl.contact_id]) return { sdr: sdrByCid[cl.contact_id], via: 'cid' };
-    const n = normName(cl.name);
-    if (n && sdrByName[n]) return { sdr: sdrByName[n], via: 'name' };
-    return { sdr: null, via: null };
-  }
-
-  // Vendas confirmadas: TODAS as Closer venda=True são atribuídas ao Meta
-  // (origem do Closer está incompleta no JSON; o time confirmou que todas vieram de Meta).
-  // Match SDR: tenta contact_id primeiro, depois nome normalizado (lead duplicado entre pipelines).
-  const vendas = (closer.filter(l => l.venda)).map(cl => {
-    const { sdr: sm, via: matchVia } = findSdrMatch(cl);
-    const respondeu = !!(sm && (sm.hospedagem || sm.viaja_mais || sm.investimento));
+  // Pra cada venda Closer, junta com SDR match
+  return (closer.filter(l => l.venda)).map(cl => {
+    const sm = sdrByCid[cl.contact_id] || sdrByName[normName(cl.name)] || null;
+    // Pega o campo do SDR se tiver valor, senão do Closer
+    const pick = f => (sm && sm[f]) || cl[f] || '';
+    const respondeu = botFields.some(f => sm && sm[f]);
     return {
-      tipo: 'venda',
       closer_id: cl.id,
-      sdr_id: sm ? sm.id : null,
-      name: cl.name || (sm && sm.name) || '',
+      sdr_id: sm?.id || null,
+      name: cl.name || sm?.name || '',
       origem: 'Meta Ads',
-      bucket: 'meta',
-      origem_raw: (sm && sm.origem) || cl.origem || '',
-      match_via: matchVia,
-      audience: (sm && sm.audience) || cl.audience || '',
-      creative: (sm && sm.creative) || cl.creative || '',
-      campaign: (sm && sm.campaign) || cl.campaign || '',
-      score: (sm && sm.score) || '',
-      hospedagem: (sm && sm.hospedagem) || '',
-      viaja_mais: (sm && sm.viaja_mais) || '',
-      investimento: (sm && sm.investimento) || '',
-      interesse_ai: (sm && sm.interesse_ai) || '',
-      price: cl.price || 0,
+      audience: pick('audience'),
+      creative: pick('creative'),
+      campaign: pick('campaign'),
+      score:    pick('score'),
+      price:    cl.price || 0,
       closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
-      created_at: cl.created_at,
-      has_sdr: !!sm,
+      idade:    pick('idade'),
+      custo_ano:pick('custo_ano'),
+      desafio:  pick('desafio'),
+      profissao:pick('profissao'),
+      timeshare:pick('timeshare'),
+      viagem_prog:pick('viagem_prog'),
+      cep:      pick('cep'),
+      produto:  cl.produto || '',
+      objecao:  cl.objecao || '',
       respondeu_bot: respondeu
     };
-  });
-
-  // Em negociação: SDR status=142 + match no Closer em stage aberto + origem Meta
-  const negociacao = [];
-  for (const sm of sdr) {
-    if (sm.status !== SDR_PASSED) continue;
-    if (!sm.contact_id) continue;
-    const cl = closerByCid[sm.contact_id];
-    if (!cl) continue;
-    if (!(cl.status in CLOSER_STAGES_OPEN)) continue;
-    if (originBucket(sm.origem) !== 'meta') continue; // só Meta
-    negociacao.push({
-      tipo: 'negociacao',
-      sdr_id: sm.id,
-      closer_id: cl.id,
-      origem: 'Meta Ads',
-      bucket: 'meta',
-      audience: sm.audience || '',
-      creative: sm.creative || '',
-      campaign: sm.campaign || '',
-      score: sm.score || '',
-      hospedagem: sm.hospedagem || '',
-      viaja_mais: sm.viaja_mais || '',
-      investimento: sm.investimento || '',
-      interesse_ai: sm.interesse_ai || '',
-      closer_stage: CLOSER_STAGES_OPEN[cl.status],
-      created_at: sm.created_at,
-      phone: sm.phone
-    });
-  }
-  return { vendas, negociacao };
+  }).sort((a,b) => (b.closed_at||0) - (a.closed_at||0));
 }
 
-// Sem filtros (página é Meta-only), mantém função pra evitar quebrar callers.
-function applyFilter(arr){ return arr; }
+// ── KPIs ─────────────────────────────────────────────
+function renderKPIs(vendas){
+  const total = vendas.length;
+  const comBot = vendas.filter(v => v.respondeu_bot).length;
+  const receita = vendas.reduce((s,v) => s + (v.price||0), 0);
+  const ticket = total > 0 ? receita / total : 0;
 
-// ── KPIs ──────────────────────────────────────────────
-function renderKPIs(ds){
-  const vendas = applyFilter(ds.vendas);
-  const nego   = applyFilter(ds.negociacao);
-  const scoreA = nego.filter(x => (x.score||'').toUpperCase() === 'A').length;
+  document.getElementById('kpi-vendas').textContent = total;
+  document.getElementById('kpi-vendas-sub').textContent = `${comBot} com respostas do bot`;
+  document.getElementById('kpi-receita').textContent = fmtBRL(receita);
+  document.getElementById('kpi-ticket').textContent = total > 0 ? 'ticket médio: ' + fmtBRL(ticket) : 'ticket médio: —';
 
-  document.getElementById('kpi-vendas').textContent = vendas.length;
-  document.getElementById('kpi-scorea').textContent = scoreA;
-  document.getElementById('kpi-vendas-sub').textContent = `Closer venda=True (filtrado)`;
-  document.getElementById('kpi-scorea-sub').textContent = nego.length > 0 ? `${(scoreA/nego.length*100).toFixed(0)}% dos em negociação` : '—';
-
-  // Período do relatório (do JSON ou fallback)
   const p = (RAW && RAW.period) || {};
-  const fmtBR = iso => {
-    if (!iso) return '—';
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-  };
-  const periodo = document.getElementById('kpi-periodo');
-  const periodoSub = document.getElementById('kpi-periodo-sub');
+  const fmtBR = iso => iso ? iso.split('-').reverse().join('/') : '—';
   if (p.start && p.end) {
-    periodo.textContent = `${fmtBR(p.start)} → ${fmtBR(p.end)}`;
-    // Calcula duração em dias
-    const dt0 = new Date(p.start);
-    const dt1 = new Date(p.end);
-    const dias = Math.round((dt1 - dt0) / 86400000) + 1;
-    periodoSub.textContent = `${dias} dias de dados`;
-  } else {
-    periodo.textContent = '—';
-    periodoSub.textContent = '—';
+    document.getElementById('kpi-periodo').textContent = `${fmtBR(p.start)} → ${fmtBR(p.end)}`;
+    const dias = Math.round((new Date(p.end) - new Date(p.start)) / 86400000) + 1;
+    document.getElementById('kpi-periodo-sub').textContent = `${dias} dias de dados`;
   }
-
-  document.getElementById('count-vendas').textContent = vendas.length;
-  document.getElementById('count-nego').textContent   = nego.length;
-}
-
-// ── Vendas section ───────────────────────────────────
-function renderVendas(ds){
-  const vendas = applyFilter(ds.vendas);
-  const c = document.getElementById('vendas-content');
-
-  if (vendas.length === 0) {
-    c.innerHTML = `<div class="card" style="text-align:center;padding:30px;color:var(--muted)">
-      <div style="font-size:14px;margin-bottom:6px">Sem vendas confirmadas no filtro atual.</div>
-      <div style="font-size:12px">A maioria das vendas atuais foi criada direto no Closer, sem passar pelo bot SDR — por isso aparecem aqui só se a origem foi declarada como Meta ou Google.</div>
-    </div>`;
-    return;
-  }
-
-  // Quebra das vendas em 3 grupos: sem SDR, com SDR mas sem respostas, respondeu bot
-  const semSdr   = vendas.filter(v => !v.has_sdr).length;
-  const semResp  = vendas.filter(v =>  v.has_sdr && !v.respondeu_bot).length;
-  const comResp  = vendas.filter(v =>  v.respondeu_bot).length;
-  const noteHtml = `<div class="note">
-    📊 Das <b>${vendas.length}</b> vendas Meta: <b>${comResp}</b> com respostas do bot ·
-    <b>${semResp}</b> têm match no SDR mas sem respostas (leads anteriores ao bot) ·
-    <b>${semSdr}</b> sem match no SDR (criadas direto no Closer · sala IBR / indicação / base).
-    <br><span style="font-size:11px">Match SDR↔Closer feito via <code>contact_id</code> ou nome normalizado do contato.</span>
-  </div>`;
-
-  c.innerHTML = `${noteHtml}<div class="table-card">
-    <div class="table-head">
-      <div>
-        <h4 style="font-size:14px;font-weight:700">Vendas detalhadas</h4>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${vendas.length} vendas confirmadas no filtro atual</div>
-      </div>
-    </div>
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Closer id</th>
-            <th>Nome</th>
-            <th>Data fechamento</th>
-            <th>Audience</th>
-            <th>Criativo</th>
-            <th>Preço</th>
-            <th>Bot</th>
-            <th>Hospedagem</th>
-            <th>Com quem viaja</th>
-            <th>Investimento</th>
-          </tr>
-        </thead>
-        <tbody>${vendas.map(v => {
-          const cel = x => x ? x : '<span class="empty">—</span>';
-          let bot;
-          if (v.respondeu_bot)      bot = '<span class="tag" style="background:rgba(34,197,94,.14);color:var(--up)" title="Match no SDR via '+(v.match_via||'?')+'">respondeu</span>';
-          else if (v.has_sdr)       bot = '<span class="tag" style="background:rgba(217,119,6,.14);color:#d97706" title="Match no SDR via '+(v.match_via||'?')+', mas campos vazios — provavelmente lead anterior ao bot">sem respostas</span>';
-          else                       bot = '<span class="tag" style="background:rgba(220,38,38,.12);color:var(--down)" title="Sem match no SDR — criado direto no Closer">não passou</span>';
-          const price = v.price > 0 ? 'R$ ' + v.price.toLocaleString('pt-BR') : '<span class="empty">—</span>';
-          return `<tr>
-            <td>${v.closer_id}</td>
-            <td>${cel(v.name)}</td>
-            <td>${fmtDate(v.closed_at)}</td>
-            <td>${cel(v.audience)}</td>
-            <td>${cel(v.creative)}</td>
-            <td>${price}</td>
-            <td>${bot}</td>
-            <td>${cel(v.hospedagem)}</td>
-            <td>${cel(v.viaja_mais)}</td>
-            <td>${cel(v.investimento)}</td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table>
-    </div>
-  </div>`;
 }
 
 // ── Charts ───────────────────────────────────────────
-const PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#dc2626','#6B7069','#1A1A1A'];
+const PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#6B7069','#dc2626','#1A1A1A'];
 
-function countBy(leads, field){
+function countBy(arr, field){
   const c = {};
-  for (const l of leads){
-    const v = (l[field] || '').toString().trim() || 'Não respondeu';
-    c[v] = (c[v]||0) + 1;
+  for (const v of arr){
+    const x = (v[field] || '').toString().trim() || 'Não respondeu';
+    c[x] = (c[x]||0) + 1;
   }
   return Object.entries(c).sort((a,b) => b[1]-a[1]);
 }
-
-function makeChart(canvasId, leads, field){
-  const data = countBy(leads, field);
+function makeChart(canvasId, data){
   const ctx = document.getElementById(canvasId);
   if (CHARTS[canvasId]) CHARTS[canvasId].destroy();
   const labels = data.map(d => d[0]);
   const values = data.map(d => d[1]);
   const colors = labels.map((l,i) => l === 'Não respondeu' ? '#D1D5DB' : PALETTE[i % PALETTE.length]);
-
   CHARTS[canvasId] = new Chart(ctx, {
     type: 'doughnut',
     data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
@@ -487,91 +309,79 @@ function makeChart(canvasId, leads, field){
       maintainAspectRatio: false,
       cutout: '55%',
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { font: { size: 10, family: 'Plus Jakarta Sans' }, padding: 8, boxWidth: 10, boxHeight: 10 }
-        },
-        tooltip: {
-          callbacks: {
-            label: c => {
-              const total = values.reduce((a,b)=>a+b,0);
-              const pct = (c.parsed/total*100).toFixed(0);
-              return `${c.label}: ${c.parsed} (${pct}%)`;
-            }
-          }
-        }
+        legend: { position: 'bottom', labels: { font:{size:10,family:'Plus Jakarta Sans'}, padding:8, boxWidth:10, boxHeight:10 } },
+        tooltip: { callbacks: { label: c => {
+          const t = values.reduce((a,b)=>a+b,0);
+          return `${c.label}: ${c.parsed} (${(c.parsed/t*100).toFixed(0)}%)`;
+        }}}
       }
     }
   });
 }
-
-function renderCharts(ds){
-  const leads = applyFilter(ds.negociacao);
-  makeChart('ch-hospedagem',  leads, 'hospedagem');
-  makeChart('ch-viaja',       leads, 'viaja_mais');
-  makeChart('ch-investimento',leads, 'investimento');
-  makeChart('ch-score',       leads, 'score');
+function renderCharts(vendas){
+  makeChart('ch-custo',     countBy(vendas, 'custo_ano'));
+  makeChart('ch-timeshare', countBy(vendas, 'timeshare'));
+  makeChart('ch-desafio',   countBy(vendas, 'desafio'));
+  makeChart('ch-viagem',    countBy(vendas, 'viagem_prog'));
 }
 
-// ── Tabela negociação ────────────────────────────────
-function renderNegoTable(ds){
+// ── Tabela ───────────────────────────────────────────
+function renderTable(vendas){
   const search = (document.getElementById('search').value || '').toLowerCase().trim();
-  let leads = applyFilter(ds.negociacao).slice();
-  if (search) {
-    leads = leads.filter(l => {
-      const blob = [l.audience, l.creative, l.campaign, l.phone, l.hospedagem, l.viaja_mais, l.investimento, l.interesse_ai, l.closer_stage]
+  let list = vendas.slice();
+  if (search){
+    list = list.filter(v => {
+      const blob = [v.name, v.audience, v.creative, v.profissao, v.custo_ano, v.desafio, v.timeshare, v.produto]
         .map(x => (x||'').toString().toLowerCase()).join(' ');
       return blob.includes(search);
     });
   }
-  leads.sort((a,b) => (b.created_at||0) - (a.created_at||0));
+  document.getElementById('tcount').textContent = list.length;
 
-  document.getElementById('nego-table-count').textContent = leads.length;
-
-  const tbody = document.getElementById('nego-tbody');
-  if (!leads.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty" style="text-align:center;padding:24px">Nenhum lead em negociação com o filtro/busca atual</td></tr>';
+  const tbody = document.getElementById('tbody');
+  if (!list.length){
+    tbody.innerHTML = '<tr><td colspan="12" class="empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
-
-  tbody.innerHTML = leads.map(l => {
-    const tag = l.bucket === 'meta' ? '<span class="tag meta">Meta Ads</span>' : '<span class="tag google">Google Ads</span>';
-    const score = (l.score || '').toUpperCase().trim();
+  tbody.innerHTML = list.map(v => {
+    const cel = x => x ? x : '<span class="empty">—</span>';
+    const bot = v.respondeu_bot
+      ? '<span class="tag bot-y">respondeu</span>'
+      : '<span class="tag bot-n">não passou</span>';
+    const score = (v.score||'').toUpperCase();
     const scoreTag = score
-      ? `<span class="tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span>`
-      : '<span class="empty">—</span>';
-    const cel = v => v ? v : '<span class="empty">não respondeu</span>';
-    const stage = l.closer_stage ? `<span class="tag stage">${l.closer_stage}</span>` : '<span class="empty">—</span>';
+      ? `<span class="tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span> `
+      : '';
     return `<tr>
-      <td>${l.sdr_id}</td>
-      <td>${l.closer_id}</td>
-      <td>${stage}</td>
-      <td>${tag}</td>
-      <td>${cel(l.audience)}</td>
-      <td>${cel(l.creative)}</td>
-      <td>${scoreTag}</td>
-      <td>${cel(l.hospedagem)}</td>
-      <td>${cel(l.viaja_mais)}</td>
-      <td>${cel(l.investimento)}</td>
+      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
+      <td>${fmtDate(v.closed_at)}</td>
+      <td>${v.price > 0 ? fmtBRL(v.price) : '<span class="empty">—</span>'}</td>
+      <td>${bot}</td>
+      <td>${cel(v.idade)}</td>
+      <td>${cel(v.custo_ano)}</td>
+      <td>${cel(v.profissao)}</td>
+      <td>${cel(v.desafio)}</td>
+      <td>${cel(v.timeshare)}</td>
+      <td>${cel(v.viagem_prog)}</td>
+      <td>${cel(v.produto)}</td>
+      <td>${cel(v.audience)}</td>
     </tr>`;
   }).join('');
 }
 
-// ── Eventos / Render ────────────────────────────────
+// ── Init ─────────────────────────────────────────────
 function renderAll(){
-  const ds = buildDatasets();
-  renderKPIs(ds);
-  renderVendas(ds);
-  renderCharts(ds);
-  renderNegoTable(ds);
+  const v = buildVendas();
+  renderKPIs(v);
+  renderCharts(v);
+  renderTable(v);
 }
 
 document.getElementById('search').addEventListener('input', () => {
-  const ds = buildDatasets();
-  renderNegoTable(ds);
+  const v = buildVendas();
+  renderTable(v);
 });
 
-// ── Init ─────────────────────────────────────────────
 fetch('data/kommo_leads.json?t=' + Date.now())
   .then(r => r.json())
   .then(json => {
