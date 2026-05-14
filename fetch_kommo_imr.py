@@ -39,10 +39,21 @@ CF_PUBLICO     = 3167420  # Público (audience/adset)
 CF_ANUNCIO     = 3167422  # Anúncio (creative/ad)
 CF_PHONE       = 2813078  # Telefone
 CF_MEDIUM      = 4226808  # Medium (cpc/organic/...)
-CF_HOSPEDAGEM  = 4226162  # Como se hospeda quando viaja
-CF_VIAJA_MAIS  = 4226170  # Você costuma viajar mais
-CF_INVESTIMENTO= 4226176  # Quanto investe/ano em viagens
-CF_INTERESSE_AI= 4226180  # Tem interesse em Resort All-inclusive
+CF_HOSPEDAGEM  = 4226162  # Bot novo · tipo de hospedagem
+CF_VIAJA_MAIS  = 4226170  # Bot novo · com quem viaja
+CF_INVESTIMENTO= 4226176  # Bot novo · quanto investe/ano
+CF_INTERESSE_AI= 4226180  # Bot novo · interesse em Resort All-inclusive
+# Bot antigo (vigente até ~30/04/2026)
+CF_IDADE       = 2824620  # Idade
+CF_CUSTO_ANO   = 2824632  # Custo/ano em viagens
+CF_DESAFIO     = 2824630  # Maior desafio em viagens
+CF_VIAGEM_PROG = 2824628  # Viagem programada?
+CF_TIMESHARE   = 2824626  # Conhece Timeshare?
+CF_CEP         = 2824624  # CEP
+CF_PROFISSAO   = 2824622  # Profissão
+# Closer
+CF_PRODUTO     = 4207098  # Produto comprado (Closer)
+CF_OBJECAO     = 4156446  # Principal objeção (Closer)
 
 # Status stages — real IDs from ipiocamarresort.kommo.com
 # SDR pipeline (12716679) — status 142 aqui = "Reunião realizada" (sucesso SDR, NÃO é venda)
@@ -64,11 +75,6 @@ TAGS_REUNIAO = {"reunião-agendada", "reunião-realizada", "reagendar-reunião"}
 PERIOD_START = date(2026, 1, 1)
 PERIOD_END   = date.today()
 
-# Debug: nomes dos contatos pra inspecionar custom fields (lead + contact)
-DEBUG_CONTACT_NAMES = {
-    "josé claudio c da silva", "stanley silvestre", "david lima gonçalves",
-    "gelza sabrina", "adriana rocha"
-}
 
 def week_of(ts):
     """w1-w4 por dia do mês — genérico (funciona em qualquer mês)."""
@@ -228,10 +234,22 @@ def process_lead(lead, contacts_map):
         "phone":      phone_masked,   # telefone mascarado (55XXXXXXXX1234) pra publicação
         "_phone_key": phone_hash,     # usado apenas em memória pra deduplicar; removido antes de salvar
         "tags":       tags,
-        "hospedagem": contact.get(CF_HOSPEDAGEM, ""),
-        "viaja_mais": contact.get(CF_VIAJA_MAIS, ""),
-        "investimento":contact.get(CF_INVESTIMENTO, ""),
-        "interesse_ai":contact.get(CF_INTERESSE_AI, ""),
+        # Bot novo (a partir de ~30/04/2026)
+        "hospedagem":   contact.get(CF_HOSPEDAGEM, ""),
+        "viaja_mais":   contact.get(CF_VIAJA_MAIS, ""),
+        "investimento": contact.get(CF_INVESTIMENTO, ""),
+        "interesse_ai": contact.get(CF_INTERESSE_AI, ""),
+        # Bot antigo (até ~30/04/2026)
+        "idade":        contact.get(CF_IDADE, ""),
+        "custo_ano":    contact.get(CF_CUSTO_ANO, ""),
+        "desafio":      contact.get(CF_DESAFIO, ""),
+        "viagem_prog":  contact.get(CF_VIAGEM_PROG, ""),
+        "timeshare":    contact.get(CF_TIMESHARE, ""),
+        "cep":          contact.get(CF_CEP, ""),
+        "profissao":    contact.get(CF_PROFISSAO, ""),
+        # Closer (custom fields no lead)
+        "produto":      get_lead_cf(lead, CF_PRODUTO),
+        "objecao":      get_lead_cf(lead, CF_OBJECAO),
         "qualified":         qualified,
         "reuniao_agendada":  reuniao_agendada,
         "reuniao_realizada": reuniao_realizada,
@@ -360,39 +378,6 @@ def main():
             l["duplicated"] = False
     if venda_dups:
         print(f"\n⚠️  {venda_dups} venda(s) duplicada(s) removida(s) (mesmo contato + mesma data de fechamento)")
-
-    # ── DEBUG temporário: inspeciona custom_fields dos leads alvo ─────────
-    import unicodedata as _u
-    def _strip(s):
-        return _u.normalize('NFKD', (s or '').strip().lower()).encode('ascii','ignore').decode('ascii')
-    debug_targets = []
-    all_processed = deduped_sdr + processed_closer + processed_duque
-    for l in all_processed:
-        n = _strip(l.get('name'))
-        for t in DEBUG_CONTACT_NAMES:
-            if n == _strip(t):
-                debug_targets.append(l); break
-    print(f"\n🔍 DEBUG: {len(debug_targets)} lead(s) alvo encontrados (deduplicar nomes)")
-    seen_ids = set()
-    for l in debug_targets:
-        if l['id'] in seen_ids: continue
-        seen_ids.add(l['id'])
-        print(f"\n--- lead id={l['id']}  pipeline={l.get('pipeline')}  status={l.get('status')}  name={l.get('name')!r}  contact_id={l.get('contact_id')} ---")
-        try:
-            ld = kommo_get(f"/api/v4/leads/{l['id']}", params={"with": "contacts"})
-            print("  LEAD custom_fields_values:")
-            for cf in (ld.get('custom_fields_values') or []):
-                print(f"    fid={cf.get('field_id')} name={cf.get('field_name')!r} values={cf.get('values')}")
-            cs = ld.get('_embedded',{}).get('contacts') or []
-            if cs:
-                cid = cs[0]['id']
-                cd = kommo_get(f"/api/v4/contacts/{cid}")
-                print(f"  CONTACT id={cid} name={cd.get('name')!r} custom_fields_values:")
-                for cf in (cd.get('custom_fields_values') or []):
-                    print(f"    fid={cf.get('field_id')} name={cf.get('field_name')!r} values={cf.get('values')}")
-        except Exception as e:
-            print(f"  erro debug: {e}")
-    print(f"\n🔍 fim DEBUG\n")
 
     # Métricas agregadas (regras do cliente)
     total_leads       = len(deduped_sdr) + len(processed_duque)
