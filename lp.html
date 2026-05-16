@@ -101,6 +101,20 @@ img{max-width:100%;display:block}
 @media(max-width:640px){.stats{grid-template-columns:1fr 1fr;gap:22px}}
 
 .hero-visual{position:relative}
+.socios-ticket{display:flex;align-items:stretch;margin-top:16px;border-radius:var(--r-sm);
+  overflow:hidden;background:var(--mustard);color:#3a2a05;
+  box-shadow:0 18px 36px -18px rgba(14,42,48,.55)}
+.socios-ticket .st-stub{width:84px;flex-shrink:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;border-right:2px dashed rgba(58,42,5,.42);
+  font-family:'Anton',sans-serif;line-height:1;padding:14px 0}
+.socios-ticket .st-stub .sn{font-size:32px}
+.socios-ticket .st-stub .sl{font-size:9px;font-weight:800;letter-spacing:.14em;
+  font-family:'Plus Jakarta Sans',sans-serif;margin-top:3px}
+.socios-ticket .st-body{padding:14px 22px;display:flex;flex-direction:column;justify-content:center}
+.socios-ticket .st-body .stt{font-size:9.5px;font-weight:800;letter-spacing:.13em;
+  text-transform:uppercase;opacity:.72}
+.socios-ticket .st-body .stm{font-family:'Anton',sans-serif;font-size:21px;
+  text-transform:uppercase;line-height:1.06;margin-top:4px}
 .ticket-panel{position:relative;border-radius:26px;padding:34px 30px;
   background-image:
     repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 14px,transparent 14px 28px),
@@ -131,14 +145,9 @@ img{max-width:100%;display:block}
   font-size:12.5px;font-weight:600}
 .panel-foot .pin{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);
   display:flex;align-items:center;justify-content:center;font-size:12px}
-.hero-seal{position:absolute;left:-30px;bottom:-30px;width:132px;height:132px;z-index:3;
-  filter:drop-shadow(0 14px 22px rgba(14,42,48,.42))}
-.hero-seal svg{width:100%;height:100%}
-.seal-rot{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
 @media(max-width:880px){
   .hero-grid{grid-template-columns:1fr;gap:40px}
   .hero{padding:36px 0 50px}
-  .hero-seal{width:104px;height:104px;left:-12px;bottom:-18px}
 }
 
 /* ===== SECTION SHELL ===== */
@@ -312,6 +321,7 @@ section{padding:78px 0}
 .short-frame{width:100%;max-width:300px;aspect-ratio:9/16;border-radius:24px;overflow:hidden;
   margin:0 auto;background:#000;box-shadow:0 28px 54px -26px rgba(14,42,48,.55);position:relative}
 .short-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.rci-intro{font-size:16px;color:var(--ink2);margin-bottom:22px}
 .rci-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .rci-stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
   padding:22px 20px;display:flex;align-items:center;gap:14px}
@@ -345,9 +355,8 @@ section{padding:78px 0}
 /* ===== MME ===== */
 .mme-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 .mme-grid p{font-size:16px;color:var(--ink2);margin-bottom:14px}
-.mme-photo{border-radius:var(--r);overflow:hidden;box-shadow:0 26px 50px -28px rgba(14,42,48,.5);
-  min-height:300px}
-.mme-photo img{width:100%;height:100%;object-fit:cover}
+.mme-photo{border-radius:var(--r);overflow:hidden;box-shadow:0 24px 46px -26px rgba(14,42,48,.45)}
+.mme-photo img{width:100%;height:380px;object-fit:cover;display:block}
 .mme-sub{text-align:center;max-width:560px;margin:64px auto 28px}
 .mme-sub .sec-kicker{color:var(--pink)}
 .mme-sub h3{font-family:'Anton',sans-serif;font-size:clamp(26px,3.4vw,40px);
@@ -460,8 +469,8 @@ section{padding:78px 0}
       <a href="#como">Como funciona</a>
       <a href="#economia">Economia</a>
       <a href="#destino">Destino</a>
-      <a href="#depoimentos">Depoimentos</a>
       <a href="#mme">A MME</a>
+      <a href="#depoimentos">Depoimentos</a>
       <a href="#faq">FAQ</a>
     </div>
     <a href="#contato" class="nav-cta">Falar com consultor</a>
@@ -534,23 +543,12 @@ section{padding:78px 0}
           <span class="pin">◎</span> Praia de Ipioca · Alagoas, o Caribe brasileiro
         </div>
       </div>
-      <div class="hero-seal">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <defs><path id="sealArc" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/></defs>
-          <circle cx="100" cy="100" r="98" fill="#E8A93B"/>
-          <circle cx="100" cy="100" r="80" fill="none" stroke="#3a2a05" stroke-opacity=".45"
-            stroke-width="1.4" stroke-dasharray="1.5 5"/>
-          <g class="seal-rot">
-            <text fill="#3a2a05" font-family="'Plus Jakarta Sans',sans-serif"
-              font-size="14.5" font-weight="800" letter-spacing="2.2">
-              <textPath href="#sealArc" startOffset="0%">ESPALHADOS POR TODO O BRASIL · SÓCIOS · </textPath>
-            </text>
-          </g>
-          <text x="100" y="98" text-anchor="middle" font-family="'Anton',sans-serif"
-            font-size="50" fill="#3a2a05">+600</text>
-          <text x="100" y="122" text-anchor="middle" font-family="'Plus Jakarta Sans',sans-serif"
-            font-size="12" font-weight="800" letter-spacing="2.5" fill="#3a2a05">SÓCIOS</text>
-        </svg>
+      <div class="socios-ticket">
+        <div class="st-stub"><span class="sn">+600</span><span class="sl">SÓCIOS</span></div>
+        <div class="st-body">
+          <span class="stt">Clube de férias · Brasil + Argentina</span>
+          <span class="stm">Espalhados por todo o Brasil</span>
+        </div>
       </div>
     </div>
   </div>
@@ -664,25 +662,6 @@ section{padding:78px 0}
   </div>
 </section>
 
-<!-- ===== DEPOIMENTOS ===== -->
-<section class="depo" id="depoimentos">
-  <div class="wrap">
-    <div class="sec-head center rv">
-      <div class="sec-kicker">Depoimentos</div>
-      <h2 class="sec-title display">Quem já é sócio <span class="tl">conta como é</span></h2>
-      <p class="sec-sub">Histórias reais de famílias que pararam de improvisar as férias e passaram a viajar com tranquilidade.</p>
-    </div>
-    <div class="video-16 rv">
-      <iframe src="https://www.youtube.com/embed/lFw5AUUeltQ" title="Depoimento de sócio do clube de férias"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowfullscreen loading="lazy"></iframe>
-    </div>
-    <div class="cta-row center rv">
-      <a href="#contato" class="btn btn-primary">Quero fazer parte do clube →</a>
-    </div>
-  </div>
-</section>
-
 <!-- ===== COMO FUNCIONA ===== -->
 <section id="como">
   <div class="wrap">
@@ -781,7 +760,6 @@ section{padding:78px 0}
           <div class="dfeat"><div class="n">100%</div><div class="t">Pé na areia, beach club exclusivo</div></div>
           <div class="dfeat"><div class="n">All-inc</div><div class="t">Gastronomia, lazer e Kids Club</div></div>
         </div>
-        <div class="dest-delivery">Entrega prevista para 2030</div>
       </div>
       <div class="carousel full rv" data-carousel>
         <div class="car-track">
@@ -813,7 +791,6 @@ section{padding:78px 0}
     <div class="sec-head rv">
       <div class="sec-kicker">Rede global RCI</div>
       <h2 class="sec-title display">Suas férias <span class="tl">não param em Ipioca</span></h2>
-      <p class="sec-sub">Pela RCI, a maior rede de intercâmbio de férias do mundo, você troca suas semanas por destinos na Europa, no Caribe, na América Latina e por todo o Brasil.</p>
     </div>
     <div class="rci-grid">
       <div class="rv">
@@ -824,6 +801,7 @@ section{padding:78px 0}
         </div>
       </div>
       <div class="rv">
+        <p class="rci-intro">Pela RCI, a maior rede de intercâmbio de férias do mundo, você troca suas semanas por destinos na Europa, no Caribe, na América Latina e por todo o Brasil.</p>
         <div class="rci-stats">
           <div class="rci-stat i1">
             <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M10 21v-4h4v4"/></svg></div>
@@ -927,6 +905,25 @@ section{padding:78px 0}
   </div>
 </section>
 
+<!-- ===== DEPOIMENTOS ===== -->
+<section class="depo" id="depoimentos">
+  <div class="wrap">
+    <div class="sec-head center rv">
+      <div class="sec-kicker">Depoimentos</div>
+      <h2 class="sec-title display">Quem já é sócio <span class="tl">conta como é</span></h2>
+      <p class="sec-sub">Histórias reais de famílias que pararam de improvisar as férias e passaram a viajar com tranquilidade.</p>
+    </div>
+    <div class="video-16 rv">
+      <iframe src="https://www.youtube.com/embed/lFw5AUUeltQ" title="Depoimento de sócio do clube de férias"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen loading="lazy"></iframe>
+    </div>
+    <div class="cta-row center rv">
+      <a href="#contato" class="btn btn-primary">Quero fazer parte do clube →</a>
+    </div>
+  </div>
+</section>
+
 <!-- ===== CTA / FORM ===== -->
 <section class="cta" id="contato">
   <div class="wrap cta-grid">
@@ -934,6 +931,7 @@ section{padding:78px 0}
       <h2 class="display">Fale com um <span class="tl">consultor</span> e tire todas as dúvidas</h2>
       <p class="p">Sem compromisso e sem pressão. Um consultor explica como o clube se encaixa nas férias da sua família e quanto você pode economizar.</p>
       <ul class="cta-trust">
+        <li><span class="tk">✓</span> São só 4 perguntas rápidas pelo WhatsApp para ver se faz sentido para o seu perfil</li>
         <li><span class="tk">✓</span> Atendimento humano, no seu tempo</li>
         <li><span class="tk">✓</span> Valores e condições explicados com transparência</li>
         <li><span class="tk">✓</span> Comparativo com resorts da região, se você quiser</li>
