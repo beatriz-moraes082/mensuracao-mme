@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Ipioca Mar · Clube de Férias por 26 anos, MME Vacation Club</title>
-<meta name="description" content="3 semanas de férias por ano, durante 26 anos. Use no Ipioca Mar Resort, troque por 4.300 resorts pelo mundo via RCI ou alugue pela MME Hotéis."/>
+<meta name="description" content="3 semanas de férias por ano, durante 26 anos. Use no Ipioca Mar Resort, troque por 4.300 resorts pelo mundo via RCI ou aproveite a rede MME Hotéis."/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -30,6 +30,10 @@ img{max-width:100%;display:block}
 
 .display{font-family:'Anton',sans-serif;font-weight:400;line-height:.95;
   letter-spacing:.5px;text-transform:uppercase}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== BUTTONS ===== */
 .btn{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15.5px;
@@ -78,16 +82,7 @@ img{max-width:100%;display:block}
 }
 
 /* ===== HERO ===== */
-.hero{padding:54px 0 88px;position:relative}
-.scroll-cue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:7px;
-  font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);cursor:pointer;animation:bob 1.9s ease-in-out infinite}
-.scroll-cue .chev{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);
-  background:#fff;display:flex;align-items:center;justify-content:center;color:var(--teal);
-  box-shadow:0 8px 20px -10px rgba(14,42,48,.35)}
-@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
-@media(max-width:880px){.scroll-cue{display:none}}
+.hero{padding:54px 0 70px}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:54px;align-items:center}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;
   letter-spacing:.13em;text-transform:uppercase;color:var(--teal-d);
@@ -105,12 +100,16 @@ img{max-width:100%;display:block}
   color:var(--muted);margin-top:7px}
 @media(max-width:640px){.stats{grid-template-columns:1fr 1fr;gap:22px}}
 
+.hero-visual{position:relative}
 .ticket-panel{position:relative;border-radius:26px;padding:34px 30px;
-  background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.10) 0 14px,transparent 14px 28px),
-    linear-gradient(135deg,#2A8B9A,#A6CFD2);
+  background-image:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 14px,transparent 14px 28px),
+    linear-gradient(155deg,rgba(14,42,48,.84),rgba(21,94,105,.68)),
+    url('img/ipioca-2.jpg');
+  background-size:cover;background-position:center;
   box-shadow:0 30px 60px -28px rgba(14,42,48,.55);overflow:hidden}
 .panel-tag{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
-  color:#fff;opacity:.9;margin-bottom:18px}
+  color:#fff;opacity:.92;margin-bottom:18px}
 .tickets{display:flex;flex-direction:column;gap:14px}
 .ticket{display:flex;align-items:stretch;border-radius:var(--r-sm);overflow:hidden;
   box-shadow:0 12px 24px -14px rgba(14,42,48,.6)}
@@ -132,9 +131,14 @@ img{max-width:100%;display:block}
   font-size:12.5px;font-weight:600}
 .panel-foot .pin{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);
   display:flex;align-items:center;justify-content:center;font-size:12px}
+.hero-seal{position:absolute;left:-30px;bottom:-30px;width:132px;height:132px;z-index:3;
+  filter:drop-shadow(0 14px 22px rgba(14,42,48,.42))}
+.hero-seal svg{width:100%;height:100%}
+.seal-rot{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
 @media(max-width:880px){
   .hero-grid{grid-template-columns:1fr;gap:40px}
   .hero{padding:36px 0 50px}
+  .hero-seal{width:104px;height:104px;left:-12px;bottom:-18px}
 }
 
 /* ===== SECTION SHELL ===== */
@@ -146,6 +150,34 @@ section{padding:78px 0}
 .sec-title .tl{color:var(--teal)}
 .sec-sub{font-size:17px;color:var(--ink2);margin-top:16px}
 .center{margin-left:auto;margin-right:auto;text-align:center}
+
+/* ===== CAROUSEL ===== */
+.carousel{position:relative}
+.car-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;border-radius:var(--r)}
+.car-track::-webkit-scrollbar{display:none}
+.car-slide{flex:0 0 100%;scroll-snap-align:start}
+.car-btn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;
+  border-radius:50%;border:0;background:#fff;color:var(--ink);cursor:pointer;
+  box-shadow:0 8px 22px -8px rgba(14,42,48,.55);display:flex;align-items:center;
+  justify-content:center;z-index:2;transition:background .15s,color .15s}
+.car-btn:hover{background:var(--mustard)}
+.car-btn.prev{left:12px}.car-btn.next{right:12px}
+.car-dots{display:flex;gap:7px;justify-content:center;margin-top:18px}
+.car-dots button{width:8px;height:8px;border-radius:99px;border:0;cursor:pointer;
+  background:var(--line);padding:0;transition:width .2s,background .2s}
+.car-dots button.active{background:var(--teal);width:22px}
+.carousel.full .car-track{gap:0}
+.carousel.full .car-slide{position:relative}
+.carousel.full .car-slide img{width:100%;height:440px;object-fit:cover}
+.car-tag{position:absolute;left:16px;bottom:16px;background:rgba(14,42,48,.82);color:#fff;
+  font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  padding:8px 14px;border-radius:99px}
+.carousel.trio .car-slide{flex:0 0 calc((100% - 28px)/3)}
+@media(max-width:820px){
+  .carousel.full .car-slide img{height:320px}
+  .carousel.trio .car-slide{flex:0 0 80%}
+}
 
 /* ===== O QUE É ===== */
 .naoe{background:var(--ink);color:#fff}
@@ -175,19 +207,23 @@ section{padding:78px 0}
 .socios{background:var(--cream2)}
 .socios-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:54px;align-items:center}
 .globe-wrap{display:flex;justify-content:center}
-.globe{width:100%;max-width:420px;filter:drop-shadow(0 26px 44px rgba(14,42,48,.32))}
+.globe{width:100%;max-width:430px;filter:drop-shadow(0 26px 44px rgba(14,42,48,.32));
+  animation:floaty 6s ease-in-out infinite}
+.globe-orbit{transform-box:fill-box;transform-origin:center;animation:spin 16s linear infinite}
 .pin-dot{animation:pulse 2.6s ease-in-out infinite}
 .pin-dot:nth-child(2n){animation-delay:.5s}
 .pin-dot:nth-child(3n){animation-delay:1s}
 .pin-dot:nth-child(4n){animation-delay:1.6s}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-.socios-info .badge600{display:inline-flex;align-items:baseline;gap:8px;
-  background:var(--ink);color:#fff;padding:9px 18px;border-radius:99px;margin-bottom:18px}
-.socios-info .badge600 b{font-family:'Anton',sans-serif;font-size:22px;color:var(--mustard)}
-.socios-info .badge600 span{font-size:12px;font-weight:700;letter-spacing:.04em}
+.badge600{display:inline-flex;align-items:center;gap:14px;background:var(--paper);
+  border:1px solid var(--line);border-radius:99px;padding:10px 22px 10px 12px;margin-bottom:20px}
+.badge600 .bn{font-family:'Anton',sans-serif;font-size:30px;color:#fff;background:var(--teal);
+  width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.badge600 .bl{font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.badge600 .bl b{color:var(--teal-d)}
 .socios-info h2{font-size:clamp(30px,4vw,46px)}
 .socios-info h2 .tl{color:var(--teal)}
 .socios-info p{font-size:16.5px;color:var(--ink2);margin:16px 0 4px;max-width:480px}
+@media(max-width:820px){.socios-grid{grid-template-columns:1fr;gap:30px}}
 
 /* ===== DEPOIMENTOS ===== */
 .depo{background:var(--ink);color:#fff}
@@ -195,14 +231,9 @@ section{padding:78px 0}
 .depo .sec-title{color:#fff}
 .depo .sec-title .tl{color:var(--teal-l)}
 .depo .sec-sub{color:#C9D6D5}
-.depo-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:36px;align-items:center}
 .video-16{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;
-  box-shadow:0 30px 60px -28px rgba(0,0,0,.6);background:#000}
+  box-shadow:0 30px 60px -28px rgba(0,0,0,.6);background:#000;max-width:880px;margin:0 auto}
 .video-16 iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.depo-side .quote{font-family:'Anton',sans-serif;font-size:60px;color:var(--teal-l);
-  line-height:.5;display:block;margin-bottom:8px}
-.depo-side p{font-size:17px;color:#DCEFEF;margin-bottom:20px}
-@media(max-width:820px){.depo-grid{grid-template-columns:1fr}}
 
 /* ===== COMO FUNCIONA ===== */
 .howgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
@@ -272,26 +303,9 @@ section{padding:78px 0}
   border-radius:var(--r-sm);padding:18px}
 .dfeat .n{font-family:'Anton',sans-serif;font-size:28px;color:#fff}
 .dfeat .t{font-size:13px;color:#CFE5E4;margin-top:3px}
-.dest-photo{position:relative;border-radius:var(--r);overflow:hidden;
-  box-shadow:0 30px 60px -28px rgba(0,0,0,.5);min-height:330px}
-.dest-photo img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.dest-photo .cap{position:absolute;left:0;right:0;bottom:0;padding:46px 24px 20px;
-  background:linear-gradient(transparent,rgba(14,42,48,.85));z-index:1}
-.dest-photo .cap .where{font-size:11.5px;font-weight:800;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--mustard)}
-.dest-photo .cap h3{font-family:'Anton',sans-serif;font-size:30px;text-transform:uppercase;margin-top:4px}
-.dest-gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:150px 150px;
-  gap:14px;margin-top:24px}
-.dest-gallery .g{border-radius:var(--r-sm);overflow:hidden;position:relative}
-.dest-gallery .g img{width:100%;height:100%;object-fit:cover}
-.dest-gallery .g1{grid-row:span 2}
 .dest-delivery{display:inline-flex;align-items:center;gap:8px;background:var(--mustard);
   color:#3a2a05;font-weight:800;font-size:13px;padding:10px 18px;border-radius:99px;margin-top:24px}
-@media(max-width:820px){
-  .dest-grid{grid-template-columns:1fr;gap:30px}
-  .dest-gallery{grid-template-columns:1fr 1fr;grid-template-rows:130px 130px 130px}
-  .dest-gallery .g1{grid-row:span 1;grid-column:span 2}
-}
+@media(max-width:820px){.dest-grid{grid-template-columns:1fr;gap:30px}}
 
 /* ===== RCI ===== */
 .rci-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center}
@@ -300,12 +314,17 @@ section{padding:78px 0}
 .short-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .rci-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .rci-stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);
-  padding:24px 22px}
-.rci-stat .n{font-family:'Anton',sans-serif;font-size:38px;color:var(--teal);line-height:1}
-.rci-stat .t{font-size:13px;font-weight:600;color:var(--ink2);margin-top:5px}
-@media(max-width:820px){
-  .rci-grid{grid-template-columns:1fr;gap:30px}
-}
+  padding:22px 20px;display:flex;align-items:center;gap:14px}
+.rci-stat .ic{flex-shrink:0;width:46px;height:46px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center}
+.rci-stat.i1 .ic{background:rgba(30,126,140,.14);color:var(--teal)}
+.rci-stat.i2 .ic{background:rgba(209,78,105,.14);color:var(--pink)}
+.rci-stat.i3 .ic{background:rgba(232,169,59,.18);color:#C98A1E}
+.rci-stat.i4 .ic{background:rgba(14,42,48,.1);color:var(--ink)}
+.rci-stat .n{font-family:'Anton',sans-serif;font-size:32px;color:var(--ink);line-height:1}
+.rci-stat .t{font-size:12.5px;font-weight:600;color:var(--ink2);margin-top:3px}
+@media(max-width:820px){.rci-grid{grid-template-columns:1fr;gap:30px}}
+@media(max-width:480px){.rci-stats{grid-template-columns:1fr}}
 
 /* ===== PARA QUEM ===== */
 .quem{background:var(--ink);color:#fff}
@@ -326,19 +345,24 @@ section{padding:78px 0}
 /* ===== MME ===== */
 .mme-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 .mme-grid p{font-size:16px;color:var(--ink2);margin-bottom:14px}
-.mme-hotels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:34px}
-.hotelcard{border-radius:var(--r-sm);overflow:hidden;position:relative;height:180px;
+.mme-photo{border-radius:var(--r);overflow:hidden;box-shadow:0 26px 50px -28px rgba(14,42,48,.5);
+  min-height:300px}
+.mme-photo img{width:100%;height:100%;object-fit:cover}
+.mme-sub{text-align:center;max-width:560px;margin:64px auto 28px}
+.mme-sub .sec-kicker{color:var(--pink)}
+.mme-sub h3{font-family:'Anton',sans-serif;font-size:clamp(26px,3.4vw,40px);
+  text-transform:uppercase;letter-spacing:.5px}
+.mme-sub p{font-size:15px;color:var(--muted);margin-top:10px}
+.hotelcard{border-radius:var(--r-sm);overflow:hidden;position:relative;height:240px;
   border:1px solid var(--line)}
 .hotelcard img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
 .hotelcard:hover img{transform:scale(1.06)}
-.hotelcard .nm{position:absolute;left:0;right:0;bottom:0;padding:30px 16px 14px;
-  background:linear-gradient(transparent,rgba(14,42,48,.88));color:#fff;
-  font-size:14px;font-weight:800;letter-spacing:.02em}
+.hotelcard .nm{position:absolute;left:0;right:0;bottom:0;padding:34px 18px 16px;
+  background:linear-gradient(transparent,rgba(14,42,48,.9));color:#fff;
+  font-size:15px;font-weight:800;letter-spacing:.02em}
 .hotelcard .nm span{display:block;font-size:10.5px;font-weight:700;
   letter-spacing:.1em;text-transform:uppercase;color:var(--mustard);margin-bottom:2px}
-@media(max-width:820px){.mme-grid{grid-template-columns:1fr;gap:30px}
-  .mme-hotels{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.mme-hotels{grid-template-columns:1fr}}
+@media(max-width:820px){.mme-grid{grid-template-columns:1fr;gap:30px}}
 
 /* ===== FAQ ===== */
 .faq{background:var(--cream2)}
@@ -391,18 +415,20 @@ section{padding:78px 0}
 .foot-links{display:flex;gap:22px;flex-wrap:wrap}
 .foot-links a{font-size:13px}
 .foot-links a:hover{color:#fff}
-.foot-bot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
-  padding-top:22px;font-size:11.5px}
+.foot-bot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  align-items:center;padding-top:22px;font-size:11.5px}
+.trilha-credit{display:flex;align-items:center;gap:10px}
+.trilha-credit .tc-label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#7C9291}
+.trilha-credit:hover .tc-label{color:#fff}
+.trilha-logo{height:26px;width:auto}
 
-/* ===== WHATSAPP FLOAT ===== */
+/* ===== FLOATING ===== */
 .wa-float{position:fixed;right:20px;bottom:20px;z-index:60;background:var(--pink);
   color:#fff;font-weight:700;font-size:14px;padding:14px 20px;border-radius:99px;
   box-shadow:0 14px 30px -10px rgba(209,78,105,.8);display:flex;align-items:center;gap:8px;
   transition:transform .15s}
 .wa-float:hover{transform:translateY(-2px)}
 @media(max-width:600px){.wa-float span{display:none}.wa-float{padding:15px}}
-
-/* ===== BACK TO TOP ===== */
 .to-top{position:fixed;left:20px;bottom:20px;z-index:60;width:46px;height:46px;border-radius:50%;
   background:var(--mustard);color:#3a2a05;display:flex;align-items:center;justify-content:center;
   cursor:pointer;border:0;box-shadow:0 12px 26px -10px rgba(14,42,48,.6);
@@ -469,52 +495,65 @@ section{padding:78px 0}
         <div class="stat"><div class="n">+600</div><div class="l">Sócios no Brasil</div></div>
       </div>
     </div>
-    <div class="ticket-panel">
-      <div class="panel-tag">Como suas semanas funcionam</div>
-      <div class="tickets">
-        <div class="ticket t-yellow">
-          <div class="ticket-body">
-            <div class="wk">Semana 04 · Uso</div>
-            <div class="dest">Usar no Ipioca</div>
+    <div class="hero-visual">
+      <div class="ticket-panel">
+        <div class="panel-tag">Como suas semanas funcionam</div>
+        <div class="tickets">
+          <div class="ticket t-yellow">
+            <div class="ticket-body">
+              <div class="wk">Semana 04 · Uso</div>
+              <div class="dest">Usar no Ipioca</div>
+            </div>
+            <div class="ticket-stub"><div class="bars">
+              <i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i>
+              <i style="height:85%"></i><i style="height:55%"></i><i style="height:95%"></i>
+              <i style="height:35%"></i></div></div>
           </div>
-          <div class="ticket-stub"><div class="bars">
-            <i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i>
-            <i style="height:85%"></i><i style="height:55%"></i><i style="height:95%"></i>
-            <i style="height:35%"></i></div></div>
+          <div class="ticket t-pink">
+            <div class="ticket-body">
+              <div class="wk">Semana 12 · Troca</div>
+              <div class="dest">RCI · Cancún</div>
+            </div>
+            <div class="ticket-stub"><div class="bars">
+              <i style="height:90%"></i><i style="height:45%"></i><i style="height:100%"></i>
+              <i style="height:60%"></i><i style="height:80%"></i><i style="height:40%"></i>
+              <i style="height:70%"></i></div></div>
+          </div>
+          <div class="ticket t-ink">
+            <div class="ticket-body">
+              <div class="wk">Semana 28 · Flexível</div>
+              <div class="dest">Guardar p/ depois</div>
+            </div>
+            <div class="ticket-stub"><div class="bars">
+              <i style="height:50%"></i><i style="height:95%"></i><i style="height:65%"></i>
+              <i style="height:100%"></i><i style="height:45%"></i><i style="height:75%"></i>
+              <i style="height:55%"></i></div></div>
+          </div>
         </div>
-        <div class="ticket t-pink">
-          <div class="ticket-body">
-            <div class="wk">Semana 12 · Troca</div>
-            <div class="dest">RCI · Cancún</div>
-          </div>
-          <div class="ticket-stub"><div class="bars">
-            <i style="height:90%"></i><i style="height:45%"></i><i style="height:100%"></i>
-            <i style="height:60%"></i><i style="height:80%"></i><i style="height:40%"></i>
-            <i style="height:70%"></i></div></div>
-        </div>
-        <div class="ticket t-ink">
-          <div class="ticket-body">
-            <div class="wk">Semana 28 · Flexível</div>
-            <div class="dest">Guardar p/ depois</div>
-          </div>
-          <div class="ticket-stub"><div class="bars">
-            <i style="height:50%"></i><i style="height:95%"></i><i style="height:65%"></i>
-            <i style="height:100%"></i><i style="height:45%"></i><i style="height:75%"></i>
-            <i style="height:55%"></i></div></div>
+        <div class="panel-foot">
+          <span class="pin">◎</span> Praia de Ipioca · Alagoas, o Caribe brasileiro
         </div>
       </div>
-      <div class="panel-foot">
-        <span class="pin">◎</span> Praia de Ipioca · Alagoas, o Caribe brasileiro
+      <div class="hero-seal">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs><path id="sealArc" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/></defs>
+          <circle cx="100" cy="100" r="98" fill="#E8A93B"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#3a2a05" stroke-opacity=".45"
+            stroke-width="1.4" stroke-dasharray="1.5 5"/>
+          <g class="seal-rot">
+            <text fill="#3a2a05" font-family="'Plus Jakarta Sans',sans-serif"
+              font-size="14.5" font-weight="800" letter-spacing="2.2">
+              <textPath href="#sealArc" startOffset="0%">ESPALHADOS POR TODO O BRASIL · SÓCIOS · </textPath>
+            </text>
+          </g>
+          <text x="100" y="98" text-anchor="middle" font-family="'Anton',sans-serif"
+            font-size="50" fill="#3a2a05">+600</text>
+          <text x="100" y="122" text-anchor="middle" font-family="'Plus Jakarta Sans',sans-serif"
+            font-size="12" font-weight="800" letter-spacing="2.5" fill="#3a2a05">SÓCIOS</text>
+        </svg>
       </div>
     </div>
   </div>
-  <a href="#oque" class="scroll-cue" aria-label="Rolar para baixo">
-    Role para descobrir
-    <span class="chev">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-    </span>
-  </a>
 </header>
 
 <!-- ===== O QUE É ===== -->
@@ -571,6 +610,11 @@ section{padding:78px 0}
           </radialGradient>
           <clipPath id="globeClip"><circle cx="220" cy="220" r="180"/></clipPath>
         </defs>
+        <g class="globe-orbit">
+          <circle cx="220" cy="220" r="202" fill="none" stroke="#155E69" stroke-opacity=".4"
+            stroke-width="1.5" stroke-dasharray="2 8"/>
+          <circle cx="220" cy="18" r="7" fill="#E8A93B" stroke="#fff" stroke-width="2.5"/>
+        </g>
         <circle cx="220" cy="220" r="180" fill="url(#ocean)"/>
         <g clip-path="url(#globeClip)" fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="1.4">
           <ellipse cx="220" cy="220" rx="60" ry="180"/>
@@ -579,7 +623,6 @@ section{padding:78px 0}
           <path d="M40,140 Q220,110 400,140"/>
           <path d="M40,300 Q220,330 400,300"/>
         </g>
-        <!-- continente: América do Sul estilizada -->
         <g clip-path="url(#globeClip)">
           <path d="M198,118 C188,104 214,94 232,102 C258,92 290,104 290,130
                    C316,142 338,166 324,194 C334,218 312,244 298,256
@@ -588,7 +631,6 @@ section{padding:78px 0}
                    C190,186 180,148 198,118 Z"
                 fill="#0E2A30" fill-opacity=".92" stroke="#FAF6EC" stroke-opacity=".25" stroke-width="1.5"/>
         </g>
-        <!-- pinos Brasil -->
         <g>
           <g class="pin-dot"><circle cx="262" cy="138" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="262" cy="138" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
           <g class="pin-dot"><circle cx="295" cy="170" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="295" cy="170" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
@@ -599,7 +641,6 @@ section{padding:78px 0}
           <g class="pin-dot"><circle cx="228" cy="148" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="228" cy="148" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
           <g class="pin-dot"><circle cx="262" cy="252" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="262" cy="252" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
           <g class="pin-dot"><circle cx="248" cy="276" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="248" cy="276" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <!-- pinos Argentina -->
           <g class="pin-dot"><circle cx="240" cy="300" r="10" fill="#9CC8CC" fill-opacity=".35"/><circle cx="240" cy="300" r="4.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
           <g class="pin-dot"><circle cx="246" cy="322" r="10" fill="#9CC8CC" fill-opacity=".35"/><circle cx="246" cy="322" r="4.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
         </g>
@@ -608,7 +649,10 @@ section{padding:78px 0}
       </svg>
     </div>
     <div class="socios-info rv">
-      <div class="badge600"><b>+600</b><span>sócios pelo Brasil</span></div>
+      <div class="badge600">
+        <span class="bn">+600</span>
+        <span class="bl"><b>sócios</b> já fazem parte<br>do clube de férias</span>
+      </div>
       <h2 class="display">Sócios espalhados <span class="tl">por todo o Brasil!</span></h2>
       <p>Do Norte ao Sul, mais de 600 famílias já fazem parte do clube de férias do Ipioca Mar, com sócios chegando inclusive da Argentina.</p>
       <p>Não é uma promessa nova. É uma comunidade que já viaja, já usa e já recomenda.</p>
@@ -623,24 +667,18 @@ section{padding:78px 0}
 <!-- ===== DEPOIMENTOS ===== -->
 <section class="depo" id="depoimentos">
   <div class="wrap">
-    <div class="sec-head rv">
+    <div class="sec-head center rv">
       <div class="sec-kicker">Depoimentos</div>
       <h2 class="sec-title display">Quem já é sócio <span class="tl">conta como é</span></h2>
       <p class="sec-sub">Histórias reais de famílias que pararam de improvisar as férias e passaram a viajar com tranquilidade.</p>
     </div>
-    <div class="depo-grid">
-      <div class="video-16 rv">
-        <iframe src="https://www.youtube.com/embed/lFw5AUUeltQ" title="Depoimento de sócio do clube de férias"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen loading="lazy"></iframe>
-      </div>
-      <div class="depo-side rv">
-        <span class="quote">"</span>
-        <p>Mais de 600 famílias já escolheram garantir as férias por 26 anos. Assista e veja por que elas não querem mais voltar para o modelo antigo.</p>
-        <div class="btns">
-          <a href="#contato" class="btn btn-primary">Quero fazer parte do clube →</a>
-        </div>
-      </div>
+    <div class="video-16 rv">
+      <iframe src="https://www.youtube.com/embed/lFw5AUUeltQ" title="Depoimento de sócio do clube de férias"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen loading="lazy"></iframe>
+    </div>
+    <div class="cta-row center rv">
+      <a href="#contato" class="btn btn-primary">Quero fazer parte do clube →</a>
     </div>
   </div>
 </section>
@@ -745,20 +783,22 @@ section{padding:78px 0}
         </div>
         <div class="dest-delivery">Entrega prevista para 2030</div>
       </div>
-      <div class="dest-photo rv">
-        <img src="img/ipioca-1.jpg" alt="Vista aérea da Praia de Ipioca, Alagoas" loading="lazy"/>
-        <div class="cap">
-          <div class="where">Ipioca · Alagoas</div>
-          <h3>O Caribe brasileiro</h3>
+      <div class="carousel full rv" data-carousel>
+        <div class="car-track">
+          <div class="car-slide"><img src="img/ipioca-1.jpg" alt="Vista aérea da Praia de Ipioca" loading="lazy"/><span class="car-tag">Ipioca · Alagoas</span></div>
+          <div class="car-slide"><img src="img/ipioca-2.jpg" alt="Piscinas naturais e corais de Ipioca" loading="lazy"/><span class="car-tag">Piscinas naturais</span></div>
+          <div class="car-slide"><img src="img/ipioca-3.jpg" alt="Águas turquesa e corais" loading="lazy"/><span class="car-tag">Barreira de corais</span></div>
+          <div class="car-slide"><img src="img/ipioca-4.jpg" alt="Recifes vistos de cima" loading="lazy"/><span class="car-tag">Recifes de Ipioca</span></div>
+          <div class="car-slide"><img src="img/ipioca-5.jpg" alt="Vida marinha nas piscinas naturais" loading="lazy"/><span class="car-tag">Vida marinha</span></div>
         </div>
+        <button class="car-btn prev" aria-label="Anterior">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="car-btn next" aria-label="Próxima">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <div class="car-dots"></div>
       </div>
-    </div>
-    <div class="dest-gallery rv">
-      <div class="g g1"><img src="img/ipioca-2.jpg" alt="Piscinas naturais e corais de Ipioca" loading="lazy"/></div>
-      <div class="g"><img src="img/ipioca-3.jpg" alt="Corais e águas turquesa de Ipioca" loading="lazy"/></div>
-      <div class="g"><img src="img/ipioca-5.jpg" alt="Vida marinha nas piscinas naturais de Ipioca" loading="lazy"/></div>
-      <div class="g"><img src="img/ipioca-4.jpg" alt="Barreira de corais vista de cima" loading="lazy"/></div>
-      <div class="g"><img src="img/hotel-maceiomarresort.jpg" alt="Resort pé na areia em Alagoas" loading="lazy"/></div>
     </div>
     <div class="cta-row">
       <a href="#contato" class="btn btn-primary">Quero conhecer o destino →</a>
@@ -785,10 +825,22 @@ section{padding:78px 0}
       </div>
       <div class="rv">
         <div class="rci-stats">
-          <div class="rci-stat"><div class="n">4.300+</div><div class="t">Resorts parceiros no mundo</div></div>
-          <div class="rci-stat"><div class="n">100</div><div class="t">Países disponíveis</div></div>
-          <div class="rci-stat"><div class="n">315</div><div class="t">Hotéis e resorts no Brasil</div></div>
-          <div class="rci-stat"><div class="n">+40</div><div class="t">Anos de mercado</div></div>
+          <div class="rci-stat i1">
+            <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 8h.01M15 8h.01M9 12h.01M15 12h.01M10 21v-4h4v4"/></svg></div>
+            <div><div class="n">4.300+</div><div class="t">Resorts parceiros no mundo</div></div>
+          </div>
+          <div class="rci-stat i2">
+            <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></div>
+            <div><div class="n">100</div><div class="t">Países disponíveis</div></div>
+          </div>
+          <div class="rci-stat i3">
+            <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+            <div><div class="n">315</div><div class="t">Hotéis e resorts no Brasil</div></div>
+          </div>
+          <div class="rci-stat i4">
+            <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></div>
+            <div><div class="n">+40</div><div class="t">Anos de mercado</div></div>
+          </div>
         </div>
         <div class="cta-row">
           <a href="#contato" class="btn btn-primary">Ver destinos com um consultor →</a>
@@ -842,27 +894,74 @@ section{padding:78px 0}
           <a href="#contato" class="btn btn-primary">Conhecer a MME de perto →</a>
         </div>
       </div>
-      <div class="rv">
-        <div class="dfeat" style="background:var(--cream2);border-color:var(--line)">
-          <div class="n" style="color:var(--teal-d)">Hotelaria que já funciona</div>
-          <div class="t" style="color:var(--muted)">Marcas da MME que recebem hóspedes todos os dias em Alagoas.</div>
-        </div>
+      <div class="mme-photo rv">
+        <img src="img/hotel-maceiomarresort.jpg" alt="Resort da rede MME pé na areia" loading="lazy"/>
       </div>
     </div>
-    <div class="mme-hotels rv">
-      <div class="hotelcard"><img src="img/hotel-acquaprime.jpg" alt="Acqua Prime" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Acqua Prime</div></div>
-      <div class="hotelcard"><img src="img/hotel-acquasuites.jpg" alt="Acqua Suites" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Acqua Suites</div></div>
-      <div class="hotelcard"><img src="img/hotel-acquainn.jpg" alt="Acqua INN" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Acqua INN</div></div>
-      <div class="hotelcard"><img src="img/hotel-maceiomar.jpg" alt="Maceió Mar Hotel" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Maceió Mar Hotel</div></div>
-      <div class="hotelcard"><img src="img/hotel-maceiomarresort.jpg" alt="Maceió Mar Resort" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Maceió Mar Resort</div></div>
-      <div class="hotelcard"><img src="img/ipioca-1.jpg" alt="Ipioca Beach" loading="lazy"/>
-        <div class="nm"><span>Hotelaria MME</span>Ipioca Beach</div></div>
+    <div class="mme-sub rv">
+      <div class="sec-kicker">A rede MME</div>
+      <h3>Hotelaria que já funciona</h3>
+      <p>Marcas da MME que recebem hóspedes todos os dias em Alagoas.</p>
     </div>
+    <div class="carousel trio rv" data-carousel>
+      <div class="car-track">
+        <div class="car-slide"><div class="hotelcard"><img src="img/hotel-acquaprime.jpg" alt="Acqua Prime" loading="lazy"/>
+          <div class="nm"><span>Hotelaria MME</span>Acqua Prime</div></div></div>
+        <div class="car-slide"><div class="hotelcard"><img src="img/hotel-acquasuites.jpg" alt="Acqua Suites" loading="lazy"/>
+          <div class="nm"><span>Hotelaria MME</span>Acqua Suites</div></div></div>
+        <div class="car-slide"><div class="hotelcard"><img src="img/hotel-acquainn.jpg" alt="Acqua INN" loading="lazy"/>
+          <div class="nm"><span>Hotelaria MME</span>Acqua INN</div></div></div>
+        <div class="car-slide"><div class="hotelcard"><img src="img/hotel-maceiomar.jpg" alt="Maceió Mar Hotel" loading="lazy"/>
+          <div class="nm"><span>Hotelaria MME</span>Maceió Mar Hotel</div></div></div>
+        <div class="car-slide"><div class="hotelcard"><img src="img/hotel-maceiomarresort.jpg" alt="Maceió Mar Resort" loading="lazy"/>
+          <div class="nm"><span>Hotelaria MME</span>Maceió Mar Resort</div></div></div>
+      </div>
+      <button class="car-btn prev" aria-label="Anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="car-btn next" aria-label="Próxima">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div class="car-dots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA / FORM ===== -->
+<section class="cta" id="contato">
+  <div class="wrap cta-grid">
+    <div class="rv">
+      <h2 class="display">Fale com um <span class="tl">consultor</span> e tire todas as dúvidas</h2>
+      <p class="p">Sem compromisso e sem pressão. Um consultor explica como o clube se encaixa nas férias da sua família e quanto você pode economizar.</p>
+      <ul class="cta-trust">
+        <li><span class="tk">✓</span> Atendimento humano, no seu tempo</li>
+        <li><span class="tk">✓</span> Valores e condições explicados com transparência</li>
+        <li><span class="tk">✓</span> Comparativo com resorts da região, se você quiser</li>
+        <li><span class="tk">✓</span> Você decide com calma, junto com a família</li>
+      </ul>
+    </div>
+    <form class="form-card rv" action="#" method="post" onsubmit="return lpSubmit(event)">
+      <h3>Quero conhecer o clube</h3>
+      <p class="fsub">Preencha seus dados, entramos em contato pelo WhatsApp.</p>
+      <div class="field">
+        <label for="nome">Nome e sobrenome</label>
+        <input id="nome" name="nome" type="text" required placeholder="Como podemos te chamar?"/>
+      </div>
+      <div class="field">
+        <label for="email">Seu melhor e-mail</label>
+        <input id="email" name="email" type="email" required placeholder="voce@email.com"/>
+      </div>
+      <div class="field">
+        <label for="whats">WhatsApp</label>
+        <input id="whats" name="whatsapp" type="tel" required placeholder="(00) 00000-0000"/>
+      </div>
+      <div class="consent">
+        <input id="consent" type="checkbox" required/>
+        <label for="consent">Concordo em receber comunicações sobre o clube de férias do Ipioca Mar Resort.</label>
+      </div>
+      <button type="submit" class="btn btn-primary">Falar com consultor →</button>
+      <p class="form-foot">Seus dados estão seguros. Não enviamos spam.</p>
+    </form>
   </div>
 </section>
 
@@ -917,44 +1016,6 @@ section{padding:78px 0}
   </div>
 </section>
 
-<!-- ===== CTA / FORM ===== -->
-<section class="cta" id="contato">
-  <div class="wrap cta-grid">
-    <div class="rv">
-      <h2 class="display">Fale com um <span class="tl">consultor</span> e tire todas as dúvidas</h2>
-      <p class="p">Sem compromisso e sem pressão. Um consultor explica como o clube se encaixa nas férias da sua família e quanto você pode economizar.</p>
-      <ul class="cta-trust">
-        <li><span class="tk">✓</span> Atendimento humano, no seu tempo</li>
-        <li><span class="tk">✓</span> Valores e condições explicados com transparência</li>
-        <li><span class="tk">✓</span> Comparativo com resorts da região, se você quiser</li>
-        <li><span class="tk">✓</span> Você decide com calma, junto com a família</li>
-      </ul>
-    </div>
-    <form class="form-card rv" action="#" method="post" onsubmit="return lpSubmit(event)">
-      <h3>Quero conhecer o clube</h3>
-      <p class="fsub">Preencha seus dados, entramos em contato pelo WhatsApp.</p>
-      <div class="field">
-        <label for="nome">Nome e sobrenome</label>
-        <input id="nome" name="nome" type="text" required placeholder="Como podemos te chamar?"/>
-      </div>
-      <div class="field">
-        <label for="email">Seu melhor e-mail</label>
-        <input id="email" name="email" type="email" required placeholder="voce@email.com"/>
-      </div>
-      <div class="field">
-        <label for="whats">WhatsApp</label>
-        <input id="whats" name="whatsapp" type="tel" required placeholder="(00) 00000-0000"/>
-      </div>
-      <div class="consent">
-        <input id="consent" type="checkbox" required/>
-        <label for="consent">Concordo em receber comunicações sobre o clube de férias do Ipioca Mar Resort.</label>
-      </div>
-      <button type="submit" class="btn btn-primary">Falar com consultor →</button>
-      <p class="form-foot">Seus dados estão seguros. Não enviamos spam.</p>
-    </form>
-  </div>
-</section>
-
 <!-- ===== FOOTER ===== -->
 <footer class="footer">
   <div class="wrap">
@@ -974,6 +1035,19 @@ section{padding:78px 0}
     </div>
     <div class="foot-bot">
       <span>© 2026 Ipioca Mar Resort · MME Vacation. Todos os direitos reservados.</span>
+      <a class="trilha-credit" href="https://somostrilha.com.br" target="_blank" rel="noopener">
+        <span class="tc-label">Desenvolvido pela</span>
+        <svg class="trilha-logo" viewBox="0 0 150 34" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 25 C13 25 13 11 21 11 C29 11 29 21 37 21" fill="none"
+            stroke="#E8A93B" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="0.1 8"/>
+          <circle cx="5" cy="25" r="3.6" fill="#E8A93B"/>
+          <circle cx="37" cy="21" r="3.6" fill="#FFFFFF"/>
+          <text x="50" y="25" font-family="'Plus Jakarta Sans',sans-serif" font-size="21"
+            font-weight="800" fill="#FFFFFF" letter-spacing=".5">trilha</text>
+        </svg>
+      </a>
+    </div>
+    <div class="foot-bot" style="border:0;padding-top:6px">
       <span>Políticas de Privacidade · Termos de Uso</span>
     </div>
   </div>
@@ -1007,6 +1081,29 @@ var io=new IntersectionObserver(function(entries){
   entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
 },{threshold:.12});
 document.querySelectorAll('.rv').forEach(function(el){io.observe(el);});
+
+document.querySelectorAll('[data-carousel]').forEach(function(car){
+  var track=car.querySelector('.car-track');
+  var slides=track.querySelectorAll('.car-slide');
+  var dotsWrap=car.querySelector('.car-dots');
+  var dots=[];
+  function step(){
+    var gap=parseFloat(getComputedStyle(track).gap)||0;
+    return slides[0].getBoundingClientRect().width+gap;
+  }
+  function current(){return Math.round(track.scrollLeft/step());}
+  slides.forEach(function(s,idx){
+    var d=document.createElement('button');
+    d.setAttribute('aria-label','Ir para '+(idx+1));
+    dotsWrap.appendChild(d);dots.push(d);
+    d.addEventListener('click',function(){track.scrollTo({left:step()*idx,behavior:'smooth'});});
+  });
+  function sync(){var c=current();dots.forEach(function(d,idx){d.classList.toggle('active',idx===c);});}
+  track.addEventListener('scroll',sync);
+  car.querySelector('.prev').addEventListener('click',function(){track.scrollBy({left:-step(),behavior:'smooth'});});
+  car.querySelector('.next').addEventListener('click',function(){track.scrollBy({left:step(),behavior:'smooth'});});
+  sync();
+});
 
 function lpSubmit(e){
   e.preventDefault();
