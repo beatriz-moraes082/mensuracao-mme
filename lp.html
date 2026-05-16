@@ -52,24 +52,22 @@ img{max-width:100%;display:block}
 /* ===== NAV ===== */
 .nav{position:sticky;top:0;z-index:50;background:rgba(250,246,236,.92);
   backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.nav-in{display:flex;align-items:center;gap:26px;padding:14px 32px;max-width:1240px;margin:0 auto}
-.brand{display:flex;align-items:center;gap:14px}
-.brand-mark{width:36px;height:36px;border-radius:9px;background:var(--pink);
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:16px}
-.brand-txt b{display:block;font-size:14px;font-weight:800;letter-spacing:.04em;line-height:1.1}
-.brand-txt span{font-size:9px;letter-spacing:.18em;color:var(--muted);font-weight:700}
-.brand-div{width:1px;height:34px;background:var(--line)}
-.brand-mme b{font-size:13px;font-weight:800;color:var(--teal);letter-spacing:.03em}
-.brand-mme span{font-size:9px;letter-spacing:.2em;color:var(--muted);font-weight:700}
-.nav-links{display:flex;gap:22px;margin-left:auto}
-.nav-links a{font-size:13.5px;font-weight:600;color:var(--ink2);transition:color .15s}
+.nav-in{display:flex;align-items:center;gap:18px;padding:14px 28px;max-width:1240px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-txt b{display:block;font-size:14px;font-weight:800;letter-spacing:.04em;line-height:1.1;white-space:nowrap}
+.brand-txt span{font-size:9px;letter-spacing:.16em;color:var(--muted);font-weight:700;white-space:nowrap}
+.brand-div{width:1px;height:32px;background:var(--line)}
+.brand-mme b{font-size:13px;font-weight:800;color:var(--teal);letter-spacing:.03em;white-space:nowrap}
+.brand-mme span{font-size:9px;letter-spacing:.16em;color:var(--muted);font-weight:700;white-space:nowrap}
+.nav-links{display:flex;gap:18px;margin-left:auto}
+.nav-links a{font-size:13px;font-weight:600;color:var(--ink2);transition:color .15s;white-space:nowrap}
 .nav-links a:hover{color:var(--teal)}
-.nav-cta{background:var(--ink);color:#fff;font-weight:700;font-size:13.5px;
-  padding:12px 22px;border-radius:99px;transition:transform .15s,background .15s}
+.nav-cta{background:var(--ink);color:#fff;font-weight:700;font-size:13px;white-space:nowrap;
+  padding:12px 20px;border-radius:99px;transition:transform .15s,background .15s}
 .nav-cta:hover{background:var(--teal);transform:translateY(-1px)}
 .burger{display:none;margin-left:auto;background:none;border:0;cursor:pointer;padding:6px}
 .burger span{display:block;width:24px;height:2.5px;background:var(--ink);margin:5px 0;border-radius:2px}
-@media(max-width:980px){
+@media(max-width:1080px){
   .nav-links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;
     background:var(--cream);border-bottom:1px solid var(--line);padding:14px 32px;gap:4px;margin:0}
   .nav-links.open{display:flex}
@@ -405,7 +403,6 @@ section{padding:78px 0}
 <nav class="nav">
   <div class="nav-in">
     <div class="brand">
-      <div class="brand-mark">IM</div>
       <div class="brand-txt">
         <b>IPIOCA MAR</b><span>ALL INCLUSIVE RESORT</span>
       </div>
