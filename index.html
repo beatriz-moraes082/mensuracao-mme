@@ -1656,6 +1656,12 @@ function setGlobalPeriod(key, btn) {
     const sel = document.getElementById(id);
     if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
   }
+  // Recalcula MENS_DATA usando JANELA do período (não mais mês fixo) — alinha
+  // a base de leads da Evolução Semanal com o Diagnóstico.
+  if (KOMMO_RAW && META_RAW && KOMMO_RAW.fetched_at) {
+    const ref = new Date(KOMMO_RAW.fetched_at);
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, periodWindow(key, ref));
+  }
   // Atualiza label dinâmico onde existir
   const lbl = document.getElementById('analises-period-lbl');
   if (lbl) lbl.textContent = PERIOD_LABELS[key] || key;
@@ -3336,9 +3342,15 @@ function _fmtFetchedDate(iso) {
   return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// Recalcula MENS_DATA a partir dos JSONs, filtrando pelo mês informado
-function computeMensData(kommo, meta, month) {
-  month = month || currentMonth;
+// Recalcula MENS_DATA a partir dos JSONs.
+// Aceita 2 formatos no 3º parâmetro:
+//   - string '2026-04': filtra por l.month === 'YYYY-MM' (modo legado, mês)
+//   - {from, to}: filtra por _inWindow(l.created_at, win) (janela de datas)
+// Quando recebe janela, alinha com o Diagnóstico (mesma base de leads).
+// O bucketing por semana continua sendo w1-w4 baseado no l.week (dia do mês de criação).
+function computeMensData(kommo, meta, monthOrWin) {
+  const isWindow = monthOrWin && typeof monthOrWin === 'object' && monthOrWin.from && monthOrWin.to;
+  const month = isWindow ? null : (monthOrWin || currentMonth);
   const D = {
     meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
     google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
@@ -3347,9 +3359,14 @@ function computeMensData(kommo, meta, month) {
     closer: {w1:{leads:0,prop:0,vendas:0,fat:0}, w2:{leads:0,prop:0,vendas:0,fat:0}, w3:{leads:0,prop:0,vendas:0,fat:0}, w4:{leads:0,prop:0,vendas:0,fat:0}}
   };
 
-  // ── SDR leads → Meta/Google/Org por origem (filtrado por mês)
+  // Helper: lead passa no filtro (mês ou janela)?
+  const passes = (l) => isWindow
+    ? _inWindow(l.created_at, monthOrWin)
+    : _getLeadMonth(l) === month;
+
+  // ── SDR leads → Meta/Google/Org por origem
   for (const l of (kommo.sdr || [])) {
-    if (_getLeadMonth(l) !== month) continue;
+    if (!passes(l)) continue;
     const ch = _classifyOrigem(l.origem);
     const w = l.week || 'w4';
     if (!D[ch][w]) continue;
@@ -3359,19 +3376,46 @@ function computeMensData(kommo, meta, month) {
     if (l.reuniao_realizada) D[ch][w].realiz++;
   }
 
-  // ── Meta spend → por semana (estrutura mês-aware com fallback)
-  for (const spendObj of Object.values(meta.adset || {})) {
-    const weeks = _metaMonthWeeks(spendObj, month);
-    for (const [w, v] of Object.entries(weeks)) {
-      if (D.meta[w] && typeof v === 'number') D.meta[w].invest += v;
+  // ── Meta spend → por semana (estrutura mês-aware)
+  if (isWindow) {
+    // Modo janela: usa computeInvestForWindow equivalente — proratado por overlap
+    for (const spendObj of Object.values(meta.adset || {})) {
+      const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
+      for (const [m, weeks] of Object.entries(monthsMap)) {
+        const [yr, mo] = m.split('-').map(Number);
+        const weekRanges = {
+          w1:[new Date(yr,mo-1,1),  new Date(yr,mo-1,7,23,59,59)],
+          w2:[new Date(yr,mo-1,8),  new Date(yr,mo-1,14,23,59,59)],
+          w3:[new Date(yr,mo-1,15), new Date(yr,mo-1,21,23,59,59)],
+          w4:[new Date(yr,mo-1,22), new Date(yr,mo,  0,23,59,59)],
+        };
+        for (const [w, v] of Object.entries(weeks)) {
+          if (typeof v !== 'number') continue;
+          const [ws, we] = weekRanges[w] || [null,null];
+          if (!ws) continue;
+          const overlapStart = ws > monthOrWin.from ? ws : monthOrWin.from;
+          const overlapEnd   = we < monthOrWin.to   ? we : monthOrWin.to;
+          if (overlapEnd < overlapStart) continue;
+          const weekDays    = (we - ws) / 86400000 + 1;
+          const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+          if (D.meta[w]) D.meta[w].invest += v * (overlapDays / weekDays);
+        }
+      }
+    }
+  } else {
+    for (const spendObj of Object.values(meta.adset || {})) {
+      const weeks = _metaMonthWeeks(spendObj, month);
+      for (const [w, v] of Object.entries(weeks)) {
+        if (D.meta[w] && typeof v === 'number') D.meta[w].invest += v;
+      }
     }
   }
 
-  // ── Duque: todos = disparos; leads = responderam; realiz = Nutrição Closer (filtrado por mês)
+  // ── Duque
   const STATUS_LEADS_ENTRANTES_DUQUE = 98164999;
   const STATUS_NUTR_CLOSER_DUQUE     = 98524255;
   for (const l of (kommo.duque || [])) {
-    if (_getLeadMonth(l) !== month) continue;
+    if (!passes(l)) continue;
     const w = l.week || 'w4';
     if (!D.duque[w]) continue;
     D.duque[w].disparo++;
@@ -3379,9 +3423,9 @@ function computeMensData(kommo, meta, month) {
     if (l.status === STATUS_NUTR_CLOSER_DUQUE)     D.duque[w].realiz++;
   }
 
-  // ── Closer: leads (criados no mês), prop (propostas), vendas (fechadas no mês)
+  // ── Closer: leads (criados na janela/mês), prop, vendas (closed_at na janela/mês)
   for (const l of (kommo.closer || [])) {
-    if (_getLeadMonth(l) === month) {
+    if (passes(l)) {
       const w = l.week || 'w4';
       if (D.closer[w]) {
         D.closer[w].leads++;
@@ -3389,8 +3433,10 @@ function computeMensData(kommo, meta, month) {
       }
     }
     if (l.venda && l.closed_at) {
-      const closedMonth = _monthFromTs(l.closed_at);
-      if (closedMonth === month) {
+      const closedPasses = isWindow
+        ? (l.closed_at * 1000 >= monthOrWin.from.getTime() && l.closed_at * 1000 <= monthOrWin.to.getTime())
+        : (_monthFromTs(l.closed_at) === month);
+      if (closedPasses) {
         const wv = _weekFromTs(l.closed_at);
         if (D.closer[wv]) {
           D.closer[wv].vendas++;
@@ -3726,7 +3772,9 @@ async function loadDashboardData() {
     currentMonth = _bestMonth;
     renderMonthBar();
 
-    MENS_DATA = computeMensData(kommoRes, metaRes, currentMonth);
+    // Usa janela do currentPeriod (alinha Evolução Semanal com Diagnóstico)
+    const _refInit = new Date(kommoRes.fetched_at || Date.now());
+    MENS_DATA = computeMensData(kommoRes, metaRes, periodWindow(currentPeriod, _refInit));
 
     // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
     rebuildAllFunnels(kommoRes);
