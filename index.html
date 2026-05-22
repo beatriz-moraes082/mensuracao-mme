@@ -788,8 +788,18 @@
     <span class="sub">Aquisição · Qualificação · Conversão · semana a semana</span>
   </div>
 
-  <!-- Seletor de mês (afeta SÓ esta seção · semanas dentro do mês) -->
-  <div id="evol-month-bar-wrap" style="margin-bottom:18px"></div>
+  <!-- Seletor de período (mesmo padrão da aba Diagnóstico — sincronizado globalmente) -->
+  <div style="margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <select class="period-select" id="evol-period-sel" onchange="setGlobalPeriod(this.value, this)">
+      <option value="w3">Esta semana</option>
+      <option value="7d">Últimos 7 dias</option>
+      <option value="14d">Últimos 14 dias</option>
+      <option value="mes">Este mês</option>
+      <option value="30d" selected>Últimos 30 dias</option>
+    </select>
+    <span style="font-size:11px;color:var(--muted)" id="evol-period-hint">semanas dentro da janela selecionada</span>
+  </div>
+  <div id="evol-month-bar-wrap" style="display:none"></div>
 
   <!-- Hero KPIs semanais -->
   <div class="ds-grid-4" id="evol-hero-kpis"></div>
@@ -1639,9 +1649,11 @@ function setGlobalPeriod(key, btn) {
   document.querySelectorAll('.pbtn[data-period]').forEach(b => {
     b.classList.toggle('active', b.dataset.period === key);
   });
-  // Sincroniza o select da aba Diagnóstico (se existir e a opção for válida)
-  const sel = document.getElementById('diag-period-sel');
-  if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
+  // Sincroniza os selects de período (Diag + Evolução semanal) quando opção válida
+  for (const id of ['diag-period-sel','evol-period-sel']) {
+    const sel = document.getElementById(id);
+    if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
+  }
   // Atualiza label dinâmico onde existir
   const lbl = document.getElementById('analises-period-lbl');
   if (lbl) lbl.textContent = PERIOD_LABELS[key] || key;
@@ -3410,13 +3422,15 @@ function detectAvailableMonths(kommo, meta) {
   return [...months].sort();
 }
 
-// Renderiza a barra de meses dentro da seção 'Evolução semanal' do Diagnóstico
-// (única seção que depende do mês). O bar global #month-bar foi descontinuado.
+// Renderiza a barra de meses (descontinuada — substituída pelo seletor de período).
+// Mantida como no-op pra compatibilidade com chamadas existentes.
 function renderMonthBar() {
   const oldBar = document.getElementById('month-bar');
   if (oldBar) oldBar.style.display = 'none';
   const wrap = document.getElementById('evol-month-bar-wrap');
-  if (!wrap) return;
+  if (wrap) { wrap.innerHTML = ''; wrap.style.display = 'none'; }
+  return;
+  // Código antigo (mantido morto pra referência) — não executa
   if (AVAILABLE_MONTHS.length <= 1) { wrap.innerHTML = ''; return; }
   const buttons = AVAILABLE_MONTHS.map(m => {
     const cls = (m === currentMonth) ? 'active' : '';
