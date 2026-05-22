@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Vendas Meta · Respostas do Bot | IMR</title>
+  <title>Vendas Closer · Respostas do Bot | IMR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -71,6 +71,11 @@
     tr:hover td{background:var(--surface2)}
     .tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;white-space:nowrap}
     .tag.meta{background:rgba(24,119,242,.12);color:var(--meta)}
+    .tag.google{background:rgba(34,197,94,.12);color:#16a34a}
+    .tag.ibr{background:rgba(124,58,237,.12);color:#7c3aed}
+    .tag.indicacao{background:rgba(245,158,11,.12);color:#d97706}
+    .tag.outra{background:rgba(107,112,105,.12);color:var(--muted)}
+    .tag.sem-origem{background:rgba(220,38,38,.10);color:var(--down);font-style:italic}
     .tag.bot-y{background:rgba(34,197,94,.14);color:var(--up)}
     .tag.bot-n{background:rgba(220,38,38,.12);color:var(--down)}
     .tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
@@ -93,8 +98,8 @@
   <div class="tl">
     <div class="badge">IMR</div>
     <div>
-      <h1>Vendas Meta · Respostas do Bot</h1>
-      <p>Ipioca Mar Resort · Meta Ads</p>
+      <h1>Vendas Closer · Respostas do Bot</h1>
+      <p>Ipioca Mar Resort · todas as vendas registradas no Kommo</p>
     </div>
   </div>
   <a href="index.html" class="back">← Voltar ao dashboard</a>
@@ -107,14 +112,13 @@
     <div>
       <h2>Quem comprou da gente?</h2>
       <div class="sub">
-        Perfil das vendas inbound do <b>Meta Ads</b>, com as respostas do bot de pré-atendimento.
-        Os campos vêm do <b>bot antigo</b> (vigente até ~30/04/2026): idade, custo/ano em viagens,
-        maior desafio, profissão, conhece Timeshare, viagem programada.
+        Todas as vendas confirmadas no Kommo (Closer com <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">venda=True</code>),
+        com as respostas do bot de pré-atendimento quando disponíveis. <b>A origem mostrada é
+        exatamente o que está declarado no Kommo</b> — sem atribuição manual.
         <br><br>
         <span style="font-size:11.5px;color:var(--muted)">
-          Filtro aplicado: só vendas com origem "Meta Ads" (no SDR ou no Closer).
-          Exclui sala IBR, indicação e origem em branco. Match SDR↔Closer via
-          <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
+          Campos do bot antigo (vigente até ~30/04/2026): idade, custo/ano, maior desafio, profissão, Timeshare, viagem programada.
+          Match SDR↔Closer via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
         </span>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:14px">
@@ -122,7 +126,7 @@
       </div>
     </div>
     <div class="kpis">
-      <div class="kpi green"><div class="lbl">Vendas Meta</div><div class="val" id="kpi-vendas">—</div><div class="sub2" id="kpi-vendas-sub">—</div></div>
+      <div class="kpi green"><div class="lbl">Vendas totais</div><div class="val" id="kpi-vendas">—</div><div class="sub2" id="kpi-vendas-sub">—</div></div>
       <div class="kpi"><div class="lbl">Receita total</div><div class="val" id="kpi-receita" style="font-size:18px">—</div><div class="sub2" id="kpi-ticket">ticket médio: —</div></div>
       <div class="kpi"><div class="lbl">Período</div><div class="val" id="kpi-periodo" style="font-size:15px;line-height:1.3">—</div><div class="sub2" id="kpi-periodo-sub">—</div></div>
     </div>
@@ -169,6 +173,7 @@
           <tr>
             <th>Nome</th>
             <th>Data fech.</th>
+            <th>Origem</th>
             <th>Preço</th>
             <th>Bot</th>
             <th>Idade</th>
@@ -191,7 +196,7 @@
 
 <div class="footer">
   Dados: Kommo CRM · Bot antigo (vigente até ~30/04/2026)<br>
-  Vendas = Closer com <code>venda=True</code> · filtro: origem "Meta Ads" no SDR ou Closer · match via <code>contact_id</code> + nome do contato
+  Vendas = Closer com <code>venda=True</code>, sem atribuição manual de origem · match SDR↔Closer via <code>contact_id</code> + nome do contato
 </div>
 
 <script>
@@ -236,26 +241,28 @@ function buildVendas(){
     const exScore = ex ? botFields.reduce((s,f) => s + (ex[f] ? 1 : 0), 0) : -1;
     if (score > exScore) sdrByName[n] = l;
   }
-  // Pra cada venda Closer, junta com SDR match.
-  // Filtra: SÓ vendas cuja origem (SDR ou Closer) contém "Meta" — exclui
-  // vendas que vieram da sala IBR, indicação, ou origem em branco.
-  const isMeta = (cl, sm) => {
-    const oc = (cl.origem || '').toLowerCase();
-    const os = ((sm && sm.origem) || '').toLowerCase();
-    return oc.includes('meta') || os.includes('meta');
+  // Bucket de origem REAL (sem atribuição manual). Vem do SDR match (mais
+  // confiável, contato registrado pelo bot) ou do Closer.
+  const originBucket = o => {
+    const s = (o || '').toLowerCase();
+    if (s.includes('meta'))   return 'meta';
+    if (s.includes('google')) return 'google';
+    if (s.includes('ibr') || s.includes('propriet')) return 'ibr';
+    if (s.includes('indica')) return 'indicacao';
+    if (s.trim()) return 'outra';
+    return 'sem-origem';
   };
   return (closer.filter(l => l.venda && !EXCLUDE_CLOSER_IDS.has(l.id))).map(cl => {
     const sm = sdrByCid[cl.contact_id] || sdrByName[normName(cl.name)] || null;
-    return { cl, sm };
-  }).filter(({cl,sm}) => isMeta(cl, sm)).map(({cl, sm}) => {
-    // Pega o campo do SDR se tiver valor, senão do Closer
     const pick = f => (sm && sm[f]) || cl[f] || '';
     const respondeu = botFields.some(f => sm && sm[f]);
+    const origemReal = (sm && sm.origem) || cl.origem || '';
     return {
       closer_id: cl.id,
       sdr_id: sm?.id || null,
       name: cl.name || sm?.name || '',
-      origem: 'Meta Ads',
+      origem: origemReal,
+      bucket: originBucket(origemReal),
       audience: pick('audience'),
       creative: pick('creative'),
       campaign: pick('campaign'),
@@ -279,12 +286,22 @@ function buildVendas(){
 // ── KPIs ─────────────────────────────────────────────
 function renderKPIs(vendas){
   const total = vendas.length;
-  const comBot = vendas.filter(v => v.respondeu_bot).length;
   const receita = vendas.reduce((s,v) => s + (v.price||0), 0);
   const ticket = total > 0 ? receita / total : 0;
 
+  // Breakdown por origem REAL
+  const byBucket = {};
+  for (const v of vendas) byBucket[v.bucket] = (byBucket[v.bucket]||0) + 1;
+  const parts = [];
+  if (byBucket.meta)       parts.push(`Meta ${byBucket.meta}`);
+  if (byBucket.google)     parts.push(`Google ${byBucket.google}`);
+  if (byBucket.ibr)        parts.push(`IBR ${byBucket.ibr}`);
+  if (byBucket.indicacao)  parts.push(`Indicação ${byBucket.indicacao}`);
+  if (byBucket.outra)      parts.push(`Outra ${byBucket.outra}`);
+  if (byBucket['sem-origem']) parts.push(`s/ origem ${byBucket['sem-origem']}`);
+
   document.getElementById('kpi-vendas').textContent = total;
-  document.getElementById('kpi-vendas-sub').textContent = `${comBot} com respostas do bot`;
+  document.getElementById('kpi-vendas-sub').textContent = parts.join(' · ') || '—';
   document.getElementById('kpi-receita').textContent = fmtBRL(receita);
   document.getElementById('kpi-ticket').textContent = total > 0 ? 'ticket médio: ' + fmtBRL(ticket) : 'ticket médio: —';
 
@@ -353,7 +370,7 @@ function renderTable(vendas){
 
   const tbody = document.getElementById('tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="12" class="empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -365,9 +382,12 @@ function renderTable(vendas){
     const scoreTag = score
       ? `<span class="tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span> `
       : '';
+    const origemLabel = v.origem || 'sem origem';
+    const origemTag = `<span class="tag ${v.bucket}">${origemLabel}</span>`;
     return `<tr>
       <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
       <td>${fmtDate(v.closed_at)}</td>
+      <td>${origemTag}</td>
       <td>${v.price > 0 ? fmtBRL(v.price) : '<span class="empty">—</span>'}</td>
       <td>${bot}</td>
       <td>${cel(v.idade)}</td>
