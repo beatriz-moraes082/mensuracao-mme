@@ -2947,6 +2947,9 @@ function renderDiagnostico() {
   // Follow-up usa cor cinza/marker pra sinalizar que é estado paralelo (não etapa de avanço).
   const COL_FU = '#9ca3af';
 
+  // Cores especiais
+  const COL_LOST = '#dc2626'; // vermelho · saída do funil
+
   const steps = [
     // ── Pipeline SDR ─────────────────────────────────────
     {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
@@ -2961,6 +2964,9 @@ function renderDiagnostico() {
     {name:'Proposta enviada',         count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
     {name:'Sinal verde',              count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
     {name:'Venda ganha (Closer)',     count:c_venda,    col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
+    // ── Saídas (perdidos) ────────────────────────────────
+    {name:'Perdidos (SDR · saída)',   count:perdidos,       col:COL_LOST, rate:null, meta:null, parallel:true},
+    {name:'Perdidos (Closer · saída)',count:closerPerdidos, col:COL_LOST, rate:null, meta:null, parallel:true},
   ];
   renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
 
@@ -2974,12 +2980,22 @@ function renderDiagnostico() {
     {name:'Reunião real. → Proposta',      from:c_rr,       to:c_proposta},
     {name:'Proposta → Sinal verde',        from:c_proposta, to:c_verde},
     {name:'Sinal verde → Venda ganha',     from:c_verde,    to:c_venda},
-  ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: t.from - t.to}));
-  const gargalo = transitions.filter(t => t.from > 0).sort((a,b) => a.txt - b.txt)[0];
-  document.getElementById('diag-funnel-insight').innerHTML = `
-    ⚡ <b>Maior gargalo:</b> ${gargalo.name} — apenas <b>${fmtP(gargalo.txt)}</b> avançam
-    (~${gargalo.lost} leads perdidos nesta transição). Resolver este ponto tem o maior impacto na qualificação.
-  `;
+  ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: Math.max(0, t.from - t.to)}));
+  // Critério: MAIOR perda absoluta (em quantidade de leads). Taxa baixa com N=2
+  // não é prioritária; o foco é onde mais leads se perdem.
+  const validTransitions = transitions.filter(t => t.from > 0);
+  const ranked = validTransitions.slice().sort((a,b) => b.lost - a.lost);
+  const top1 = ranked[0];
+  const top2 = ranked[1];
+  document.getElementById('diag-funnel-insight').innerHTML = top1 ? `
+    ⚡ <b>Maior gargalo:</b> ${top1.name}
+    — perde <b>${top1.lost} leads</b> nessa transição
+    (avançam apenas ${fmtP(top1.txt)}).
+    ${top2 && top2.lost > 0
+      ? `<div style="font-size:11.5px;color:var(--muted);margin-top:4px">2º maior: ${top2.name} — ${top2.lost} leads (${fmtP(top2.txt)} avançam)</div>`
+      : ''}
+    <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Resolver o gargalo principal tem o maior impacto absoluto no número de vendas.</div>
+  ` : '';
 
   // ── Render: Top Alavancas · 3 cards (1 laranja sólido) ────
   const botMult = txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'mais';
