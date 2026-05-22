@@ -2932,32 +2932,35 @@ function renderDiagnostico() {
   const c_verde     = countCloserAtLeast(3);
   const c_venda     = closerInP.filter(l => l.venda).length;
 
-  // Follow-up e Venda perdida (estado terminal/pausa) — info adicional
-  const inFollowUp = sdr.filter(l => l.status === 98147483).length;
+  // Follow-up (estado paralelo/pausa em cada pipeline) e Venda perdida
+  const c_fu_sdr   = sdr.filter(l => l.status === 98147483).length;
+  const c_fu_cl    = closerInP.filter(l => l.status === 98169059).length;
   const perdidos   = sdr.filter(l => l.status === 143).length;
-  const closerFollowUp = closerInP.filter(l => l.status === 98169059).length;
   const closerPerdidos = closerInP.filter(l => l.status === 143).length;
+  const totPerd    = perdidos + closerPerdidos;
 
   const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
-  const extraSdr = inFollowUp ? `${inFollowUp} Follow-up SDR` : '';
-  const extraCloser = closerFollowUp ? `${closerFollowUp} Follow-up Closer` : '';
-  const extraPerd = (perdidos+closerPerdidos) ? `${perdidos+closerPerdidos} perdidos` : '';
-  const extra = [extraSdr, extraCloser, extraPerd].filter(Boolean).join(' · ');
+  const extraPerd = totPerd ? ` · ${totPerd} perdidos` : '';
   document.getElementById('diag-funnel-sub').textContent =
-    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extra ? ' · ' + extra : ''}`;
+    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extraPerd}`;
+
+  // Follow-up usa cor cinza/marker pra sinalizar que é estado paralelo (não etapa de avanço).
+  const COL_FU = '#9ca3af';
 
   const steps = [
     // ── Pipeline SDR ─────────────────────────────────────
-    {name:'Pré-atendimento',    count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
-    {name:'Lead novo',          count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
-    {name:'Qualificação',       count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
-    {name:'Lead qualificado',   count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
-    {name:'Reunião agendada',   count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
-    {name:'Reunião realizada',  count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
+    {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
+    {name:'Lead novo',                count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
+    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
+    {name:'Follow-up (SDR · paralelo)', count:c_fu_sdr, col:COL_FU,    rate:null,                                  meta:null, parallel:true},
+    {name:'Lead qualificado',         count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
+    {name:'Reunião agendada',         count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
+    {name:'Reunião realizada',        count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
     // ── Pipeline Closer ──────────────────────────────────
-    {name:'Proposta enviada',   count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
-    {name:'Sinal verde',        count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
-    {name:'Venda ganha (Closer)', count:c_venda,  col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
+    {name:'Follow-up (Closer · paralelo)', count:c_fu_cl, col:COL_FU,  rate:null,                                  meta:null, parallel:true},
+    {name:'Proposta enviada',         count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
+    {name:'Sinal verde',              count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
+    {name:'Venda ganha (Closer)',     count:c_venda,    col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
   ];
   renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
 
