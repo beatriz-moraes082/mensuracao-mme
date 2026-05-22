@@ -682,6 +682,7 @@
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
+  <button onclick="switchTab('vendas',this)">Vendas</button>
 </nav>
 
 <!-- Month bar agora é renderizado dentro da seção 'Evolução semanal' do Diagnóstico -->
@@ -1027,6 +1028,116 @@
 </div>
 </div><!-- /tab-outbound -->
 
+
+<!-- ================================================================
+     TAB · VENDAS (Closer venda=True, respostas do bot)
+================================================================ -->
+<style>
+  /* Escopo: somente dentro de #tab-vendas */
+  #tab-vendas .vd-hero{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr 1fr;gap:24px}
+  @media(max-width:700px){#tab-vendas .vd-hero{grid-template-columns:1fr}}
+  #tab-vendas .vd-hero h2{font-size:22px;font-weight:800;margin-bottom:8px}
+  #tab-vendas .vd-hero .sub{font-size:13px;color:var(--muted);line-height:1.55}
+  #tab-vendas .vd-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:600px){#tab-vendas .vd-kpis{grid-template-columns:1fr}}
+  #tab-vendas .vd-kpi{background:var(--surface2);border-radius:10px;padding:14px 16px}
+  #tab-vendas .vd-kpi .lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  #tab-vendas .vd-kpi .val{font-size:24px;font-weight:800;margin-top:4px;line-height:1}
+  #tab-vendas .vd-kpi .sub2{font-size:11px;color:var(--muted);margin-top:4px}
+  #tab-vendas .vd-kpi.green .val{color:var(--up)}
+  #tab-vendas .vd-sec{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+  #tab-vendas .vd-sec::after{content:'';flex:1;height:1px;background:var(--border)}
+  #tab-vendas .vd-grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+  @media(max-width:1100px){#tab-vendas .vd-grid4{grid-template-columns:1fr 1fr}}
+  @media(max-width:700px){#tab-vendas .vd-grid4{grid-template-columns:1fr}}
+  #tab-vendas .vd-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+  #tab-vendas .vd-card h4{font-size:13px;font-weight:700;margin-bottom:4px}
+  #tab-vendas .vd-card .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
+  #tab-vendas .vd-chart{position:relative;height:220px}
+  #tab-vendas .vd-tablecard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
+  #tab-vendas .vd-tablehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+  #tab-vendas .vd-search{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;font-family:inherit;min-width:240px;color:var(--text)}
+  #tab-vendas .vd-search:focus{outline:none;border-color:var(--accent)}
+  #tab-vendas .vd-tablescroll{overflow-x:auto;max-height:600px;overflow-y:auto}
+  #tab-vendas table.vd-table{width:100%;border-collapse:collapse;font-size:12px}
+  #tab-vendas .vd-table thead{position:sticky;top:0;background:var(--surface);z-index:1}
+  #tab-vendas .vd-table th{text-align:left;padding:10px 8px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border)}
+  #tab-vendas .vd-table td{padding:12px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+  #tab-vendas .vd-table tr:hover td{background:var(--surface2)}
+  #tab-vendas .vd-tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;white-space:nowrap}
+  #tab-vendas .vd-tag.meta{background:rgba(24,119,242,.12);color:#1877F2}
+  #tab-vendas .vd-tag.google{background:rgba(34,197,94,.12);color:#16a34a}
+  #tab-vendas .vd-tag.ibr{background:rgba(124,58,237,.12);color:#7c3aed}
+  #tab-vendas .vd-tag.indicacao{background:rgba(245,158,11,.12);color:#d97706}
+  #tab-vendas .vd-tag.outra{background:rgba(107,112,105,.12);color:var(--muted)}
+  #tab-vendas .vd-tag.sem-origem{background:rgba(220,38,38,.10);color:#dc2626;font-style:italic}
+  #tab-vendas .vd-tag.bot-y{background:rgba(34,197,94,.14);color:var(--up)}
+  #tab-vendas .vd-tag.bot-n{background:rgba(220,38,38,.12);color:#dc2626}
+  #tab-vendas .vd-tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
+  #tab-vendas .vd-tag.score-b{background:rgba(34,197,94,.12);color:var(--up)}
+  #tab-vendas .vd-tag.score-other{background:var(--surface2);color:var(--muted)}
+  #tab-vendas .vd-empty{color:var(--muted);font-style:italic;font-size:11px}
+</style>
+
+<div id="tab-vendas" class="tab-pane">
+<div class="main">
+
+  <!-- Hero -->
+  <div class="vd-hero">
+    <div>
+      <h2>Quem comprou da gente?</h2>
+      <div class="sub">
+        Todas as vendas confirmadas no Kommo (Closer com <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">venda=True</code>),
+        com as respostas do bot de pré-atendimento quando disponíveis. <b>A origem mostrada é
+        exatamente o que está declarado no Kommo</b> — sem atribuição manual.
+        <br><br>
+        <span style="font-size:11.5px;color:var(--muted)">
+          Campos do bot antigo (vigente até ~30/04/2026): idade, custo/ano, maior desafio, profissão, Timeshare, viagem programada.
+          Match SDR↔Closer via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
+        </span>
+      </div>
+    </div>
+    <div class="vd-kpis">
+      <div class="vd-kpi green"><div class="lbl">Vendas totais</div><div class="val" id="vd-kpi-vendas">—</div><div class="sub2" id="vd-kpi-vendas-sub">—</div></div>
+      <div class="vd-kpi"><div class="lbl">Receita total</div><div class="val" id="vd-kpi-receita" style="font-size:18px">—</div><div class="sub2" id="vd-kpi-ticket">ticket médio: —</div></div>
+      <div class="vd-kpi"><div class="lbl">Período</div><div class="val" id="vd-kpi-periodo" style="font-size:15px;line-height:1.3">—</div><div class="sub2" id="vd-kpi-periodo-sub">—</div></div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="vd-sec">Perfil das vendas · respostas do bot</div>
+  <div class="vd-grid4">
+    <div class="vd-card"><h4>Custo/ano em viagens</h4><div class="csub">"Quanto investe em viagens por ano?"</div><div class="vd-chart"><canvas id="vd-ch-custo"></canvas></div></div>
+    <div class="vd-card"><h4>Conhece Timeshare</h4><div class="csub">"Você conhece o modelo Timeshare?"</div><div class="vd-chart"><canvas id="vd-ch-timeshare"></canvas></div></div>
+    <div class="vd-card"><h4>Maior desafio</h4><div class="csub">"Qual é seu maior desafio em viajar?"</div><div class="vd-chart"><canvas id="vd-ch-desafio"></canvas></div></div>
+    <div class="vd-card"><h4>Viagem programada?</h4><div class="csub">"Tem viagem programada nos próximos meses?"</div><div class="vd-chart"><canvas id="vd-ch-viagem"></canvas></div></div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="vd-sec">Detalhe por venda</div>
+  <div class="vd-tablecard">
+    <div class="vd-tablehead">
+      <div>
+        <h4 style="font-size:14px;font-weight:700">Lista completa de vendas</h4>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="vd-tcount">—</span> vendas no período</div>
+      </div>
+      <input type="text" class="vd-search" id="vd-search" placeholder="🔍 Buscar por nome, profissão, audience...">
+    </div>
+    <div class="vd-tablescroll">
+      <table class="vd-table">
+        <thead><tr>
+          <th>Nome</th><th>Data fech.</th><th>Origem</th><th>Preço</th><th>Bot</th>
+          <th>Idade</th><th>Custo/ano</th><th>Profissão</th><th>Maior desafio</th>
+          <th>Timeshare</th><th>Viagem prog.</th><th>Produto</th><th>Audience</th>
+        </tr></thead>
+        <tbody id="vd-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-vendas -->
+
 <footer>
   <b>Ipioca Mar Resort (IMR)</b> · Trilha Performance Digital · MME Vacation ·
   Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · <span id="footer-date">—</span>
@@ -1047,6 +1158,7 @@ function switchTab(id, btn) {
   if (id === 'evolucao') renderMensuracao();
   if (id === 'funis') renderFunis();
   if (id === 'outbound') renderOutbound();
+  if (id === 'vendas') renderVendas();
 }
 
 /* ── Scroll-to-top visibility ── */
@@ -4093,6 +4205,205 @@ function renderMensuracao(){
     });
   }, 50);
 }
+
+// ════════════════════════════════════════════════════════
+// TAB · VENDAS — Closer venda=True + match SDR (respostas do bot)
+// ════════════════════════════════════════════════════════
+const VD_EXCLUDE = new Set([79457570, 79459150]); // duplicatas David Lima confirmadas
+const VD_CHARTS = {};
+const VD_PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#6B7069','#dc2626','#1A1A1A'];
+const VD_BOT_FIELDS = ['idade','custo_ano','desafio','profissao','timeshare','viagem_prog','cep'];
+
+function vdNormName(s){
+  if (!s) return '';
+  return s.normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+}
+function vdBucket(o){
+  const s = (o || '').toLowerCase();
+  if (s.includes('meta'))   return 'meta';
+  if (s.includes('google')) return 'google';
+  if (s.includes('ibr') || s.includes('propriet')) return 'ibr';
+  if (s.includes('indica')) return 'indicacao';
+  if (s.trim()) return 'outra';
+  return 'sem-origem';
+}
+function vdFmtBRL(n){ return 'R$ ' + (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0}); }
+function vdFmtDate(ts){
+  if (!ts) return '—';
+  const d = new Date(ts*1000);
+  return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+}
+
+function vdBuildVendas(){
+  if (!KOMMO_RAW) return [];
+  const sdr = KOMMO_RAW.sdr || [];
+  const closer = KOMMO_RAW.closer || [];
+  const sdrByCid = {};
+  for (const l of sdr) if (l.contact_id) sdrByCid[l.contact_id] = l;
+  const sdrByName = {};
+  for (const l of sdr) {
+    const n = vdNormName(l.name);
+    if (!n) continue;
+    const sc = VD_BOT_FIELDS.reduce((s,f) => s + (l[f] ? 1 : 0), 0);
+    const ex = sdrByName[n];
+    const exSc = ex ? VD_BOT_FIELDS.reduce((s,f) => s + (ex[f] ? 1 : 0), 0) : -1;
+    if (sc > exSc) sdrByName[n] = l;
+  }
+  return (closer.filter(l => l.venda && !VD_EXCLUDE.has(l.id))).map(cl => {
+    const sm = sdrByCid[cl.contact_id] || sdrByName[vdNormName(cl.name)] || null;
+    const pick = f => (sm && sm[f]) || cl[f] || '';
+    const respondeu = VD_BOT_FIELDS.some(f => sm && sm[f]);
+    const origemReal = (sm && sm.origem) || cl.origem || '';
+    return {
+      closer_id: cl.id,
+      sdr_id: sm?.id || null,
+      name: cl.name || sm?.name || '',
+      origem: origemReal,
+      bucket: vdBucket(origemReal),
+      audience: pick('audience'),
+      creative: pick('creative'),
+      score: pick('score'),
+      price: cl.price || 0,
+      closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
+      idade: pick('idade'),
+      custo_ano: pick('custo_ano'),
+      desafio: pick('desafio'),
+      profissao: pick('profissao'),
+      timeshare: pick('timeshare'),
+      viagem_prog: pick('viagem_prog'),
+      produto: cl.produto || '',
+      respondeu_bot: respondeu,
+    };
+  }).sort((a,b) => (b.closed_at||0) - (a.closed_at||0));
+}
+
+function vdRenderKPIs(vendas){
+  const total = vendas.length;
+  const receita = vendas.reduce((s,v) => s + (v.price||0), 0);
+  const ticket = total > 0 ? receita / total : 0;
+
+  const byBucket = {};
+  for (const v of vendas) byBucket[v.bucket] = (byBucket[v.bucket]||0) + 1;
+  const parts = [];
+  if (byBucket.meta)       parts.push(`Meta ${byBucket.meta}`);
+  if (byBucket.google)     parts.push(`Google ${byBucket.google}`);
+  if (byBucket.ibr)        parts.push(`IBR ${byBucket.ibr}`);
+  if (byBucket.indicacao)  parts.push(`Indicação ${byBucket.indicacao}`);
+  if (byBucket.outra)      parts.push(`Outra ${byBucket.outra}`);
+  if (byBucket['sem-origem']) parts.push(`s/ origem ${byBucket['sem-origem']}`);
+
+  document.getElementById('vd-kpi-vendas').textContent = total;
+  document.getElementById('vd-kpi-vendas-sub').textContent = parts.join(' · ') || '—';
+  document.getElementById('vd-kpi-receita').textContent = vdFmtBRL(receita);
+  document.getElementById('vd-kpi-ticket').textContent = total > 0 ? 'ticket médio: ' + vdFmtBRL(ticket) : 'ticket médio: —';
+
+  const p = (KOMMO_RAW && KOMMO_RAW.period) || {};
+  const fmtBR = iso => iso ? iso.split('-').reverse().join('/') : '—';
+  if (p.start && p.end) {
+    document.getElementById('vd-kpi-periodo').textContent = `${fmtBR(p.start)} → ${fmtBR(p.end)}`;
+    const dias = Math.round((new Date(p.end) - new Date(p.start)) / 86400000) + 1;
+    document.getElementById('vd-kpi-periodo-sub').textContent = `${dias} dias de dados`;
+  }
+}
+
+function vdCountBy(arr, field){
+  const c = {};
+  for (const v of arr){
+    const x = (v[field] || '').toString().trim() || 'Não respondeu';
+    c[x] = (c[x]||0) + 1;
+  }
+  return Object.entries(c).sort((a,b) => b[1]-a[1]);
+}
+function vdMakeChart(canvasId, data){
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  if (VD_CHARTS[canvasId]) VD_CHARTS[canvasId].destroy();
+  const labels = data.map(d => d[0]);
+  const values = data.map(d => d[1]);
+  const colors = labels.map((l,i) => l === 'Não respondeu' ? '#D1D5DB' : VD_PALETTE[i % VD_PALETTE.length]);
+  VD_CHARTS[canvasId] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '55%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font:{size:10}, padding:8, boxWidth:10, boxHeight:10 } },
+        tooltip: { callbacks: { label: c => {
+          const t = values.reduce((a,b)=>a+b,0);
+          return `${c.label}: ${c.parsed} (${(c.parsed/t*100).toFixed(0)}%)`;
+        }}}
+      }
+    }
+  });
+}
+function vdRenderCharts(vendas){
+  vdMakeChart('vd-ch-custo',     vdCountBy(vendas, 'custo_ano'));
+  vdMakeChart('vd-ch-timeshare', vdCountBy(vendas, 'timeshare'));
+  vdMakeChart('vd-ch-desafio',   vdCountBy(vendas, 'desafio'));
+  vdMakeChart('vd-ch-viagem',    vdCountBy(vendas, 'viagem_prog'));
+}
+
+function vdRenderTable(vendas){
+  const search = (document.getElementById('vd-search').value || '').toLowerCase().trim();
+  let list = vendas.slice();
+  if (search){
+    list = list.filter(v => {
+      const blob = [v.name, v.origem, v.audience, v.creative, v.profissao, v.custo_ano, v.desafio, v.timeshare, v.produto]
+        .map(x => (x||'').toString().toLowerCase()).join(' ');
+      return blob.includes(search);
+    });
+  }
+  document.getElementById('vd-tcount').textContent = list.length;
+
+  const tbody = document.getElementById('vd-tbody');
+  if (!list.length){
+    tbody.innerHTML = '<tr><td colspan="13" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(v => {
+    const cel = x => x ? x : '<span class="vd-empty">—</span>';
+    const bot = v.respondeu_bot
+      ? '<span class="vd-tag bot-y">respondeu</span>'
+      : '<span class="vd-tag bot-n">não passou</span>';
+    const score = (v.score||'').toUpperCase();
+    const scoreTag = score
+      ? `<span class="vd-tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span> `
+      : '';
+    const origemLabel = v.origem || 'sem origem';
+    const origemTag = `<span class="vd-tag ${v.bucket}">${origemLabel}</span>`;
+    return `<tr>
+      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
+      <td>${vdFmtDate(v.closed_at)}</td>
+      <td>${origemTag}</td>
+      <td>${v.price > 0 ? vdFmtBRL(v.price) : '<span class="vd-empty">—</span>'}</td>
+      <td>${bot}</td>
+      <td>${cel(v.idade)}</td>
+      <td>${cel(v.custo_ano)}</td>
+      <td>${cel(v.profissao)}</td>
+      <td>${cel(v.desafio)}</td>
+      <td>${cel(v.timeshare)}</td>
+      <td>${cel(v.viagem_prog)}</td>
+      <td>${cel(v.produto)}</td>
+      <td>${cel(v.audience)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderVendas(){
+  if (!KOMMO_RAW) return;
+  const v = vdBuildVendas();
+  vdRenderKPIs(v);
+  vdRenderCharts(v);
+  vdRenderTable(v);
+}
+
+// Hook search (uma vez)
+(function vdInit(){
+  const s = document.getElementById('vd-search');
+  if (s) s.addEventListener('input', () => {
+    if (KOMMO_RAW) vdRenderTable(vdBuildVendas());
+  });
+})();
 </script>
 </body>
 </html>
