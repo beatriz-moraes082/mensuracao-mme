@@ -2953,18 +2953,20 @@ function renderDiagnostico() {
   const c_venda     = countCloserAtLeast(4);
 
   // Snapshot "atual": quantos leads estão parados nessa coluna no Kommo agora
-  // (status_atual = exatamente aquela etapa). Diferente do cumulativo, que mostra
-  // quantos passaram pela etapa em algum momento.
-  const nowAt = (statusId, source) => (source||sdr).filter(l => l.status === statusId).length;
+  // (status_atual = exatamente aquela etapa). NÃO filtra por período — reflete
+  // o estado real do pipeline neste momento, independente de quando o lead entrou.
+  const sdrAll    = KOMMO_DATA.sdr    || [];
+  const closerAll = KOMMO_DATA.closer || [];
+  const nowAt = (statusId, source) => (source||sdrAll).filter(l => l.status === statusId).length;
   const now_pre   = nowAt(98618883);
   const now_novo  = nowAt(98147479);
   const now_qual  = nowAt(98147487);
   const now_lq    = nowAt(98147491);
   const now_ra    = nowAt(98162603);
-  const now_rr    = nowAt(98168239, closerInP);
-  const now_prop  = nowAt(98169055, closerInP);
-  const now_verde = nowAt(98334563, closerInP);
-  const now_venda = nowAt(142,      closerInP);
+  const now_rr    = nowAt(98168239, closerAll);
+  const now_prop  = nowAt(98169055, closerAll);
+  const now_verde = nowAt(98334563, closerAll);
+  const now_venda = nowAt(142,      closerAll);
 
   // Follow-up (estado paralelo/pausa em cada pipeline) e Venda perdida
   const c_fu_sdr   = sdr.filter(l => l.status === 98147483).length;
