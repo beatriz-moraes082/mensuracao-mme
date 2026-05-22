@@ -1623,6 +1623,20 @@ let PERIOD_LABELS = {
   'mes': 'Este mês',
   '30d': 'Últimos 30 dias',
 };
+// Popula as <option> do select de período com o range de datas (DD/MM – DD/MM)
+function refreshPeriodSelectLabels() {
+  const sel = document.getElementById('diag-period-sel');
+  if (!sel) return;
+  const ref = (typeof KOMMO_RAW !== 'undefined' && KOMMO_RAW?.fetched_at)
+    ? new Date(KOMMO_RAW.fetched_at)
+    : new Date();
+  for (const opt of sel.options) {
+    const win = periodWindow(opt.value, ref);
+    const range = _fmtDDMM(win.from) + ' – ' + _fmtDDMM(win.to);
+    opt.textContent = (PERIOD_LABELS[opt.value] || opt.value) + ' (' + range + ')';
+  }
+}
+
 function setGlobalPeriod(key, btn) {
   currentPeriod    = key;
   currentOutPeriod = key;   // ← sincroniza Duque & BDR
@@ -3597,6 +3611,8 @@ async function loadDashboardData() {
     // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
     rebuildAllFunnels(kommoRes);
     if (typeof rebuildMensPeriodMap === 'function') rebuildMensPeriodMap(kommoRes.fetched_at || new Date());
+    // Atualiza os rótulos do select de período com os ranges de data
+    refreshPeriodSelectLabels();
 
     // Atualiza "Última atualização" em todas as barras
     const dateStr = _fmtFetchedDate(kommoRes.fetched_at);
