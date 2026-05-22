@@ -3360,6 +3360,55 @@ function computeInvestForPeriod(kommo, meta, periodKey, refDate) {
   return Math.round(metaInvest);
 }
 
+// Janela imediatamente anterior, mesma duração da atual.
+// Usada pra deltas (período atual vs período anterior equivalente).
+function prevPeriodWindow(periodKey, refDate) {
+  const cur = periodWindow(periodKey, refDate);
+  const durMs = cur.to.getTime() - cur.from.getTime();
+  const prevTo = new Date(cur.from.getTime() - 1);
+  const prevFrom = new Date(prevTo.getTime() - durMs);
+  prevFrom.setHours(0, 0, 0, 0);
+  prevTo.setHours(23, 59, 59, 999);
+  return { from: prevFrom, to: prevTo };
+}
+
+// Totais (invest Meta + leads SDR inbound + agend + realiz) numa janela arbitrária.
+// Usada pra calcular o "período anterior" e tirar delta real contra o atual.
+function computeTotalsForWindow(kommo, meta, win) {
+  let invest = 0;
+  for (const spendObj of Object.values(meta.adset || {})) {
+    const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
+    for (const [month, weeks] of Object.entries(monthsMap)) {
+      const [yr, mo] = month.split('-').map(Number);
+      const weekRanges = {
+        w1: [new Date(yr, mo-1, 1),  new Date(yr, mo-1, 7,  23,59,59)],
+        w2: [new Date(yr, mo-1, 8),  new Date(yr, mo-1, 14, 23,59,59)],
+        w3: [new Date(yr, mo-1, 15), new Date(yr, mo-1, 21, 23,59,59)],
+        w4: [new Date(yr, mo-1, 22), new Date(yr, mo,   0,  23,59,59)],
+      };
+      for (const [w, v] of Object.entries(weeks)) {
+        if (typeof v !== 'number') continue;
+        const [ws, we] = weekRanges[w] || [null, null];
+        if (!ws) continue;
+        const overlapStart = ws > win.from ? ws : win.from;
+        const overlapEnd   = we < win.to   ? we : win.to;
+        if (overlapEnd < overlapStart) continue;
+        const weekDays    = (we - ws) / 86400000 + 1;
+        const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+        invest += v * (overlapDays / weekDays);
+      }
+    }
+  }
+  let leads = 0, realiz = 0, agend = 0;
+  for (const l of (kommo.sdr || [])) {
+    if (!_inWindow(l.created_at, win)) continue;
+    leads++;
+    if (l.reuniao_realizada) realiz++;
+    if (l.reuniao_agendada)  agend++;
+  }
+  return { invest: Math.round(invest), leads, realiz, agend };
+}
+
 // Atualiza pílulas do topbar respeitando o período atual
 function updateTopbarPills() {
   if (!FUNNEL[currentPeriod]) return;
@@ -3542,6 +3591,12 @@ function renderMensuracao(){
     realiz:mg.realiz+gg.realiz+og.realiz,
     prop:cg.prop, vendas:cg.vendas, fat:cg.fat
   };
+
+  // Totais do período anterior equivalente — pra deltas reais (vs imediatamente antes).
+  const _ref = KOMMO_RAW?.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const tgPrev = (KOMMO_RAW && META_RAW)
+    ? computeTotalsForWindow(KOMMO_RAW, META_RAW, prevPeriodWindow(currentPeriod, _ref))
+    : null;
 
   // KPI summary cards — dynamic from filtered weeks
   const kpiInvest = tg.invest;
@@ -3766,12 +3821,14 @@ function renderMensuracao(){
   };
 
   // Hero KPIs (1 sólido laranja: Reuniões Concretizadas — resultado final do funil)
+  // Deltas comparam com o período imediatamente anterior de mesma duração
+  // (ex: "7d" vs "7 dias antes disso"; "30d" vs "30 dias antes").
   const heroKpis = [
     {
       lbl:'Investimento',
       val:fmtBRL(tg.invest),
       sub: 'Meta ' + fmtBRL(mg.invest) + ' · Google ' + fmtBRL(gg.invest),
-      delta: _delta(tot[0]?.invest, tot[tot.length-1]?.invest),
+      delta: tgPrev ? _delta(tgPrev.invest, tg.invest) : {cls:'',txt:'—'},
       spark: tot.map(t => t.invest),
       color: '#1a1a1a',
       variant: ''
@@ -3780,7 +3837,7 @@ function renderMensuracao(){
       lbl:'Leads totais',
       val:fmtNum(tg.leads),
       sub: 'Meta ' + mg.leads + ' · Google ' + gg.leads + ' · Org ' + og.leads,
-      delta: _delta(tot[0]?.leads, tot[tot.length-1]?.leads),
+      delta: tgPrev ? _delta(tgPrev.leads, tg.leads) : {cls:'',txt:'—'},
       spark: tot.map(t => t.leads),
       color: '#3b82f6',
       variant: ''
@@ -3789,7 +3846,7 @@ function renderMensuracao(){
       lbl:'Reuniões concretizadas',
       val:fmtNum(tg.realiz),
       sub: tg.leads > 0 ? (tg.realiz/tg.leads*100).toFixed(1) + '% do total de leads' : 'sem leads',
-      delta: _delta(tot[0]?.realiz, tot[tot.length-1]?.realiz),
+      delta: tgPrev ? _delta(tgPrev.realiz, tg.realiz) : {cls:'',txt:'—'},
       spark: tot.map(t => t.realiz),
       color: '#fff',
       variant: 'accent'
@@ -3798,8 +3855,8 @@ function renderMensuracao(){
       lbl:'CPO · custo por agendamento',
       val: tg.agend > 0 ? fmtBRL(tg.invest/tg.agend) : '—',
       sub: 'Investimento ÷ ' + tg.agend + ' agendamentos',
-      delta: tot.length > 1 && tot[0].agend > 0 && tot[tot.length-1].agend > 0
-        ? _delta(tot[0].invest/tot[0].agend, tot[tot.length-1].invest/tot[tot.length-1].agend)
+      delta: (tgPrev && tg.agend > 0 && tgPrev.agend > 0)
+        ? _delta(tgPrev.invest/tgPrev.agend, tg.invest/tg.agend)
         : {cls:'', txt:'—'},
       spark: tot.map(t => t.agend > 0 ? t.invest/t.agend : 0),
       color: '#1a1a1a',
