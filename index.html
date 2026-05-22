@@ -1338,12 +1338,16 @@ function renderPyramid(containerId, steps) {
       ? `<span class="rate-pill" style="color:${rateColor(s.rate,s.meta)};background:${rateBg(s.rate,s.meta)}">${s.rate}%</span>
          ${s.meta ? `<span class="meta-tag">${rateIcon(s.rate,s.meta)} Meta ${s.meta}%</span>` : ''}`
       : `<span style="color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em">entrada</span>`;
+    // Snapshot "atual" — quantos estão parados nessa coluna agora no Kommo
+    const currentChip = (typeof s.current === 'number')
+      ? `<span style="margin-left:8px;font-size:10px;color:var(--muted);font-weight:500">· agora: <b style="color:${s.col}">${fmt(s.current)}</b></span>`
+      : '';
     html += `
       <div class="pyr-row">
         <div class="pyr-lbl">${s.name}</div>
         <div class="pyr-mid">
           <div class="pyr-bar" style="width:${w}%;background:${s.col}22;border:1px solid ${s.col}99;box-shadow:0 0 10px ${s.col}18">
-            <span style="color:${s.col}">${fmt(s.count)}</span>
+            <span style="color:${s.col}">${fmt(s.count)}</span>${currentChip}
           </div>
         </div>
         <div class="pyr-rgt">${rateHtml}</div>
@@ -2934,6 +2938,20 @@ function renderDiagnostico() {
   // (status=142 OU l.venda=true) — l.venda também já é considerado em maxStageCloser
   const c_venda     = countCloserAtLeast(4);
 
+  // Snapshot "atual": quantos leads estão parados nessa coluna no Kommo agora
+  // (status_atual = exatamente aquela etapa). Diferente do cumulativo, que mostra
+  // quantos passaram pela etapa em algum momento.
+  const nowAt = (statusId, source) => (source||sdr).filter(l => l.status === statusId).length;
+  const now_pre   = nowAt(98618883);
+  const now_novo  = nowAt(98147479);
+  const now_qual  = nowAt(98147487);
+  const now_lq    = nowAt(98147491);
+  const now_ra    = nowAt(98162603);
+  const now_rr    = nowAt(98168239, closerInP);
+  const now_prop  = nowAt(98169055, closerInP);
+  const now_verde = nowAt(98334563, closerInP);
+  const now_venda = nowAt(142,      closerInP);
+
   // Follow-up (estado paralelo/pausa em cada pipeline) e Venda perdida
   const c_fu_sdr   = sdr.filter(l => l.status === 98147483).length;
   const c_fu_cl    = closerInP.filter(l => l.status === 98169059).length;
@@ -2954,18 +2972,18 @@ function renderDiagnostico() {
 
   const steps = [
     // ── Pipeline SDR ─────────────────────────────────────
-    {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
-    {name:'Lead novo',                count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
+    {name:'Pré-atendimento',          count:c_pre,      current:now_pre,   col:'#94a3b8', rate:null,                                  meta:null},
+    {name:'Lead novo',                count:c_novo,     current:now_novo,  col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
     {name:'Follow-up (SDR · paralelo)', count:c_fu_sdr, col:COL_FU,    rate:null,                                  meta:null, parallel:true},
-    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
-    {name:'Lead qualificado',         count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
-    {name:'Reunião agendada',         count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
-    {name:'Reunião realizada',        count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
+    {name:'Qualificação',             count:c_qual,     current:now_qual,  col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
+    {name:'Lead qualificado',         count:c_lq,       current:now_lq,    col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
+    {name:'Reunião agendada',         count:c_ra,       current:now_ra,    col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
+    {name:'Reunião realizada',        count:c_rr,       current:now_rr,    col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
     // ── Pipeline Closer ──────────────────────────────────
     {name:'Follow-up (Closer · paralelo)', count:c_fu_cl, col:COL_FU,  rate:null,                                  meta:null, parallel:true},
-    {name:'Proposta enviada',         count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
-    {name:'Sinal verde',              count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
-    {name:'Venda ganha (Closer)',     count:c_venda,    col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
+    {name:'Proposta enviada',         count:c_proposta, current:now_prop,  col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
+    {name:'Sinal verde',              count:c_verde,    current:now_verde, col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
+    {name:'Venda ganha (Closer)',     count:c_venda,    current:now_venda, col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
     // ── Saídas (perdidos) ────────────────────────────────
     {name:'Perdidos (SDR · saída)',   count:perdidos,       col:COL_LOST, rate:null, meta:null, parallel:true},
     {name:'Perdidos (Closer · saída)',count:closerPerdidos, col:COL_LOST, rate:null, meta:null, parallel:true},
