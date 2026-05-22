@@ -337,6 +337,14 @@
 
     /* ── Period buttons ── */
     .pbtn{border-radius:20px;font-weight:600;padding:6px 16px;font-size:11.5px}
+    .period-select{background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+      padding:8px 36px 8px 16px;font-size:12px;font-weight:600;color:var(--text);
+      font-family:inherit;cursor:pointer;appearance:none;-webkit-appearance:none;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%231A1A1A' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat:no-repeat;background-position:right 14px center;
+      transition:border-color .15s, box-shadow .15s}
+    .period-select:hover{border-color:var(--accent)}
+    .period-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(238,77,32,.12)}
     .pbtn.active{
       background:var(--accent)!important;color:#fff!important;
       border-color:var(--accent)!important;
@@ -704,10 +712,13 @@
         e alavancas com maior impacto na taxa de qualificação.
       </div>
       <div class="hl-pills">
-        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+        <select class="period-select" id="diag-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
         Última atualização: <b id="diag-fetched" style="color:var(--text)">—</b>
@@ -1208,6 +1219,10 @@ function periodWindow(periodKey, refDate) {
     prevEnd.setHours(23,59,59,999);
     return { from: prevStart, to: prevEnd };
   }
+  else if (periodKey === 'mes') {
+    // "Este mês" = do dia 1 do mês corrente até hoje
+    fromTs = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  }
   else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
@@ -1602,9 +1617,10 @@ function renderLossReasons() {
 
 /* ── Seletor de período global (sincroniza todas as abas) ── */
 let PERIOD_LABELS = {
+  'w3':  'Esta semana',
   '7d':  'Últimos 7 dias',
   '14d': 'Últimos 14 dias',
-  'w3':  'Esta semana',
+  'mes': 'Este mês',
   '30d': 'Últimos 30 dias',
 };
 function setGlobalPeriod(key, btn) {
@@ -1614,6 +1630,9 @@ function setGlobalPeriod(key, btn) {
   document.querySelectorAll('.pbtn[data-period]').forEach(b => {
     b.classList.toggle('active', b.dataset.period === key);
   });
+  // Sincroniza o select da aba Diagnóstico (se existir e a opção for válida)
+  const sel = document.getElementById('diag-period-sel');
+  if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
   // Atualiza label dinâmico onde existir
   const lbl = document.getElementById('analises-period-lbl');
   if (lbl) lbl.textContent = PERIOD_LABELS[key] || key;
@@ -3653,6 +3672,14 @@ function rebuildMensPeriodMap(refDate) {
   MENS_PERIOD_MAP['14d']   = { ws: w14,       lbls: w14.map(weekLabel) };
   MENS_PERIOD_MAP['w3']    = { ws: [cur],     lbls: [weekLabel(cur)] };
   MENS_PERIOD_MAP['wlast'] = { ws: prev.startsWith('w4') ? ['w4'] : [prev], lbls: [weekLabel(prev.replace('-prev',''))] };
+  // "Este mês" = todas as semanas do mês corrente que já começaram (até hoje)
+  const mesWeeks = ['w1','w2','w3','w4'].filter(w => {
+    const startDay = { w1:1, w2:8, w3:15, w4:22 }[w];
+    return startDay <= day || w === cur;
+  });
+  // garante que pelo menos a semana atual entra
+  if (!mesWeeks.includes(cur)) mesWeeks.push(cur);
+  MENS_PERIOD_MAP['mes']   = { ws: mesWeeks, lbls: mesWeeks.map(weekLabel) };
   MENS_PERIOD_MAP['30d']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] };
 }
 
