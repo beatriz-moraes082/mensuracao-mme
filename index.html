@@ -2887,26 +2887,69 @@ function renderDiagnostico() {
     });
   }, 100);
 
-  // ── Render: Funil hero ─────────────────────────────────
-  const formCompletes = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
+  // ── Render: Funil hero (estrutura espelha colunas do pipeline SDR no Kommo)
+  // Ordem real: Pré-atendimento → Lead novo → Qualificação → Lead qualificado → Reunião agendada → Venda ganha (passou pro Closer)
+  // "Follow-up" e "Venda perdida" são estados paralelos/saída — mostrados separadamente abaixo.
+  const STAGE_ORD = {
+    98147475: 0, // Incoming leads
+    99055915: 0, // Abordagem inicial
+    98618883: 1, // Pré-atendimento
+    98147479: 2, // Lead novo
+    98147487: 3, // Qualificação
+    98147483: 3, // Follow-up (paralelo a Qualif)
+    98147491: 4, // Lead qualificado
+    98162603: 5, // Reunião agendada
+    142:      6, // Venda ganha (SDR = passou pro Closer)
+  };
+  const maxStage = (l) => {
+    let s = STAGE_ORD[l.status];
+    // status desconhecido ou Venda perdida (143): infere por flags/tags
+    if (s === undefined) {
+      if (l.reuniao_agendada || l.reuniao_realizada) s = 5;
+      else if (l.qualified) s = 4;
+      else if ((l.tags||[]).includes('bot-concluído') || (l.tags||[]).includes('bot-incompleto')) s = 3;
+      else s = 1;
+    }
+    // Flags expandem o stage (caso o status atual seja inferior por algum motivo)
+    if (l.qualified && s < 4) s = 4;
+    if (l.reuniao_agendada && s < 5) s = 5;
+    return s;
+  };
+  // count cumulativo: quantos leads atingiram pelo menos esse stage
+  const countAtLeast = (n) => sdr.filter(l => maxStage(l) >= n).length;
+  const c_pre   = countAtLeast(1);
+  const c_novo  = countAtLeast(2);
+  const c_qual  = countAtLeast(3);
+  const c_lq    = countAtLeast(4);
+  const c_ra    = countAtLeast(5);
+  const c_vg    = countAtLeast(6);
+  // Follow-up e Venda perdida (estado terminal/pausa) — info adicional
+  const inFollowUp = sdr.filter(l => l.status === 98147483).length;
+  const perdidos   = sdr.filter(l => l.status === 143).length;
+
   const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
-  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR · ${periodTxt} · ${qualif} qualificaram (${fmtP(txQ)})`;
+  const extra = inFollowUp || perdidos
+    ? ` · ${inFollowUp} em Follow-up · ${perdidos} perdidos`
+    : '';
+  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extra}`;
+
   const steps = [
-    {name:'Lead novo (entrada)',     count:total,         col:'#3b82f6', rate:null,                meta:null},
-    {name:'Concluiu bot',            count:formCompletes, col:'#a855f7', rate:total>0?formCompletes/total*100:0,    meta:null},
-    {name:'Lead qualificado',        count:qualif,        col:'#6366f1', rate:total>0?qualif/total*100:0,           meta:META_TX_QUALIF},
-    {name:'Reunião agendada',        count:agend,         col:'#e85d28', rate:qualif>0?agend/qualif*100:0,          meta:60},
-    {name:'Reunião realizada',       count:realiz,        col:'#22c55e', rate:agend>0?realiz/agend*100:0,           meta:65},
-    {name:'Venda Closer',            count:vendas,        col:'#16a34a', rate:realiz>0?vendas/realiz*100:0,         meta:null},
+    {name:'Pré-atendimento',    count:c_pre,  col:'#94a3b8', rate:null,                                       meta:null},
+    {name:'Lead novo',          count:c_novo, col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100  : 0,           meta:null},
+    {name:'Qualificação',       count:c_qual, col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100 : 0,           meta:null},
+    {name:'Lead qualificado',   count:c_lq,   col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100   : 0,           meta:META_TX_QUALIF},
+    {name:'Reunião agendada',   count:c_ra,   col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100    : 0,            meta:60},
+    {name:'Venda ganha (Closer)', count:c_vg, col:'#16a34a', rate:c_ra>0   ? c_vg/c_ra*100    : 0,            meta:null},
   ];
   renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
 
-  // Identifica gargalo do funil
+  // Identifica gargalo do funil (transições entre colunas do pipeline SDR)
   const transitions = [
-    {name:'Lead → Bot Concluído', from:total, to:formCompletes},
-    {name:'Bot → Qualificado',    from:formCompletes, to:qualif},
-    {name:'Qualif → Agendamento', from:qualif, to:agend},
-    {name:'Agend → Realizada',    from:agend,  to:realiz},
+    {name:'Pré-atendimento → Lead novo', from:c_pre,  to:c_novo},
+    {name:'Lead novo → Qualificação',    from:c_novo, to:c_qual},
+    {name:'Qualificação → Lead qualif.', from:c_qual, to:c_lq},
+    {name:'Lead qualif. → Reunião ag.',  from:c_lq,   to:c_ra},
+    {name:'Reunião ag. → Venda ganha',   from:c_ra,   to:c_vg},
   ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: t.from - t.to}));
   const gargalo = transitions.filter(t => t.from > 0).sort((a,b) => a.txt - b.txt)[0];
   document.getElementById('diag-funnel-insight').innerHTML = `
