@@ -1624,29 +1624,9 @@ let PERIOD_LABELS = {
   'mes': 'Este mês',
   '30d': 'Últimos 30 dias',
 };
-// Nomes curtos pros rótulos do <select> (sem range — o range é adicionado dinamicamente).
-// Separado do PERIOD_LABELS porque esse é sobrescrito por periodLabel() com range completo.
-const PERIOD_SHORT_LABELS = {
-  'w3':  'Esta semana',
-  '7d':  'Últimos 7 dias',
-  '14d': 'Últimos 14 dias',
-  'mes': 'Este mês',
-  '30d': 'Últimos 30 dias',
-};
-
-// Popula as <option> do select de período com o range de datas (DD/MM – DD/MM)
-function refreshPeriodSelectLabels() {
-  const sel = document.getElementById('diag-period-sel');
-  if (!sel) return;
-  const ref = (typeof KOMMO_RAW !== 'undefined' && KOMMO_RAW?.fetched_at)
-    ? new Date(KOMMO_RAW.fetched_at)
-    : new Date();
-  for (const opt of sel.options) {
-    const win = periodWindow(opt.value, ref);
-    const range = _fmtDDMM(win.from) + ' – ' + _fmtDDMM(win.to);
-    opt.textContent = (PERIOD_SHORT_LABELS[opt.value] || opt.value) + ' (' + range + ')';
-  }
-}
+// No-op: rótulos do select são fixos (definidos no HTML, sem range de datas).
+// Função mantida pra compatibilidade com chamadas existentes.
+function refreshPeriodSelectLabels() {}
 
 function setGlobalPeriod(key, btn) {
   currentPeriod    = key;
@@ -2922,34 +2902,75 @@ function renderDiagnostico() {
   const c_qual  = countAtLeast(3);
   const c_lq    = countAtLeast(4);
   const c_ra    = countAtLeast(5);
-  const c_vg    = countAtLeast(6);
+
+  // ── Etapas do pipeline Closer (continuação do funil)
+  // Reunião realizada → Proposta enviada → Sinal verde → Venda ganha
+  const STAGE_ORD_CLOSER = {
+    98168235: 0, // Incoming leads (Closer)
+    98168239: 1, // Reunião Realizada
+    98169055: 2, // Proposta Enviada
+    98169059: 2, // Follow-up (Closer) — paralelo a Proposta
+    98334563: 3, // Sinal Verde
+    142:      4, // Venda ganha
+  };
+  const maxStageCloser = (l) => {
+    let s = STAGE_ORD_CLOSER[l.status];
+    if (s === undefined) { // Venda perdida (143) ou desconhecido
+      if (l.venda) s = 4;
+      else if (l.proposta) s = 2;
+      else s = 0;
+    }
+    if (l.venda && s < 4) s = 4;
+    return s;
+  };
+  // Leads do Closer no período (criados na janela). Vendas usam closed_at via l.venda.
+  const closerInP = (KOMMO_DATA.closer || []).filter(l => _inWindow(l.created_at, win));
+  const countCloserAtLeast = (n) => closerInP.filter(l => maxStageCloser(l) >= n).length;
+  // Etapas a partir de "Reunião realizada" usam o pipeline Closer (coerência cumulativa)
+  const c_rr        = countCloserAtLeast(1);
+  const c_proposta  = countCloserAtLeast(2);
+  const c_verde     = countCloserAtLeast(3);
+  const c_venda     = closerInP.filter(l => l.venda).length;
+
   // Follow-up e Venda perdida (estado terminal/pausa) — info adicional
   const inFollowUp = sdr.filter(l => l.status === 98147483).length;
   const perdidos   = sdr.filter(l => l.status === 143).length;
+  const closerFollowUp = closerInP.filter(l => l.status === 98169059).length;
+  const closerPerdidos = closerInP.filter(l => l.status === 143).length;
 
   const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
-  const extra = inFollowUp || perdidos
-    ? ` · ${inFollowUp} em Follow-up · ${perdidos} perdidos`
-    : '';
-  document.getElementById('diag-funnel-sub').textContent = `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extra}`;
+  const extraSdr = inFollowUp ? `${inFollowUp} Follow-up SDR` : '';
+  const extraCloser = closerFollowUp ? `${closerFollowUp} Follow-up Closer` : '';
+  const extraPerd = (perdidos+closerPerdidos) ? `${perdidos+closerPerdidos} perdidos` : '';
+  const extra = [extraSdr, extraCloser, extraPerd].filter(Boolean).join(' · ');
+  document.getElementById('diag-funnel-sub').textContent =
+    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extra ? ' · ' + extra : ''}`;
 
   const steps = [
-    {name:'Pré-atendimento',    count:c_pre,  col:'#94a3b8', rate:null,                                       meta:null},
-    {name:'Lead novo',          count:c_novo, col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100  : 0,           meta:null},
-    {name:'Qualificação',       count:c_qual, col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100 : 0,           meta:null},
-    {name:'Lead qualificado',   count:c_lq,   col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100   : 0,           meta:META_TX_QUALIF},
-    {name:'Reunião agendada',   count:c_ra,   col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100    : 0,            meta:60},
-    {name:'Venda ganha (Closer)', count:c_vg, col:'#16a34a', rate:c_ra>0   ? c_vg/c_ra*100    : 0,            meta:null},
+    // ── Pipeline SDR ─────────────────────────────────────
+    {name:'Pré-atendimento',    count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
+    {name:'Lead novo',          count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
+    {name:'Qualificação',       count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
+    {name:'Lead qualificado',   count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
+    {name:'Reunião agendada',   count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
+    {name:'Reunião realizada',  count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
+    // ── Pipeline Closer ──────────────────────────────────
+    {name:'Proposta enviada',   count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
+    {name:'Sinal verde',        count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
+    {name:'Venda ganha (Closer)', count:c_venda,  col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
   ];
   renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
 
-  // Identifica gargalo do funil (transições entre colunas do pipeline SDR)
+  // Identifica gargalo do funil (transições entre colunas dos pipelines SDR e Closer)
   const transitions = [
-    {name:'Pré-atendimento → Lead novo', from:c_pre,  to:c_novo},
-    {name:'Lead novo → Qualificação',    from:c_novo, to:c_qual},
-    {name:'Qualificação → Lead qualif.', from:c_qual, to:c_lq},
-    {name:'Lead qualif. → Reunião ag.',  from:c_lq,   to:c_ra},
-    {name:'Reunião ag. → Venda ganha',   from:c_ra,   to:c_vg},
+    {name:'Pré-atendimento → Lead novo',   from:c_pre,      to:c_novo},
+    {name:'Lead novo → Qualificação',      from:c_novo,     to:c_qual},
+    {name:'Qualificação → Lead qualif.',   from:c_qual,     to:c_lq},
+    {name:'Lead qualif. → Reunião ag.',    from:c_lq,       to:c_ra},
+    {name:'Reunião ag. → Reunião real.',   from:c_ra,       to:c_rr},
+    {name:'Reunião real. → Proposta',      from:c_rr,       to:c_proposta},
+    {name:'Proposta → Sinal verde',        from:c_proposta, to:c_verde},
+    {name:'Sinal verde → Venda ganha',     from:c_verde,    to:c_venda},
   ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: t.from - t.to}));
   const gargalo = transitions.filter(t => t.from > 0).sort((a,b) => a.txt - b.txt)[0];
   document.getElementById('diag-funnel-insight').innerHTML = `
