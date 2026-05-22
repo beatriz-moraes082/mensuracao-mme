@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-05-22T02:43:54.354829+00:00",
+  "fetched_at": "2026-05-22T08:38:07.514099+00:00",
   "period": {
     "start": "2026-01-01",
     "end": "2026-05-22"
   },
   "status_map": {
-    "98147475": "Etapa de leads de entrada",
+    "98147475": "Incoming leads",
     "99055915": "Abordagem inicial",
     "98618883": "Pré-atendimento",
     "98147479": "Lead novo",
@@ -15,12 +15,12 @@
     "98162603": "Reunião agendada",
     "142": "Venda ganha",
     "143": "Venda perdida",
-    "98168235": "Etapa de leads de entrada",
+    "98168235": "Incoming leads",
     "98168239": "Reunião Realizada",
     "98169055": "Proposta Enviada",
     "98169059": "Follow-up",
     "98334563": "Sinal Verde",
-    "98164999": "Etapa de leads de entrada",
+    "98164999": "Incoming leads",
     "98165003": "Nutrição SDR",
     "99170411": "Nutrição BDR",
     "98524255": "Nutrição Closer"
