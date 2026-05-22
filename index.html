@@ -3090,31 +3090,18 @@ function renderDiagnostico() {
     const closerReat = (KOMMO_RAW.closer || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
     const duqueReat  = (KOMMO_RAW.duque  || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
     const totalReat  = sdrReat.length + closerReat.length + duqueReat.length;
-    const sdrReatQ   = sdrReat.filter(l => l.qualified).length;
-    const sdrNovos   = sdr.filter(l => !hasTag(l));
-    const sdrNovosQ  = sdrNovos.filter(l => l.qualified).length;
-    const txReat  = sdrReat.length > 0 ? sdrReatQ / sdrReat.length * 100 : 0;
-    const txNovos = sdrNovos.length > 0 ? sdrNovosQ / sdrNovos.length * 100 : 0;
+    // Vendas dentre reativados (Closer venda=True)
+    const reatVendas = closerReat.filter(l => l.venda).length;
 
     const kpisEl = document.getElementById('diag-reativados-kpis');
     if (kpisEl) {
-      kpisEl.innerHTML = [
-        {lbl:'Total reativados (período)', val:totalReat,
-         sub: `${sdrReat.length} SDR · ${closerReat.length} Closer · ${duqueReat.length} Duque`,
-         variant:'accent'},
-        {lbl:'Tx. qualif · reativados', val:fmtP(txReat),
-         sub: `${sdrReatQ} qualificados de ${sdrReat.length}`,
-         variant:''},
-        {lbl:'Tx. qualif · leads novos', val:fmtP(txNovos),
-         sub: `${sdrNovosQ} qualificados de ${sdrNovos.length}`,
-         variant:''},
-      ].map(k => `
-        <div class="ds-kpi ${k.variant}">
-          <div class="lbl">${k.lbl}</div>
-          <div class="val">${k.val}</div>
-          <div class="sub">${k.sub}</div>
+      kpisEl.innerHTML = `
+        <div class="ds-kpi accent" style="grid-column: span 3">
+          <div class="lbl">Total reativados (período)</div>
+          <div class="val">${totalReat}</div>
+          <div class="sub">${sdrReat.length} SDR · ${closerReat.length} Closer · ${duqueReat.length} Duque · ${reatVendas} venda${reatVendas===1?'':'s'}</div>
         </div>
-      `).join('');
+      `;
     }
 
     const contentEl = document.getElementById('diag-reativados-content');
@@ -3124,42 +3111,43 @@ function renderDiagnostico() {
           Nenhum lead reativado no período selecionado.
         </div>`;
       } else {
-        // Comparativo reativados vs novos como ranking bars
-        const compareItems = [
-          {lbl:'Reativados', n:sdrReat.length, q:sdrReatQ, tx:txReat, cls: txReat >= txNovos ? 'success' : 'muted'},
-          {lbl:'Leads novos', n:sdrNovos.length, q:sdrNovosQ, tx:txNovos, cls: txNovos >= txReat ? 'success' : 'muted'},
-        ];
-        const maxN = Math.max(...compareItems.map(c => c.n), 1);
-        // Por canal de origem (SDR reativados)
-        const reatByCh = {meta:0, google:0, org:0};
-        sdrReat.forEach(l => {
+        // Distribuição por origem (todos os reativados, somando SDR + Closer + Duque)
+        const allReat = [...sdrReat, ...closerReat, ...duqueReat];
+        const reatByCh = {meta:0, google:0, ibr:0, indica:0, outros:0};
+        allReat.forEach(l => {
           const o = (l.origem||'').toLowerCase();
-          if (o.includes('meta')) reatByCh.meta++;
+          if      (o.includes('meta'))   reatByCh.meta++;
           else if (o.includes('google')) reatByCh.google++;
-          else reatByCh.org++;
+          else if (o.includes('ibr') || o.includes('propriet')) reatByCh.ibr++;
+          else if (o.includes('indica')) reatByCh.indica++;
+          else reatByCh.outros++;
         });
-        const insightTxt = txReat > txNovos
-          ? `Reativados qualificam <b>${(txReat/Math.max(txNovos,0.01)).toFixed(1)}×</b> mais que leads novos · vale a pena escalar a operação de reativação.`
-          : txReat > 0
-            ? `Reativados qualificam <b>${(txReat - txNovos).toFixed(1)}pp ${txReat < txNovos ? 'abaixo' : 'acima'}</b> dos leads novos no período.`
-            : 'Sem qualificações entre reativados — investigar fluxo de retomada.';
+        // Distribuição por pipeline
+        const pipelineItems = [
+          {lbl:'SDR',    n:sdrReat.length},
+          {lbl:'Closer', n:closerReat.length},
+          {lbl:'Duque',  n:duqueReat.length},
+        ];
+        const maxN = Math.max(...pipelineItems.map(c => c.n), 1);
 
         contentEl.innerHTML = `
           <div class="ds-rank">
-            ${compareItems.map(c => `
-              <div class="item ${c.cls}">
+            ${pipelineItems.map(c => `
+              <div class="item ${c.n > 0 ? 'success' : 'muted'}">
                 <div class="row1">
                   <div class="lbl">${c.lbl}</div>
-                  <div class="meta"><b>${c.n}</b> leads · <b>${c.q}</b> qualif · <b>${fmtP(c.tx)}</b> tx. qualif</div>
+                  <div class="meta"><b>${c.n}</b> reativado${c.n===1?'':'s'}</div>
                 </div>
                 <div class="bar"><div class="fill" style="width:${(c.n/maxN*100).toFixed(0)}%"></div></div>
               </div>
             `).join('')}
           </div>
           <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
-            <div style="margin-bottom:8px"><b>Origem dos reativados SDR:</b>
-              Meta ${reatByCh.meta} · Google ${reatByCh.google} · Orgânico/outros ${reatByCh.org}</div>
-            ${insightTxt}
+            <div><b>Origem dos reativados:</b>
+              Meta ${reatByCh.meta} · Google ${reatByCh.google} · IBR ${reatByCh.ibr} · Indicação ${reatByCh.indica} · outros/sem origem ${reatByCh.outros}</div>
+            ${reatVendas > 0
+              ? `<div style="margin-top:8px;color:var(--up)"><b>${reatVendas} venda${reatVendas===1?'':'s'} entre reativados</b> — operação de retomada gerou receita no período.</div>`
+              : `<div style="margin-top:8px;color:var(--muted)">Nenhuma venda registrada entre reativados no período.</div>`}
           </div>`;
       }
     }
