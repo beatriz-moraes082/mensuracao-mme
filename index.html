@@ -1181,7 +1181,7 @@ window.addEventListener('scroll', () => {
 
 /* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
 const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
-let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), '30d': _emptyFunnel() };
+let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), '30d': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
@@ -1247,6 +1247,7 @@ function periodLabel(periodKey, win, isPartial) {
   if (periodKey === '14d')   return `Últimos 14 dias · ${s}–${e}${p}`;
   if (periodKey === 'w3')    return `Esta semana · ${s}–${e}${p}`;
   if (periodKey === 'wlast') return `Semana passada · ${s}–${e}`;
+  if (periodKey === 'mes')   return `Este mês · ${s}–${e}${p}`;
   if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
   return `${s}–${e}`;
 }
@@ -1298,7 +1299,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
 function rebuildAllFunnels(kommo) {
   const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
-  for (const k of ['7d','14d','w3','wlast','30d']) {
+  for (const k of ['7d','14d','w3','wlast','mes','30d']) {
     FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
     PERIOD_LABELS[k] = FUNNEL[k].label;
   }
@@ -1623,6 +1624,16 @@ let PERIOD_LABELS = {
   'mes': 'Este mês',
   '30d': 'Últimos 30 dias',
 };
+// Nomes curtos pros rótulos do <select> (sem range — o range é adicionado dinamicamente).
+// Separado do PERIOD_LABELS porque esse é sobrescrito por periodLabel() com range completo.
+const PERIOD_SHORT_LABELS = {
+  'w3':  'Esta semana',
+  '7d':  'Últimos 7 dias',
+  '14d': 'Últimos 14 dias',
+  'mes': 'Este mês',
+  '30d': 'Últimos 30 dias',
+};
+
 // Popula as <option> do select de período com o range de datas (DD/MM – DD/MM)
 function refreshPeriodSelectLabels() {
   const sel = document.getElementById('diag-period-sel');
@@ -1633,7 +1644,7 @@ function refreshPeriodSelectLabels() {
   for (const opt of sel.options) {
     const win = periodWindow(opt.value, ref);
     const range = _fmtDDMM(win.from) + ' – ' + _fmtDDMM(win.to);
-    opt.textContent = (PERIOD_LABELS[opt.value] || opt.value) + ' (' + range + ')';
+    opt.textContent = (PERIOD_SHORT_LABELS[opt.value] || opt.value) + ' (' + range + ')';
   }
 }
 
