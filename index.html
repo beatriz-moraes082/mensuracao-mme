@@ -3188,7 +3188,7 @@ function renderDiagnostico() {
      variant:''},
     {n:'03', titulo:'Priorizar públicos/criativos preditivos',
      detalhe: topAud.length > 0
-       ? `Top 3 públicos: ${topAud.map(a => a.aud.substring(0,30)+' ('+fmtP(a.txQ)+')').join(' · ')}`
+       ? `Top 3 públicos: ${topAud.map(a => a.aud+' ('+fmtP(a.txQ)+')').join(' · ')}`
        : 'Sem amostra suficiente — necessário mais leads por público.',
      impacto: topAud.length > 0 ? 'Concentra verba em públicos com maior densidade qualif' : '—',
      variant:''},
