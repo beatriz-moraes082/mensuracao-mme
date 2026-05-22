@@ -2944,7 +2944,7 @@ function renderDiagnostico() {
   const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
   const extraPerd = totPerd ? ` · ${totPerd} perdidos` : '';
   document.getElementById('diag-funnel-sub').textContent =
-    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)})${extraPerd}`;
+    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)} do total)${extraPerd}`;
 
   // Follow-up usa cor cinza/marker pra sinalizar que é estado paralelo (não etapa de avanço).
   const COL_FU = '#9ca3af';
