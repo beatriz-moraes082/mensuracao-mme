@@ -2930,7 +2930,9 @@ function renderDiagnostico() {
   const c_rr        = countCloserAtLeast(1);
   const c_proposta  = countCloserAtLeast(2);
   const c_verde     = countCloserAtLeast(3);
-  const c_venda     = closerInP.filter(l => l.venda).length;
+  // c_venda: alinha com stage cumulativo (>= 4) pra garantir monotonicidade
+  // (status=142 OU l.venda=true) — l.venda também já é considerado em maxStageCloser
+  const c_venda     = countCloserAtLeast(4);
 
   // Follow-up (estado paralelo/pausa em cada pipeline) e Venda perdida
   const c_fu_sdr   = sdr.filter(l => l.status === 98147483).length;
@@ -2954,8 +2956,8 @@ function renderDiagnostico() {
     // ── Pipeline SDR ─────────────────────────────────────
     {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
     {name:'Lead novo',                count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
-    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
     {name:'Follow-up (SDR · paralelo)', count:c_fu_sdr, col:COL_FU,    rate:null,                                  meta:null, parallel:true},
+    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
     {name:'Lead qualificado',         count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
     {name:'Reunião agendada',         count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
     {name:'Reunião realizada',        count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
