@@ -1,8 +1,8 @@
 {
-  "fetched_at": "2026-05-23T21:58:06.685925+00:00",
+  "fetched_at": "2026-05-24T10:43:23.836086+00:00",
   "period": {
     "since": "2026-04-01",
-    "until": "2026-05-23"
+    "until": "2026-05-24"
   },
   "adset": {
     "27 - 55 | Engajamento 365D": {
@@ -44,7 +44,7 @@
         "w1": 107.87,
         "w2": 192.11,
         "w3": 140.81,
-        "w4": 23.410000000000004
+        "w4": 30.090000000000003
       }
     },
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": {
@@ -61,7 +61,7 @@
         "w1": 265.36,
         "w2": 246.22,
         "w3": 242.24,
-        "w4": 77.03
+        "w4": 106.94000000000001
       }
     },
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": {
@@ -72,7 +72,7 @@
         "w1": 174.02999999999997,
         "w2": 16.79,
         "w3": 12.49,
-        "w4": 7.039999999999999
+        "w4": 9.46
       }
     },
     "26 - 50 | LookaLike Score A": {
@@ -80,19 +80,19 @@
         "w1": 156.65,
         "w2": 231.22999999999996,
         "w3": 204.81,
-        "w4": 68.47
+        "w4": 80.93
       }
     },
     "30 - 50 | BR | Profissões [+] viajantes frequentes": {
       "2026-05": {
         "w3": 160.01000000000002,
-        "w4": 77.30000000000001
+        "w4": 96.49000000000002
       }
     },
     "30 - 50 | Videoview 50-95% | Topo de Funil": {
       "2026-05": {
         "w3": 171.19,
-        "w4": 60.28
+        "w4": 76.2
       }
     }
   },
@@ -108,7 +108,7 @@
         "w1": 261.17,
         "w2": 39.63,
         "w3": 340.57,
-        "w4": 46.529999999999994
+        "w4": 63.18999999999999
       }
     },
     "VD01": {
@@ -135,7 +135,7 @@
         "w1": 40.779999999999994,
         "w2": 24.59,
         "w3": 4.8999999999999995,
-        "w4": 32.96
+        "w4": 35.32000000000001
       }
     },
     "BN01": {
@@ -160,7 +160,7 @@
         "w1": 77.60000000000001,
         "w2": 149.38,
         "w3": 20.61,
-        "w4": 21.840000000000003
+        "w4": 28.85
       }
     },
     "BN03": {
@@ -171,7 +171,7 @@
         "w1": 197.18,
         "w2": 219.69,
         "w3": 515.93,
-        "w4": 193.52
+        "w4": 246.14
       }
     },
     "VD04": {
@@ -182,13 +182,47 @@
         "w1": 104.63,
         "w2": 0.26,
         "w3": 0.33,
-        "w4": 0.01
+        "w4": 0.02
       }
     },
     "VD04 - Motion (Depoimento)": {
       "2026-05": {
-        "w4": 18.669999999999998
+        "w4": 26.589999999999996
       }
     }
+  },
+  "adset_status": {
+    "26 - 50 | LookaLike Score A": "ACTIVE",
+    "30 - 50 | BR | Profissões [+] viajantes frequentes": "ACTIVE",
+    "30 - 50 | Videoview 50-95% | Topo de Funil": "ACTIVE",
+    "30 - 55 | LokaLike 2% Compradores | IG": "ACTIVE",
+    "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": "ACTIVE",
+    "26 - 50 | LookaLike 2% Clientes IMR (Iphone 13+)": "ACTIVE",
+    "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": "PAUSED",
+    "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive (Iphone 13+)": "PAUSED",
+    "30 - 55 | SP/MG | Resort All-inclusive": "PAUSED",
+    "30 - 55 | LokaLike 4% IG IBR": "PAUSED",
+    "30 - 55 | LokaLike 2% Lista de Clientes": "PAUSED",
+    "30 - 55 | Interesses Geolocalizados [RESORTS]": "PAUSED",
+    "27 - 55 | Engajamento 365D": "PAUSED",
+    "30 - 55 | LokaLike % Site Lead 180D | IG": "PAUSED",
+    "27 - 55 | LokaLike 2% Compradores | IG | [+] Família": "PAUSED",
+    "27 - 55 | SP/MG/MT/PR/RS/DF | IG | [+] Profissões": "CAMPAIGN_PAUSED",
+    "30 - 55 | Engajamento 60D": "CAMPAIGN_PAUSED",
+    "27 - 55 | Engajamento MME (365D) | IG": "PAUSED",
+    "27 - 55 | BR | IG | [+] Férias": "CAMPAIGN_PAUSED"
+  },
+  "creative_status": {
+    "VD04": "ACTIVE",
+    "VD03": "ACTIVE",
+    "VD04 - Motion (Depoimento)": "ACTIVE",
+    "BN01": "PAUSED",
+    "BN02": "ACTIVE",
+    "VD02": "ACTIVE",
+    "BN03": "ACTIVE",
+    "VD01": "ACTIVE",
+    "16/02 - Depoimento": "ADSET_PAUSED",
+    "17/03 - Não é um hotel": "PAUSED",
+    "24/12 - Confiança": "PAUSED"
   }
 }
