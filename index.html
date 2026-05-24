@@ -3075,6 +3075,81 @@ function renderDiagnostico() {
     {n:'Bot incompleto', c:botI.length, q:botIQual, tx:txBotI, cls:'danger'},
   ];
   const ifBot70 = Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100);
+
+  // ── A/B test · pré-atendimento v1 vs v2 ─────────────────
+  // Tags Kommo: 'pré-atendimento | v1' e 'pré-atendimento | v2'
+  const buildPreAtend = (tag) => {
+    const leads = sdr.filter(l => (l.tags||[]).includes(tag));
+    const concl = leads.filter(l => (l.tags||[]).includes('bot-concluído')).length;
+    const qual  = leads.filter(l => l.qualified).length;
+    return {
+      n: leads.length,
+      concl, qual,
+      txConcl: leads.length > 0 ? concl/leads.length*100 : 0,
+      txQual:  leads.length > 0 ? qual/leads.length*100  : 0,
+    };
+  };
+  const v1 = buildPreAtend('pré-atendimento | v1');
+  const v2 = buildPreAtend('pré-atendimento | v2');
+  const totV = v1.n + v2.n;
+
+  let abHtml = '';
+  if (totV > 0) {
+    const variants = [
+      {lbl:'v1', col:'#3b82f6', d:v1},
+      {lbl:'v2', col:'#a855f7', d:v2},
+    ];
+    const winnerConcl = v1.txConcl >= v2.txConcl ? 'v1' : 'v2';
+    const winnerQual  = v1.txQual  >= v2.txQual  ? 'v1' : 'v2';
+    const deltaConcl  = Math.abs(v1.txConcl - v2.txConcl);
+    const deltaQual   = Math.abs(v1.txQual  - v2.txQual);
+    abHtml = `
+      <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+          <div style="font-weight:600;font-size:13.5px;color:var(--text)">🧪 Teste A/B · Pré-atendimento</div>
+          <div style="font-size:11.5px;color:var(--muted)">${totV} leads marcados · v1 vs v2</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          ${variants.map(v => `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:${v.col}08">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <span style="width:10px;height:10px;border-radius:3px;background:${v.col}"></span>
+                <b style="font-size:13px;color:var(--text)">Pré-atendimento ${v.lbl}</b>
+                <span style="font-size:11px;color:var(--muted);margin-left:auto">${v.d.n} leads</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:3px">
+                    <span>Tx. conclusão do bot</span><span><b style="color:${v.col}">${fmtP(v.d.txConcl)}</b> · ${v.d.concl}/${v.d.n}</span>
+                  </div>
+                  <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                    <div style="height:100%;width:${Math.min(v.d.txConcl,100).toFixed(0)}%;background:${v.col}"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:3px">
+                    <span>Tx. qualificação</span><span><b style="color:${v.col}">${fmtP(v.d.txQual)}</b> · ${v.d.qual}/${v.d.n}</span>
+                  </div>
+                  <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+                    <div style="height:100%;width:${Math.min(v.d.txQual,100).toFixed(0)}%;background:${v.col}"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="margin-top:12px;font-size:12.5px;color:var(--text);line-height:1.6">
+          ${v1.n < 30 || v2.n < 30
+            ? `<span style="color:var(--muted)">⚠️ Amostra ainda pequena (v1=${v1.n}, v2=${v2.n}) — leitura preliminar.</span><br>`
+            : ''}
+          <b>Conclusão:</b> ${winnerConcl} lidera com ${fmtP(winnerConcl==='v1'?v1.txConcl:v2.txConcl)}
+          (${deltaConcl < 0.1 ? 'empate técnico' : '+'+deltaConcl.toFixed(1)+'pp vs '+(winnerConcl==='v1'?'v2':'v1')}).
+          <b>Qualificação:</b> ${winnerQual} lidera com ${fmtP(winnerQual==='v1'?v1.txQual:v2.txQual)}
+          (${deltaQual < 0.1 ? 'empate técnico' : '+'+deltaQual.toFixed(1)+'pp vs '+(winnerQual==='v1'?'v2':'v1')}).
+        </div>
+      </div>`;
+  }
+
   document.getElementById('diag-bot-content').innerHTML = `
     <div class="ds-rank">
       ${botItems.map(b => `
@@ -3092,7 +3167,8 @@ function renderDiagnostico() {
       Hoje, ${fmtP(botC.length/total*100)} concluem (${botC.length} de ${total}).
       Se 70% concluíssem, a qualificação total subiria de <b>${qualif}</b> para ~<b>${ifBot70}</b>
       leads (${fmtP(ifBot70/total*100)} tx. qualif).
-    </div>`;
+    </div>
+    ${abHtml}`;
 
   // ── Render: Canais · ranking horizontal ─────────────────
   const maxChQ = Math.max(...chRows.map(r => r.q), 1);
