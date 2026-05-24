@@ -884,6 +884,13 @@
     </div>
   </div>
 
+  <!-- Respostas do Pré-atendimento · distribuição por pergunta -->
+  <div class="ds-sec" style="margin-top:24px">
+    <h3>Respostas do Pré-atendimento</h3>
+    <span class="sub" id="perfil-preatend-sub">Distribuição de respostas no bot · todos os leads SDR</span>
+  </div>
+  <div class="ds-grid-2" id="perfil-preatend-grid"></div>
+
   <!-- Detalhamento das 15 análises em accordion -->
   <details class="ds-accordion" style="margin-top:18px">
     <summary><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
@@ -2261,6 +2268,102 @@ function renderAnalises() {
           `).join('')}
         </div>
       ` : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">Sem amostra suficiente (mínimo 5 leads/criativo).</div>';
+    }
+
+    // ── Respostas do Pré-atendimento · distribuição por pergunta ──
+    const preGrid = document.getElementById('perfil-preatend-grid');
+    if (preGrid) {
+      // Bucket idade em faixas (campo é texto livre · ex "45", "Entre 40 e 55")
+      const idadeBucket = (raw) => {
+        if (!raw) return null;
+        const s = String(raw).trim();
+        const n = parseInt(s, 10);
+        if (Number.isFinite(n) && n >= 10 && n < 120) {
+          if (n < 30) return '18-29';
+          if (n < 41) return '30-40';
+          if (n < 51) return '41-50';
+          if (n < 61) return '51-60';
+          return '61+';
+        }
+        const low = s.toLowerCase();
+        if (low.includes('40') && low.includes('55')) return '41-50';
+        if (low.includes('20') && low.includes('30')) return '18-29';
+        if (low.includes('55') && low.includes('70')) return '51-60';
+        return s.length <= 25 ? s : null;
+      };
+
+      // Normaliza profissão (case-insensitive, agrupa gênero)
+      const profNorm = (raw) => {
+        if (!raw) return null;
+        const s = String(raw).trim();
+        if (!s) return null;
+        const cap = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+        const pairs = {'Empresária':'Empresário(a)','Empresário':'Empresário(a)',
+                       'Professora':'Professor(a)','Professor':'Professor(a)',
+                       'Aposentada':'Aposentado(a)','Aposentado':'Aposentado(a)',
+                       'Autônoma':'Autônomo(a)','Autônomo':'Autônomo(a)'};
+        return pairs[cap] || cap;
+      };
+
+      const fields = [
+        {key:'hospedagem',   lbl:'Como se hospeda',           q:'Onde costuma se hospedar nas viagens?',                color:'#3b82f6'},
+        {key:'viaja_mais',   lbl:'Com quem viaja',            q:'Com quem mais viaja?',                                  color:'#a855f7'},
+        {key:'investimento', lbl:'Investimento por viagem',   q:'Quanto investe por viagem?',                            color:'#e85d28'},
+        {key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Quanto gasta por ano com viagens?',                     color:'#f59e0b'},
+        {key:'desafio',      lbl:'Maior desafio em viajar',   q:'Qual o maior desafio para viajar?',                     color:'#ef4444'},
+        {key:'timeshare',    lbl:'Conhece timeshare?',        q:'Já ouviu falar de timeshare?',                          color:'#10b981'},
+        {key:'viagem_prog',  lbl:'Viagem programada',         q:'Tem viagem programada nos próximos meses?',             color:'#6366f1'},
+        {key:'idade',        lbl:'Faixa etária',              q:'Qual a sua idade?',                                     color:'#0ea5e9', transform:idadeBucket},
+        {key:'profissao',    lbl:'Profissão',                 q:'Qual a sua profissão?',                                 color:'#7c3aed', transform:profNorm},
+      ];
+
+      const totalLeads = sdr.length;
+      const cards = fields.map(f => {
+        const counts = {};
+        let filled = 0;
+        for (const l of sdr) {
+          let v = l[f.key];
+          if (f.transform) v = f.transform(v);
+          if (!v || !String(v).trim()) continue;
+          v = String(v).trim();
+          counts[v] = (counts[v]||0) + 1;
+          filled++;
+        }
+        const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+        const top = sorted.slice(0,5);
+        const others = sorted.slice(5).reduce((s,[,c]) => s+c, 0);
+        const maxC = Math.max(...top.map(([,c]) => c), 1);
+        const pctResp = totalLeads > 0 ? (filled/totalLeads*100) : 0;
+
+        const rows = top.length > 0 ? top.map(([name, c]) => {
+          const pct = filled > 0 ? c/filled*100 : 0;
+          return `
+            <div class="item">
+              <div class="row1">
+                <div class="lbl" style="font-size:12.5px">${name}</div>
+                <div class="meta"><b>${c}</b> · <b>${pct.toFixed(0)}%</b></div>
+              </div>
+              <div class="bar"><div class="fill" style="width:${(c/maxC*100).toFixed(0)}%;background:${f.color}"></div></div>
+            </div>`;
+        }).join('') : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:18px">Sem respostas no período.</div>';
+
+        return `
+          <div class="ds-card">
+            <div class="ds-card-h">
+              <h4>${f.lbl}</h4>
+              <span class="sub">${filled} resp. · ${pctResp.toFixed(0)}% dos ${totalLeads} leads</span>
+            </div>
+            <div class="ds-card-b">
+              <div style="font-size:11.5px;color:var(--muted);font-style:italic;margin-bottom:10px">"${f.q}"</div>
+              <div class="ds-rank">${rows}</div>
+              ${others > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right">+${others} outras respostas</div>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+
+      preGrid.innerHTML = cards;
+      const subEl = document.getElementById('perfil-preatend-sub');
+      if (subEl) subEl.textContent = `Distribuição de respostas no bot · ${totalLeads} leads SDR no período`;
     }
   })();
 
