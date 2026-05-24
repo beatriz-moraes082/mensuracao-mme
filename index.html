@@ -1208,13 +1208,17 @@
     </div>
   </div>
 
-  <!-- Gráficos · respostas do bot -->
-  <div class="ds-sec"><h3>Perfil das vendas</h3><span class="sub">Respostas do bot de pré-atendimento</span></div>
+  <!-- Gráficos · respostas do bot (v1 + v2 + perfil demográfico) -->
+  <div class="ds-sec"><h3>Perfil das vendas</h3><span class="sub">Respostas do bot de pré-atendimento (v1 + v2)</span></div>
   <div class="vd-grid4">
     <div class="vd-card"><h4>Custo/ano em viagens</h4><div class="csub">"Quanto investe em viagens por ano?"</div><div class="vd-chart"><canvas id="vd-ch-custo"></canvas></div></div>
     <div class="vd-card"><h4>Conhece Timeshare</h4><div class="csub">"Você conhece o modelo Timeshare?"</div><div class="vd-chart"><canvas id="vd-ch-timeshare"></canvas></div></div>
     <div class="vd-card"><h4>Maior desafio</h4><div class="csub">"Qual é seu maior desafio em viajar?"</div><div class="vd-chart"><canvas id="vd-ch-desafio"></canvas></div></div>
     <div class="vd-card"><h4>Viagem programada?</h4><div class="csub">"Tem viagem programada nos próximos meses?"</div><div class="vd-chart"><canvas id="vd-ch-viagem"></canvas></div></div>
+    <div class="vd-card"><h4>Como se hospeda</h4><div class="csub">"Onde se hospeda nas viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospedagem"></canvas></div></div>
+    <div class="vd-card"><h4>Com quem viaja</h4><div class="csub">"Você costuma viajar mais...?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-viajamais"></canvas></div></div>
+    <div class="vd-card"><h4>Faixa etária</h4><div class="csub">"Qual sua idade?"</div><div class="vd-chart"><canvas id="vd-ch-idade"></canvas></div></div>
+    <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
   </div>
 
   <!-- Tabela -->
@@ -4651,6 +4655,10 @@ function vdBuildVendas(){
       profissao: pick('profissao'),
       timeshare: pick('timeshare'),
       viagem_prog: pick('viagem_prog'),
+      hospedagem: pick('hospedagem'),
+      viaja_mais: pick('viaja_mais'),
+      investimento: pick('investimento'),
+      interesse_ai: pick('interesse_ai'),
       produto: cl.produto || '',
       respondeu_bot: respondeu,
     };
@@ -4708,11 +4716,54 @@ function vdMakeChart(canvasId, data){
     }
   });
 }
+// Normalizadores para campos freetext / numéricos
+function vdIdadeBucket(raw){
+  if (!raw) return '';
+  const s = String(raw).trim();
+  const n = parseInt(s, 10);
+  if (Number.isFinite(n) && n >= 10 && n < 120) {
+    if (n < 30) return '18-29';
+    if (n < 41) return '30-40';
+    if (n < 51) return '41-50';
+    if (n < 61) return '51-60';
+    return '61+';
+  }
+  const low = s.toLowerCase();
+  if (low.includes('40') && low.includes('55')) return '41-50';
+  if (low.includes('20') && low.includes('30')) return '18-29';
+  if (low.includes('55') && low.includes('70')) return '51-60';
+  return s.length <= 25 ? s : '';
+}
+function vdProfNorm(raw){
+  if (!raw) return '';
+  const s = String(raw).trim();
+  if (!s) return '';
+  const cap = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  const pairs = {'Empresária':'Empresário(a)','Empresário':'Empresário(a)',
+                 'Professora':'Professor(a)','Professor':'Professor(a)',
+                 'Aposentada':'Aposentado(a)','Aposentado':'Aposentado(a)',
+                 'Autônoma':'Autônomo(a)','Autônomo':'Autônomo(a)'};
+  return pairs[cap] || cap;
+}
+function vdCountByTransform(arr, field, transform){
+  const c = {};
+  for (const v of arr){
+    const raw = v[field] || '';
+    const x = (transform ? transform(raw) : String(raw).trim()) || 'Não respondeu';
+    c[x] = (c[x]||0) + 1;
+  }
+  return Object.entries(c).sort((a,b) => b[1]-a[1]);
+}
+
 function vdRenderCharts(vendas){
-  vdMakeChart('vd-ch-custo',     vdCountBy(vendas, 'custo_ano'));
-  vdMakeChart('vd-ch-timeshare', vdCountBy(vendas, 'timeshare'));
-  vdMakeChart('vd-ch-desafio',   vdCountBy(vendas, 'desafio'));
-  vdMakeChart('vd-ch-viagem',    vdCountBy(vendas, 'viagem_prog'));
+  vdMakeChart('vd-ch-custo',      vdCountBy(vendas, 'custo_ano'));
+  vdMakeChart('vd-ch-timeshare',  vdCountBy(vendas, 'timeshare'));
+  vdMakeChart('vd-ch-desafio',    vdCountBy(vendas, 'desafio'));
+  vdMakeChart('vd-ch-viagem',     vdCountBy(vendas, 'viagem_prog'));
+  vdMakeChart('vd-ch-hospedagem', vdCountBy(vendas, 'hospedagem'));
+  vdMakeChart('vd-ch-viajamais',  vdCountBy(vendas, 'viaja_mais'));
+  vdMakeChart('vd-ch-idade',      vdCountByTransform(vendas, 'idade', vdIdadeBucket));
+  vdMakeChart('vd-ch-profissao',  vdCountByTransform(vendas, 'profissao', vdProfNorm));
 }
 
 function vdRenderTable(vendas){
