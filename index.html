@@ -4825,18 +4825,34 @@ function renderVendas(){
 /* ────────────────────────────────────────────────────────────────
    DISPAROS & NUTRIÇÃO — fluxos automatizados do Kommo
 ─────────────────────────────────────────────────────────────────── */
+// Nomes das etapas obtidos via API do Kommo (/api/v4/bots).
+// Para fluxos onde o nº de etapas do campo bate com o nº de bots, usa o nome
+// real do bot. Onde não bate (Follow-up tem 6 bots mas 3 valores), usa nomes
+// genéricos com nota explicativa.
 const DISP_FLOWS = [
-  {key:'disp_followup',  lbl:'Follow-up',                  desc:'SDR · lead inativo',                            steps:['1','2','3'],
+  {key:'disp_followup',  lbl:'Follow-up SDR',              desc:'Lead inativo · 3 ondas de disparo',
+   steps:['1','2','3'],
+   stepNames:['1ª onda (Dias 1-2)','2ª onda (Dias 4-6)','3ª onda (Dias 11-16)'],
    colors:['#3b82f6','#6366f1','#a855f7']},
-  {key:'disp_reagend',   lbl:'Reagendamento',              desc:'Lead qualificado que não confirmou reunião',    steps:['1','2','3'],
+  {key:'disp_reagend',   lbl:'Reagendamento',              desc:'Lead qualificado que não confirmou reunião',
+   steps:['1','2','3'],
+   stepNames:['Mensagem 1','Mensagem 2','Mensagem 3'],
    colors:['#e85d28','#f59e0b','#fbbf24']},
-  {key:'disp_proposta',  lbl:'Proposta Enviada',           desc:'Closer · pós-proposta',                          steps:['1','2','3'],
+  {key:'disp_proposta',  lbl:'Proposta Enviada',           desc:'Closer · nutrição pós-proposta',
+   steps:['1','2','3'],
+   stepNames:['Proposta 1','Proposta 2','Proposta 3'],
    colors:['#10b981','#14b8a6','#06b6d4']},
-  {key:'disp_nutri_lq',  lbl:'Nutrição · Lead qualif. + bot incompleto', desc:'8 mensagens de nutrição',          steps:['1','2','3','4','5','6','7','8'],
+  {key:'disp_nutri_lq',  lbl:'Nutrição · Lead qualif. + bot incompleto', desc:'8 disparos de nutrição',
+   steps:['1','2','3','4','5','6','7','8'],
+   stepNames:['Disparo D01','Disparo D02','Disparo D03','Disparo D04','Disparo D05','Disparo D06','Disparo D07','Disparo D08'],
    colors:['#8b5cf6','#a855f7','#c084fc','#d8b4fe','#3b82f6','#60a5fa','#93c5fd','#bfdbfe']},
-  {key:'disp_nutri_clo', lbl:'Nutrição Closer',             desc:'5 mensagens de nutrição (Closer)',              steps:['1','2','3','4','5'],
+  {key:'disp_nutri_clo', lbl:'Nutrição Closer',             desc:'5 dias de nutrição (Closer)',
+   steps:['1','2','3','4','5'],
+   stepNames:['D1 · Closer','D2 · Closer','D3 · Closer','D4 · Closer','D5 · Closer'],
    colors:['#dc2626','#ef4444','#f87171','#fca5a5','#fecaca']},
-  {key:'disp_fluxo_duq', lbl:'Fluxo Duque',                 desc:'Outbound Duque (multiselect)',                  steps:['1','2','3','4'], multi:true,
+  {key:'disp_fluxo_duq', lbl:'Fluxo Duque',                 desc:'Outbound Duque · 4 dias',
+   steps:['1','2','3','4'], multi:true,
+   stepNames:['D1 · Fluxo Duque','D2 · Fluxo Duque','D3 · Fluxo Duque','D4 · Fluxo Duque'],
    colors:['#0891b2','#06b6d4','#22d3ee','#67e8f7']},
 ];
 
@@ -4908,10 +4924,10 @@ function _dispFlowInsight(flow, counts) {
     if (completed/entered >= 0.7) return {kind:'ok', txt:`Sem gargalo significativo · ${(completed/entered*100).toFixed(0)}% completam o fluxo.`};
     return null;
   }
-  const before = flow.steps[maxDropIdx-1];
-  const after  = flow.steps[maxDropIdx];
+  const before = (flow.stepNames && flow.stepNames[maxDropIdx-1]) || `etapa ${flow.steps[maxDropIdx-1]}`;
+  const after  = (flow.stepNames && flow.stepNames[maxDropIdx])   || `etapa ${flow.steps[maxDropIdx]}`;
   const lost   = counts[maxDropIdx-1] - counts[maxDropIdx];
-  return {kind:'warn', txt:`Maior drop: <b>etapa ${before} → ${after}</b> perde ${maxDropPp.toFixed(0)}% (${lost} leads).`};
+  return {kind:'warn', txt:`Maior drop: <b>${before} → ${after}</b> perde ${maxDropPp.toFixed(0)}% (${lost} leads).`};
 }
 
 function renderDisparos() {
@@ -4982,9 +4998,10 @@ function renderDisparos() {
         ? `<span style="color:var(--muted);font-size:10px;margin-left:6px">−${counts[i-1]-c}</span>`
         : '';
       const pctOfEntered = entered > 0 ? (c/entered*100).toFixed(0) : 0;
+      const stepLabel = (flow.stepNames && flow.stepNames[i]) || `Etapa ${s}`;
       return `
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div style="width:62px;font-size:11px;color:var(--muted);font-weight:600">Etapa ${s}</div>
+          <div style="width:140px;font-size:11px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${stepLabel}">${stepLabel}</div>
           <div style="flex:1;height:16px;background:rgba(107,112,105,.08);border-radius:4px;overflow:hidden;position:relative">
             <div style="width:${w}%;height:100%;background:${col};border-radius:4px;transition:width .3s"></div>
           </div>
