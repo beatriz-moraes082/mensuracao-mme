@@ -859,10 +859,13 @@
       <h2>O que diferencia um lead que qualifica</h2>
       <div class="hl-sub">Score, públicos e criativos que mais qualificam — e onde a verba está sendo desperdiçada com leads fora do perfil.</div>
       <div class="hl-pills">
-        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+        <select class="period-select" id="analises-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
     </div>
@@ -1652,8 +1655,8 @@ function setGlobalPeriod(key, btn) {
   document.querySelectorAll('.pbtn[data-period]').forEach(b => {
     b.classList.toggle('active', b.dataset.period === key);
   });
-  // Sincroniza os selects de período (Diag + Evolução semanal) quando opção válida
-  for (const id of ['diag-period-sel','evol-period-sel']) {
+  // Sincroniza os selects de período (Diag + Evolução semanal + Perfil) quando opção válida
+  for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel']) {
     const sel = document.getElementById(id);
     if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
   }
