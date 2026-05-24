@@ -690,6 +690,7 @@
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
+  <button onclick="switchTab('disparos',this)">Disparos &amp; Nutrição</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
 </nav>
 
@@ -1067,6 +1068,54 @@
 
 
 <!-- ================================================================
+     TAB · DISPAROS & NUTRIÇÃO (fluxos automatizados do Kommo)
+================================================================ -->
+<div id="tab-disparos" class="tab-pane">
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Disparos &amp; Nutrição</div>
+      <h2>Fluxos de mensagens automatizadas</h2>
+      <div class="hl-sub">Acompanhe quantos leads passaram por cada etapa dos fluxos do Kommo: Follow-up, Reagendamento, Proposta Enviada, Nutrição, Pré-atendimento e Fluxo Duque.</div>
+      <div class="hl-pills">
+        <select class="period-select" id="disp-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
+      </div>
+    </div>
+    <div></div>
+  </div>
+
+  <!-- 4 KPIs hero -->
+  <div class="ds-grid-4" id="disp-hero-kpis"></div>
+
+  <!-- Cards de cada fluxo -->
+  <div class="ds-sec">
+    <h3>Performance por fluxo</h3>
+    <span class="sub">Quantos leads em cada etapa · taxa de conclusão</span>
+  </div>
+  <div class="ds-grid-2" id="disp-flows-grid"></div>
+
+  <!-- Conversão (qualif/venda) por fluxo -->
+  <div class="ds-sec" style="margin-top:24px">
+    <h3>Impacto dos disparos</h3>
+    <span class="sub">Leads que passaram pelo fluxo vs. base completa</span>
+  </div>
+  <div class="ds-card">
+    <div id="disp-impact-content"></div>
+  </div>
+
+</div>
+</div><!-- /tab-disparos -->
+
+
+<!-- ================================================================
      TAB · VENDAS (Closer venda=True, respostas do bot)
 ================================================================ -->
 <style>
@@ -1229,6 +1278,7 @@ function switchTab(id, btn) {
   if (id === 'funis') renderFunis();
   if (id === 'outbound') renderOutbound();
   if (id === 'vendas') renderVendas();
+  if (id === 'disparos') renderDisparos();
 }
 
 /* ── Scroll-to-top visibility ── */
@@ -1696,7 +1746,8 @@ function setGlobalPeriod(key, btn) {
   });
   // Sincroniza todos os selects de período entre abas quando opção válida
   for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
-                    'funis-period-sel','outbound-period-sel','vendas-period-sel']) {
+                    'funis-period-sel','outbound-period-sel','vendas-period-sel',
+                    'disp-period-sel']) {
     const sel = document.getElementById(id);
     if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
   }
@@ -1718,6 +1769,7 @@ function setGlobalPeriod(key, btn) {
   renderAnalises();
   if (typeof renderDiagnostico === 'function') renderDiagnostico();
   if (typeof renderVendas === 'function') renderVendas();
+  if (typeof renderDisparos === 'function') renderDisparos();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
 
@@ -4730,6 +4782,203 @@ function renderVendas(){
   vdRenderKPIs(v);
   vdRenderCharts(v);
   vdRenderTable(v);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DISPAROS & NUTRIÇÃO — fluxos automatizados do Kommo
+─────────────────────────────────────────────────────────────────── */
+const DISP_FLOWS = [
+  {key:'disp_followup',  lbl:'Follow-up',                  desc:'SDR · lead inativo',                            steps:['1','2','3'],
+   colors:['#3b82f6','#6366f1','#a855f7']},
+  {key:'disp_reagend',   lbl:'Reagendamento',              desc:'Lead qualificado que não confirmou reunião',    steps:['1','2','3'],
+   colors:['#e85d28','#f59e0b','#fbbf24']},
+  {key:'disp_proposta',  lbl:'Proposta Enviada',           desc:'Closer · pós-proposta',                          steps:['1','2','3'],
+   colors:['#10b981','#14b8a6','#06b6d4']},
+  {key:'disp_nutri_lq',  lbl:'Nutrição · Lead qualif. + bot incompleto', desc:'8 mensagens de nutrição',          steps:['1','2','3','4','5','6','7','8'],
+   colors:['#8b5cf6','#a855f7','#c084fc','#d8b4fe','#3b82f6','#60a5fa','#93c5fd','#bfdbfe']},
+  {key:'disp_nutri_clo', lbl:'Nutrição Closer',             desc:'5 mensagens de nutrição (Closer)',              steps:['1','2','3','4','5'],
+   colors:['#dc2626','#ef4444','#f87171','#fca5a5','#fecaca']},
+  {key:'disp_fluxo_duq', lbl:'Fluxo Duque',                 desc:'Outbound Duque (multiselect)',                  steps:['1','2','3','4'], multi:true,
+   colors:['#0891b2','#06b6d4','#22d3ee','#67e8f7']},
+];
+
+function _dispLeadsInPeriod() {
+  // Concatena SDR + Closer dentro da janela do período atual (created_at)
+  if (!KOMMO_RAW) return [];
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const fromTs = Math.floor(win.from.getTime()/1000);
+  const toTs   = Math.floor(win.to.getTime()/1000);
+  const all = [...(KOMMO_RAW.sdr||[]), ...(KOMMO_RAW.closer||[])];
+  return all.filter(l => {
+    const t = l.created_at || 0;
+    return t >= fromTs && t <= toTs;
+  });
+}
+
+function _dispCountSteps(leads, flow) {
+  // Para select (1/2/3...): conta cumulativamente — quem está em step N
+  // PASSOU pelos anteriores (1..N).
+  // Para multiselect: cada lead pode estar em múltiplas etapas, conta direto.
+  const counts = flow.steps.map(() => 0);
+  for (const l of leads) {
+    const raw = l[flow.key];
+    if (!raw) continue;
+    if (flow.multi) {
+      const vals = String(raw).split(',').map(s => s.trim()).filter(Boolean);
+      flow.steps.forEach((s, i) => { if (vals.includes(s)) counts[i]++; });
+    } else {
+      const idx = flow.steps.indexOf(String(raw).trim());
+      if (idx < 0) continue;
+      // cumulativo: marca de 0 até idx
+      for (let i = 0; i <= idx; i++) counts[i]++;
+    }
+  }
+  return counts;
+}
+
+function renderDisparos() {
+  if (!KOMMO_RAW) return;
+  const leads = _dispLeadsInPeriod();
+  const total = leads.length;
+
+  // ── Hero KPIs ─────────────────────────────────────────
+  const fmtN = n => (n||0).toLocaleString('pt-BR');
+  const fmtP = n => (n||0).toFixed(1)+'%';
+  // Leads em algum fluxo (qualquer disparo preenchido)
+  const inAny = leads.filter(l => DISP_FLOWS.some(f => (l[f.key]||'').toString().trim())).length;
+  // Distribuição por fluxo principal: pega o fluxo mais comum
+  const flowCounts = DISP_FLOWS.map(f => ({
+    f, n: leads.filter(l => (l[f.key]||'').toString().trim()).length
+  })).sort((a,b) => b.n - a.n);
+  const topFlow = flowCounts[0];
+  // Taxa de qualif dos que receberam algum disparo
+  const dispatched = leads.filter(l => DISP_FLOWS.some(f => (l[f.key]||'').toString().trim()));
+  const qualifDisp = dispatched.filter(l => l.qualified).length;
+  const txQualDisp = dispatched.length > 0 ? qualifDisp/dispatched.length*100 : 0;
+  // Taxa de venda dos disparados
+  const venDisp = dispatched.filter(l => l.venda).length;
+  const txVenDisp = dispatched.length > 0 ? venDisp/dispatched.length*100 : 0;
+
+  const kpis = [
+    {lbl:'Leads em algum fluxo',  val:fmtN(inAny),         sub:total>0?fmtP(inAny/total*100)+' de '+fmtN(total)+' leads':'—', variant:'accent'},
+    {lbl:'Fluxo com mais leads',   val:topFlow.n>0?topFlow.f.lbl.split(' · ')[0]:'—', sub:topFlow.n>0?fmtN(topFlow.n)+' leads':'sem dados', variant:''},
+    {lbl:'Tx. qualificação · disparados', val:fmtP(txQualDisp), sub:fmtN(qualifDisp)+'/'+fmtN(dispatched.length)+' qualificaram', variant:''},
+    {lbl:'Vendas · disparados',    val:fmtN(venDisp),       sub:dispatched.length>0?fmtP(txVenDisp)+' de conversão':'—', variant:''},
+  ];
+  document.getElementById('disp-hero-kpis').innerHTML = kpis.map(k => `
+    <div class="ds-kpi ${k.variant}">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val" style="${k.val.length > 14 ? 'font-size:16px;line-height:1.25':''}">${k.val}</div>
+      <div class="sub">${k.sub}</div>
+    </div>`).join('');
+
+  // ── Card por fluxo · funil de etapas ──────────────────
+  const cards = DISP_FLOWS.map(flow => {
+    const counts = _dispCountSteps(leads, flow);
+    const maxC = Math.max(...counts, 1);
+    const entered = counts[0];
+    const completed = counts[counts.length-1];
+    const completion = entered > 0 ? completed/entered*100 : 0;
+
+    if (entered === 0) {
+      return `
+        <div class="ds-card">
+          <div class="ds-card-h">
+            <h4>${flow.lbl}</h4>
+            <span class="sub">${flow.desc}</span>
+          </div>
+          <div class="ds-card-b" style="padding:32px;text-align:center;color:var(--muted);font-size:12px">
+            Nenhum lead neste fluxo no período.
+          </div>
+        </div>`;
+    }
+
+    const rows = flow.steps.map((s, i) => {
+      const c = counts[i];
+      const w = (c/maxC*100).toFixed(0);
+      const col = flow.colors[i % flow.colors.length];
+      const lossNote = i > 0 && counts[i-1] > c
+        ? `<span style="color:var(--muted);font-size:10px;margin-left:6px">−${counts[i-1]-c}</span>`
+        : '';
+      const pctOfEntered = entered > 0 ? (c/entered*100).toFixed(0) : 0;
+      return `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="width:62px;font-size:11px;color:var(--muted);font-weight:600">Etapa ${s}</div>
+          <div style="flex:1;height:16px;background:rgba(107,112,105,.08);border-radius:4px;overflow:hidden;position:relative">
+            <div style="width:${w}%;height:100%;background:${col};border-radius:4px;transition:width .3s"></div>
+          </div>
+          <div style="width:96px;text-align:right;font-size:11.5px"><b style="color:var(--text)">${c}</b> <span style="color:var(--muted)">· ${pctOfEntered}%</span>${lossNote}</div>
+        </div>`;
+    }).join('');
+
+    const compClass = completion >= 50 ? 'tc-g' : completion >= 25 ? 'tc-o' : 'tc-r';
+    return `
+      <div class="ds-card">
+        <div class="ds-card-h">
+          <h4>${flow.lbl}</h4>
+          <span class="sub">${flow.desc}</span>
+        </div>
+        <div class="ds-card-b">
+          ${rows}
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)">
+            <span><b style="color:var(--text)">${entered}</b> entraram</span>
+            <span><b class="${compClass}">${completion.toFixed(0)}%</b> chegaram na última etapa</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('disp-flows-grid').innerHTML = cards;
+
+  // ── Impacto: qualif e venda dos que passaram por cada fluxo ──
+  const impactRows = DISP_FLOWS.map(flow => {
+    const inFlow = leads.filter(l => (l[flow.key]||'').toString().trim());
+    const n = inFlow.length;
+    if (n === 0) return null;
+    const q = inFlow.filter(l => l.qualified).length;
+    const v = inFlow.filter(l => l.venda).length;
+    return {flow, n, q, v, txQ: q/n*100, txV: v/n*100};
+  }).filter(Boolean).sort((a,b) => b.n - a.n);
+
+  // Linha base (todos os leads do período)
+  const baseTxQ = total > 0 ? leads.filter(l => l.qualified).length/total*100 : 0;
+  const baseTxV = total > 0 ? leads.filter(l => l.venda).length/total*100 : 0;
+
+  if (impactRows.length === 0) {
+    document.getElementById('disp-impact-content').innerHTML = `
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem leads em fluxos no período.</div>`;
+  } else {
+    const maxN = Math.max(...impactRows.map(r => r.n), 1);
+    document.getElementById('disp-impact-content').innerHTML = `
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px">
+        Base do período: <b style="color:var(--text)">${total}</b> leads ·
+        Tx. qualificação base: <b style="color:var(--text)">${fmtP(baseTxQ)}</b> ·
+        Tx. venda base: <b style="color:var(--text)">${fmtP(baseTxV)}</b>
+      </div>
+      <div class="ds-rank">
+        ${impactRows.map(r => {
+          const w = (r.n/maxN*100).toFixed(0);
+          const qDelta = r.txQ - baseTxQ;
+          const vDelta = r.txV - baseTxV;
+          const qSign = qDelta >= 0 ? '+' : '';
+          const vSign = vDelta >= 0 ? '+' : '';
+          const qCls = qDelta > 5 ? 'tc-g' : qDelta < -5 ? 'tc-r' : '';
+          const vCls = vDelta > 1 ? 'tc-g' : vDelta < -1 ? 'tc-r' : '';
+          return `
+            <div class="item">
+              <div class="row1">
+                <div class="lbl">${r.flow.lbl}</div>
+                <div class="meta">
+                  <b>${r.n}</b> leads ·
+                  <span class="${qCls}">tx. qualif <b>${fmtP(r.txQ)}</b> (${qSign}${qDelta.toFixed(1)}pp)</span> ·
+                  <span class="${vCls}">tx. venda <b>${fmtP(r.txV)}</b> (${vSign}${vDelta.toFixed(1)}pp)</span>
+                </div>
+              </div>
+              <div class="bar"><div class="fill" style="width:${w}%"></div></div>
+            </div>`;
+        }).join('')}
+      </div>`;
+  }
 }
 
 // Hook search e filtro de canal (uma vez)

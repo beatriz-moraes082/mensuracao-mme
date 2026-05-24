@@ -55,6 +55,16 @@ CF_PROFISSAO   = 2824622  # Profissão
 CF_PRODUTO     = 4207098  # Produto comprado (Closer)
 CF_OBJECAO     = 4156446  # Principal objeção (Closer)
 
+# Disparos / fluxos de nutrição (aba "Disparos" no Kommo)
+CF_DISP_FOLLOWUP   = 4327019  # Follow-up (1/2/3)
+CF_DISP_REAGEND    = 4327021  # Reagendamento | Etapa: Lead qualificado
+CF_DISP_PROPOSTA   = 4327023  # Proposta Enviada (1/2/3)
+CF_DISP_NUTRI_LQ   = 4327025  # Nutrição | Lead qualificado + bot incompleto (1-8)
+CF_DISP_NUTRI_CLO  = 4327029  # Nutrição Closer (1-5)
+CF_DISP_PREATEND   = 4329027  # Pré-atendimento (Versão 1/2)
+CF_DISP_FLUXO_DUQ  = 4329613  # Fluxo Duque (1-4)
+CF_DISP_FU_CLO     = 4321625  # Follow-up Proposta Closer (Sim/Não)
+
 # Status stages — real IDs from ipiocamarresort.kommo.com
 # SDR pipeline (12716679) — status 142 aqui = "Reunião realizada" (sucesso SDR, NÃO é venda)
 SDR_QUALIF  = 98147491   # Lead qualificado
@@ -164,6 +174,13 @@ def get_lead_cf(lead, field_id):
             return str(vals[0]["value"]) if vals else ""
     return ""
 
+def get_lead_cf_multi(lead, field_id):
+    """Para multiselect: retorna lista de valores (etapas concluídas)."""
+    for cf in (lead.get("custom_fields_values") or []):
+        if cf["field_id"] == field_id:
+            return [str(v.get("value", "")) for v in (cf.get("values") or [])]
+    return []
+
 def get_lead_tags(lead):
     """Retorna lista de nomes de tags (lowercase, sem espaço extra)."""
     tags = lead.get("_embedded", {}).get("tags", []) or []
@@ -250,6 +267,15 @@ def process_lead(lead, contacts_map):
         # Closer (custom fields no lead)
         "produto":      get_lead_cf(lead, CF_PRODUTO),
         "objecao":      get_lead_cf(lead, CF_OBJECAO),
+        # Disparos / fluxos de nutrição (etapa atual no fluxo)
+        "disp_followup":  get_lead_cf(lead, CF_DISP_FOLLOWUP),
+        "disp_reagend":   get_lead_cf(lead, CF_DISP_REAGEND),
+        "disp_proposta":  get_lead_cf(lead, CF_DISP_PROPOSTA),
+        "disp_nutri_lq":  get_lead_cf(lead, CF_DISP_NUTRI_LQ),
+        "disp_nutri_clo": get_lead_cf(lead, CF_DISP_NUTRI_CLO),
+        "disp_preatend":  ",".join(get_lead_cf_multi(lead, CF_DISP_PREATEND)),
+        "disp_fluxo_duq": ",".join(get_lead_cf_multi(lead, CF_DISP_FLUXO_DUQ)),
+        "disp_fu_closer": get_lead_cf(lead, CF_DISP_FU_CLO),
         "qualified":         qualified,
         "reuniao_agendada":  reuniao_agendada,
         "reuniao_realizada": reuniao_realizada,
