@@ -1883,7 +1883,7 @@ function renderAnalises() {
         });
       });
     });
-    if (!latest) return 'UNKNOWN';
+    if (!latest) return null;
     const [m, w] = latest.split('|');
     const target = _normForMatch(name);
     for (const [key, obj] of Object.entries(spendMap)) {
@@ -1892,7 +1892,9 @@ function renderAnalises() {
         return s > 0 ? 'ACTIVE' : 'PAUSED';
       }
     }
-    return 'PAUSED';
+    // Nome não existe no spend map (ex: tráfego orgânico, criativo antigo
+    // sem investimento no período). Não dá pra afirmar ATIVO/PAUSADO.
+    return 'NO_DATA';
   }
   function audStatus(name) {
     if (!META_SPEND) return null;
@@ -1909,11 +1911,14 @@ function renderAnalises() {
     if (status === 'ACTIVE') {
       return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(34,197,94,.15);color:#16a34a;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">● ATIVO</span>`;
     }
+    // Sem dado na Meta (orgânico, criativo antigo, etc) — exibe N/D em tom mais neutro
+    if (status === 'NO_DATA' || status === 'UNKNOWN') {
+      return ` <span title="Sem dado de status na Meta" style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(203,213,225,.25);color:#94a3b8;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">– N/D</span>`;
+    }
     const lbl = status === 'PAUSED' ? 'PAUSADO' :
                 status === 'ARCHIVED' ? 'ARQUIVADO' :
-                status === 'DELETED' ? 'EXCLUÍDO' :
-                status === 'UNKNOWN' ? '—' : status;
-    return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(148,163,184,.18);color:#64748b;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">○ ${lbl}</span>`;
+                status === 'DELETED' ? 'EXCLUÍDO' : status;
+    return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(148,163,184,.2);color:#64748b;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">○ ${lbl}</span>`;
   }
 
   // Analysis 3: CPL qualificado por público
@@ -2370,15 +2375,17 @@ function renderAnalises() {
       };
 
       const fields = [
-        {key:'hospedagem',   lbl:'Como se hospeda',           q:'Onde costuma se hospedar nas viagens?',                color:'#3b82f6'},
-        {key:'viaja_mais',   lbl:'Com quem viaja',            q:'Com quem mais viaja?',                                  color:'#a855f7'},
-        {key:'investimento', lbl:'Investimento por viagem',   q:'Quanto investe por viagem?',                            color:'#e85d28'},
-        {key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Quanto gasta por ano com viagens?',                     color:'#f59e0b'},
-        {key:'desafio',      lbl:'Maior desafio em viajar',   q:'Qual o maior desafio para viajar?',                     color:'#ef4444'},
-        {key:'timeshare',    lbl:'Conhece timeshare?',        q:'Já ouviu falar de timeshare?',                          color:'#10b981'},
-        {key:'viagem_prog',  lbl:'Viagem programada',         q:'Tem viagem programada nos próximos meses?',             color:'#6366f1'},
-        {key:'idade',        lbl:'Faixa etária',              q:'Qual a sua idade?',                                     color:'#0ea5e9', transform:idadeBucket},
-        {key:'profissao',    lbl:'Profissão',                 q:'Qual a sua profissão?',                                 color:'#7c3aed', transform:profNorm},
+        {key:'hospedagem',   lbl:'Como se hospeda',           q:'Como sua família normalmente se hospeda quando viaja?',                  color:'#3b82f6'},
+        {key:'viaja_mais',   lbl:'Com quem viaja',            q:'Você costuma viajar mais com quem?',                                     color:'#a855f7'},
+        {key:'investimento', lbl:'Investimento por viagem',   q:'Quanto investe por viagem? (bot v1)',                                    color:'#e85d28'},
+        {key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?',               color:'#f59e0b'},
+        {key:'interesse_ai', lbl:'Interesse em Resort All-Inclusive', q:'Você teria interesse em se hospedar em Resorts All Inclusive?',  color:'#14b8a6'},
+        {key:'desafio',      lbl:'Maior desafio em viajar',   q:'Qual o maior desafio para viajar? (bot v1)',                             color:'#ef4444'},
+        {key:'timeshare',    lbl:'Conhece timeshare?',        q:'Já ouviu falar de timeshare? (bot v1)',                                  color:'#10b981'},
+        {key:'viagem_prog',  lbl:'Viagem programada',         q:'Tem viagem programada nos próximos meses? (bot v1)',                     color:'#6366f1'},
+        {key:'idade',        lbl:'Faixa etária',              q:'Qual sua idade?',                                                        color:'#0ea5e9', transform:idadeBucket},
+        {key:'profissao',    lbl:'Profissão',                 q:'Qual sua profissão? (bot v1)',                                           color:'#7c3aed', transform:profNorm},
+        {key:'cep',          lbl:'CEP (origem geográfica)',   q:'Qual o seu CEP?',                                                        color:'#0891b2', transform:(r)=>{ if(!r) return null; const s=String(r).replace(/\D/g,''); return s.length>=5 ? s.slice(0,2)+'.xxx-xxx' : null; }},
       ];
 
       const totalLeads = sdr.length;
