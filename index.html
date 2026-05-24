@@ -1119,21 +1119,17 @@
 <div id="tab-vendas" class="tab-pane">
 <div class="main">
 
-  <!-- Hero -->
-  <div class="vd-hero">
+  <!-- Hero · padrão das demais abas -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
     <div>
+      <div class="hl-eyebrow">Vendas</div>
       <h2>Quem comprou da gente?</h2>
-      <div class="sub">
-        Todas as vendas confirmadas no Kommo (Closer com <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">venda=True</code>),
-        com as respostas do bot de pré-atendimento quando disponíveis. <b>A origem mostrada é
-        exatamente o que está declarado no Kommo</b> — sem atribuição manual.
-        <br><br>
-        <span style="font-size:11.5px;color:var(--muted)">
-          Campos do bot antigo (vigente até ~30/04/2026): idade, custo/ano, maior desafio, profissão, Timeshare, viagem programada.
-          Match SDR↔Closer via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
-        </span>
+      <div class="hl-sub">
+        Vendas confirmadas no Kommo (Closer com <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">venda=True</code>),
+        com as respostas do bot de pré-atendimento quando disponíveis.
+        <b>A origem mostrada é exatamente o que está declarado no Kommo</b> — sem atribuição manual.
       </div>
-      <div class="hl-pills" style="margin-top:16px">
+      <div class="hl-pills">
         <select class="period-select" id="vendas-period-sel" onchange="setGlobalPeriod(this.value, this)">
           <option value="w3">Esta semana</option>
           <option value="7d">Últimos 7 dias</option>
@@ -1142,16 +1138,34 @@
           <option value="30d" selected>Últimos 30 dias</option>
         </select>
       </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px">
+        Campos do bot antigo (até ~30/04/2026): idade, custo/ano, desafio, profissão, Timeshare, viagem programada.
+      </div>
     </div>
-    <div class="vd-kpis">
-      <div class="vd-kpi green"><div class="lbl">Vendas totais</div><div class="val" id="vd-kpi-vendas">—</div><div class="sub2" id="vd-kpi-vendas-sub">—</div></div>
-      <div class="vd-kpi"><div class="lbl">Receita total</div><div class="val" id="vd-kpi-receita" style="font-size:18px">—</div><div class="sub2" id="vd-kpi-ticket">ticket médio: —</div></div>
-      <div class="vd-kpi"><div class="lbl">Período</div><div class="val" id="vd-kpi-periodo" style="font-size:15px;line-height:1.3">—</div><div class="sub2" id="vd-kpi-periodo-sub">—</div></div>
+    <div></div>
+  </div>
+
+  <!-- 3 KPIs hero · padrão das demais abas -->
+  <div class="ds-grid-3">
+    <div class="ds-kpi accent">
+      <div class="lbl">Vendas totais</div>
+      <div class="val" id="vd-kpi-vendas">—</div>
+      <div class="sub" id="vd-kpi-vendas-sub">—</div>
+    </div>
+    <div class="ds-kpi">
+      <div class="lbl">Receita total</div>
+      <div class="val" id="vd-kpi-receita">—</div>
+      <div class="sub" id="vd-kpi-ticket">ticket médio: —</div>
+    </div>
+    <div class="ds-kpi">
+      <div class="lbl">Período</div>
+      <div class="val" id="vd-kpi-periodo" style="font-size:16px;line-height:1.3">—</div>
+      <div class="sub" id="vd-kpi-periodo-sub">—</div>
     </div>
   </div>
 
-  <!-- Gráficos -->
-  <div class="vd-sec">Perfil das vendas · respostas do bot</div>
+  <!-- Gráficos · respostas do bot -->
+  <div class="ds-sec"><h3>Perfil das vendas</h3><span class="sub">Respostas do bot de pré-atendimento</span></div>
   <div class="vd-grid4">
     <div class="vd-card"><h4>Custo/ano em viagens</h4><div class="csub">"Quanto investe em viagens por ano?"</div><div class="vd-chart"><canvas id="vd-ch-custo"></canvas></div></div>
     <div class="vd-card"><h4>Conhece Timeshare</h4><div class="csub">"Você conhece o modelo Timeshare?"</div><div class="vd-chart"><canvas id="vd-ch-timeshare"></canvas></div></div>
@@ -1160,14 +1174,24 @@
   </div>
 
   <!-- Tabela -->
-  <div class="vd-sec">Detalhe por venda</div>
+  <div class="ds-sec"><h3>Detalhe por venda</h3><span class="sub">Lista completa</span></div>
   <div class="vd-tablecard">
     <div class="vd-tablehead">
       <div>
-        <h4 style="font-size:14px;font-weight:700">Lista completa de vendas</h4>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px"><span id="vd-tcount">—</span> vendas no período</div>
+        <div style="font-size:11px;color:var(--muted)"><span id="vd-tcount">—</span> vendas no filtro atual</div>
       </div>
-      <input type="text" class="vd-search" id="vd-search" placeholder="🔍 Buscar por nome, profissão, audience...">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select class="period-select" id="vd-canal-filter" style="font-size:11.5px;padding:6px 12px">
+          <option value="all">Todos os canais</option>
+          <option value="meta">Meta Ads</option>
+          <option value="google">Google Ads</option>
+          <option value="ibr">Proprietário IBR</option>
+          <option value="indicacao">Indicação</option>
+          <option value="outra">Outra origem</option>
+          <option value="sem-origem">Sem origem</option>
+        </select>
+        <input type="text" class="vd-search" id="vd-search" placeholder="🔍 Buscar nome, profissão, audience...">
+      </div>
     </div>
     <div class="vd-tablescroll">
       <table class="vd-table">
@@ -4654,7 +4678,9 @@ function vdRenderCharts(vendas){
 
 function vdRenderTable(vendas){
   const search = (document.getElementById('vd-search').value || '').toLowerCase().trim();
+  const canal  = (document.getElementById('vd-canal-filter')?.value || 'all');
   let list = vendas.slice();
+  if (canal !== 'all') list = list.filter(v => v.bucket === canal);
   if (search){
     list = list.filter(v => {
       const blob = [v.name, v.origem, v.audience, v.creative, v.profissao, v.custo_ano, v.desafio, v.timeshare, v.produto]
@@ -4706,10 +4732,14 @@ function renderVendas(){
   vdRenderTable(v);
 }
 
-// Hook search (uma vez)
+// Hook search e filtro de canal (uma vez)
 (function vdInit(){
   const s = document.getElementById('vd-search');
   if (s) s.addEventListener('input', () => {
+    if (KOMMO_RAW) vdRenderTable(vdBuildVendas());
+  });
+  const c = document.getElementById('vd-canal-filter');
+  if (c) c.addEventListener('change', () => {
     if (KOMMO_RAW) vdRenderTable(vdBuildVendas());
   });
 })();
