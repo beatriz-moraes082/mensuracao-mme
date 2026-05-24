@@ -703,7 +703,7 @@
 <div class="main">
 
   <!-- Hero moderno com pergunta macro + filtros de período -->
-  <div class="hero-modern">
+  <div class="hero-modern" style="grid-template-columns:1fr">
     <div>
       <div class="hl-eyebrow">Pergunta-chave</div>
       <h2>Como aumentar a qualificação dos leads?</h2>
@@ -724,7 +724,6 @@
         Última atualização: <b id="diag-fetched" style="color:var(--text)">—</b>
       </div>
     </div>
-    <div id="diag-hero-kpi"></div>
   </div>
 
   <!-- KPI Grid moderna com sparklines semanais -->
@@ -2786,18 +2785,7 @@ function renderDiagnostico() {
     .sort((a,b) => b.txQ - a.txQ)
     .slice(0,3);
 
-  // ── Render: Hero KPI · card destaque dark/laranja ──────
   const fmtP = v => v.toFixed(1)+'%';
-  const gap = META_TX_QUALIF - txQ;
-  const gaugePct = Math.min(txQ/META_TX_QUALIF*100, 100);
-  document.getElementById('diag-hero-kpi').innerHTML = `
-    <div class="kpi-highlight">
-      <div class="lbl">Tx. Qualificação · agora</div>
-      <div class="val">${fmtP(txQ)}</div>
-      <div class="meta-line">${qualif} de ${total} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
-      <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
-    </div>
-  `;
 
   // ── Render: KPI Grid moderno com sparklines ────────────
   // Calcula evolução semanal (W1..W4) usando MENS_DATA já agregado
