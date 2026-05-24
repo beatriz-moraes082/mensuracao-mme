@@ -923,10 +923,13 @@
       <h2>SDR · Closer · Combinado</h2>
       <div class="hl-sub">Da entrada do lead até a venda fechada — gargalos por etapa, vendas por canal e motivos de perda.</div>
       <div class="hl-pills">
-        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+        <select class="period-select" id="funis-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
       </div>
     </div>
     <div></div>
@@ -1020,10 +1023,13 @@
       <h2>Canais outbound · operação independente do SDR</h2>
       <div class="hl-sub">Taxas de conversão de Duque e BDR são naturalmente diferentes do SDR digital. Comparar entre si, não com Meta Ads.</div>
       <div class="hl-pills">
-        <button class="pbtn" data-period="7d"  onclick="setGlobalPeriod('7d',this)">Últimos 7 dias</button>
-        <button class="pbtn" data-period="wlast" onclick="setGlobalPeriod('wlast',this)">Semana passada</button>
-        <button class="pbtn" data-period="14d" onclick="setGlobalPeriod('14d',this)">Últimos 14 dias</button>
-        <button class="pbtn active" data-period="30d" onclick="setGlobalPeriod('30d',this)">Últimos 30 dias</button>
+        <select class="period-select" id="outbound-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
       </div>
     </div>
     <div></div>
@@ -1126,6 +1132,15 @@
           Campos do bot antigo (vigente até ~30/04/2026): idade, custo/ano, maior desafio, profissão, Timeshare, viagem programada.
           Match SDR↔Closer via <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">contact_id</code> ou nome do contato.
         </span>
+      </div>
+      <div class="hl-pills" style="margin-top:16px">
+        <select class="period-select" id="vendas-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+        </select>
       </div>
     </div>
     <div class="vd-kpis">
@@ -1655,8 +1670,9 @@ function setGlobalPeriod(key, btn) {
   document.querySelectorAll('.pbtn[data-period]').forEach(b => {
     b.classList.toggle('active', b.dataset.period === key);
   });
-  // Sincroniza os selects de período (Diag + Evolução semanal + Perfil) quando opção válida
-  for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel']) {
+  // Sincroniza todos os selects de período entre abas quando opção válida
+  for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
+                    'funis-period-sel','outbound-period-sel','vendas-period-sel']) {
     const sel = document.getElementById(id);
     if (sel && [...sel.options].some(o => o.value === key)) sel.value = key;
   }
@@ -1677,6 +1693,7 @@ function setGlobalPeriod(key, btn) {
   renderMensuracao();
   renderAnalises();
   if (typeof renderDiagnostico === 'function') renderDiagnostico();
+  if (typeof renderVendas === 'function') renderVendas();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
 
@@ -4532,7 +4549,16 @@ function vdBuildVendas(){
     const exSc = ex ? VD_BOT_FIELDS.reduce((s,f) => s + (ex[f] ? 1 : 0), 0) : -1;
     if (sc > exSc) sdrByName[n] = l;
   }
-  return (closer.filter(l => l.venda && !VD_EXCLUDE.has(l.id))).map(cl => {
+  // Filtra vendas pelo período global (closed_at dentro da janela)
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = (typeof periodWindow === 'function') ? periodWindow(currentPeriod, ref) : null;
+  const fromTs = win ? Math.floor(win.from.getTime()/1000) : 0;
+  const toTs   = win ? Math.floor(win.to.getTime()/1000)   : Infinity;
+  return (closer.filter(l => {
+    if (!l.venda || VD_EXCLUDE.has(l.id)) return false;
+    const t = l.closed_at || l.created_at || 0;
+    return t >= fromTs && t <= toTs;
+  })).map(cl => {
     const sm = sdrByCid[cl.contact_id] || sdrByName[vdNormName(cl.name)] || null;
     const pick = f => (sm && sm[f]) || cl[f] || '';
     const respondeu = VD_BOT_FIELDS.some(f => sm && sm[f]);
