@@ -1856,6 +1856,66 @@ function renderAnalises() {
     return bestVal !== null ? bestVal : 0;
   }
 
+  // ── Status (ACTIVE/PAUSED) por público ou criativo ──────────────────────
+  // 1º: usa o status fornecido pela Meta API (META_SPEND.*_status), com fuzzy match.
+  // 2º (fallback): heurística — sem spend na semana mais recente com dados = pausado.
+  function _statusLookup(statusMap, name) {
+    if (!statusMap) return null;
+    if (statusMap[name]) return statusMap[name];
+    const target = _normForMatch(name);
+    let best = null, bestDist = 3;
+    for (const [key, val] of Object.entries(statusMap)) {
+      const k = _normForMatch(key);
+      if (k === target) return val;
+      const d = _levenshtein(target, k);
+      if (d < bestDist) { bestDist = d; best = val; }
+    }
+    return best;
+  }
+  function _heuristicStatus(spendMap, name) {
+    if (!spendMap) return null;
+    // Semana mais recente com QUALQUER spend no dataset
+    let latest = null;
+    Object.values(spendMap).forEach(obj => {
+      Object.entries(obj || {}).forEach(([m, weeks]) => {
+        Object.entries(weeks || {}).forEach(([w, s]) => {
+          if (s > 0 && (!latest || (m + '|' + w) > latest)) latest = m + '|' + w;
+        });
+      });
+    });
+    if (!latest) return 'UNKNOWN';
+    const [m, w] = latest.split('|');
+    const target = _normForMatch(name);
+    for (const [key, obj] of Object.entries(spendMap)) {
+      if (_normForMatch(key) === target || _levenshtein(_normForMatch(key), target) <= 2) {
+        const s = obj?.[m]?.[w] || 0;
+        return s > 0 ? 'ACTIVE' : 'PAUSED';
+      }
+    }
+    return 'PAUSED';
+  }
+  function audStatus(name) {
+    if (!META_SPEND) return null;
+    return _statusLookup(META_SPEND.adset_status, name)
+        || _heuristicStatus(META_SPEND.adset, name);
+  }
+  function criStatus(name) {
+    if (!META_SPEND) return null;
+    return _statusLookup(META_SPEND.creative_status, name)
+        || _heuristicStatus(META_SPEND.creative, name);
+  }
+  function statusBadge(status) {
+    if (!status) return '';
+    if (status === 'ACTIVE') {
+      return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(34,197,94,.15);color:#16a34a;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">● ATIVO</span>`;
+    }
+    const lbl = status === 'PAUSED' ? 'PAUSADO' :
+                status === 'ARCHIVED' ? 'ARQUIVADO' :
+                status === 'DELETED' ? 'EXCLUÍDO' :
+                status === 'UNKNOWN' ? '—' : status;
+    return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(148,163,184,.18);color:#64748b;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">○ ${lbl}</span>`;
+  }
+
   // Analysis 3: CPL qualificado por público
   function cplByAudience(leads, ws) {
     if (!META_SPEND) return '<tr><td colspan="4" style="text-align:center;color:var(--muted)">meta_spend.json não encontrado</td></tr>';
@@ -1884,7 +1944,7 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (abril)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.aud}</td>
+        <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
@@ -1924,7 +1984,7 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.cri}</td>
+        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
@@ -1974,7 +2034,7 @@ function renderAnalises() {
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
-      return `<tr${warn}><td class="nm">${r.dim}${flag}</td>
+      return `<tr${warn}><td class="nm">${r.dim}${flag}${statusBadge(audStatus(r.dim))}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2000,7 +2060,7 @@ function renderAnalises() {
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
-      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}</td>
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2050,7 +2110,7 @@ function renderAnalises() {
     return rows.slice(0, 8).map((r, i) => {
       const cls = fpc(r.pct, 55, 40);
       const gold = i === 0 ? ' class="row-gold"' : '';
-      return `<tr${gold}><td class="nm">${r.aud}</td>
+      return `<tr${gold}><td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${r.adv}</b>`:r.adv}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2171,9 +2231,10 @@ function renderAnalises() {
       const gold = i < 2 ? ' class="row-gold"' : '';
       const rank = medals[i] || `${i+1}`;
       const note = r.total < 8 ? '<span class="tc-p" style="font-size:10px"> *amostra pequena</span>' : '';
+      const _criN = (r.cri||'').split('|')[0].trim();
       return `<tr${gold}><td>${rank}</td>
-        <td class="nm">${r.aud}</td>
-        <td>${i<3?`<b>${r.cri}</b>`:r.cri}</td>
+        <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}</td>
         <td class="num ${cls}">${r.ab}</td>
         <td class="num ${cls}">${fp(pAB)}${note}</td>
         <td class="num">${r.total}</td>
@@ -2230,7 +2291,7 @@ function renderAnalises() {
           ${topAudList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl">${r.aud}</div>
+                <div class="lbl">${r.aud}${statusBadge(audStatus(r.aud))}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
@@ -2263,7 +2324,7 @@ function renderAnalises() {
           ${topCriList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl">${r.c}</div>
+                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>

@@ -52,6 +52,27 @@ def normalize_adset(name):
     if not name: return '—'
     return name.replace('*', '').strip()
 
+def fetch_status(endpoint, name_field):
+    """Busca effective_status de cada adset/ad (ACTIVE, PAUSED, ARCHIVED, etc.)."""
+    rows, url = [], f'https://graph.facebook.com/v21.0/{ACCOUNT}/{endpoint}'
+    params = {
+        'access_token': TOKEN,
+        'fields':       f'{name_field},effective_status,status',
+        'limit':        500,
+    }
+    print(f'  GET {url} (status)')
+    while url:
+        r = requests.get(url, params=params)
+        data = r.json()
+        if 'error' in data:
+            err = data['error']
+            print(f'  ❌ ERROR status: {err.get("message")}')
+            break
+        rows.extend(data.get('data', []))
+        url    = data.get('paging', {}).get('next')
+        params = {}
+    return rows
+
 def fetch_insights(level):
     rows, url = [], f'https://graph.facebook.com/v21.0/{ACCOUNT}/insights'
     params = {
@@ -120,15 +141,46 @@ def main():
     def _unwrap(d):
         return {k: {m: dict(wks) for m, wks in months.items()} for k, months in d.items()}
 
+    # ── Status (ACTIVE / PAUSED / etc) ─────────────────────────────────────────
+    # Se há múltiplas entidades com o mesmo nome normalizado, considera ACTIVE
+    # se PELO MENOS UMA estiver ACTIVE.
+    print('\nFetching adset status...')
+    adset_status_rows = fetch_status('adsets', 'name')
+    print(f'  {len(adset_status_rows)} adsets')
+    adset_status = {}
+    for row in adset_status_rows:
+        name = normalize_adset(row.get('name', ''))
+        st   = row.get('effective_status', 'UNKNOWN')
+        if name not in adset_status or st == 'ACTIVE':
+            adset_status[name] = st
+
+    print('Fetching ad status...')
+    ad_status_rows = fetch_status('ads', 'name')
+    print(f'  {len(ad_status_rows)} ads')
+    cri_status = {}
+    for row in ad_status_rows:
+        name = normalize_creative(row.get('name', ''))
+        st   = row.get('effective_status', 'UNKNOWN')
+        if name not in cri_status or st == 'ACTIVE':
+            cri_status[name] = st
+
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
-        'fetched_at': datetime.now(timezone.utc).isoformat(),
-        'period':     {'since': SINCE, 'until': UNTIL},
-        'adset':      _unwrap(adset_spend),
-        'creative':   _unwrap(cri_spend),
+        'fetched_at':     datetime.now(timezone.utc).isoformat(),
+        'period':         {'since': SINCE, 'until': UNTIL},
+        'adset':          _unwrap(adset_spend),
+        'creative':       _unwrap(cri_spend),
+        'adset_status':   adset_status,
+        'creative_status':cri_status,
     }
 
+    # Salvaguarda: se a API falhou (token expirado etc) e voltou tudo vazio,
+    # NÃO sobrescreve o JSON existente — preserva os dados anteriores.
     out_path = Path(__file__).resolve().parent / 'data/meta_spend.json'
+    if not adset_spend and not cri_spend and out_path.exists():
+        print('\n⚠️  API retornou vazio (token expirado?). Mantendo dados anteriores.')
+        return
+
     out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     print(f'\n✅ Salvo em: {out_path}')
