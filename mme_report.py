@@ -903,9 +903,12 @@ def build_comment(meta_now, meta_prev, google_now, google_prev, period_now, peri
 
 # ---------------- ClickUp ----------------
 def cu_put_description(task_id, description):
+    # Usa markdown_content pra renderizar **negrito** / listas (field 'description' plain não renderiza).
+    # Converte *texto* (escrito pelo build) em **texto** (markdown válido).
+    md = re.sub(r"\*([^*\n]+)\*", r"**\1**", description)
     return _http("PUT", f"https://api.clickup.com/api/v2/task/{task_id}",
                  headers={"Authorization": CLICKUP_TOKEN},
-                 data={"description": description})
+                 data={"markdown_content": md})
 
 
 def _text_to_blocks(text):
