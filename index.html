@@ -835,7 +835,7 @@
     <div class="acc-body">
       <div id="mens-table-wrap" style="overflow-x:auto"></div>
       <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
-        Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads CSV
+        Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads API (customer 2416269127)
       </p>
     </div>
   </details>
@@ -1294,6 +1294,7 @@ let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel()
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
 let META_RAW  = null;
+let GOOGLE_RAW = null;
 
 // Calcula janela de datas para um período
 function periodWindow(periodKey, refDate) {
@@ -1754,7 +1755,7 @@ function setGlobalPeriod(key, btn) {
   // a base de leads da Evolução Semanal com o Diagnóstico.
   if (KOMMO_RAW && META_RAW && KOMMO_RAW.fetched_at) {
     const ref = new Date(KOMMO_RAW.fetched_at);
-    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, periodWindow(key, ref));
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW,periodWindow(key, ref));
   }
   // Atualiza label dinâmico onde existir
   const lbl = document.getElementById('analises-period-lbl');
@@ -1851,6 +1852,7 @@ const ticks = (cb) => ({color:tickColor,font:{size:9},callback:cb});
 
 let KOMMO_DATA  = null;
 let META_SPEND  = null;
+let GOOGLE_SPEND = null;
 let _analCharts = {};
 let _mensCharts = {};
 
@@ -3436,8 +3438,8 @@ renderMensuracao();
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-// MENSURAÇÃO · Abril 2026 — dados Kommo CRM + Meta Ads API
-// Dados carregados dinamicamente de data/kommo_leads.json + data/meta_spend.json
+// MENSURAÇÃO · Abril 2026 — dados Kommo CRM + Meta Ads API + Google Ads API
+// Dados carregados dinamicamente de data/kommo_leads.json + data/meta_spend.json + data/google_ads_spend.json
 // (gerados pelo workflow GitHub Actions 2x/dia)
 // ══════════════════════════════════════════════════════════════════════════
 
@@ -3512,7 +3514,18 @@ function _fmtFetchedDate(iso) {
 //   - {from, to}: filtra por _inWindow(l.created_at, win) (janela de datas)
 // Quando recebe janela, alinha com o Diagnóstico (mesma base de leads).
 // O bucketing por semana continua sendo w1-w4 baseado no l.week (dia do mês de criação).
-function computeMensData(kommo, meta, monthOrWin) {
+function computeMensData(kommo, meta, google, monthOrWin) {
+  // Retrocompat: se invocada com a assinatura antiga (kommo, meta, monthOrWin),
+  // 'google' recebeu o que deveria ser 'monthOrWin' — detecta e remapeia,
+  // pegando GOOGLE_RAW global.
+  const _looksLikeMonth = (x) =>
+    typeof x === 'string' ||                              // ex: '2026-05'
+    (x && typeof x === 'object' && (x.from || x.to));     // janela {from, to}
+  if (monthOrWin === undefined && _looksLikeMonth(google)) {
+    monthOrWin = google;
+    google = (typeof GOOGLE_RAW !== 'undefined') ? GOOGLE_RAW : {};
+  }
+  google = google || {};
   const isWindow = monthOrWin && typeof monthOrWin === 'object' && monthOrWin.from && monthOrWin.to;
   const month = isWindow ? null : (monthOrWin || currentMonth);
   const D = {
@@ -3571,6 +3584,40 @@ function computeMensData(kommo, meta, monthOrWin) {
       const weeks = _metaMonthWeeks(spendObj, month);
       for (const [w, v] of Object.entries(weeks)) {
         if (D.meta[w] && typeof v === 'number') D.meta[w].invest += v;
+      }
+    }
+  }
+
+  // ── Google Ads spend → por semana (mesma estrutura do Meta: campaign → mês → w1-w4)
+  if (isWindow) {
+    for (const spendObj of Object.values(google.campaign || {})) {
+      const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
+      for (const [m, weeks] of Object.entries(monthsMap)) {
+        const [yr, mo] = m.split('-').map(Number);
+        const weekRanges = {
+          w1:[new Date(yr,mo-1,1),  new Date(yr,mo-1,7,23,59,59)],
+          w2:[new Date(yr,mo-1,8),  new Date(yr,mo-1,14,23,59,59)],
+          w3:[new Date(yr,mo-1,15), new Date(yr,mo-1,21,23,59,59)],
+          w4:[new Date(yr,mo-1,22), new Date(yr,mo,  0,23,59,59)],
+        };
+        for (const [w, v] of Object.entries(weeks)) {
+          if (typeof v !== 'number') continue;
+          const [ws, we] = weekRanges[w] || [null,null];
+          if (!ws) continue;
+          const overlapStart = ws > monthOrWin.from ? ws : monthOrWin.from;
+          const overlapEnd   = we < monthOrWin.to   ? we : monthOrWin.to;
+          if (overlapEnd < overlapStart) continue;
+          const weekDays    = (we - ws) / 86400000 + 1;
+          const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
+          if (D.google[w]) D.google[w].invest += v * (overlapDays / weekDays);
+        }
+      }
+    }
+  } else {
+    for (const spendObj of Object.values(google.campaign || {})) {
+      const weeks = _metaMonthWeeks(spendObj, month);
+      for (const [w, v] of Object.entries(weeks)) {
+        if (D.google[w] && typeof v === 'number') D.google[w].invest += v;
       }
     }
   }
@@ -3672,10 +3719,10 @@ function switchMonth(m) {
 
   if (m === 'compare') {
     // Modo comparativo descontinuado — fallback no mês corrente
-    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW,currentMonth);
     if (typeof renderMensuracao === 'function') renderMensuracao();
   } else {
-    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, currentMonth);
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW,currentMonth);
     // Sincroniza botões do month-bar
     document.querySelectorAll('.month-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.month === m);
@@ -3691,7 +3738,7 @@ function renderComparativo() {
   const months = AVAILABLE_MONTHS;
   // Computa MENS_DATA por mês
   const byMonth = {};
-  months.forEach(m => { byMonth[m] = computeMensData(KOMMO_RAW, META_RAW, m); });
+  months.forEach(m => { byMonth[m] = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW,m); });
 
   // Soma totais por canal/mês: { mes: { canal: {invest, leads, qualif, agend, realiz, prop, vendas, fat} } }
   const totals = {};
@@ -3907,15 +3954,18 @@ function updateTopbarPills() {
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
-    const [kommoRes, metaRes] = await Promise.all([
+    const [kommoRes, metaRes, googleRes] = await Promise.all([
       fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
-      fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json())
+      fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json()),
+      fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}))
     ]);
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
+    GOOGLE_RAW = googleRes;
     // Aliases compartilhados pelo restante do dashboard — mesma fonte de verdade.
     KOMMO_DATA = kommoRes;
     META_SPEND = metaRes;
+    GOOGLE_SPEND = googleRes;
 
     // Detecta meses disponíveis. Default = mês com maior volume de leads SDR
     // (evita cair num mês recém-virado com 1-2 leads e zero spend Meta).
@@ -3938,7 +3988,7 @@ async function loadDashboardData() {
 
     // Usa janela do currentPeriod (alinha Evolução Semanal com Diagnóstico)
     const _refInit = new Date(kommoRes.fetched_at || Date.now());
-    MENS_DATA = computeMensData(kommoRes, metaRes, periodWindow(currentPeriod, _refInit));
+    MENS_DATA = computeMensData(kommoRes, metaRes, googleRes, periodWindow(currentPeriod, _refInit));
 
     // Recalcula FUNNEL (todas as janelas) e PERIOD_LABELS
     rebuildAllFunnels(kommoRes);
