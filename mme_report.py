@@ -554,8 +554,11 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
     if fundo_camps:
         lines += [
             "Campanha de Leads (Fundo de Funil)",
-            f"Alcance: {fmt_int(fundo_reach)}  ·  Impressões: {fmt_int(fundo_impr)}  ·  Cliques: {fmt_int(fundo_clk)}",
-            f"Leads: {fundo_leads}  ·  CPL: {fmt_money(fundo_cpl)}",
+            f"- Alcance: {fmt_int(fundo_reach)}",
+            f"- Impressões: {fmt_int(fundo_impr)}",
+            f"- Cliques: {fmt_int(fundo_clk)}",
+            f"- Leads: {fundo_leads}",
+            f"- CPL: {fmt_money(fundo_cpl)}",
             "",
         ]
         # Comparativo só do fundo
@@ -580,7 +583,9 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         lines += [
             "Campanha de Marca (Topo de Funil)",
             f"Investido: {fmt_money(topo_spend)}",
-            f"Visitas ao perfil: {fmt_int(topo_visits)}  ·  Compartilhamentos: {fmt_int(topo_shares)}  ·  Salvamentos: {fmt_int(topo_saves)}",
+            f"- Visitas ao perfil: {fmt_int(topo_visits)}",
+            f"- Compartilhamentos: {fmt_int(topo_shares)}",
+            f"- Salvamentos: {fmt_int(topo_saves)}",
             "",
         ]
 
@@ -589,8 +594,10 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         lines += ["──────────────────────────────", f"🟢 GOOGLE ADS — {fmt_money(gt['spend'])}", ""]
         for c in (google_now or {}).get("campaigns", []):
             lines.append(f"{status_emoji(c.get('status',''))} {c['name']}")
-            lines.append(f"Impressões: {fmt_int(c['impressions'])}  ·  Cliques: {fmt_int(c['clicks'])}")
-            lines.append(f"Leads: {c['leads']}  ·  CPL: {fmt_money(c['cpl'])}")
+            lines.append(f"- Impressões: {fmt_int(c['impressions'])}")
+            lines.append(f"- Cliques: {fmt_int(c['clicks'])}")
+            lines.append(f"- Leads: {c['leads']}")
+            lines.append(f"- CPL: {fmt_money(c['cpl'])}")
             lines.append("")
         # Comparativo
         if gp["leads"] or gp["spend"]:
