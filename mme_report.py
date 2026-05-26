@@ -683,9 +683,9 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
                 header += f" — {fmt_money(receita)} faturado"
             lines += [header]
             for v in vendas[:5]:
-                corr = users.get(v["corretor_id"], "(sem corretor)") if v["corretor_id"] else "(sem corretor)"
+                corr = users.get(v["corretor_id"], "(sem closer)") if v["corretor_id"] else "(sem closer)"
                 preco_str = f" — {fmt_money(v['price'])}" if v.get("price") else ""
-                lines.append(f"• {v['name']}{preco_str} (corretor {corr})")
+                lines.append(f"• {v['name']}{preco_str} (closer {corr})")
             lines.append("")
 
         # Top 3 motivos de perda
@@ -808,11 +808,11 @@ def build_comment(meta_now, meta_prev, google_now, google_prev, period_now, peri
         users = kommo_now.get("users") or {}
         corr_vendas = Counter()
         for v in vendas:
-            corr = users.get(v["corretor_id"], "(sem corretor)") if v["corretor_id"] else "(sem corretor)"
+            corr = users.get(v["corretor_id"], "(sem closer)") if v["corretor_id"] else "(sem closer)"
             corr_vendas[corr] += 1
         if corr_vendas:
             top_corr, top_n = corr_vendas.most_common(1)[0]
-            lines.append(f"- *Corretor com mais vendas:* {top_corr} ({top_n} venda{'s' if top_n != 1 else ''} de {len(vendas)}).")
+            lines.append(f"- *Closer com mais vendas:* {top_corr} ({top_n} venda{'s' if top_n != 1 else ''} de {len(vendas)}).")
     else:
         lines.append("- *Vendas fechadas:* nenhuma no período.")
     if perdidos:
