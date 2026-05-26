@@ -575,7 +575,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         ]
 
     # ── Meta Ads ─────────────────────────────────────────────────────────────
-    lines += [f"🔵 META ADS — {fmt_money(mt['spend'])}", ""]
+    lines += ["🔵 *META ADS*", ""]
     # Fundo de funil agregado (exclui topo)
     fundo_camps = [c for c in meta_now["campaigns"] if not is_topo_funil(c["name"])]
     fundo_spend = sum(c["spend"] for c in fundo_camps)
@@ -586,7 +586,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
     fundo_cpl   = fundo_spend / fundo_leads if fundo_leads else 0
     if fundo_camps:
         lines += [
-            "Campanha de Leads (Fundo de Funil)",
+            "*Campanha de Leads (Fundo de Funil)*",
             f"- Alcance: {fmt_int(fundo_reach)}",
             f"- Impressões: {fmt_int(fundo_impr)}",
             f"- Cliques: {fmt_int(fundo_clk)}",
@@ -614,7 +614,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
     topo_saves  = sum(c.get("saves", 0) for c in topo_camps)
     if topo_camps:
         lines += [
-            "Campanha de Marca (Topo de Funil)",
+            "*Campanha de Marca (Topo de Funil)*",
             f"Investido: {fmt_money(topo_spend)}",
             f"- Visitas ao perfil: {fmt_int(topo_visits)}",
             f"- Compartilhamentos: {fmt_int(topo_shares)}",
@@ -624,9 +624,9 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
 
     # ── Google Ads ──────────────────────────────────────────────────────────
     if gt["spend"] > 0 or gt["leads"] > 0:
-        lines += [f"🟢 GOOGLE ADS — {fmt_money(gt['spend'])}", ""]
+        lines += ["🟢 *GOOGLE ADS*", ""]
         for c in (google_now or {}).get("campaigns", []):
-            lines.append(f"{status_emoji(c.get('status',''))} {c['name']}")
+            lines.append(f"{status_emoji(c.get('status',''))} *{c['name']}*")
             lines.append(f"- Impressões: {fmt_int(c['impressions'])}")
             lines.append(f"- Cliques: {fmt_int(c['clicks'])}")
             lines.append(f"- Leads: {c['leads']}")
