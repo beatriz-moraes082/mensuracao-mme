@@ -542,7 +542,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         ]
 
     # ── Meta Ads ─────────────────────────────────────────────────────────────
-    lines += ["──────────────────────────────", f"🔵 META ADS — {fmt_money(mt['spend'])}", ""]
+    lines += [f"🔵 META ADS — {fmt_money(mt['spend'])}", ""]
     # Fundo de funil agregado (exclui topo)
     fundo_camps = [c for c in meta_now["campaigns"] if not is_topo_funil(c["name"])]
     fundo_spend = sum(c["spend"] for c in fundo_camps)
@@ -591,7 +591,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
 
     # ── Google Ads ──────────────────────────────────────────────────────────
     if gt["spend"] > 0 or gt["leads"] > 0:
-        lines += ["──────────────────────────────", f"🟢 GOOGLE ADS — {fmt_money(gt['spend'])}", ""]
+        lines += [f"🟢 GOOGLE ADS — {fmt_money(gt['spend'])}", ""]
         for c in (google_now or {}).get("campaigns", []):
             lines.append(f"{status_emoji(c.get('status',''))} {c['name']}")
             lines.append(f"- Impressões: {fmt_int(c['impressions'])}")
@@ -631,7 +631,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
             pct = (d / p * 100)
             sign = "+" if d >= 0 else ""
             return f" (vs {p} / {sign}{d} / {sign}{pct:.0f}%)"
-        lines += ["──────────────────────────────", "📋 FUNIL COMERCIAL (Kommo)", ""]
+        lines += ["📋 FUNIL COMERCIAL (Kommo)", ""]
         for label, n, p in rows:
             lines.append(f"{label}: {n}{_delta_k(n, p)}")
         lines.append("")
@@ -665,25 +665,8 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
                 lines.append(f"• {name}: {n}")
             lines.append("")
 
-        # Corretor mais ativo (por leads movimentados, exclui terminais e bots de importação)
-        by_corr = kommo_now.get("by_corretor") or {}
-        users = kommo_now.get("users") or {}
-        if by_corr:
-            corr_rank = []
-            for ruid, dist in by_corr.items():
-                nome = users.get(ruid, f"User {ruid}") if ruid else "(sem responsável)"
-                if nome in BOT_USERS:
-                    continue
-                ativo = sum(n for sid, n in dist.items() if sid not in (LOST_STATUS, WON_STATUS))
-                corr_rank.append((ruid, nome, ativo))
-            corr_rank.sort(key=lambda x: -x[2])
-            if corr_rank and corr_rank[0][2] > 0:
-                top = corr_rank[0]
-                lines.append(f"Corretor mais ativo: {top[1]} ({top[2]} leads movimentados)")
-                lines.append("")
-
     # ── Detalhamento por campanha (Meta + Google) ──────────────────────────
-    lines += ["──────────────────────────────", "📑 DETALHAMENTO POR CAMPANHA", ""]
+    lines += ["📑 DETALHAMENTO POR CAMPANHA", ""]
     for c in sorted(meta_now["campaigns"], key=lambda x: -x["spend"]):
         if c["spend"] == 0 and c["leads"] == 0:
             continue
