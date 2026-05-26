@@ -23,11 +23,21 @@ def _load_env():
 _load_env()
 
 # ── Credenciais ──────────────────────────────────────────────────────────────
-DEVELOPER_TOKEN   = os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"]
-CLIENT_ID         = os.environ["GOOGLE_ADS_CLIENT_ID"]
-CLIENT_SECRET     = os.environ["GOOGLE_ADS_CLIENT_SECRET"]
-CUSTOMER_ID       = os.environ["GOOGLE_ADS_CUSTOMER_ID"]
-LOGIN_CUSTOMER_ID = os.environ.get("GOOGLE_ADS_LOGIN_CUSTOMER_ID") or None
+# Nomes GADS_* (consistente com saldo_check.py / outros repos). Mantém fallback
+# pros GOOGLE_ADS_* legados pra não quebrar setups antigos.
+def _cred(primary, legacy=None, required=True):
+    v = os.environ.get(primary) or (os.environ.get(legacy) if legacy else None)
+    if required and not v:
+        raise KeyError(f"variável obrigatória: {primary} (ou legado {legacy})")
+    return v
+
+DEVELOPER_TOKEN   = _cred("GADS_DEVELOPER_TOKEN",   "GOOGLE_ADS_DEVELOPER_TOKEN")
+CLIENT_ID         = _cred("GADS_CLIENT_ID",         "GOOGLE_ADS_CLIENT_ID")
+CLIENT_SECRET     = _cred("GADS_CLIENT_SECRET",     "GOOGLE_ADS_CLIENT_SECRET")
+CUSTOMER_ID       = _cred("GADS_CUSTOMER_ID",       "GOOGLE_ADS_CUSTOMER_ID")
+LOGIN_CUSTOMER_ID = _cred("GADS_LOGIN_CUSTOMER_ID", "GOOGLE_ADS_LOGIN_CUSTOMER_ID", required=False)
+# Em CI o OAuth via browser não funciona — passa o refresh_token já pronto via env
+REFRESH_TOKEN_ENV = _cred("GADS_REFRESH_TOKEN",     "GOOGLE_ADS_REFRESH_TOKEN",     required=False)
 
 # ── Período ──────────────────────────────────────────────────────────────────
 SINCE = "2026-04-01"
@@ -143,9 +153,12 @@ def google_ads_search(access_token, query):
 def main():
     print("=== Google Ads Spend Fetch ===")
 
-    if REFRESH_TOKEN_PATH.exists():
+    if REFRESH_TOKEN_ENV:
+        refresh_token = REFRESH_TOKEN_ENV
+        print(f"Usando refresh_token de env (CI mode).")
+    elif REFRESH_TOKEN_PATH.exists():
         refresh_token = REFRESH_TOKEN_PATH.read_text().strip()
-        print(f"Usando refresh_token salvo.")
+        print(f"Usando refresh_token salvo em {REFRESH_TOKEN_PATH.name}.")
     else:
         print("Primeira execução — abrindo OAuth...")
         refresh_token = oauth_flow()
@@ -153,9 +166,21 @@ def main():
     access_token = get_access_token(refresh_token)
     print("Access token OK.\n")
 
-    query = f"""
+    # Query 1: nível campanha — captura TUDO inclusive Performance Max (que não tem ad_group tradicional)
+    campaign_query = f"""
         SELECT
             campaign.name,
+            segments.date,
+            metrics.cost_micros,
+            metrics.impressions,
+            metrics.clicks
+        FROM campaign
+        WHERE segments.date BETWEEN '{SINCE}' AND '{UNTIL}'
+    """
+    # Query 2: nível ad_group — pra granularidade de campanhas Search/Display tradicionais
+    # (PMax fica vazio aqui — usa asset_group internamente)
+    adgroup_query = f"""
+        SELECT
             ad_group.name,
             segments.date,
             metrics.cost_micros,
@@ -165,22 +190,31 @@ def main():
         WHERE segments.date BETWEEN '{SINCE}' AND '{UNTIL}'
     """
 
-    print("Consultando ad_groups...")
-    chunks = google_ads_search(access_token, query)
+    print("Consultando campanhas (fonte de verdade pro gasto total)...")
+    campaign_chunks = google_ads_search(access_token, campaign_query)
+    print("Consultando ad_groups (detalhe quando disponível)...")
+    adgroup_chunks = google_ads_search(access_token, adgroup_query)
 
     campaign_spend = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
     adgroup_spend  = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
 
-    for chunk in chunks:
+    for chunk in campaign_chunks:
         for row in chunk.get("results", []):
             camp_name = row.get("campaign", {}).get("name", "—")
-            ag_name   = row.get("adGroup",  {}).get("name", "—")
             date_str  = row.get("segments", {}).get("date", "")
             cost      = int(row.get("metrics", {}).get("costMicros", 0)) / 1_000_000
             month     = month_of(date_str)
             week      = week_of(date_str)
             campaign_spend[camp_name][month][week] += cost
-            adgroup_spend[ag_name][month][week]    += cost
+
+    for chunk in adgroup_chunks:
+        for row in chunk.get("results", []):
+            ag_name   = row.get("adGroup", {}).get("name", "—")
+            date_str  = row.get("segments", {}).get("date", "")
+            cost      = int(row.get("metrics", {}).get("costMicros", 0)) / 1_000_000
+            month     = month_of(date_str)
+            week      = week_of(date_str)
+            adgroup_spend[ag_name][month][week] += cost
 
     total = sum(s for camps in campaign_spend.values() for wks in camps.values() for s in wks.values())
     print(f"  {len(campaign_spend)} campanhas | {len(adgroup_spend)} ad groups")
