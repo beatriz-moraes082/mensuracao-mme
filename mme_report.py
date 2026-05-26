@@ -93,6 +93,12 @@ STATUS_NAMES = {
 }
 LEAD_ACTION_TYPE = "lead"  # IMR roda Lead Form do Meta
 
+# Pipelines do Kommo IMR. ATENÇÃO: status 142 ("Venda ganha" built-in) significa
+# coisas diferentes por pipeline — só conta como venda quando vem do Closer.
+SDR_PIPELINE_ID    = 12716679  # 142 aqui = "Reunião realizada", NÃO venda
+CLOSER_PIPELINE_ID = 12719415  # 142 aqui = venda real
+DUQUE_PIPELINE_ID  = 12721167  # nutrição
+
 # Usuários do Kommo IMR que NÃO são corretores (bots de importação, conta admin etc.)
 # Filtrados do ranking "Atividade por corretor" e "Corretor mais ativo"
 BOT_USERS = {"Trilha", "MME Vacation", "MME Vacation Club"}
@@ -309,6 +315,34 @@ def kommo_get(path):
                  headers={"Authorization": f"Bearer {KOMMO_TOKEN}"}, allow_204=True)
 
 
+def kommo_closer_won(start_ts, end_ts):
+    """Vendas REAIS: leads do pipeline Closer com status 142 fechados (closed_at) no período.
+    Filtra por closed_at (não created_at) porque vendas costumam ser criadas em períodos anteriores."""
+    vendas = []
+    page = 1
+    while True:
+        d = kommo_get(
+            f"leads?filter[pipeline_id]={CLOSER_PIPELINE_ID}"
+            f"&filter[closed_at][from]={start_ts}&filter[closed_at][to]={end_ts}"
+            f"&limit=250&page={page}"
+        )
+        batch = (d.get("_embedded") or {}).get("leads", [])
+        if not batch:
+            break
+        for l in batch:
+            if l.get("status_id") == WON_STATUS:
+                vendas.append({
+                    "id": l["id"], "name": l.get("name") or "(sem nome)",
+                    "price": float(l.get("price") or 0),
+                    "corretor_id": l.get("responsible_user_id"),
+                    "closed_at": l.get("closed_at"),
+                })
+        if len(batch) < 250:
+            break
+        page += 1
+    return vendas
+
+
 def kommo_aggregate(start_ts, end_ts):
     leads = []
     page = 1
@@ -388,12 +422,11 @@ def kommo_aggregate(start_ts, end_ts):
         if sid == LOST_STATUS:
             losses.append({"id": l["id"], "reason_id": l.get("loss_reason_id"),
                            "name": l.get("name"), "corretor_id": ruid})
-        if sid == WON_STATUS:
-            vendas.append({
-                "id": l["id"], "name": l.get("name") or "(sem nome)",
-                "price": float(l.get("price") or 0),
-                "corretor_id": ruid, "closed_at": l.get("closed_at"),
-            })
+        # IMPORTANTE: NÃO contar vendas aqui — status 142 no SDR/Duque significa "Reunião realizada"
+        # ou outro estágio terminal, não venda. Vendas reais vêm de kommo_closer_won() abaixo.
+
+    # Vendas reais: query separada filtrada por pipeline Closer + closed_at no período
+    vendas = kommo_closer_won(start_ts, end_ts)
 
     qualified = sum(n for s, n in status_dist.items() if s in QUALIFIED_STATUSES)
     return {
@@ -615,13 +648,17 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         sd = kommo_now["status_dist"]
         sd_prev = (kommo_prev or {}).get("status_dist", {}) if kommo_prev else {}
 
+        # Vendas: SEMPRE vem de kommo_now["vendas"] (pipeline Closer + closed_at), nunca do status_dist
+        # (status 142 no SDR significa "Reunião realizada", contaria errado)
+        vendas_now_n  = len(kommo_now.get("vendas") or [])
+        vendas_prev_n = len((kommo_prev or {}).get("vendas") or []) if kommo_prev else 0
         rows = [
             ("Entrada (SDR)",       _count(sd, {98147475}),                _count(sd_prev, {98147475})),
             ("Lead qualificado",    _count(sd, QUALIFIED_STATUSES),        _count(sd_prev, QUALIFIED_STATUSES)),
             ("Reunião agendada",    _count(sd, {98162603}),                _count(sd_prev, {98162603})),
             ("Reunião realizada",   _count(sd, {98168239}),                _count(sd_prev, {98168239})),
             ("Proposta enviada",    _count(sd, PROPOSAL_STATUSES),         _count(sd_prev, PROPOSAL_STATUSES)),
-            ("Vendas fechadas",     _count(sd, {WON_STATUS}),              _count(sd_prev, {WON_STATUS})),
+            ("Vendas fechadas",     vendas_now_n,                          vendas_prev_n),
         ]
         def _delta_k(n, p):
             if not kommo_prev: return ""
