@@ -93,6 +93,22 @@ STATUS_NAMES = {
 }
 LEAD_ACTION_TYPE = "lead"  # IMR roda Lead Form do Meta
 
+# Usuários do Kommo IMR que NÃO são corretores (bots de importação, conta admin etc.)
+# Filtrados do ranking "Atividade por corretor" e "Corretor mais ativo"
+BOT_USERS = {"Trilha", "MME Vacation", "MME Vacation Club"}
+
+
+def _comp_label_for(mode, s_prev, e_prev):
+    """Label do comparativo que respeita o modo do período (não usar 'vs semana anterior' pra mensal/quinzenal)."""
+    days = (e_prev - s_prev).days + 1
+    if mode == "mensal":
+        return "vs período anterior"
+    if days == 15:
+        return "vs quinzena anterior"
+    if days == 7 and s_prev.day == 1:
+        return "vs primeiros 7 dias anteriores"
+    return "vs semana anterior"
+
 
 def is_topo_funil(name):
     n = (name or "").lower()
@@ -516,7 +532,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
     ]
 
     if total_leads_prev or total_invest_prev:
-        comp_label = "vs período anterior" if mode == "mensal" else "vs semana anterior"
+        comp_label = _comp_label_for(mode, s_prev, e_prev)
         lines += [
             f"📈 Comparativo {comp_label} ({br_date(s_prev)} a {br_date(e_prev)}):",
             f"Leads: {_delta_str(total_leads_now, total_leads_prev)}",
@@ -549,7 +565,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         f_p_cpl   = f_p_spend / f_p_leads if f_p_leads else 0
         if f_p_leads or f_p_spend:
             lines += [
-                "vs semana anterior:",
+                f"{_comp_label_for(mode, s_prev, e_prev)}:",
                 f"Leads: {_delta_str(fundo_leads, f_p_leads)}",
                 f"CPL: {_delta_str(fundo_cpl, f_p_cpl, is_money=True, lower_is_better=True)}",
                 "",
@@ -579,7 +595,7 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         # Comparativo
         if gp["leads"] or gp["spend"]:
             lines += [
-                "vs semana anterior:",
+                f"{_comp_label_for(mode, s_prev, e_prev)}:",
                 f"Leads: {_delta_str(gt['leads'], gp['leads'])}",
                 f"CPL: {_delta_str(gt['cpl'], gp['cpl'], is_money=True, lower_is_better=True)}",
                 "",
@@ -618,7 +634,10 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         if vendas:
             users = kommo_now.get("users") or {}
             receita = kommo_now.get("receita") or 0
-            lines += [f"💰 Vendas no período: {len(vendas)} — {fmt_money(receita)} faturado"]
+            header = f"💰 Vendas no período: {len(vendas)}"
+            if receita > 0:
+                header += f" — {fmt_money(receita)} faturado"
+            lines += [header]
             for v in vendas[:5]:
                 corr = users.get(v["corretor_id"], "(sem corretor)") if v["corretor_id"] else "(sem corretor)"
                 preco_str = f" — {fmt_money(v['price'])}" if v.get("price") else ""
@@ -639,19 +658,21 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
                 lines.append(f"• {name}: {n}")
             lines.append("")
 
-        # Corretor mais ativo (por número de leads movimentados, exclui terminais)
+        # Corretor mais ativo (por leads movimentados, exclui terminais e bots de importação)
         by_corr = kommo_now.get("by_corretor") or {}
         users = kommo_now.get("users") or {}
         if by_corr:
             corr_rank = []
             for ruid, dist in by_corr.items():
+                nome = users.get(ruid, f"User {ruid}") if ruid else "(sem responsável)"
+                if nome in BOT_USERS:
+                    continue
                 ativo = sum(n for sid, n in dist.items() if sid not in (LOST_STATUS, WON_STATUS))
-                corr_rank.append((ruid, ativo))
-            corr_rank.sort(key=lambda x: -x[1])
-            top = corr_rank[0]
-            if top[1] > 0:
-                nome = users.get(top[0], f"User {top[0]}") if top[0] else "(sem responsável)"
-                lines.append(f"Corretor mais ativo: {nome} ({top[1]} leads movimentados)")
+                corr_rank.append((ruid, nome, ativo))
+            corr_rank.sort(key=lambda x: -x[2])
+            if corr_rank and corr_rank[0][2] > 0:
+                top = corr_rank[0]
+                lines.append(f"Corretor mais ativo: {top[1]} ({top[2]} leads movimentados)")
                 lines.append("")
 
     # ── Detalhamento por campanha (Meta + Google) ──────────────────────────
@@ -682,225 +703,163 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
     return "\n".join(lines)
 
 
-def build_comment(meta_now, meta_prev, period_now, period_prev, kommo_now):
-    """Análise estratégica sem emojis, sem travessões, com bolds. Sempre semanal."""
+def build_comment(meta_now, meta_prev, google_now, google_prev, period_now, period_prev, kommo_now):
+    """Análise estratégica IMR/MME (resort multipropriedade). Sempre semanal.
+    Foco: mídia paga consolidada (Meta+Google) + funil Kommo (qualificação, vendas, perdas)."""
     s, e = period_now
     ps, pe = period_prev
-    t = meta_now["total"]
-    p = meta_prev["total"]
-    ctr = (t["clicks"] / t["impressions"] * 100) if t["impressions"] else 0
-    freq = (t["impressions"] / t["reach"]) if t["reach"] else 0
-    click_to_lead = (t["leads"] / t["clicks"] * 100) if t["clicks"] else 0
+    mt, mp = meta_now["total"], meta_prev["total"]
+    gt = (google_now or {}).get("total") or {"spend": 0.0, "impressions": 0, "clicks": 0, "leads": 0, "cpl": 0.0}
+    gp = (google_prev or {}).get("total") or {"spend": 0.0, "impressions": 0, "clicks": 0, "leads": 0, "cpl": 0.0}
 
-    qual = kommo_now["qualified"]
-    total_kommo = kommo_now["total_leads"]
-    qual_pct = (qual / total_kommo * 100) if total_kommo else 0
-    lost = kommo_now["lost"]
-    lost_pct = (lost / total_kommo * 100) if total_kommo else 0
-    lost_word = "leads perdidos" if lost != 1 else "lead perdido"
+    # ── Mídia paga consolidada (Meta+Google) — leads REAIS de aquisição ─────
+    midia_leads_now  = mt["leads"] + gt["leads"]
+    midia_leads_prev = mp["leads"] + gp["leads"]
+    midia_invest_now  = mt["spend"] + gt["spend"]
+    midia_invest_prev = mp["spend"] + gp["spend"]
+    lead_spend_now  = mt.get("lead_spend", mt["spend"]) + gt["spend"]
+    lead_spend_prev = mp.get("lead_spend", mp["spend"]) + gp["spend"]
+    cpl_medio_now  = lead_spend_now  / midia_leads_now  if midia_leads_now  else 0.0
+    cpl_medio_prev = lead_spend_prev / midia_leads_prev if midia_leads_prev else 0.0
 
-    status_summary = ", ".join(
-        f"{n} em {STATUS_NAMES.get(sid, sid)}"
-        for sid, n in sorted(kommo_now["status_dist"].items(), key=lambda x: -x[1])
-    )
+    # Meta isolado
+    meta_ctr  = (mt["clicks"] / mt["impressions"] * 100) if mt["impressions"] else 0
+    meta_freq = (mt["impressions"] / mt["reach"]) if mt["reach"] else 0
 
-    # Público
-    pubs = kommo_now["publicos"]
-    sem_pub = sum(pubs.get("(sem público)", {}).values())
-    real_pubs = {k: v for k, v in pubs.items() if k != "(sem público)"}
-    pub_lines = []
-    if real_pubs:
-        ranked = []
-        for name, dist in real_pubs.items():
-            tot = sum(dist.values())
-            q = sum(n for sid, n in dist.items() if sid in QUALIFIED_STATUSES)
-            ranked.append((name, tot, q, q / tot * 100 if tot else 0))
-        ranked.sort(key=lambda x: (-x[3], -x[1]))
-        top = ranked[0]
-        pub_lines.append(
-            f"*Público com maior % de lead qualificado:* {top[0]} ({top[1]} leads, {top[3]:.0f}% qualificado)."
-        )
-        if sem_pub:
-            pct = sem_pub / total_kommo * 100 if total_kommo else 0
-            pub_lines.append(
-                f"  Atenção: {sem_pub} de {total_kommo} leads ({pct:.0f}%) sem público preenchido. Padronizar pra próxima análise."
-            )
-    else:
-        pub_lines.append(
-            f"*Público com maior % de lead qualificado:* nenhum lead com público preenchido no Kommo (0 de {total_kommo}). Pedir pro time padronizar o preenchimento desse campo no contato."
-        )
-
-    # Criativo
-    crvs = kommo_now["criativos"]
-    sem_crv = sum(crvs.get("(sem criativo)", {}).values())
-    real_crvs = {k: v for k, v in crvs.items() if k != "(sem criativo)"}
-    crv_lines = []
-    if real_crvs:
-        ranked = []
-        for name, dist in real_crvs.items():
-            tot = sum(dist.values())
-            q = sum(n for sid, n in dist.items() if sid in QUALIFIED_STATUSES)
-            ranked.append((name, tot, q, q / tot * 100 if tot else 0))
-        ranked.sort(key=lambda x: (-x[3], -x[1]))
-        top = ranked[0]
-        crv_lines.append(
-            f"*Criativos com maior % de lead qualificado:* {top[0]} ({top[1]} leads, {top[3]:.0f}% qualificado)."
-        )
-        if sem_crv:
-            crv_lines.append(f"  {sem_crv} de {total_kommo} leads sem criativo preenchido.")
-    else:
-        crv_lines.append(
-            f"*Criativos com maior % de lead qualificado:* 0 de {total_kommo} leads tem o campo Criativo preenchido. Incluir no checklist de pré-atendimento."
-        )
-
-    # Perdas
-    losses = kommo_now["losses"]
-    loss_reasons = kommo_now["loss_reasons"]
-    with_reason = [l for l in losses if l["reason_id"]]
-    no_reason = [l for l in losses if not l["reason_id"]]
-    perda_str = f"{lost} {lost_word} ({fmt_dec(lost_pct, 1)}%)"
-    if lost:
-        if with_reason:
-            r = Counter(loss_reasons.get(l["reason_id"], "sem nome") for l in with_reason)
-            motivos = ", ".join(f"{name} ({n})" for name, n in r.most_common())
-            perda_str += f". Motivos: {motivos}."
-            if no_reason:
-                perda_str += f" {len(no_reason)} sem motivo cadastrado."
-        else:
-            perda_str += ", todos sem motivo cadastrado. Pedir pro time marcar motivo de perda no Kommo."
+    # Funil Kommo (do período — mas IMR tem muito bot/importação no CRM,
+    # então o "total_leads" do Kommo inclui spam de nutrição/duque)
+    qual = kommo_now.get("qualified", 0)
+    vendas = kommo_now.get("vendas") or []
+    receita = kommo_now.get("receita") or 0
+    perdidos = kommo_now.get("lost", 0)
+    loss_reasons_map = kommo_now.get("loss_reasons") or {}
+    loss_counter = Counter()
+    for l in (kommo_now.get("losses") or []):
+        rid = l.get("reason_id")
+        if rid:
+            loss_counter[rid] += 1
 
     lines = [
         "*Análise semanal estratégica. Leia antes de otimizar!*",
         "",
-        f"*Contexto:* análise considera o período {br_date(s)} a {br_date(e)} (Meta) e leads criados no Kommo no mesmo período.",
+        f"*Contexto:* análise considera o período {br_date(s)} a {br_date(e)} (Meta Ads + Google Ads) e funil Kommo do mesmo período.",
         "",
-        "*Leitura dos números (Meta):*",
-        f"- CTR de {fmt_dec(ctr, 2)}% ({fmt_int(t['clicks'])} cliques / {fmt_int(t['impressions'])} impressões), benchmark imobiliário 1,2 a 1,8% pra mensagem.",
-        f"- Frequência de {fmt_dec(freq, 2)}, {'saudável' if freq < 2.5 else 'atenção, sinal de desgaste'}.",
-        f"- Taxa clique para lead de {fmt_dec(click_to_lead, 1)}% ({t['leads']}/{fmt_int(t['clicks'])}).",
-        f"- CPL de {fmt_money(t['cpl'])}.",
-        "",
+        "*Leitura dos números (mídia paga):*",
+        f"- Investimento total: {fmt_money(midia_invest_now)} (Meta {fmt_money(mt['spend'])} + Google {fmt_money(gt['spend'])}).",
+        f"- Leads totais: {midia_leads_now} (Meta {mt['leads']} + Google {gt['leads']}).",
+        f"- CPL médio: {fmt_money(cpl_medio_now)} (lead_spend / leads totais; campanhas de marca/tráfego ficam fora).",
+        f"- Meta: CTR {fmt_dec(meta_ctr, 2)}% (benchmark turismo/lazer 1,0 a 1,5%), frequência {fmt_dec(meta_freq, 2)} ({'saudável' if meta_freq < 2.5 else 'sinal de desgaste'}).",
     ]
-
-    if p["leads"] or p["spend"]:
-        leads_diff = t["leads"] - p["leads"]
-        cpl_diff = t["cpl"] - p["cpl"]
-        leads_pct = (leads_diff / p["leads"] * 100) if p["leads"] else None
-        cpl_pct = (cpl_diff / p["cpl"] * 100) if p["cpl"] else None
-        lines.append(f"*Comparativo vs semana anterior ({br_date(ps)} a {br_date(pe)}):*")
-        if leads_pct is not None:
-            sign = "+" if leads_diff >= 0 else ""
-            lines.append(f"- Leads: {p['leads']} → {t['leads']} ({sign}{leads_diff} leads / {sign}{fmt_dec(leads_pct, 1)}%)")
-        else:
-            lines.append(f"- Leads: {p['leads']} → {t['leads']}")
-        if cpl_pct is not None:
-            sign = "+" if cpl_diff >= 0 else ""
-            lines.append(f"- CPL: {fmt_money(p['cpl'])} → {fmt_money(t['cpl'])} ({sign}{fmt_money(cpl_diff)} / {sign}{fmt_dec(cpl_pct, 1)}%)")
-        else:
-            lines.append(f"- CPL: {fmt_money(p['cpl'])} → {fmt_money(t['cpl'])}")
-        lines.append("")
-
-    lines += [
-        "*Análise qualitativa (Kommo):*",
-        f"- *Número de leads qualificados:* {qual} de {total_kommo} leads no período ({qual_pct:.0f}%). Distribuição: {status_summary}." +
-        (" *Atenção: gargalo na qualificação.*" if qual == 0 and total_kommo >= 5 else ""),
-    ]
-    lines += ["- " + l for l in pub_lines]
-    lines += ["- " + l for l in crv_lines]
-    lines.append("- *Possíveis combinações ou variações assertivas:* depende do cruzamento público + criativo nos contatos do Kommo.")
-    lines.append(f"- *% e quantitativo de perda + motivos:* {perda_str}")
+    if gt["impressions"]:
+        g_ctr = gt["clicks"] / gt["impressions"] * 100
+        lines.append(f"- Google: CTR {fmt_dec(g_ctr, 2)}%, CPC R$ {gt['spend'] / gt['clicks']:.2f}." if gt["clicks"] else "- Google: sem cliques registrados.")
     lines.append("")
 
-    # ─── Funil por empreendimento ─────────────────────────────────────
-    by_emp = kommo_now.get("by_emp_status") or {}
-    if by_emp:
-        lines.append("*Funil por empreendimento:*")
-        emp_sorted = sorted(by_emp.items(), key=lambda x: -sum(x[1].values()))
-        for emp, dist in emp_sorted:
-            tot = sum(dist.values())
-            etapas = ", ".join(f"{n} {STATUS_NAMES.get(sid, sid)}" for sid, n in sorted(dist.items(), key=lambda x: -x[1]))
-            lines.append(f"- *{emp}* ({tot} leads): {etapas}")
+    # Comparativo
+    if midia_leads_prev or midia_invest_prev:
+        leads_diff = midia_leads_now - midia_leads_prev
+        cpl_diff = cpl_medio_now - cpl_medio_prev
+        leads_pct = (leads_diff / midia_leads_prev * 100) if midia_leads_prev else None
+        cpl_pct = (cpl_diff / cpl_medio_prev * 100) if cpl_medio_prev else None
+        lines.append(f"*Comparativo vs período anterior ({br_date(ps)} a {br_date(pe)}):*")
+        if leads_pct is not None:
+            sign = "+" if leads_diff >= 0 else ""
+            lines.append(f"- Leads: {midia_leads_prev} → {midia_leads_now} ({sign}{leads_diff} / {sign}{fmt_dec(leads_pct, 1)}%)")
+        if cpl_pct is not None:
+            sign = "+" if cpl_diff >= 0 else ""
+            lines.append(f"- CPL: {fmt_money(cpl_medio_prev)} → {fmt_money(cpl_medio_now)} ({sign}{fmt_money(cpl_diff)} / {sign}{fmt_dec(cpl_pct, 1)}%)")
         lines.append("")
 
-    # ─── Atividade por corretor ───────────────────────────────────────
-    by_corr = kommo_now.get("by_corretor") or {}
-    user_map = kommo_now.get("users") or {}
-    if by_corr:
-        lines.append("*Atividade por corretor:*")
-        rows = []
-        for ruid, dist in by_corr.items():
-            total = sum(dist.values())
-            ativo = sum(n for sid, n in dist.items() if sid != LOST_STATUS and sid != 142)
-            propostas = sum(n for sid, n in dist.items() if sid in PROPOSAL_STATUSES)
-            reunioes = sum(n for sid, n in dist.items() if sid in MEETING_STATUSES)
-            qualif = sum(n for sid, n in dist.items() if sid in QUALIFIED_STATUSES)
-            rows.append((ruid, total, ativo, propostas, reunioes, qualif))
-        rows.sort(key=lambda x: -x[2])
-        for ruid, total, ativo, propostas, reunioes, qualif in rows:
-            nome = user_map.get(ruid, f"User {ruid}") if ruid else "(sem responsável)"
-            extras = []
-            if propostas: extras.append(f"*{propostas} proposta{'s' if propostas != 1 else ''}*")
-            if reunioes: extras.append(f"*{reunioes} reunião/visita{'s' if reunioes != 1 else ''}*")
-            if qualif: extras.append(f"{qualif} qualificado{'s' if qualif != 1 else ''}")
-            extra_str = " — " + ", ".join(extras) if extras else ""
-            lines.append(f"- *{nome}*: {ativo} ativo{'s' if ativo != 1 else ''} no funil ({total} total){extra_str}")
-        lines.append("")
+    # Análise qualitativa Kommo (foca em qualificação + vendas + perdas, não no total_leads inflado por bot/nutrição)
+    lines += [
+        "*Funil comercial (Kommo):*",
+        f"- *Leads qualificados pelo SDR:* {qual} no período" + (" (atenção: zero qualificado com volume de mídia positivo — verificar abordagem do SDR)" if qual == 0 and midia_leads_now >= 5 else "."),
+    ]
+    if vendas:
+        receita_str = f" — {fmt_money(receita)} faturado" if receita > 0 else ""
+        lines.append(f"- *Vendas fechadas:* {len(vendas)} no período{receita_str}.")
+        users = kommo_now.get("users") or {}
+        corr_vendas = Counter()
+        for v in vendas:
+            corr = users.get(v["corretor_id"], "(sem corretor)") if v["corretor_id"] else "(sem corretor)"
+            corr_vendas[corr] += 1
+        if corr_vendas:
+            top_corr, top_n = corr_vendas.most_common(1)[0]
+            lines.append(f"- *Corretor com mais vendas:* {top_corr} ({top_n} venda{'s' if top_n != 1 else ''} de {len(vendas)}).")
+    else:
+        lines.append("- *Vendas fechadas:* nenhuma no período.")
+    if perdidos:
+        top_perdas = loss_counter.most_common(3)
+        if top_perdas:
+            motivos = ", ".join(f"{loss_reasons_map.get(rid, '?')} ({n})" for rid, n in top_perdas)
+            lines.append(f"- *Perdas no período:* {perdidos} leads. Top motivos: {motivos}.")
+    lines.append("")
 
-    # ─── Ritmo diário ──────────────────────────────────────────────────
-    daily = kommo_now.get("daily") or {}
-    if daily:
-        lines.append("*Ritmo diário de leads:*")
-        for d_iso in sorted(daily.keys()):
-            d_obj = datetime.strptime(d_iso, "%Y-%m-%d").date()
-            bar = "■" * min(daily[d_iso], 30)
-            lines.append(f"- {d_obj.strftime('%d/%m')} ({d_obj.strftime('%a')[:3]}): {daily[d_iso]} {bar}")
-        media = sum(daily.values()) / len(daily)
-        lines.append(f"  Média: {media:.1f} leads/dia ao longo de {len(daily)} dias.")
-        lines.append("")
-
-    lines.append("*Sugestões pra próximos 30 dias:*")
-
+    # Sugestões customizadas pra resort/multipropriedade
+    lines.append("*Sugestões pra próxima semana:*")
     suggestions = []
-    if qual == 0 and total_kommo >= 5:
-        suggestions.append("*Prioridade alta:* destravar a qualificação. Conferir com o time se o pipeline (Lead Novo, Em Atendimento, Lead Qualificado) está sendo usado, ou se os leads estão parados sem follow-up.")
-    if sem_pub > 0 or not real_crvs:
-        suggestions.append("*Higiene de Kommo:* exigir preenchimento de Público + Criativo em 100% dos leads, e marcar motivo de perda nos Perdidos.")
-    if ctr < 1.0:
-        suggestions.append("Subir 2 ou 3 variações de criativo com ângulos diferentes do empreendimento (vista, planta, lifestyle, condições) pra empurrar o CTR.")
-    suggestions.append("Manter investimento atual até fechar 30 dias rodando pra ter base estatística antes de mover variáveis com confiança.")
+    # Sinal: Google subindo ou caindo absurdamente
+    if gp["leads"] and gt["leads"]:
+        g_leads_diff_pct = (gt["leads"] - gp["leads"]) / gp["leads"] * 100
+        if g_leads_diff_pct < -50:
+            suggestions.append(f"*Google Ads:* leads caíram {abs(g_leads_diff_pct):.0f}% vs período anterior. Verificar status das campanhas (a PMax pode estar pausada), saldo da conta e qualidade do criativo.")
+        elif gt["cpl"] > mt.get("cpl", 0) * 2 and mt.get("cpl", 0) > 0:
+            suggestions.append(f"*Google Ads:* CPL ({fmt_money(gt['cpl'])}) está 2x acima do Meta ({fmt_money(mt['cpl'])}). Avaliar se vale realocar parte do investimento de PMax pro Meta, ou ajustar a estratégia de bid do PMax.")
+    # Sinal: vendas zero apesar de leads qualificados
+    if vendas and len(vendas) >= 1 and qual >= 5 and len(vendas) < qual * 0.1:
+        suggestions.append(f"*Conversão lead → venda baixa:* {qual} qualificados geraram só {len(vendas)} venda(s) ({len(vendas)/qual*100:.0f}%). Vale alinhar com o time comercial o tempo de resposta e o script de abordagem.")
+    # Sinal: motivos de perda alarmantes
+    if loss_counter:
+        top_motivo, top_n = loss_counter.most_common(1)[0]
+        top_motivo_name = loss_reasons_map.get(top_motivo, "?")
+        if "não responde" in top_motivo_name.lower() or "atende" in top_motivo_name.lower():
+            suggestions.append(f"*Velocidade de atendimento:* '{top_motivo_name}' é o principal motivo de perda ({top_n}). Vale testar resposta em até 5min após captação (estudos mostram queda de 80% na conversão após 1h).")
+    # Sinal: CPL meta acima de benchmark
+    if mt.get("cpl", 0) > 30:
+        suggestions.append(f"*CPL Meta acima da régua:* {fmt_money(mt['cpl'])}. Testar 2-3 novos criativos focados em diferentes pilares do produto (multipropriedade, retorno financeiro, experiência de uso, programa de afiliados).")
+    if not suggestions:
+        suggestions.append("Manter estratégia atual e monitorar próxima semana — números dentro do esperado.")
     for i, sg in enumerate(suggestions, 1):
         lines.append(f"{i}. {sg}")
 
-    # Mensagens (pra enviar pro cliente) + ações (pra checklist na task de Otimizações)
+    # Mensagens prontas pra enviar pro cliente + ações pro checklist
     msgs = []
     actions = []
 
+    qual_pct = (qual / midia_leads_now * 100) if midia_leads_now else 0
     msgs.append(
-        f"Passando o relatório dessa semana: geramos {total_kommo} leads ({qual} qualificados, {qual_pct:.0f}%) ao CPL de {fmt_money(t['cpl'])}. Vou seguir monitorando a frequência das campanhas e o CPL nas próximas 72h pra antecipar qualquer ajuste de orçamento."
+        f"Passando o relatório dessa semana: geramos {midia_leads_now} leads ({qual} qualificados pelo SDR) ao CPL médio de {fmt_money(cpl_medio_now)}. " +
+        (f"Fechamos {len(vendas)} venda(s) no período. " if vendas else "") +
+        f"Vou monitorar a frequência das campanhas e o CPL nas próximas 72h pra antecipar qualquer ajuste de orçamento."
     )
-    actions.append("Monitorar frequência das campanhas e CPL nas próximas 72h")
+    actions.append("Monitorar frequência das campanhas e CPL Meta+Google nas próximas 72h")
 
-    if ctr < 1.0:
+    if meta_ctr < 1.0:
         msgs.append(
-            f"O CTR fechou em {fmt_dec(ctr, 2)}% (abaixo do benchmark imobiliário de 1,2 a 1,8%). Pra próxima quinzena vou subir 2 ou 3 variações de criativo com ângulos diferentes (planta, vista, lifestyle, condições) pra empurrar o engajamento. Trago o comparativo no próximo relatório."
+            f"O CTR fechou em {fmt_dec(meta_ctr, 2)}% (abaixo do benchmark turismo de 1,0 a 1,5%). Pra próxima rodada vou subir 2 a 3 variações de criativo com ângulos diferentes (experiência de uso, retorno financeiro, programa de afiliados) pra empurrar o engajamento. Trago o comparativo no próximo relatório."
         )
-        actions.append("Subir 2-3 variações de criativo com novos ângulos (planta, vista, lifestyle, condições) pra empurrar CTR")
+        actions.append("Subir 2-3 variações de criativo com novos ângulos (experiência, retorno financeiro, programa de afiliados)")
     else:
         msgs.append(
-            f"O CTR está saudável ({fmt_dec(ctr, 2)}%) e o CPL em {fmt_money(t['cpl'])}. Pra próxima rodada vou rodar um teste A/B com novos ângulos pra validar se conseguimos baixar ainda mais o CPL sem perder volume. Compartilho o resultado na próxima."
+            f"O CTR está saudável ({fmt_dec(meta_ctr, 2)}%) e o CPL em {fmt_money(cpl_medio_now)}. Pra próxima rodada vou rodar um teste A/B com novos ângulos pra validar se conseguimos baixar ainda mais o CPL sem perder volume. Compartilho o resultado na próxima."
         )
         actions.append("Rodar teste A/B com novos ângulos de criativo pra baixar CPL")
 
-    if qual_pct < 30 and total_kommo >= 5:
+    if gp["leads"] and gt["leads"] and (gt["leads"] - gp["leads"]) / gp["leads"] < -0.5:
         msgs.append(
-            f"Vou aproveitar a próxima semana pra olhar mais a fundo os públicos e a segmentação, já que a taxa de qualificação ficou em {qual_pct:.0f}%. Quero entender se estamos atraindo o perfil certo. No próximo relatório trago a análise e a proposta de ajuste."
+            f"O Google Ads caiu de {gp['leads']} pra {gt['leads']} leads vs período anterior — vou verificar status das campanhas (incluindo PMax que aparece pausada) e qualidade do criativo. Subo o aprendizado no próximo relatório."
         )
-        actions.append("Analisar públicos e segmentação pra entender por que a taxa de qualificação está baixa")
+        actions.append("Verificar status das campanhas Google (PMax pausada?) e qualidade dos criativos")
+    elif vendas and qual >= 5 and len(vendas) < qual * 0.1:
+        msgs.append(
+            f"Esta semana fechamos {len(vendas)} venda(s) com {qual} qualificados. Vou aprofundar a análise da jornada do lead qualificado até a venda pra entender onde estamos perdendo conversão e proponho ajuste no próximo relatório."
+        )
+        actions.append("Analisar jornada lead qualificado → venda e identificar gargalos de conversão")
     else:
         msgs.append(
-            f"Qualidade do lead está dentro do esperado ({qual_pct:.0f}% qualificados). Vou manter a estratégia atual rodando mais 7 dias pra consolidar a base estatística antes de propor um aumento de investimento ou expansão de público."
+            f"Vou manter a estratégia atual rodando mais 7 dias pra consolidar a base estatística antes de propor um aumento de investimento ou nova expansão de público."
         )
-        actions.append("Manter estratégia atual por mais 7 dias e consolidar base estatística antes de escalar investimento")
+        actions.append("Consolidar base estatística por mais 7 dias antes de escalar investimento")
 
     for _alert in (meta_now.get("varredura") or []):
         actions.append(_alert)
@@ -1066,8 +1025,7 @@ def main():
         description = build_description(men_m, men_m_prev, men_g, men_g_prev, (s_men, e_men), (ps_men, pe_men), "mensal", men_k, men_k_prev)
         target_task = TASK_RELATORIO
 
-    # build_comment ainda na assinatura original (será adaptado num próximo passo pra incluir Google)
-    comment, actions = build_comment(sem_m, sem_m_prev, (s_sem, e_sem), (ps_sem, pe_sem), sem_k)
+    comment, actions = build_comment(sem_m, sem_m_prev, sem_g, sem_g_prev, (s_sem, e_sem), (ps_sem, pe_sem), sem_k)
 
     print(f"\n→ Description target: {target_task} ({mode})")
     print(f"→ Comment target: {TASK_OTIMIZACOES} (sempre semanal)\n")
