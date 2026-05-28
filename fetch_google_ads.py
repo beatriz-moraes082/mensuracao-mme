@@ -234,6 +234,11 @@ def main():
     }
 
     out_path = Path(__file__).resolve().parent / "data/google_ads_spend.json"
+    # Salvaguarda: se a API voltou tudo vazio (token expirado, sem permissão, etc)
+    # e já existe um JSON com dados, NÃO sobrescreve — preserva os dados anteriores.
+    if total == 0 and not campaign_spend and out_path.exists():
+        print("\n⚠️  API retornou vazio (token expirado / sem permissão?). Mantendo dados anteriores.")
+        return
     out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     print(f"\n✅ Salvo em: {out_path}")
