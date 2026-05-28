@@ -3852,11 +3852,12 @@ function renderComparativo() {
 }
 
 // Calcula investimento Meta + Google por período (soma de leads com origem correta)
-function computeInvestForPeriod(kommo, meta, periodKey, refDate) {
-  const win = periodWindow(periodKey, refDate);
-  let metaInvest = 0;
-  // Itera por TODOS os meses disponíveis dentro da janela
-  for (const spendObj of Object.values(meta.adset || {})) {
+// Soma o spend (proratado por overlap) de um conjunto de entidades
+// {name: {month: {week: valor}}} dentro de uma janela. Usado pra Meta (adset)
+// e Google (campaign) — mesma estrutura.
+function _sumSpendInWindow(entities, win) {
+  let total = 0;
+  for (const spendObj of Object.values(entities || {})) {
     const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
     for (const [month, weeks] of Object.entries(monthsMap)) {
       const [yr, mo] = month.split('-').map(Number);
@@ -3875,11 +3876,20 @@ function computeInvestForPeriod(kommo, meta, periodKey, refDate) {
         if (overlapEnd < overlapStart) continue;
         const weekDays    = (we - ws) / 86400000 + 1;
         const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
-        metaInvest += v * (overlapDays / weekDays);
+        total += v * (overlapDays / weekDays);
       }
     }
   }
-  return Math.round(metaInvest);
+  return total;
+}
+
+// Investimento Meta + Google no período. google é opcional (default GOOGLE_RAW).
+function computeInvestForPeriod(kommo, meta, periodKey, refDate, google) {
+  const win = periodWindow(periodKey, refDate);
+  const g = google || (typeof GOOGLE_RAW !== 'undefined' ? GOOGLE_RAW : null) || {};
+  const metaInvest   = _sumSpendInWindow(meta.adset || {}, win);
+  const googleInvest = _sumSpendInWindow(g.campaign || {}, win);
+  return Math.round(metaInvest + googleInvest);
 }
 
 // Janela imediatamente anterior, mesma duração da atual.
@@ -3894,33 +3904,11 @@ function prevPeriodWindow(periodKey, refDate) {
   return { from: prevFrom, to: prevTo };
 }
 
-// Totais (invest Meta + leads SDR inbound + agend + realiz) numa janela arbitrária.
+// Totais (invest Meta+Google + leads SDR inbound + agend + realiz) numa janela.
 // Usada pra calcular o "período anterior" e tirar delta real contra o atual.
-function computeTotalsForWindow(kommo, meta, win) {
-  let invest = 0;
-  for (const spendObj of Object.values(meta.adset || {})) {
-    const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
-    for (const [month, weeks] of Object.entries(monthsMap)) {
-      const [yr, mo] = month.split('-').map(Number);
-      const weekRanges = {
-        w1: [new Date(yr, mo-1, 1),  new Date(yr, mo-1, 7,  23,59,59)],
-        w2: [new Date(yr, mo-1, 8),  new Date(yr, mo-1, 14, 23,59,59)],
-        w3: [new Date(yr, mo-1, 15), new Date(yr, mo-1, 21, 23,59,59)],
-        w4: [new Date(yr, mo-1, 22), new Date(yr, mo,   0,  23,59,59)],
-      };
-      for (const [w, v] of Object.entries(weeks)) {
-        if (typeof v !== 'number') continue;
-        const [ws, we] = weekRanges[w] || [null, null];
-        if (!ws) continue;
-        const overlapStart = ws > win.from ? ws : win.from;
-        const overlapEnd   = we < win.to   ? we : win.to;
-        if (overlapEnd < overlapStart) continue;
-        const weekDays    = (we - ws) / 86400000 + 1;
-        const overlapDays = (overlapEnd - overlapStart) / 86400000 + 1;
-        invest += v * (overlapDays / weekDays);
-      }
-    }
-  }
+function computeTotalsForWindow(kommo, meta, win, google) {
+  const g = google || (typeof GOOGLE_RAW !== 'undefined' ? GOOGLE_RAW : null) || {};
+  const invest = _sumSpendInWindow(meta.adset || {}, win) + _sumSpendInWindow(g.campaign || {}, win);
   let leads = 0, realiz = 0, agend = 0;
   for (const l of (kommo.sdr || [])) {
     if (!_inWindow(l.created_at, win)) continue;
