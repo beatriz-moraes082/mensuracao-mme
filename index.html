@@ -3084,18 +3084,18 @@ function renderDiagnostico() {
 
   const steps = [
     // ── Pipeline SDR ─────────────────────────────────────
-    {name:'Pré-atendimento',          count:c_pre,      current:now_pre,   col:'#94a3b8', rate:null,                                  meta:null},
-    {name:'Lead novo',                count:c_novo,     current:now_novo,  col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
+    {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
+    {name:'Lead novo',                count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
     {name:'Follow-up (SDR · paralelo)', count:c_fu_sdr, col:COL_FU,    rate:null,                                  meta:null, parallel:true},
-    {name:'Qualificação',             count:c_qual,     current:now_qual,  col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
-    {name:'Lead qualificado',         count:c_lq,       current:now_lq,    col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
-    {name:'Reunião agendada',         count:c_ra,       current:now_ra,    col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
-    {name:'Reunião realizada',        count:c_rr,       current:now_rr,    col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
+    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
+    {name:'Lead qualificado',         count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
+    {name:'Reunião agendada',         count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
+    {name:'Reunião realizada',        count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
     // ── Pipeline Closer ──────────────────────────────────
     {name:'Follow-up (Closer · paralelo)', count:c_fu_cl, col:COL_FU,  rate:null,                                  meta:null, parallel:true},
-    {name:'Proposta enviada',         count:c_proposta, current:now_prop,  col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
-    {name:'Sinal verde',              count:c_verde,    current:now_verde, col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
-    {name:'Venda ganha (Closer)',     count:c_venda,    current:now_venda, col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
+    {name:'Proposta enviada',         count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
+    {name:'Sinal verde',              count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
+    {name:'Venda ganha (Closer)',     count:c_venda,    col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
     // ── Saídas (perdidos) ────────────────────────────────
     {name:'Perdidos (SDR · saída)',   count:perdidos,       col:COL_LOST, rate:null, meta:null, parallel:true},
     {name:'Perdidos (Closer · saída)',count:closerPerdidos, col:COL_LOST, rate:null, meta:null, parallel:true},
