@@ -51,11 +51,16 @@ META_TOKEN = os.environ["META_TOKEN"]
 META_AD_ACCOUNT = os.environ.get("META_ACCOUNT", "act_2352574621900370")
 
 CLICKUP_TOKEN = os.environ["CLICKUP_TOKEN"]
-TASK_RELATORIO   = os.environ.get("MME_TASK_RELATORIO",   "86ahp619r")  # Ipioca Mar Resort — lista 📊 Relatórios
+TASK_RELATORIO   = os.environ.get("MME_TASK_RELATORIO",   "86ahp619r")  # fallback se lookup falhar
 TASK_OTIMIZACOES = os.environ.get("MME_TASK_OTIMIZACOES", "86ahhq9rk")  # MME Vacation Club — lista 📈 Otimizações
 # Alias retrocompat com a estrutura do Maia (build_description usa TASK_SEMANAL/TASK_MENSAL):
 TASK_SEMANAL = TASK_RELATORIO
 TASK_MENSAL  = TASK_RELATORIO
+
+# Lookup dinâmico na lista 📊 Relatórios (canônica) — lógica acordada com Ana 2026-06-01:
+# TODAS as tasks têm due_date; 1ª seg do mês recebe MENSAL, demais semanas recebem SEMANAL.
+RELATORIOS_LIST_ID = "901323122510"
+CLICKUP_NAME_FILTER = os.environ.get("MME_CLICKUP_NAME_FILTER", "MME Vacation")
 
 KOMMO_TOKEN = os.environ["KOMMO_TOKEN"]
 KOMMO_SUBDOMAIN = os.environ.get("KOMMO_SUBDOMAIN", "ipiocamarresort")
@@ -902,6 +907,51 @@ def build_comment(meta_now, meta_prev, google_now, google_prev, period_now, peri
 
 
 # ---------------- ClickUp ----------------
+def find_task_for_period(mode):
+    """Busca task na lista 📊 Relatórios (canônica) pelo nome do cliente + due_date.
+    Lógica acordada com Ana (2026-06-01): TODAS as tasks têm due_date; o que muda é o conteúdo.
+    - mode == "mensal": busca task com due_date = 1ª seg do mês atual
+    - mode == "semanal": busca task com due_date = última segunda
+    Retorna task_id (str) ou None (chamador usa fallback)."""
+    is_monthly = (mode == "mensal")
+    today = date.today()
+    if is_monthly:
+        first_of_month = today.replace(day=1)
+        days_to_monday = (7 - first_of_month.weekday()) % 7
+        target_monday = first_of_month + timedelta(days=days_to_monday)
+    else:
+        target_monday = today - timedelta(days=today.weekday())
+    window_start_ms = int(datetime.combine(target_monday - timedelta(days=1), datetime.min.time()).timestamp() * 1000)
+    window_end_ms = int(datetime.combine(target_monday + timedelta(days=1), datetime.max.time()).timestamp() * 1000)
+
+    all_tasks = []
+    page = 0
+    while page < 10:
+        url = f"https://api.clickup.com/api/v2/list/{RELATORIOS_LIST_ID}/task?archived=false&include_closed=true&page={page}"
+        d = _http("GET", url, headers={"Authorization": CLICKUP_TOKEN})
+        batch = d.get("tasks", [])
+        if not batch:
+            break
+        all_tasks.extend(batch)
+        if len(batch) < 100:
+            break
+        page += 1
+
+    for t in all_tasks:
+        if CLICKUP_NAME_FILTER.lower() not in (t.get("name") or "").lower():
+            continue
+        due = t.get("due_date")
+        if due is None:
+            continue
+        try:
+            due_ms = int(due)
+        except (TypeError, ValueError):
+            continue
+        if window_start_ms <= due_ms <= window_end_ms:
+            return t["id"]
+    return None
+
+
 def cu_put_description(task_id, description):
     # Usa markdown_content pra renderizar **negrito** / listas (field 'description' plain não renderiza).
     # Converte *texto* (escrito pelo build) em **texto** (markdown válido).
@@ -1047,17 +1097,23 @@ def main():
 
     if mode == "semanal":
         description = build_description(sem_m, sem_m_prev, sem_g, sem_g_prev, (s_sem, e_sem), (ps_sem, pe_sem), "semanal", sem_k, sem_k_prev)
-        target_task = TASK_RELATORIO
+        fallback_task = TASK_RELATORIO
     else:
         (s_men, e_men), (ps_men, pe_men) = compute_periods(today, "mensal")
         print(f"\n=== dados mensais ({s_men} a {e_men}) — pra description ===")
         men_m, men_m_prev, men_g, men_g_prev, men_k, men_k_prev = _fetch_period(s_men, e_men, ps_men, pe_men, status_map, "mensal")
         description = build_description(men_m, men_m_prev, men_g, men_g_prev, (s_men, e_men), (ps_men, pe_men), "mensal", men_k, men_k_prev)
-        target_task = TASK_RELATORIO
+        fallback_task = TASK_RELATORIO
 
     comment, actions = build_comment(sem_m, sem_m_prev, sem_g, sem_g_prev, (s_sem, e_sem), (ps_sem, pe_sem), sem_k)
 
-    print(f"\n→ Description target: {target_task} ({mode})")
+    # Lookup dinâmico na 📊 Relatórios — escrita oficial vai aqui
+    target_task = find_task_for_period(mode)
+    if target_task:
+        print(f"\n→ Description target (📊 Relatórios): {target_task} ({mode})")
+    else:
+        target_task = fallback_task
+        print(f"\n⚠️ Nenhuma task '{CLICKUP_NAME_FILTER}' na 📊 Relatórios com due_date alvo — usando fallback {target_task}")
     print(f"→ Comment target: {TASK_OTIMIZACOES} (sempre semanal)\n")
 
     if not args.apply:
