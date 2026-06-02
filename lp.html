@@ -216,7 +216,7 @@ section{padding:78px 0}
 .socios{background:var(--cream2)}
 .socios-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:54px;align-items:center}
 .globe-wrap{display:flex;justify-content:center}
-.globe{width:100%;max-width:430px;filter:drop-shadow(0 26px 44px rgba(14,42,48,.32));
+.globe{width:100%;max-width:360px;filter:drop-shadow(0 26px 44px rgba(14,42,48,.32));
   animation:floaty 6s ease-in-out infinite}
 .globe-orbit{transform-box:fill-box;transform-origin:center;animation:spin 16s linear infinite}
 .pin-dot{animation:pulse 2.6s ease-in-out infinite}
@@ -586,51 +586,45 @@ section{padding:78px 0}
 <section class="socios" id="socios">
   <div class="wrap socios-grid">
     <div class="globe-wrap rv">
-      <svg class="globe" viewBox="0 0 440 440" xmlns="http://www.w3.org/2000/svg">
+      <svg class="globe" viewBox="0 0 440 600" xmlns="http://www.w3.org/2000/svg" aria-label="Mapa da América Latina com sócios espalhados">
         <defs>
-          <radialGradient id="ocean" cx="38%" cy="32%" r="78%">
-            <stop offset="0%" stop-color="#5FB4BF"/>
-            <stop offset="55%" stop-color="#2A8B9A"/>
+          <linearGradient id="latamLand" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2A8B9A"/>
             <stop offset="100%" stop-color="#155E69"/>
-          </radialGradient>
-          <clipPath id="globeClip"><circle cx="220" cy="220" r="180"/></clipPath>
+          </linearGradient>
         </defs>
-        <g class="globe-orbit">
-          <circle cx="220" cy="220" r="202" fill="none" stroke="#155E69" stroke-opacity=".4"
-            stroke-width="1.5" stroke-dasharray="2 8"/>
-          <circle cx="220" cy="18" r="7" fill="#E8A93B" stroke="#fff" stroke-width="2.5"/>
-        </g>
-        <circle cx="220" cy="220" r="180" fill="url(#ocean)"/>
-        <g clip-path="url(#globeClip)" fill="none" stroke="#FFFFFF" stroke-opacity=".18" stroke-width="1.4">
-          <ellipse cx="220" cy="220" rx="60" ry="180"/>
-          <ellipse cx="220" cy="220" rx="120" ry="180"/>
-          <line x1="40" y1="220" x2="400" y2="220"/>
-          <path d="M40,140 Q220,110 400,140"/>
-          <path d="M40,300 Q220,330 400,300"/>
-        </g>
-        <g clip-path="url(#globeClip)">
-          <path d="M212,142 C232,132 258,130 282,138 C306,144 326,164 336,196
-                   C342,216 330,238 316,260 C302,284 286,306 272,326
-                   C264,338 258,350 254,356 C250,346 249,334 248,322
-                   C245,302 241,284 235,266 C228,246 222,226 218,206
-                   C214,194 208,186 210,174 C210,160 206,150 212,142 Z"
-                fill="#0E2A30" fill-opacity=".92" stroke="#FAF6EC" stroke-opacity=".25" stroke-width="1.5"/>
+        <g fill="url(#latamLand)" stroke="#FAF6EC" stroke-opacity=".5" stroke-width="1.5" stroke-linejoin="round">
+          <!-- México -->
+          <path d="M80,72 C120,60 184,58 228,64 C236,68 238,76 234,84
+                   C224,100 210,116 194,128 C178,138 160,140 142,134
+                   C116,124 92,106 80,84 C76,80 76,74 80,72 Z"/>
+          <!-- Baja California -->
+          <path d="M84,82 C96,96 108,120 116,146 C119,155 113,158 108,151
+                   C96,132 82,108 76,92 C72,84 79,77 84,82 Z"/>
+          <!-- América Central -->
+          <path d="M198,134 C200,156 204,176 210,196 C214,206 208,210 202,204
+                   C194,190 188,170 186,150 C184,140 190,128 198,134 Z"/>
+          <!-- América do Sul -->
+          <g transform="translate(-139,-22) scale(1.6)">
+            <path d="M212,142 C232,132 258,130 282,138 C306,144 326,164 336,196
+                     C342,216 330,238 316,260 C302,284 286,306 272,326
+                     C264,338 258,350 254,356 C250,346 249,334 248,322
+                     C245,302 241,284 235,266 C228,246 222,226 218,206
+                     C214,194 208,186 210,174 C210,160 206,150 212,142 Z"/>
+          </g>
         </g>
         <g>
-          <g class="pin-dot"><circle cx="262" cy="138" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="262" cy="138" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="295" cy="170" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="295" cy="170" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="246" cy="172" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="246" cy="172" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="278" cy="204" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="278" cy="204" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="252" cy="218" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="252" cy="218" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="290" cy="238" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="290" cy="238" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="228" cy="148" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="228" cy="148" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="262" cy="252" r="11" fill="#E8A93B" fill-opacity=".3"/><circle cx="262" cy="252" r="5" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="248" cy="276" r="11" fill="#D14E69" fill-opacity=".3"/><circle cx="248" cy="276" r="5" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="248" cy="300" r="10" fill="#9CC8CC" fill-opacity=".35"/><circle cx="248" cy="300" r="4.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="256" cy="322" r="10" fill="#9CC8CC" fill-opacity=".35"/><circle cx="256" cy="322" r="4.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="128" cy="92" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="128" cy="92" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="188" cy="90" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="188" cy="90" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="268" cy="262" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="268" cy="262" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="330" cy="298" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="330" cy="298" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="238" cy="306" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="238" cy="306" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="300" cy="338" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="300" cy="338" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="272" cy="378" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="272" cy="378" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="312" cy="410" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="312" cy="410" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="286" cy="455" r="11" fill="#9CC8CC" fill-opacity=".35"/><circle cx="286" cy="455" r="5.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
+          <g class="pin-dot"><circle cx="280" cy="498" r="11" fill="#9CC8CC" fill-opacity=".35"/><circle cx="280" cy="498" r="5.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
         </g>
-        <circle cx="220" cy="220" r="180" fill="none" stroke="#0E2A30" stroke-opacity=".15" stroke-width="2"/>
-        <ellipse cx="170" cy="150" rx="70" ry="40" fill="#fff" fill-opacity=".10"/>
       </svg>
     </div>
     <div class="socios-info rv">
