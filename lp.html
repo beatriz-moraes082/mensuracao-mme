@@ -214,7 +214,8 @@ section{padding:78px 0}
 
 /* ===== SÓCIOS / GLOBO ===== */
 .socios{background:var(--cream2)}
-.socios-grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:54px;align-items:center}
+.socios-grid{display:grid;grid-template-columns:1fr;gap:54px;align-items:center}
+.socios-info{text-align:center;max-width:760px;margin:0 auto}
 .globe-wrap{display:flex;justify-content:center}
 .globe{width:100%;max-width:360px;filter:drop-shadow(0 26px 44px rgba(14,42,48,.32));
   animation:floaty 6s ease-in-out infinite}
@@ -225,7 +226,7 @@ section{padding:78px 0}
 .pin-dot:nth-child(4n){animation-delay:1.6s}
 .socios-info h2{font-size:clamp(30px,4vw,46px)}
 .socios-info h2 .tl{color:var(--teal)}
-.socios-info p{font-size:16.5px;color:var(--ink2);margin:16px 0 4px;max-width:480px}
+.socios-info p{font-size:16.5px;color:var(--ink2);margin:16px auto 4px;max-width:560px}
 @media(max-width:980px){.socios-grid{grid-template-columns:1fr;gap:30px}.globe-wrap{display:none}}
 
 /* ===== DEPOIMENTOS ===== */
@@ -585,53 +586,11 @@ section{padding:78px 0}
 <!-- ===== SÓCIOS / GLOBO ===== -->
 <section class="socios" id="socios">
   <div class="wrap socios-grid">
-    <div class="globe-wrap rv">
-      <svg class="globe" viewBox="0 0 440 600" xmlns="http://www.w3.org/2000/svg" aria-label="Mapa da América Latina com sócios espalhados">
-        <defs>
-          <linearGradient id="latamLand" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#2A8B9A"/>
-            <stop offset="100%" stop-color="#155E69"/>
-          </linearGradient>
-        </defs>
-        <g fill="url(#latamLand)" stroke="#FAF6EC" stroke-opacity=".5" stroke-width="1.5" stroke-linejoin="round">
-          <!-- México -->
-          <path d="M80,72 C120,60 184,58 228,64 C236,68 238,76 234,84
-                   C224,100 210,116 194,128 C178,138 160,140 142,134
-                   C116,124 92,106 80,84 C76,80 76,74 80,72 Z"/>
-          <!-- Baja California -->
-          <path d="M84,82 C96,96 108,120 116,146 C119,155 113,158 108,151
-                   C96,132 82,108 76,92 C72,84 79,77 84,82 Z"/>
-          <!-- América Central -->
-          <path d="M198,134 C200,156 204,176 210,196 C214,206 208,210 202,204
-                   C194,190 188,170 186,150 C184,140 190,128 198,134 Z"/>
-          <!-- América do Sul -->
-          <g transform="translate(-139,-22) scale(1.6)">
-            <path d="M212,142 C232,132 258,130 282,138 C306,144 326,164 336,196
-                     C342,216 330,238 316,260 C302,284 286,306 272,326
-                     C264,338 258,350 254,356 C250,346 249,334 248,322
-                     C245,302 241,284 235,266 C228,246 222,226 218,206
-                     C214,194 208,186 210,174 C210,160 206,150 212,142 Z"/>
-          </g>
-        </g>
-        <g>
-          <g class="pin-dot"><circle cx="128" cy="92" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="128" cy="92" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="188" cy="90" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="188" cy="90" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="268" cy="262" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="268" cy="262" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="330" cy="298" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="330" cy="298" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="238" cy="306" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="238" cy="306" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="300" cy="338" r="12" fill="#E8A93B" fill-opacity=".3"/><circle cx="300" cy="338" r="6" fill="#E8A93B" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="272" cy="378" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="272" cy="378" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="312" cy="410" r="12" fill="#D14E69" fill-opacity=".3"/><circle cx="312" cy="410" r="6" fill="#D14E69" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="286" cy="455" r="11" fill="#9CC8CC" fill-opacity=".35"/><circle cx="286" cy="455" r="5.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
-          <g class="pin-dot"><circle cx="280" cy="498" r="11" fill="#9CC8CC" fill-opacity=".35"/><circle cx="280" cy="498" r="5.5" fill="#9CC8CC" stroke="#fff" stroke-width="2"/></g>
-        </g>
-      </svg>
-    </div>
     <div class="socios-info rv">
       <h2 class="display">Sócios espalhados <span class="tl">por toda a América Latina!</span></h2>
       <p>Mais de 7 mil famílias já fazem parte do clube de férias do Ipioca Mar.</p>
       <p>Não é uma promessa nova. É uma comunidade que já viaja, já usa e já recomenda.</p>
-      <div class="cta-row">
+      <div class="cta-row center">
         <a href="#depoimentos" class="btn btn-primary">Ver depoimentos de sócios →</a>
         <a href="#contato" class="btn btn-light">Quero fazer parte</a>
       </div>
