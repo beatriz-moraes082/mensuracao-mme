@@ -4980,15 +4980,19 @@ function vdCountByTransform(arr, field, transform){
   return Object.entries(c).sort((a,b) => b[1]-a[1]);
 }
 
-// Renderiza ou esconde o card pai. "Vazio" = só "Não respondeu" (ninguém
-// respondeu nada útil) ou nenhum bucket. Útil pra esconder bot v1 quando
-// só temos vendas do bot v2 (e vice-versa).
+// Renderiza ou esconde o card pai. Esconde quando "Não respondeu" é
+// a maior fatia (>= maior resposta real) — significa que a maioria das
+// vendas não respondeu, então o gráfico não diz muita coisa.
 function vdMakeChartOrHide(canvasId, data){
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
   const card = ctx.closest('.vd-card');
-  const realData = (data || []).filter(d => d[0] !== 'Não respondeu' && d[1] > 0);
-  if (realData.length === 0) {
+  const arr = data || [];
+  const semResp    = arr.find(d => d[0] === 'Não respondeu')?.[1] || 0;
+  const realCounts = arr.filter(d => d[0] !== 'Não respondeu').map(d => d[1]);
+  const maxReal    = realCounts.length > 0 ? Math.max(...realCounts) : 0;
+  // Esconde se: nenhuma resposta real OU "Não respondeu" >= maior resposta real
+  if (maxReal === 0 || semResp >= maxReal) {
     if (card) card.style.display = 'none';
     if (VD_CHARTS[canvasId]) { VD_CHARTS[canvasId].destroy(); delete VD_CHARTS[canvasId]; }
     return;
