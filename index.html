@@ -1324,7 +1324,7 @@
       <table class="vd-table">
         <thead><tr>
           <th>Nome</th><th>Data fech.</th><th>Origem</th><th>Preço</th><th>Bot</th>
-          <th>Idade</th><th>Custo/ano</th><th>Profissão</th><th>Maior desafio</th>
+          <th>Idade</th><th>Custo/ano</th><th>Investimento/ano</th><th>Profissão</th><th>Maior desafio</th>
           <th>Timeshare</th><th>Viagem prog.</th><th>Hospedou All-inc</th><th>Próx. férias</th><th>Frequência</th><th>Produto</th><th>Audience</th><th>Criativo</th>
         </tr></thead>
         <tbody id="vd-tbody"></tbody>
@@ -5011,7 +5011,7 @@ function vdRenderTable(vendas){
 
   const tbody = document.getElementById('vd-tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="17" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -5033,6 +5033,7 @@ function vdRenderTable(vendas){
       <td>${bot}</td>
       <td>${cel(v.idade)}</td>
       <td>${cel(v.custo_ano)}</td>
+      <td>${cel(v.investimento)}</td>
       <td>${cel(v.profissao)}</td>
       <td>${cel(v.desafio)}</td>
       <td>${cel(v.timeshare)}</td>
