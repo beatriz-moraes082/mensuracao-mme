@@ -144,6 +144,8 @@ def get_leads_closed(pipeline_id):
 def get_contacts_map(contact_ids):
     result = {}
     ids = list(set(contact_ids))
+    # DEBUG temporário: coleta mapa field_id → field_name pra descobrir IDs novos
+    field_name_map = {}
     for i in range(0, len(ids), 50):
         batch = ids[i:i+50]
         params = {"limit": 250}
@@ -158,9 +160,18 @@ def get_contacts_map(contact_ids):
                 val = str(vals[0].get("value", "")) if vals else ""
                 if val:
                     cf_map[cf["field_id"]] = val
+                # DEBUG: registra field_id → field_name
+                fid = cf.get("field_id")
+                fname = cf.get("field_name", "")
+                if fid and fname:
+                    field_name_map[fid] = fname
             # `name` é top-level (não custom_field); guardamos sob chave sentinela
             cf_map["_name"] = (c.get("name") or "").strip()
             result[c["id"]] = cf_map
+    # DEBUG: lista todos os custom_fields encontrados nos contatos
+    print(f"\n🔍 DEBUG · custom_fields encontrados no /contacts ({len(field_name_map)} únicos):")
+    for fid in sorted(field_name_map.keys()):
+        print(f"  {fid}  →  {field_name_map[fid]}")
     return result
 
 def lead_contact_id(lead):
