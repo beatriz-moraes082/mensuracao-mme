@@ -3043,10 +3043,23 @@ function renderDiagnostico() {
 
   const txConv = total > 0 ? (vendas/total*100) : 0;
   const faturamento = closerVendas.reduce((s,v) => s + (v.price||0), 0);
-  // ROAS = receita / investimento (quantos R$ de receita pra cada R$ investido)
+  // ROAS / CAC GERAL: usa todas as vendas Closer (inclui IBR, indicação)
   const roas = totalInvest > 0 ? (faturamento / totalInvest) : 0;
-  // CAC = custo de aquisição por cliente
   const cac  = vendas > 0 ? (totalInvest / vendas) : 0;
+  // ROAS / CAC INBOUND: só vendas com origem Meta ou Google (atribuído ao invest pago).
+  // Match por contact_id pra puxar origem do SDR; senão usa origem do Closer.
+  const _sdrByCid = {};
+  for (const l of (KOMMO_DATA.sdr || [])) if (l.contact_id) _sdrByCid[l.contact_id] = l;
+  const _isInbound = (cl) => {
+    const sm = cl.contact_id ? _sdrByCid[cl.contact_id] : null;
+    const o = ((sm && sm.origem) || cl.origem || '').toLowerCase();
+    return o.includes('meta') || o.includes('google');
+  };
+  const vendasInbound = closerVendas.filter(_isInbound);
+  const vendasInboundN = vendasInbound.length;
+  const faturamentoInbound = vendasInbound.reduce((s,v) => s + (v.price||0), 0);
+  const roasInbound = totalInvest > 0 ? (faturamentoInbound / totalInvest) : 0;
+  const cacInbound  = vendasInboundN > 0 ? (totalInvest / vendasInboundN) : 0;
   const tiles = [
     {lbl:'Leads totais',     val:fmtN(total),         icon:'L', iconBg:'rgba(59,130,246,.12)', iconColor:'#3b82f6',
      trend:tdLeads, sub:'no período · semanal abaixo', sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
@@ -3060,14 +3073,22 @@ function renderDiagnostico() {
     {lbl:'Taxa de conversão', val:fmtP(txConv),       icon:'%', iconBg:'rgba(238,77,32,.12)', iconColor:'#EE4D20',
      trend:{pct:0,cls:'neut',txt:''},
      sub:`${vendas} vendas ÷ ${total} leads`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
-    {lbl:'ROAS',             val: roas > 0 ? roas.toFixed(1)+'x' : '—', icon:'↑', iconBg:'rgba(16,185,129,.12)', iconColor:'#10b981',
+    {lbl:'ROAS · geral',     val: roas > 0 ? roas.toFixed(1)+'x' : '—', icon:'↑', iconBg:'rgba(16,185,129,.12)', iconColor:'#10b981',
      trend:{pct:0,cls:'neut',txt:''},
      sub: roas > 0 ? `Receita ${fmtBRL(faturamento)} ÷ Invest` : 'sem dados',
      sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
-    {lbl:'CAC',              val: cac > 0 ? fmtBRL(cac) : '—',         icon:'⊕', iconBg:'rgba(220,38,38,.10)', iconColor:'#dc2626',
+    {lbl:'ROAS · inbound',   val: roasInbound > 0 ? roasInbound.toFixed(1)+'x' : '—', icon:'↗', iconBg:'rgba(16,185,129,.08)', iconColor:'#059669',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub: roasInbound > 0 ? `${vendasInboundN} venda${vendasInboundN===1?'':'s'} Meta/Google · ${fmtBRL(faturamentoInbound)}` : `${vendasInboundN} venda inbound no período`,
+     sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#059669'},
+    {lbl:'CAC · geral',      val: cac > 0 ? fmtBRL(cac) : '—',         icon:'⊕', iconBg:'rgba(220,38,38,.10)', iconColor:'#dc2626',
      trend:{pct:0,cls:'neut',txt:''},
      sub: cac > 0 ? `Invest ${fmtBRL(totalInvest)} ÷ ${vendas} vendas` : 'sem vendas',
      sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#dc2626'},
+    {lbl:'CAC · inbound',    val: cacInbound > 0 ? fmtBRL(cacInbound) : '—',    icon:'⊕', iconBg:'rgba(220,38,38,.06)', iconColor:'#b91c1c',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub: cacInbound > 0 ? `Invest ÷ ${vendasInboundN} venda${vendasInboundN===1?'':'s'} Meta/Google` : `${vendasInboundN} venda inbound no período`,
+     sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#b91c1c'},
   ];
 
   document.getElementById('diag-kpi-grid').innerHTML = tiles.map((t, i) => `
