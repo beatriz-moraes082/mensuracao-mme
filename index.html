@@ -1443,8 +1443,10 @@ function periodWindow(periodKey, refDate) {
     return { from: fromPrev, to: lastOfPrev };
   }
   else if (periodKey === 'max') {
-    // "Período máximo" = desde 01/04/2026 (início da operação) até hoje
-    fromTs = new Date(2026, 3, 1); // mês 3 = abril (0-indexed)
+    // "Período máximo" = desde 01/01/2026 (início do histórico Kommo) até hoje
+    // Cobre TODAS as vendas do JSON (a campanha Meta/Google começou 01/04,
+    // mas vendas inbound/indicação/IBR aconteceram antes).
+    fromTs = new Date(2026, 0, 1); // mês 0 = janeiro (0-indexed)
   }
   else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
