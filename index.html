@@ -734,6 +734,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -817,6 +818,7 @@
       <option value="mes">Este mês</option>
       <option value="mes_prev">Mês passado</option>
       <option value="30d" selected>Últimos 30 dias</option>
+      <option value="max">Período máximo</option>
     </select>
     <span style="font-size:11px;color:var(--muted)" id="evol-period-hint">semanas dentro da janela selecionada</span>
   </div>
@@ -887,6 +889,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
@@ -952,6 +955,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
     </div>
@@ -1053,6 +1057,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
     </div>
@@ -1110,6 +1115,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
     </div>
@@ -1253,6 +1259,7 @@
           <option value="mes">Este mês</option>
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -1375,7 +1382,7 @@ window.addEventListener('scroll', () => {
 
 /* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
 const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
-let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), '30d': _emptyFunnel() };
+let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
@@ -1427,6 +1434,10 @@ function periodWindow(periodKey, refDate) {
     lastOfPrev.setHours(23,59,59,999);
     return { from: fromPrev, to: lastOfPrev };
   }
+  else if (periodKey === 'max') {
+    // "Período máximo" = desde 01/04/2026 (início da operação) até hoje
+    fromTs = new Date(2026, 3, 1); // mês 3 = abril (0-indexed)
+  }
   else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
@@ -1453,6 +1464,7 @@ function periodLabel(periodKey, win, isPartial) {
   if (periodKey === 'wlast') return `Semana passada · ${s}–${e}`;
   if (periodKey === 'mes')      return `Este mês · ${s}–${e}${p}`;
   if (periodKey === 'mes_prev') return `Mês passado · ${s}–${e}`;
+  if (periodKey === 'max')   return `Período máximo · ${s}–${e}${p}`;
   if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
   return `${s}–${e}`;
 }
@@ -1504,7 +1516,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
 function rebuildAllFunnels(kommo) {
   const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
-  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','30d']) {
+  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','max','30d']) {
     FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
     PERIOD_LABELS[k] = FUNNEL[k].label;
   }
@@ -1828,6 +1840,7 @@ let PERIOD_LABELS = {
   '14d':      'Últimos 14 dias',
   'mes':      'Este mês',
   'mes_prev': 'Mês passado',
+  'max':      'Período máximo',
   '30d':      'Últimos 30 dias',
 };
 // No-op: rótulos do select são fixos (definidos no HTML, sem range de datas).
@@ -4260,6 +4273,8 @@ function rebuildMensPeriodMap(refDate) {
   MENS_PERIOD_MAP['mes']   = { ws: mesWeeks, lbls: mesWeeks.map(weekLabel) };
   // "Mês passado" = mês anterior fechado (todas as 4 semanas do mês anterior)
   MENS_PERIOD_MAP['mes_prev'] = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07','W2 · 08–14','W3 · 15–21','W4 · 22–fim'] };
+  // "Período máximo" = desde início da operação — todas as 4 semanas
+  MENS_PERIOD_MAP['max']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07','W2 · 08–14','W3 · 15–21','W4 · 22–fim'] };
   MENS_PERIOD_MAP['30d']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] };
 }
 
