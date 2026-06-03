@@ -1381,6 +1381,14 @@ window.addEventListener('scroll', () => {
 });
 
 /* ── Funnel data — agora calculado dinamicamente dos JSONs ────── */
+// IDs de vendas duplicadas no Kommo — excluídas de TODAS as contagens
+// (Diagnóstico, Funis, Evolução, Vendas, Outbound, Disparos)
+const VENDA_EXCLUDE = new Set([
+  79457570, // David Lima Gonçalves — duplicata do contact 116724110 (mantém id 75829058)
+]);
+// Helper: lead é venda válida? (true se l.venda E não está na lista de exclusão)
+function isValidVenda(l) { return !!(l && l.venda && !VENDA_EXCLUDE.has(l.id)); }
+
 const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
 let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel() };
 
@@ -1487,7 +1495,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
   };
 
   const closerCreated = (kommo.closer || []).filter(l => _inWindow(l.created_at, win));
-  const closerWonInP  = (kommo.closer || []).filter(l => l.venda && _inWindow(l.closed_at, win));
+  const closerWonInP  = (kommo.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
   const closer = {
     total:    closerCreated.length,
     reuniao:  closerCreated.length,
@@ -1704,7 +1712,7 @@ function renderVendasCanal() {
   if (!KOMMO_RAW) return;
   const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
   const win = periodWindow(currentPeriod, ref);
-  const vendas = (KOMMO_RAW.closer || []).filter(l => l.venda && _inWindow(l.closed_at, win));
+  const vendas = (KOMMO_RAW.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
 
   const fmtBRL = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
   const sub = document.getElementById('vendas-canal-sub');
@@ -2347,7 +2355,7 @@ function renderAnalises() {
   const totalSdr   = sdr.length;
   const metaCnt    = metaLeads.length;
   const metaPct    = fp(pct(metaCnt, totalSdr));
-  const closerVendas = closer.filter(l => l.venda);
+  const closerVendas = closer.filter(l => isValidVenda(l));
   const fat        = closerVendas.reduce((s, l) => s + (l.price || 0), 0);
 
   // ── Analysis 4: Funnel progress by public (qualified or beyond) ──────────
@@ -2442,10 +2450,10 @@ function renderAnalises() {
     : {stage: 'Qualificação → Lead Qualificado', rate: txQualif, lost: nQStage - nQual};
 
   // ── Analysis 9, 10, 11: Revenue ──────────────────────────────────────────
-  const closerReu   = closer.filter(l => l.status === 98168239 || l.proposta || l.venda).length;
-  const closerProp  = closer.filter(l => l.proposta || l.venda).length;
-  const closerVend  = closer.filter(l => l.venda).length;
-  const receita     = closer.filter(l => l.venda).reduce((s,l) => s + (l.price||0), 0);
+  const closerReu   = closer.filter(l => l.status === 98168239 || l.proposta || isValidVenda(l)).length;
+  const closerProp  = closer.filter(l => l.proposta || isValidVenda(l)).length;
+  const closerVend  = closer.filter(l => isValidVenda(l)).length;
+  const receita     = closer.filter(l => isValidVenda(l)).reduce((s,l) => s + (l.price||0), 0);
   const ticket      = closerVend > 0 ? receita / closerVend : 0;
   const invest      = (() => {
     const D = MENS_DATA;
@@ -2959,7 +2967,7 @@ function renderDiagnostico() {
   const realiz  = sdr.filter(l => l.reuniao_realizada).length;
   // Closer: vendas filtradas por closed_at, demais por created_at
   const closerC = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
-  const closerVendas = KOMMO_DATA.closer.filter(l => l.venda && _inWindow(l.closed_at, win));
+  const closerVendas = KOMMO_DATA.closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
   const vendas  = closerVendas.length;
   const txQ     = total > 0 ? qualif/total*100 : 0;
   const txA     = total > 0 ? agend/total*100  : 0;
@@ -3502,7 +3510,7 @@ function renderDiagnostico() {
     const duqueReat  = (KOMMO_RAW.duque  || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
     const totalReat  = sdrReat.length + closerReat.length + duqueReat.length;
     // Vendas dentre reativados (Closer venda=True)
-    const reatVendas = closerReat.filter(l => l.venda).length;
+    const reatVendas = closerReat.filter(l => isValidVenda(l)).length;
 
     const kpisEl = document.getElementById('diag-reativados-kpis');
     if (kpisEl) {
@@ -3848,7 +3856,7 @@ function computeMensData(kommo, meta, google, monthOrWin) {
         if (l.proposta) D.closer[w].prop++;
       }
     }
-    if (l.venda && l.closed_at) {
+    if (isValidVenda(l) && l.closed_at) {
       const closedPasses = isWindow
         ? (l.closed_at * 1000 >= monthOrWin.from.getTime() && l.closed_at * 1000 <= monthOrWin.to.getTime())
         : (_monthFromTs(l.closed_at) === month);
@@ -4831,7 +4839,7 @@ function renderMensuracao(){
 // ════════════════════════════════════════════════════════
 // TAB · VENDAS — Closer venda=True + match SDR (respostas do bot)
 // ════════════════════════════════════════════════════════
-const VD_EXCLUDE = new Set([79457570, 79459150]); // duplicatas David Lima confirmadas
+const VD_EXCLUDE = VENDA_EXCLUDE; // alias — fonte única de verdade em VENDA_EXCLUDE
 const VD_CHARTS = {};
 const VD_PALETTE = ['#EE4D20','#F59E0B','#16a34a','#2563eb','#7c3aed','#6B7069','#dc2626','#1A1A1A'];
 const VD_BOT_FIELDS = ['idade','custo_ano','desafio','profissao','timeshare','viagem_prog','cep'];
@@ -5379,7 +5387,7 @@ function renderDisparos() {
   // Esconde fluxos com N < 10 (amostra ruidosa) e usa linguagem clara.
   const N_MIN = 10;
   const baseQ = leads.filter(l => l.qualified).length;
-  const baseV = leads.filter(l => l.venda).length;
+  const baseV = leads.filter(l => isValidVenda(l)).length;
   const baseTxQ = leads.length > 0 ? baseQ/leads.length*100 : 0;
   const baseTxV = leads.length > 0 ? baseV/leads.length*100 : 0;
 
@@ -5389,9 +5397,9 @@ function renderDisparos() {
     const inN = inFlow.length;
     if (inN === 0) return null;
     const inQ = inFlow.filter(l => l.qualified).length;
-    const inV = inFlow.filter(l => l.venda).length;
+    const inV = inFlow.filter(l => isValidVenda(l)).length;
     const offQ = offFlow.filter(l => l.qualified).length;
-    const offV = offFlow.filter(l => l.venda).length;
+    const offV = offFlow.filter(l => isValidVenda(l)).length;
     const inTxQ  = inN > 0 ? inQ/inN*100 : 0;
     const inTxV  = inN > 0 ? inV/inN*100 : 0;
     const offTxQ = offFlow.length > 0 ? offQ/offFlow.length*100 : 0;
