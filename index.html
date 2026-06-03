@@ -461,10 +461,9 @@
     .kpi-tile canvas.spark{width:100%!important;height:36px!important;margin-top:4px}
 
     .kpi-grid-modern{
-      display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:22px;
+      display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px;margin-bottom:22px;
     }
-    @media(max-width:1300px){.kpi-grid-modern{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:1100px){.kpi-grid-modern{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.kpi-grid-modern{grid-template-columns:1fr}}
     @media(max-width:600px){.kpi-grid-modern{grid-template-columns:1fr}}
     .kpi-grid-modern .ds-kpi canvas.spark{height:38px!important;width:100%!important;margin-top:4px}
 
@@ -3043,6 +3042,11 @@ function renderDiagnostico() {
   const fmtN   = v => (v||0).toLocaleString('pt-BR');
 
   const txConv = total > 0 ? (vendas/total*100) : 0;
+  const faturamento = closerVendas.reduce((s,v) => s + (v.price||0), 0);
+  // ROAS = receita / investimento (quantos R$ de receita pra cada R$ investido)
+  const roas = totalInvest > 0 ? (faturamento / totalInvest) : 0;
+  // CAC = custo de aquisição por cliente
+  const cac  = vendas > 0 ? (totalInvest / vendas) : 0;
   const tiles = [
     {lbl:'Leads totais',     val:fmtN(total),         icon:'L', iconBg:'rgba(59,130,246,.12)', iconColor:'#3b82f6',
      trend:tdLeads, sub:'no período · semanal abaixo', sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
@@ -3051,11 +3055,19 @@ function renderDiagnostico() {
     {lbl:'Reuniões realizadas', val:fmtN(realiz),     icon:'R', iconBg:'rgba(124,58,237,.12)', iconColor:'#7c3aed',
      trend:tdRealiz, sub:fmtP(txR)+' do total de leads', sparkData:wkTot.map(w=>w.realiz), sparkColor:'#7c3aed'},
     {lbl:'Vendas Closer',    val:fmtN(vendas),        icon:'V', iconBg:'rgba(34,197,94,.12)', iconColor:'#16a34a',
-     trend:{pct:0,cls:'neut',txt:fmtBRL(closerVendas.reduce((s,v)=>s+(v.price||0),0))},
+     trend:{pct:0,cls:'neut',txt:fmtBRL(faturamento)},
      sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
     {lbl:'Taxa de conversão', val:fmtP(txConv),       icon:'%', iconBg:'rgba(238,77,32,.12)', iconColor:'#EE4D20',
      trend:{pct:0,cls:'neut',txt:''},
      sub:`${vendas} vendas ÷ ${total} leads`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
+    {lbl:'ROAS',             val: roas > 0 ? roas.toFixed(1)+'x' : '—', icon:'↑', iconBg:'rgba(16,185,129,.12)', iconColor:'#10b981',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub: roas > 0 ? `Receita ${fmtBRL(faturamento)} ÷ Invest` : 'sem dados',
+     sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
+    {lbl:'CAC',              val: cac > 0 ? fmtBRL(cac) : '—',         icon:'⊕', iconBg:'rgba(220,38,38,.10)', iconColor:'#dc2626',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub: cac > 0 ? `Invest ${fmtBRL(totalInvest)} ÷ ${vendas} vendas` : 'sem vendas',
+     sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#dc2626'},
   ];
 
   document.getElementById('diag-kpi-grid').innerHTML = tiles.map((t, i) => `
