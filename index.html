@@ -461,8 +461,9 @@
     .kpi-tile canvas.spark{width:100%!important;height:36px!important;margin-top:4px}
 
     .kpi-grid-modern{
-      display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px;
+      display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-bottom:22px;
     }
+    @media(max-width:1300px){.kpi-grid-modern{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:1100px){.kpi-grid-modern{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:600px){.kpi-grid-modern{grid-template-columns:1fr}}
     .kpi-grid-modern .ds-kpi canvas.spark{height:38px!important;width:100%!important;margin-top:4px}
@@ -2173,7 +2174,45 @@ function renderAnalises() {
   }
 
   // Score off-profile (D/E/F) por dimensão (público) — leads desqualificados
-  function offProfileRows(leads, topN=8) {
+  // Adsets do Meta com invest > 0 mas NENHUM lead chegou no Kommo (período corrente).
+  // Cruzamento meta_spend.adset (nome do adset) × leads.audience.
+  function noLeadsAdsetsBlock() {
+    const meta = (typeof META_RAW !== 'undefined') ? META_RAW : null;
+    if (!meta || !meta.adset) return '';
+    // Refdate da janela atual = janela do period seletor
+    const ref = (typeof KOMMO_RAW !== 'undefined' && KOMMO_RAW?.fetched_at)
+      ? new Date(KOMMO_RAW.fetched_at) : new Date();
+    const win = periodWindow(currentPeriod, ref);
+    // Set de audiences que efetivamente trouxeram leads no período
+    const audsWithLeads = new Set(
+      (KOMMO_RAW?.sdr || [])
+        .filter(l => _inWindow(l.created_at, win) && !isInvalidAud(l.audience))
+        .map(l => l.audience)
+    );
+    // Para cada adset, soma invest na janela (prorata)
+    const orphans = [];
+    for (const [adsetName, spendObj] of Object.entries(meta.adset)) {
+      if (audsWithLeads.has(adsetName)) continue;  // tem leads → ok
+      const inv = _sumSpendInWindow({_:spendObj}, win);
+      if (inv > 0) orphans.push({name: adsetName, invest: inv});
+    }
+    if (orphans.length === 0) return '';
+    orphans.sort((a,b) => b.invest - a.invest);
+    const totalOrphan = orphans.reduce((s,o) => s + o.invest, 0);
+    const fmtBRL = v => 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+    const list = orphans.map(o => `<li style="margin:4px 0"><b>${fmtBRL(o.invest)}</b> · ${o.name}</li>`).join('');
+    return `
+      <div style="padding:14px 18px;border-top:1px solid var(--border);background:rgba(220,38,38,.04)">
+        <div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:6px">🚨 Adsets com investimento mas ZERO leads no período</div>
+        <div style="font-size:11.5px;color:var(--text);margin-bottom:8px;line-height:1.5">
+          Esses ${orphans.length} adsets gastaram <b>${fmtBRL(totalOrphan)}</b> mas <b>nenhum lead</b> chegou ao Kommo via eles na janela atual.
+          Possíveis causas: campanha pausada hoje (gasto residual), problema de tracking (sem UTM "Público"), ou criativo não converte.
+        </div>
+        <ul style="margin:6px 0 0 18px;padding:0;font-size:11.5px;color:var(--text);line-height:1.6">${list}</ul>
+      </div>`;
+  }
+
+  function offProfileRows(leads, topN=Infinity) {
     const OFF = new Set(['D','E','F']);
     const byDim = groupBy(
       leads.filter(l => !isInvalidAud(l.audience)),
@@ -2185,17 +2224,22 @@ function renderAnalises() {
       const total = ls.length;
       rows.push({dim, cnt, total, pct: pct(cnt, total)});
     });
-    // Ordena por VOLUME absoluto de off-profile (quem mais traz desqualificados)
-    rows.sort((a, b) => b.cnt - a.cnt);
-    return rows.slice(0, topN).map((r, i) => {
+    // Ordena por cnt off-profile desc; em empate, por volume total desc.
+    // Mostra TODOS os públicos com pelo menos 1 lead no período (mesmo cnt=0)
+    // pra não esconder públicos "limpos" da visão geral.
+    rows.sort((a, b) => (b.cnt - a.cnt) || (b.total - a.total));
+    const visible = rows.slice(0, topN);
+    return visible.map((r, i) => {
       // Inverso: alta % off-profile é RUIM (vermelho)
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
-      const warn = i === 0 ? ' class="row-gold"' : '';
-      const flag = i === 0 ? ' ⚠️' : '';
+      // Destaque só pro pior (cnt > 0)
+      const isTopOffender = i === 0 && r.cnt > 0;
+      const warn = isTopOffender ? ' class="row-gold"' : '';
+      const flag = isTopOffender ? ' ⚠️' : '';
       return `<tr${warn}><td class="nm">${r.dim}${flag}${statusBadge(audStatus(r.dim))}</td>
-        <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
+        <td class="num ${cls}">${isTopOffender?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
-        <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
+        <td class="num ${cls}">${isTopOffender?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
     }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted)">Sem dados</td></tr>';
   }
 
@@ -2414,11 +2458,18 @@ function renderAnalises() {
 
     const kpisEl = document.getElementById('perfil-score-kpis');
     if (kpisEl) {
+      const semScore = sdr.length - valid.length;
+      // 3 primeiros cards usam BASE = leads COM score atribuído pelo bot.
+      // 4º card usa BASE = TODOS os leads (mede progressão no funil, não qualidade do bot).
       const kpis = [
-        {lbl:'Score A · alta qualidade',  val:scoreA, sub: valid.length > 0 ? (scoreA/valid.length*100).toFixed(1)+'% dos com score' : '—', variant:'accent'},
-        {lbl:'Score B · decente',         val:scoreB, sub: valid.length > 0 ? (scoreB/valid.length*100).toFixed(1)+'% dos com score' : '—', variant:''},
-        {lbl:'Fora do perfil · D/E/F',    val:offN,   sub: valid.length > 0 ? (offN/valid.length*100).toFixed(1)+'% desqualificados' : '—', variant:''},
-        {lbl:'Qualificados (total)',      val:totalQualif, sub: sdr.length > 0 ? (totalQualif/sdr.length*100).toFixed(1)+'% dos leads' : '—', variant:''},
+        {lbl:'Score A · alta qualidade',  val:scoreA,
+         sub: valid.length > 0 ? `${(scoreA/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:'accent'},
+        {lbl:'Score B · decente',         val:scoreB,
+         sub: valid.length > 0 ? `${(scoreB/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:''},
+        {lbl:'Fora do perfil · D/E/F',    val:offN,
+         sub: valid.length > 0 ? `${(offN/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:''},
+        {lbl:'Avançaram no funil',        val:totalQualif,
+         sub: sdr.length > 0 ? `${(totalQualif/sdr.length*100).toFixed(1)}% dos ${sdr.length} leads totais · qualificou no SDR` : '—', variant:''},
       ];
       kpisEl.innerHTML = kpis.map(k => `
         <div class="ds-kpi ${k.variant}">
@@ -2426,7 +2477,11 @@ function renderAnalises() {
           <div class="val">${k.val}</div>
           <div class="sub">${k.sub}</div>
         </div>
-      `).join('');
+      `).join('') + `
+        <div style="grid-column:1/-1;font-size:11.5px;color:var(--muted);line-height:1.55;padding:10px 14px;background:var(--surface2);border-radius:8px;margin-top:-4px">
+          <b>📖 Leia assim:</b> os 3 primeiros cards usam como base os leads <b>que receberam score do bot</b> (${valid.length} de ${sdr.length}). O 4º card "Avançaram no funil" mostra leads que <b>avançaram no SDR</b> (status Lead qualificado, Reunião agendada ou Venda ganha) — pode ser maior que Score A+B porque inclui leads que avançaram mesmo sem o bot ter pontuado. ${semScore > 0 ? `<b>${semScore} leads</b> ainda estão sem score (bot em curso).` : ''}
+        </div>
+      `;
     }
 
     // Top 3 públicos por Score A+B
@@ -2643,6 +2698,7 @@ function renderAnalises() {
   <div class="insight orange" style="margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0">
     ⚠️ Público no topo desta tabela é o que mais traz leads desqualificados — avaliar pausar ou ajustar copy para reduzir desperdício de verba.
   </div>
+  ${noLeadsAdsetsBlock()}
 </div>
 
 <div class="sec">Perguntas 3 & 4 · CPL Qualificado e Avanço no Funil por Público</div>
@@ -2986,6 +3042,7 @@ function renderDiagnostico() {
   const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
   const fmtN   = v => (v||0).toLocaleString('pt-BR');
 
+  const txConv = total > 0 ? (vendas/total*100) : 0;
   const tiles = [
     {lbl:'Leads totais',     val:fmtN(total),         icon:'L', iconBg:'rgba(59,130,246,.12)', iconColor:'#3b82f6',
      trend:tdLeads, sub:'no período · semanal abaixo', sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
@@ -2996,6 +3053,9 @@ function renderDiagnostico() {
     {lbl:'Vendas Closer',    val:fmtN(vendas),        icon:'V', iconBg:'rgba(34,197,94,.12)', iconColor:'#16a34a',
      trend:{pct:0,cls:'neut',txt:fmtBRL(closerVendas.reduce((s,v)=>s+(v.price||0),0))},
      sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
+    {lbl:'Taxa de conversão', val:fmtP(txConv),       icon:'%', iconBg:'rgba(238,77,32,.12)', iconColor:'#EE4D20',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub:`${vendas} vendas ÷ ${total} leads`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
   ];
 
   document.getElementById('diag-kpi-grid').innerHTML = tiles.map((t, i) => `
@@ -4436,13 +4496,13 @@ function renderMensuracao(){
       variant: 'accent'
     },
     {
-      lbl:'CPO · custo por agendamento',
-      val: tg.agend > 0 ? fmtBRL(tg.invest/tg.agend) : '—',
-      sub: 'Investimento ÷ ' + tg.agend + ' agendamentos',
-      delta: (tgPrev && tg.agend > 0 && tgPrev.agend > 0)
-        ? _delta(tgPrev.invest/tgPrev.agend, tg.invest/tg.agend)
+      lbl:'Custo por reunião realizada',
+      val: tg.realiz > 0 ? fmtBRL(tg.invest/tg.realiz) : '—',
+      sub: 'Investimento ÷ ' + tg.realiz + ' reuniões realizadas',
+      delta: (tgPrev && tg.realiz > 0 && tgPrev.realiz > 0)
+        ? _delta(tgPrev.invest/tgPrev.realiz, tg.invest/tg.realiz)
         : {cls:'', txt:'—'},
-      spark: tot.map(t => t.agend > 0 ? t.invest/t.agend : 0),
+      spark: tot.map(t => t.realiz > 0 ? t.invest/t.realiz : 0),
       color: '#1a1a1a',
       variant: ''
     },
