@@ -1263,6 +1263,20 @@
     <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
   </div>
 
+  <!-- Ciclo médio de vendas -->
+  <div class="ds-sec"><h3>Ciclo médio de vendas</h3><span class="sub">Tempo entre entrada do lead e fechamento da venda</span></div>
+  <div class="vd-grid4" style="margin-bottom:14px">
+    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Ciclo médio</h4><div id="vd-cycle-avg" style="font-size:28px;font-weight:800;color:var(--accent);line-height:1">—</div><div id="vd-cycle-avg-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
+    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mediana</h4><div id="vd-cycle-med" style="font-size:28px;font-weight:800;color:var(--text);line-height:1">—</div><div style="font-size:11px;color:var(--muted);margin-top:6px">metade fecha antes, metade depois</div></div>
+    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mais rápido</h4><div id="vd-cycle-min" style="font-size:28px;font-weight:800;color:var(--up);line-height:1">—</div><div id="vd-cycle-min-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
+    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mais demorado</h4><div id="vd-cycle-max" style="font-size:28px;font-weight:800;color:#d97706;line-height:1">—</div><div id="vd-cycle-max-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
+  </div>
+  <div class="vd-card" style="margin-bottom:14px">
+    <h4 style="font-size:13px;font-weight:700;margin-bottom:6px">Ciclo por venda</h4>
+    <div class="csub" style="font-size:11px;color:var(--muted);margin-bottom:14px">Cada barra = uma venda. Cor = origem. Tamanho = dias do ciclo.</div>
+    <div id="vd-cycle-bars"></div>
+  </div>
+
   <!-- Tabela -->
   <div class="ds-sec"><h3>Detalhe por venda</h3><span class="sub">Lista completa</span></div>
   <div class="vd-tablecard">
@@ -4718,6 +4732,13 @@ function vdBuildVendas(){
     const pick = f => (sm && sm[f]) || cl[f] || '';
     const respondeu = VD_BOT_FIELDS.some(f => sm && sm[f]);
     const origemReal = (sm && sm.origem) || cl.origem || '';
+    // Ciclo de venda: start = created_at do SDR (origem do lead), senão Closer.
+    // closed_at = quando a venda foi fechada.
+    const startTs  = (sm && sm.created_at) || cl.created_at;
+    const closedTs = cl.closed_at || sm?.closed_at || cl.created_at;
+    const cycleDays = (startTs && closedTs && closedTs > startTs)
+      ? Math.round((closedTs - startTs) / 86400)
+      : null;
     return {
       closer_id: cl.id,
       sdr_id: sm?.id || null,
@@ -4729,6 +4750,9 @@ function vdBuildVendas(){
       score: pick('score'),
       price: cl.price || 0,
       closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
+      start_at: startTs,
+      cycle_days: cycleDays,
+      cycle_source: sm ? 'sdr' : 'closer',
       idade: pick('idade'),
       custo_ano: pick('custo_ano'),
       desafio: pick('desafio'),
@@ -4895,11 +4919,64 @@ function vdRenderTable(vendas){
   }).join('');
 }
 
+// Cores de origem (mesmas das tags da tabela)
+const VD_BUCKET_COLORS = {
+  meta: '#1877F2', google: '#16a34a', ibr: '#7c3aed',
+  indicacao: '#d97706', outra: '#94a3b8', 'sem-origem': '#dc2626'
+};
+
+function vdRenderCycle(vendas){
+  // Considera só vendas com ciclo calculado (start válido + closed_at posterior)
+  const valid = vendas.filter(v => typeof v.cycle_days === 'number');
+  const setEl = (id, val, sub) => {
+    const e = document.getElementById(id); if (e) e.textContent = val;
+    if (sub) { const s = document.getElementById(id+'-sub'); if (s) s.textContent = sub; }
+  };
+  if (valid.length === 0) {
+    ['vd-cycle-avg','vd-cycle-med','vd-cycle-min','vd-cycle-max'].forEach(id => setEl(id, '—'));
+    const bars = document.getElementById('vd-cycle-bars');
+    if (bars) bars.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem ciclos calculados no filtro atual.</div>';
+    return;
+  }
+  const days = valid.map(v => v.cycle_days).sort((a,b) => a-b);
+  const sum = days.reduce((s,d) => s+d, 0);
+  const avg = sum / days.length;
+  const med = days.length % 2 === 0
+    ? (days[days.length/2-1] + days[days.length/2]) / 2
+    : days[(days.length-1)/2];
+  const min = days[0];
+  const max = days[days.length-1];
+  const fastest = valid.find(v => v.cycle_days === min);
+  const slowest = valid.find(v => v.cycle_days === max);
+  const fmtD = d => Math.round(d) + (Math.round(d) === 1 ? ' dia' : ' dias');
+  setEl('vd-cycle-avg', fmtD(avg), `média de ${valid.length} vendas`);
+  setEl('vd-cycle-med', fmtD(med));
+  setEl('vd-cycle-min', fmtD(min), fastest ? fastest.name.split(' ').slice(0,2).join(' ') : '');
+  setEl('vd-cycle-max', fmtD(max), slowest ? slowest.name.split(' ').slice(0,2).join(' ') : '');
+  // Barras: ranqueia por ciclo decrescente (mais demorado primeiro)
+  const maxBar = Math.max(...days, 1);
+  const sorted = valid.slice().sort((a,b) => b.cycle_days - a.cycle_days);
+  const bars = sorted.map(v => {
+    const w = (v.cycle_days / maxBar * 100).toFixed(0);
+    const col = VD_BUCKET_COLORS[v.bucket] || '#94a3b8';
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11.5px">
+      <div style="width:160px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${v.name}">${v.name}</div>
+      <div style="flex:1;height:18px;background:rgba(107,112,105,.08);border-radius:4px;overflow:hidden">
+        <div style="width:${w}%;height:100%;background:${col};border-radius:4px"></div>
+      </div>
+      <div style="width:90px;text-align:right"><b>${v.cycle_days}</b> ${v.cycle_days===1?'dia':'dias'}</div>
+    </div>`;
+  }).join('');
+  const bEl = document.getElementById('vd-cycle-bars');
+  if (bEl) bEl.innerHTML = bars;
+}
+
 function renderVendas(){
   if (!KOMMO_RAW) return;
   const v = vdBuildVendas();
   vdRenderKPIs(v);
   vdRenderCharts(v);
+  vdRenderCycle(v);
   vdRenderTable(v);
 }
 

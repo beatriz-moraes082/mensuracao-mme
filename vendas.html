@@ -258,6 +258,11 @@ function buildVendas(){
     const pick = f => (sm && sm[f]) || cl[f] || '';
     const respondeu = botFields.some(f => sm && sm[f]);
     const origemReal = (sm && sm.origem) || cl.origem || '';
+    const startTs  = (sm && sm.created_at) || cl.created_at;
+    const closedTs = cl.closed_at || sm?.closed_at || cl.created_at;
+    const cycleDays = (startTs && closedTs && closedTs > startTs)
+      ? Math.round((closedTs - startTs) / 86400)
+      : null;
     return {
       closer_id: cl.id,
       sdr_id: sm?.id || null,
@@ -270,6 +275,7 @@ function buildVendas(){
       score:    pick('score'),
       price:    cl.price || 0,
       closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
+      cycle_days: cycleDays,
       idade:    pick('idade'),
       custo_ano:pick('custo_ano'),
       desafio:  pick('desafio'),
