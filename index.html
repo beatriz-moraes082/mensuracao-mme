@@ -1289,13 +1289,12 @@
   <!-- Gráficos · respostas do bot (v1 + v2 + perfil demográfico) -->
   <div class="ds-sec"><h3>Perfil das vendas</h3><span class="sub">Respostas do bot de pré-atendimento (v1 + v2)</span></div>
   <div class="vd-grid4">
-    <div class="vd-card"><h4>Custo/ano em viagens</h4><div class="csub">"Quanto investe em viagens por ano?"</div><div class="vd-chart"><canvas id="vd-ch-custo"></canvas></div></div>
     <div class="vd-card"><h4>Conhece Timeshare</h4><div class="csub">"Você conhece o modelo Timeshare?"</div><div class="vd-chart"><canvas id="vd-ch-timeshare"></canvas></div></div>
     <div class="vd-card"><h4>Maior desafio</h4><div class="csub">"Qual é seu maior desafio em viajar?"</div><div class="vd-chart"><canvas id="vd-ch-desafio"></canvas></div></div>
     <div class="vd-card"><h4>Viagem programada?</h4><div class="csub">"Tem viagem programada nos próximos meses?"</div><div class="vd-chart"><canvas id="vd-ch-viagem"></canvas></div></div>
     <div class="vd-card"><h4>Como se hospeda</h4><div class="csub">"Onde se hospeda nas viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospedagem"></canvas></div></div>
     <div class="vd-card"><h4>Com quem viaja</h4><div class="csub">"Você costuma viajar mais...?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-viajamais"></canvas></div></div>
-    <div class="vd-card"><h4>Investimento/ano em viagens</h4><div class="csub">"Hoje, quanto vocês costumam investir por ano em viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-investimento"></canvas></div></div>
+    <div class="vd-card"><h4>Investimento/ano em viagens</h4><div class="csub">"Hoje, quanto vocês costumam investir por ano em viagens?" (bot v1 + v2)</div><div class="vd-chart"><canvas id="vd-ch-investimento"></canvas></div></div>
     <div class="vd-card"><h4>Faixa etária</h4><div class="csub">"Qual sua idade?"</div><div class="vd-chart"><canvas id="vd-ch-idade"></canvas></div></div>
     <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
     <div class="vd-card"><h4>Já hospedou em All-inc?</h4><div class="csub">"Hospedou em All-inclusive?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospallinc"></canvas></div></div>
@@ -4927,7 +4926,11 @@ function vdBuildVendas(){
       viagem_prog: pick('viagem_prog'),
       hospedagem: pick('hospedagem'),
       viaja_mais: pick('viaja_mais'),
-      investimento: pick('investimento'),
+      // Investimento/ano: prioriza campo v2 ('investimento'), faz fallback pro
+      // equivalente do bot v1 ('custo_ano') pra recuperar vendas antigas que
+      // responderam à mesma pergunta numa versão anterior do bot.
+      investimento: pick('investimento') || pick('custo_ano'),
+      custo_ano: pick('custo_ano'),
       interesse_ai: pick('interesse_ai'),
       hosp_allinc: pick('hosp_allinc'),
       prox_ferias: pick('prox_ferias'),
@@ -5050,7 +5053,6 @@ function vdMakeChartOrHide(canvasId, data){
 }
 
 function vdRenderCharts(vendas){
-  vdMakeChartOrHide('vd-ch-custo',      vdCountBy(vendas, 'custo_ano'));
   vdMakeChartOrHide('vd-ch-timeshare',  vdCountBy(vendas, 'timeshare'));
   vdMakeChartOrHide('vd-ch-desafio',    vdCountBy(vendas, 'desafio'));
   vdMakeChartOrHide('vd-ch-viagem',     vdCountBy(vendas, 'viagem_prog'));
