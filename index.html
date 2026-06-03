@@ -1092,6 +1092,48 @@
     <div></div>
   </div>
 
+  <!-- Como ler esta aba (expandível) -->
+  <details class="ds-card" style="margin-bottom:18px;padding:0">
+    <summary style="cursor:pointer;padding:14px 18px;font-size:13px;font-weight:700;color:var(--accent);list-style:none;display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">📖</span> Como ler esta aba <span style="color:var(--muted);font-weight:400;font-size:11px;margin-left:auto">(clique pra expandir)</span>
+    </summary>
+    <div style="padding:0 18px 18px;border-top:1px solid var(--border);font-size:12.5px;line-height:1.65;color:var(--text)">
+      <p style="margin-top:14px"><b>O que é esta aba:</b> mostra a performance dos <b>6 fluxos automatizados</b> que vocês têm no Kommo (mensagens disparadas pra leads em momentos específicos).</p>
+      <div style="margin-top:16px">
+        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📊 Topo · 4 KPIs grandes</div>
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li><b>Leads em algum fluxo</b> — quantos leads do período entraram em pelo menos 1 fluxo</li>
+          <li><b>Fluxo com mais leads</b> — qual fluxo está recebendo mais volume</li>
+          <li><b>Fluxos ativos</b> — quantos dos 6 fluxos têm ≥5 leads (volume relevante)</li>
+          <li><b>Total de leads (período)</b> — base de comparação</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🎯 Performance por fluxo · 6 cards</div>
+        <p style="margin:0 0 8px">Cada card mostra <b>um fluxo do Kommo</b>:</p>
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li><b>Follow-up SDR</b> — 3 mensagens pra reativar lead inativo</li>
+          <li><b>Reagendamento</b> — 3 mensagens pra lead que qualificou mas não confirmou reunião</li>
+          <li><b>Proposta Enviada</b> — 3 nutrições do Closer pós envio de proposta</li>
+          <li><b>Nutrição · LQ + bot incompleto</b> — 8 disparos (D01 a D08) pra lead qualificado que não terminou o bot</li>
+          <li><b>Nutrição Closer</b> — sequência de 5 dias (D1 a D5)</li>
+          <li><b>Fluxo Duque</b> — outbound do Duque · 4 dias (D1 a D4)</li>
+        </ul>
+        <p style="margin:12px 0 8px"><b>Dentro de cada card você vê:</b></p>
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li><b>Badge de status:</b> 🟢 <b>ATIVO</b> (≥5 leads) · 🟡 <b>EM TESTE</b> (1-4 leads) · ⚪ <b>SEM USO RECENTE</b> (0 leads)</li>
+          <li><b>Barras coloridas</b> — uma por etapa, tamanho proporcional ao volume. Direita mostra <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">X · Y%</code> (X = leads, Y = % de quem entrou). Se aparecer <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">−N</code>, é o número de leads que não avançou.</li>
+          <li><b>Rodapé:</b> total de entradas + % chegando na última etapa</li>
+          <li><b>Insight automático:</b> ⚠️ amarelo aponta o maior gargalo · ✅ verde confirma que não tem gargalo significativo</li>
+        </ul>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📈 Impacto dos disparos</div>
+        <p style="margin:0">Pra cada fluxo, compara <b style="color:var(--up)">quem concluiu o fluxo</b> (chegou na última etapa) vs <b style="color:#d97706">quem entrou mas parou no meio</b>. Mostra <b>taxa de qualificação</b> e <b>taxa de venda</b> dos dois grupos. Se quem concluiu performa <b>melhor</b>, o fluxo está agregando valor. Se performam parecido, vale revisar o conteúdo das mensagens.</p>
+      </div>
+    </div>
+  </details>
+
   <!-- 4 KPIs hero -->
   <div class="ds-grid-4" id="disp-hero-kpis"></div>
 
@@ -1246,7 +1288,7 @@
         <thead><tr>
           <th>Nome</th><th>Data fech.</th><th>Origem</th><th>Preço</th><th>Bot</th>
           <th>Idade</th><th>Custo/ano</th><th>Profissão</th><th>Maior desafio</th>
-          <th>Timeshare</th><th>Viagem prog.</th><th>Produto</th><th>Audience</th>
+          <th>Timeshare</th><th>Viagem prog.</th><th>Produto</th><th>Audience</th><th>Criativo</th>
         </tr></thead>
         <tbody id="vd-tbody"></tbody>
       </table>
@@ -4820,7 +4862,7 @@ function vdRenderTable(vendas){
 
   const tbody = document.getElementById('vd-tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="13" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -4848,6 +4890,7 @@ function vdRenderTable(vendas){
       <td>${cel(v.viagem_prog)}</td>
       <td>${cel(v.produto)}</td>
       <td>${cel(v.audience)}</td>
+      <td>${cel(v.creative)}</td>
     </tr>`;
   }).join('');
 }
@@ -4868,9 +4911,9 @@ function renderVendas(){
 // real do bot. Onde não bate (Follow-up tem 6 bots mas 3 valores), usa nomes
 // genéricos com nota explicativa.
 const DISP_FLOWS = [
-  {key:'disp_followup',  lbl:'Follow-up SDR',              desc:'Lead inativo · 3 ondas de disparo',
+  {key:'disp_followup',  lbl:'Follow-up SDR',              desc:'Lead inativo · 3 mensagens de reativação',
    steps:['1','2','3'],
-   stepNames:['1ª onda (Dias 1-2)','2ª onda (Dias 4-6)','3ª onda (Dias 11-16)'],
+   stepNames:['Mensagem 1','Mensagem 2','Mensagem 3'],
    colors:['#3b82f6','#6366f1','#a855f7']},
   {key:'disp_reagend',   lbl:'Reagendamento',              desc:'Lead qualificado que não confirmou reunião',
    steps:['1','2','3'],

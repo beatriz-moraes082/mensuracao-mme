@@ -184,6 +184,7 @@
             <th>Viagem prog.</th>
             <th>Produto</th>
             <th>Audience</th>
+            <th>Criativo</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -370,7 +371,7 @@ function renderTable(vendas){
 
   const tbody = document.getElementById('tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="13" class="empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" class="empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -398,6 +399,7 @@ function renderTable(vendas){
       <td>${cel(v.viagem_prog)}</td>
       <td>${cel(v.produto)}</td>
       <td>${cel(v.audience)}</td>
+      <td>${cel(v.creative)}</td>
     </tr>`;
   }).join('');
 }
