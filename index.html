@@ -1278,6 +1278,7 @@
     <div class="vd-card"><h4>Viagem programada?</h4><div class="csub">"Tem viagem programada nos próximos meses?"</div><div class="vd-chart"><canvas id="vd-ch-viagem"></canvas></div></div>
     <div class="vd-card"><h4>Como se hospeda</h4><div class="csub">"Onde se hospeda nas viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospedagem"></canvas></div></div>
     <div class="vd-card"><h4>Com quem viaja</h4><div class="csub">"Você costuma viajar mais...?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-viajamais"></canvas></div></div>
+    <div class="vd-card"><h4>Investimento/ano em viagens</h4><div class="csub">"Hoje, quanto vocês costumam investir por ano em viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-investimento"></canvas></div></div>
     <div class="vd-card"><h4>Faixa etária</h4><div class="csub">"Qual sua idade?"</div><div class="vd-chart"><canvas id="vd-ch-idade"></canvas></div></div>
     <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
     <div class="vd-card"><h4>Já hospedou em All-inc?</h4><div class="csub">"Hospedou em All-inclusive?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospallinc"></canvas></div></div>
@@ -4986,6 +4987,7 @@ function vdRenderCharts(vendas){
   vdMakeChart('vd-ch-viagem',     vdCountBy(vendas, 'viagem_prog'));
   vdMakeChart('vd-ch-hospedagem', vdCountBy(vendas, 'hospedagem'));
   vdMakeChart('vd-ch-viajamais',  vdCountBy(vendas, 'viaja_mais'));
+  vdMakeChart('vd-ch-investimento', vdCountBy(vendas, 'investimento'));
   vdMakeChart('vd-ch-idade',      vdCountByTransform(vendas, 'idade', vdIdadeBucket));
   vdMakeChart('vd-ch-profissao',  vdCountByTransform(vendas, 'profissao', vdProfNorm));
   vdMakeChart('vd-ch-hospallinc', vdCountBy(vendas, 'hosp_allinc'));
