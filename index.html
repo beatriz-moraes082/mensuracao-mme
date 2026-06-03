@@ -1181,7 +1181,8 @@
   #tab-vendas .vd-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
   #tab-vendas .vd-card h4{font-size:13px;font-weight:700;margin-bottom:4px}
   #tab-vendas .vd-card .csub{font-size:11px;color:var(--muted);margin-bottom:14px}
-  #tab-vendas .vd-chart{position:relative;height:220px}
+  #tab-vendas .vd-chart{position:relative;height:220px;display:flex;justify-content:center;align-items:center}
+  #tab-vendas .vd-chart canvas{margin:0 auto!important;display:block!important}
   #tab-vendas .vd-tablecard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
   #tab-vendas .vd-tablehead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
   #tab-vendas .vd-search{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;font-family:inherit;min-width:240px;color:var(--text)}
@@ -4910,7 +4911,7 @@ function vdMakeChart(canvasId, data){
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '55%',
       plugins: {
-        legend: { position: 'bottom', labels: { font:{size:10}, padding:8, boxWidth:10, boxHeight:10 } },
+        legend: { position: 'bottom', align: 'center', labels: { font:{size:10}, padding:8, boxWidth:10, boxHeight:10 } },
         tooltip: { callbacks: { label: c => {
           const t = values.reduce((a,b)=>a+b,0);
           return `${c.label}: ${c.parsed} (${(c.parsed/t*100).toFixed(0)}%)`;
