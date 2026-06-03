@@ -5039,11 +5039,12 @@ function vdMakeChartOrHide(canvasId, data){
   if (!ctx) return;
   const card = ctx.closest('.vd-card');
   const arr = data || [];
-  const semResp    = arr.find(d => d[0] === 'Não respondeu')?.[1] || 0;
   const realCounts = arr.filter(d => d[0] !== 'Não respondeu').map(d => d[1]);
-  const maxReal    = realCounts.length > 0 ? Math.max(...realCounts) : 0;
-  // Esconde se: nenhuma resposta real OU "Não respondeu" >= maior resposta real
-  if (maxReal === 0 || semResp >= maxReal) {
+  const totalReal  = realCounts.reduce((s,n) => s+n, 0);
+  // Esconde só se houver menos de 3 respostas reais NO TOTAL (base muito pequena
+  // pra ser estatisticamente útil). Caso contrário mostra o card, mesmo se
+  // "Não respondeu" for a maior fatia — a usuária consegue ler proporção.
+  if (totalReal < 3) {
     if (card) card.style.display = 'none';
     if (VD_CHARTS[canvasId]) { VD_CHARTS[canvasId].destroy(); delete VD_CHARTS[canvasId]; }
     return;
