@@ -4980,19 +4980,36 @@ function vdCountByTransform(arr, field, transform){
   return Object.entries(c).sort((a,b) => b[1]-a[1]);
 }
 
+// Renderiza ou esconde o card pai. "Vazio" = só "Não respondeu" (ninguém
+// respondeu nada útil) ou nenhum bucket. Útil pra esconder bot v1 quando
+// só temos vendas do bot v2 (e vice-versa).
+function vdMakeChartOrHide(canvasId, data){
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const card = ctx.closest('.vd-card');
+  const realData = (data || []).filter(d => d[0] !== 'Não respondeu' && d[1] > 0);
+  if (realData.length === 0) {
+    if (card) card.style.display = 'none';
+    if (VD_CHARTS[canvasId]) { VD_CHARTS[canvasId].destroy(); delete VD_CHARTS[canvasId]; }
+    return;
+  }
+  if (card) card.style.display = '';
+  vdMakeChart(canvasId, data);
+}
+
 function vdRenderCharts(vendas){
-  vdMakeChart('vd-ch-custo',      vdCountBy(vendas, 'custo_ano'));
-  vdMakeChart('vd-ch-timeshare',  vdCountBy(vendas, 'timeshare'));
-  vdMakeChart('vd-ch-desafio',    vdCountBy(vendas, 'desafio'));
-  vdMakeChart('vd-ch-viagem',     vdCountBy(vendas, 'viagem_prog'));
-  vdMakeChart('vd-ch-hospedagem', vdCountBy(vendas, 'hospedagem'));
-  vdMakeChart('vd-ch-viajamais',  vdCountBy(vendas, 'viaja_mais'));
-  vdMakeChart('vd-ch-investimento', vdCountBy(vendas, 'investimento'));
-  vdMakeChart('vd-ch-idade',      vdCountByTransform(vendas, 'idade', vdIdadeBucket));
-  vdMakeChart('vd-ch-profissao',  vdCountByTransform(vendas, 'profissao', vdProfNorm));
-  vdMakeChart('vd-ch-hospallinc', vdCountBy(vendas, 'hosp_allinc'));
-  vdMakeChart('vd-ch-proxferias', vdCountBy(vendas, 'prox_ferias'));
-  vdMakeChart('vd-ch-freqviagem', vdCountBy(vendas, 'freq_viagem'));
+  vdMakeChartOrHide('vd-ch-custo',      vdCountBy(vendas, 'custo_ano'));
+  vdMakeChartOrHide('vd-ch-timeshare',  vdCountBy(vendas, 'timeshare'));
+  vdMakeChartOrHide('vd-ch-desafio',    vdCountBy(vendas, 'desafio'));
+  vdMakeChartOrHide('vd-ch-viagem',     vdCountBy(vendas, 'viagem_prog'));
+  vdMakeChartOrHide('vd-ch-hospedagem', vdCountBy(vendas, 'hospedagem'));
+  vdMakeChartOrHide('vd-ch-viajamais',  vdCountBy(vendas, 'viaja_mais'));
+  vdMakeChartOrHide('vd-ch-investimento', vdCountBy(vendas, 'investimento'));
+  vdMakeChartOrHide('vd-ch-idade',      vdCountByTransform(vendas, 'idade', vdIdadeBucket));
+  vdMakeChartOrHide('vd-ch-profissao',  vdCountByTransform(vendas, 'profissao', vdProfNorm));
+  vdMakeChartOrHide('vd-ch-hospallinc', vdCountBy(vendas, 'hosp_allinc'));
+  vdMakeChartOrHide('vd-ch-proxferias', vdCountBy(vendas, 'prox_ferias'));
+  vdMakeChartOrHide('vd-ch-freqviagem', vdCountBy(vendas, 'freq_viagem'));
 }
 
 function vdRenderTable(vendas){
