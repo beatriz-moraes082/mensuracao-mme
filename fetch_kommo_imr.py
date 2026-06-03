@@ -43,6 +43,10 @@ CF_HOSPEDAGEM  = 4226162  # Bot novo · tipo de hospedagem
 CF_VIAJA_MAIS  = 4226170  # Bot novo · com quem viaja
 CF_INVESTIMENTO= 4226176  # Bot novo · quanto investe/ano
 CF_INTERESSE_AI= 4226180  # Bot novo · interesse em Resort All-inclusive
+# Bot v2 (jun/2026+)
+CF_HOSP_ALLINC = 4324059  # Hospedou em All-inclusive? (Sim/Não)
+CF_PROX_FERIAS = 4324061  # Próximas férias (objetivo da viagem)
+CF_FREQ_VIAGEM = 4324063  # Frequência de viagem
 # Bot antigo (vigente até ~30/04/2026)
 CF_IDADE       = 2824620  # Idade
 CF_CUSTO_ANO   = 2824632  # Custo/ano em viagens
@@ -144,8 +148,6 @@ def get_leads_closed(pipeline_id):
 def get_contacts_map(contact_ids):
     result = {}
     ids = list(set(contact_ids))
-    # DEBUG temporário: coleta mapa field_id → field_name pra descobrir IDs novos
-    field_name_map = {}
     for i in range(0, len(ids), 50):
         batch = ids[i:i+50]
         params = {"limit": 250}
@@ -160,18 +162,9 @@ def get_contacts_map(contact_ids):
                 val = str(vals[0].get("value", "")) if vals else ""
                 if val:
                     cf_map[cf["field_id"]] = val
-                # DEBUG: registra field_id → field_name
-                fid = cf.get("field_id")
-                fname = cf.get("field_name", "")
-                if fid and fname:
-                    field_name_map[fid] = fname
             # `name` é top-level (não custom_field); guardamos sob chave sentinela
             cf_map["_name"] = (c.get("name") or "").strip()
             result[c["id"]] = cf_map
-    # DEBUG: lista todos os custom_fields encontrados nos contatos
-    print(f"\n🔍 DEBUG · custom_fields encontrados no /contacts ({len(field_name_map)} únicos):")
-    for fid in sorted(field_name_map.keys()):
-        print(f"  {fid}  →  {field_name_map[fid]}")
     return result
 
 def lead_contact_id(lead):
@@ -267,6 +260,10 @@ def process_lead(lead, contacts_map):
         "viaja_mais":   contact.get(CF_VIAJA_MAIS, ""),
         "investimento": contact.get(CF_INVESTIMENTO, ""),
         "interesse_ai": contact.get(CF_INTERESSE_AI, ""),
+        # Bot v2 (jun/2026+)
+        "hosp_allinc":  contact.get(CF_HOSP_ALLINC, ""),
+        "prox_ferias":  contact.get(CF_PROX_FERIAS, ""),
+        "freq_viagem":  contact.get(CF_FREQ_VIAGEM, ""),
         # Bot antigo (até ~30/04/2026)
         "idade":        contact.get(CF_IDADE, ""),
         "custo_ano":    contact.get(CF_CUSTO_ANO, ""),

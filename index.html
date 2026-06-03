@@ -1261,6 +1261,9 @@
     <div class="vd-card"><h4>Com quem viaja</h4><div class="csub">"Você costuma viajar mais...?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-viajamais"></canvas></div></div>
     <div class="vd-card"><h4>Faixa etária</h4><div class="csub">"Qual sua idade?"</div><div class="vd-chart"><canvas id="vd-ch-idade"></canvas></div></div>
     <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
+    <div class="vd-card"><h4>Já hospedou em All-inc?</h4><div class="csub">"Hospedou em All-inclusive?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospallinc"></canvas></div></div>
+    <div class="vd-card"><h4>Próximas férias</h4><div class="csub">"Qual o plano pras próximas férias?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-proxferias"></canvas></div></div>
+    <div class="vd-card"><h4>Frequência de viagem</h4><div class="csub">"Com que frequência viaja?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-freqviagem"></canvas></div></div>
   </div>
 
   <!-- Ciclo médio de vendas -->
@@ -1302,7 +1305,7 @@
         <thead><tr>
           <th>Nome</th><th>Data fech.</th><th>Origem</th><th>Preço</th><th>Bot</th>
           <th>Idade</th><th>Custo/ano</th><th>Profissão</th><th>Maior desafio</th>
-          <th>Timeshare</th><th>Viagem prog.</th><th>Produto</th><th>Audience</th><th>Criativo</th>
+          <th>Timeshare</th><th>Viagem prog.</th><th>Hospedou All-inc</th><th>Próx. férias</th><th>Frequência</th><th>Produto</th><th>Audience</th><th>Criativo</th>
         </tr></thead>
         <tbody id="vd-tbody"></tbody>
       </table>
@@ -4763,6 +4766,9 @@ function vdBuildVendas(){
       viaja_mais: pick('viaja_mais'),
       investimento: pick('investimento'),
       interesse_ai: pick('interesse_ai'),
+      hosp_allinc: pick('hosp_allinc'),
+      prox_ferias: pick('prox_ferias'),
+      freq_viagem: pick('freq_viagem'),
       produto: cl.produto || '',
       respondeu_bot: respondeu,
     };
@@ -4868,6 +4874,9 @@ function vdRenderCharts(vendas){
   vdMakeChart('vd-ch-viajamais',  vdCountBy(vendas, 'viaja_mais'));
   vdMakeChart('vd-ch-idade',      vdCountByTransform(vendas, 'idade', vdIdadeBucket));
   vdMakeChart('vd-ch-profissao',  vdCountByTransform(vendas, 'profissao', vdProfNorm));
+  vdMakeChart('vd-ch-hospallinc', vdCountBy(vendas, 'hosp_allinc'));
+  vdMakeChart('vd-ch-proxferias', vdCountBy(vendas, 'prox_ferias'));
+  vdMakeChart('vd-ch-freqviagem', vdCountBy(vendas, 'freq_viagem'));
 }
 
 function vdRenderTable(vendas){
@@ -4886,7 +4895,7 @@ function vdRenderTable(vendas){
 
   const tbody = document.getElementById('vd-tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="14" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="17" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -4912,6 +4921,9 @@ function vdRenderTable(vendas){
       <td>${cel(v.desafio)}</td>
       <td>${cel(v.timeshare)}</td>
       <td>${cel(v.viagem_prog)}</td>
+      <td>${cel(v.hosp_allinc)}</td>
+      <td>${cel(v.prox_ferias)}</td>
+      <td>${cel(v.freq_viagem)}</td>
       <td>${cel(v.produto)}</td>
       <td>${cel(v.audience)}</td>
       <td>${cel(v.creative)}</td>
@@ -5191,80 +5203,84 @@ function renderDisparos() {
   }).join('');
   document.getElementById('disp-flows-grid').innerHTML = cards;
 
-  // ── Impacto: COMPLETOU vs NÃO COMPLETOU (ambos passaram pelo fluxo) ──
-  const impactRows = DISP_FLOWS.map(flow => {
-    // Multiselect: comparação concluiu/não-concluiu não faz sentido
-    if (flow.multi) return null;
-    const inFlow = leads.filter(l => (l[flow.key]||'').toString().trim());
-    if (inFlow.length === 0) return null;
-    const lastStep = flow.steps[flow.steps.length-1];
-    const completed = inFlow.filter(l => String(l[flow.key]||'').trim() === lastStep);
-    const partial   = inFlow.filter(l => String(l[flow.key]||'').trim() !== lastStep);
-    const cN = completed.length, pN = partial.length;
-    if (cN === 0 && pN === 0) return null;
-    const cQ = completed.filter(l => l.qualified).length;
-    const cV = completed.filter(l => l.venda).length;
-    const pQ = partial.filter(l => l.qualified).length;
-    const pV = partial.filter(l => l.venda).length;
-    return {
-      flow,
-      cN, cTxQ: cN>0?cQ/cN*100:0, cTxV: cN>0?cV/cN*100:0, cQ, cV,
-      pN, pTxQ: pN>0?pQ/pN*100:0, pTxV: pN>0?pV/pN*100:0, pQ, pV,
-      total: cN + pN,
-    };
-  }).filter(Boolean).sort((a,b) => b.total - a.total);
+  // ── Impacto · versão narrativa: passou pelo fluxo vs NÃO passou (base geral) ──
+  // Esconde fluxos com N < 10 (amostra ruidosa) e usa linguagem clara.
+  const N_MIN = 10;
+  const baseQ = leads.filter(l => l.qualified).length;
+  const baseV = leads.filter(l => l.venda).length;
+  const baseTxQ = leads.length > 0 ? baseQ/leads.length*100 : 0;
+  const baseTxV = leads.length > 0 ? baseV/leads.length*100 : 0;
 
-  if (impactRows.length === 0) {
-    document.getElementById('disp-impact-content').innerHTML = `
-      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem leads em fluxos no período (ou apenas fluxos multiselect).</div>`;
-  } else {
-    document.getElementById('disp-impact-content').innerHTML = `
-      <div style="font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.5">
-        Compara quem <b style="color:#16a34a">concluiu o fluxo</b> (chegou na última etapa) vs quem <b style="color:#f59e0b">entrou mas parou no meio</b>.
-        Delta positivo significa que o fluxo está agregando valor.
-      </div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        ${impactRows.map(r => {
-          const deltaQ = r.cTxQ - r.pTxQ;
-          const deltaV = r.cTxV - r.pTxV;
-          const dqSign = deltaQ >= 0 ? '+' : '';
-          const dvSign = deltaV >= 0 ? '+' : '';
-          const dqCls  = deltaQ > 5 ? 'tc-g' : deltaQ < -5 ? 'tc-r' : '';
-          const dvCls  = deltaV > 1 ? 'tc-g' : deltaV < -1 ? 'tc-r' : '';
-          const verdict = deltaQ > 10 || deltaV > 5
-            ? '<span style="color:#16a34a;font-weight:700">✓ Vale a pena completar</span>'
-            : deltaQ < -5
-              ? '<span style="color:#dc2626;font-weight:700">✗ Quem completa qualifica MENOS — revisar mensagens</span>'
-              : '<span style="color:var(--muted)">Impacto neutro</span>';
-          return `
-            <div style="padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-                <b style="font-size:13px">${r.flow.lbl}</b>
-                <span style="font-size:11px;color:var(--muted)">${r.total} leads no fluxo</span>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                <div style="padding:10px 12px;background:rgba(34,197,94,.06);border-radius:8px;border-left:3px solid #16a34a">
-                  <div style="font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px">Concluíram (${r.cN})</div>
-                  <div style="font-size:12px;line-height:1.7">
-                    Tx. qualif: <b>${fmtP(r.cTxQ)}</b> (${r.cQ}/${r.cN})<br>
-                    Tx. venda: <b>${fmtP(r.cTxV)}</b> (${r.cV}/${r.cN})
-                  </div>
-                </div>
-                <div style="padding:10px 12px;background:rgba(245,158,11,.06);border-radius:8px;border-left:3px solid #f59e0b">
-                  <div style="font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px">Pararam no meio (${r.pN})</div>
-                  <div style="font-size:12px;line-height:1.7">
-                    Tx. qualif: <b>${fmtP(r.pTxQ)}</b> (${r.pQ}/${r.pN})<br>
-                    Tx. venda: <b>${fmtP(r.pTxV)}</b> (${r.pV}/${r.pN})
-                  </div>
-                </div>
-              </div>
-              <div style="font-size:11.5px;color:var(--text);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
-                <span>Delta: <span class="${dqCls}">tx. qualif <b>${dqSign}${deltaQ.toFixed(1)}pp</b></span> · <span class="${dvCls}">tx. venda <b>${dvSign}${deltaV.toFixed(1)}pp</b></span></span>
-                <span>${verdict}</span>
-              </div>
-            </div>`;
-        }).join('')}
+  const impactNarratives = DISP_FLOWS.map(flow => {
+    const inFlow  = leads.filter(l => (l[flow.key]||'').toString().trim());
+    const offFlow = leads.filter(l => !(l[flow.key]||'').toString().trim());
+    const inN = inFlow.length;
+    if (inN === 0) return null;
+    const inQ = inFlow.filter(l => l.qualified).length;
+    const inV = inFlow.filter(l => l.venda).length;
+    const offQ = offFlow.filter(l => l.qualified).length;
+    const offV = offFlow.filter(l => l.venda).length;
+    const inTxQ  = inN > 0 ? inQ/inN*100 : 0;
+    const inTxV  = inN > 0 ? inV/inN*100 : 0;
+    const offTxQ = offFlow.length > 0 ? offQ/offFlow.length*100 : 0;
+    const offTxV = offFlow.length > 0 ? offV/offFlow.length*100 : 0;
+    const deltaQ = inTxQ - offTxQ;
+    const deltaV = inTxV - offTxV;
+    return { flow, inN, inQ, inV, inTxQ, inTxV, offTxQ, offTxV, deltaQ, deltaV };
+  }).filter(Boolean).sort((a,b) => b.inN - a.inN);
+
+  const withSample    = impactNarratives.filter(r => r.inN >= N_MIN);
+  const tooSmall      = impactNarratives.filter(r => r.inN <  N_MIN);
+
+  const renderNarrative = (r) => {
+    // Veredito narrativo
+    let verdict, vIcon, vCol;
+    if (r.deltaQ > 5 || r.deltaV > 2) {
+      verdict = 'agregando valor';   vIcon = '✅'; vCol = '#16a34a';
+    } else if (r.deltaQ < -5 || r.deltaV < -2) {
+      verdict = 'abaixo da média';   vIcon = '⚠️'; vCol = '#d97706';
+    } else {
+      verdict = 'impacto neutro';    vIcon = '➖'; vCol = 'var(--muted)';
+    }
+    const dqSign = r.deltaQ >= 0 ? '+' : '';
+    const dvSign = r.deltaV >= 0 ? '+' : '';
+    const dqStyle = r.deltaQ > 0 ? 'color:#16a34a' : r.deltaQ < 0 ? 'color:#dc2626' : 'color:var(--muted)';
+    const dvStyle = r.deltaV > 0 ? 'color:#16a34a' : r.deltaV < 0 ? 'color:#dc2626' : 'color:var(--muted)';
+    return `
+      <div style="padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <b style="font-size:13px">${r.flow.lbl}</b>
+          <span style="font-size:11px;color:${vCol};font-weight:700">${vIcon} ${verdict}</span>
+        </div>
+        <div style="font-size:12.5px;line-height:1.7;color:var(--text);margin-bottom:10px">
+          Dos <b>${r.inN}</b> leads que passaram por esse fluxo, <b>${r.inQ}</b> qualificaram (<b>${fmtP(r.inTxQ)}</b>) e <b>${r.inV}</b> venderam (<b>${fmtP(r.inTxV)}</b>).
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>Tx. qualif <b style="${dqStyle}">${dqSign}${r.deltaQ.toFixed(1)}pp</b> vs média ${fmtP(r.offTxQ)} (quem não passou pelo fluxo)</span>
+          <span>Tx. venda <b style="${dvStyle}">${dvSign}${r.deltaV.toFixed(1)}pp</b> vs média ${fmtP(r.offTxV)}</span>
+        </div>
       </div>`;
+  };
+
+  if (impactNarratives.length === 0) {
+    document.getElementById('disp-impact-content').innerHTML = `
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem leads em fluxos no período selecionado.</div>`;
+  } else {
+    const tooSmallList = tooSmall.length > 0
+      ? `<div style="margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--surface2);font-size:11.5px;color:var(--muted);line-height:1.6">
+          <b>Amostra ainda pequena (&lt; ${N_MIN} leads no período) — voltar quando acumular mais:</b><br>
+          ${tooSmall.map(r => `${r.flow.lbl} (${r.inN})`).join(' · ')}
+        </div>`
+      : '';
+    document.getElementById('disp-impact-content').innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.55">
+        Compara <b style="color:var(--text)">leads que passaram pelo fluxo</b> com <b style="color:var(--text)">leads que NÃO passaram</b> (média geral).
+        Se quem passou converte mais, o fluxo está agregando valor. <span style="font-size:11px">Fluxos com menos de ${N_MIN} leads ficam ocultos pra evitar leitura ruidosa.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${withSample.length > 0 ? withSample.map(renderNarrative).join('') : `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12px">Nenhum fluxo com ≥ ${N_MIN} leads no período.</div>`}
+      </div>
+      ${tooSmallList}`;
   }
 }
 
