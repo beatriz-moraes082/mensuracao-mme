@@ -60,7 +60,7 @@ TASK_MENSAL  = TASK_RELATORIO
 # Lookup dinâmico na lista 📊 Relatórios (canônica) — lógica acordada com Ana 2026-06-01:
 # TODAS as tasks têm due_date; 1ª seg do mês recebe MENSAL, demais semanas recebem SEMANAL.
 RELATORIOS_LIST_ID = "901323122510"
-CLICKUP_NAME_FILTER = os.environ.get("MME_CLICKUP_NAME_FILTER", "MME Vacation")
+CLICKUP_NAME_FILTER = os.environ.get("MME_CLICKUP_NAME_FILTER", "Ipioca Mar Resort")
 
 KOMMO_TOKEN = os.environ["KOMMO_TOKEN"]
 KOMMO_SUBDOMAIN = os.environ.get("KOMMO_SUBDOMAIN", "ipiocamarresort")
