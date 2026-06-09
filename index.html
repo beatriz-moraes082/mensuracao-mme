@@ -3398,7 +3398,7 @@ function renderDiagnostico() {
   const periodTxt = (FUNNEL[currentPeriod]?.label || currentPeriod).split('·').slice(1).join('·').trim() || currentPeriod;
   const extraPerd = totPerd ? ` · ${totPerd} perdidos` : '';
   document.getElementById('diag-funnel-sub').textContent =
-    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)} do total)${extraPerd}`;
+    `${total} leads SDR · ${periodTxt} · ${c_lq} qualificaram (${fmtP(txQ)} do total)${extraPerd} · barras = onde estão agora`;
 
   // Follow-up usa cor cinza/marker pra sinalizar que é estado paralelo (não etapa de avanço).
   const COL_FU = '#9ca3af';
@@ -3406,51 +3406,34 @@ function renderDiagnostico() {
   // Cores especiais
   const COL_LOST = '#dc2626'; // vermelho · saída do funil
 
+  // ── Snapshot: ONDE os leads do período estão AGORA (status atual no pipeline SDR) ──
+  // Substitui o funil cumulativo (que mostrava 100% nas etapas de topo por inferência de bot).
+  // A soma das etapas = total de leads do período. Revela leads travados sem desfecho.
+  const snapAt = (st) => sdr.filter(l => l.status === st).length;
+  const _pctT  = (n) => total > 0 ? +(n/total*100).toFixed(1) : 0;
   const steps = [
-    // ── Pipeline SDR ─────────────────────────────────────
-    {name:'Pré-atendimento',          count:c_pre,      col:'#94a3b8', rate:null,                                  meta:null},
-    {name:'Lead novo',                count:c_novo,     col:'#3b82f6', rate:c_pre>0  ? c_novo/c_pre*100   : 0,     meta:null},
-    {name:'Follow-up (SDR · paralelo)', count:c_fu_sdr, col:COL_FU,    rate:null,                                  meta:null, parallel:true},
-    {name:'Qualificação',             count:c_qual,     col:'#6366f1', rate:c_novo>0 ? c_qual/c_novo*100  : 0,     meta:null},
-    {name:'Lead qualificado',         count:c_lq,       col:'#a855f7', rate:c_qual>0 ? c_lq/c_qual*100    : 0,     meta:META_TX_QUALIF},
-    {name:'Reunião agendada',         count:c_ra,       col:'#e85d28', rate:c_lq>0   ? c_ra/c_lq*100     : 0,      meta:60},
-    {name:'Reunião realizada',        count:c_rr,       col:'#f59e0b', rate:c_ra>0   ? c_rr/c_ra*100     : 0,      meta:65},
-    // ── Pipeline Closer ──────────────────────────────────
-    {name:'Follow-up (Closer · paralelo)', count:c_fu_cl, col:COL_FU,  rate:null,                                  meta:null, parallel:true},
-    {name:'Proposta enviada',         count:c_proposta, col:'#fb923c', rate:c_rr>0   ? c_proposta/c_rr*100 : 0,    meta:null},
-    {name:'Sinal verde',              count:c_verde,    col:'#10b981', rate:c_proposta>0 ? c_verde/c_proposta*100 : 0, meta:null},
-    {name:'Venda ganha (Closer)',     count:c_venda,    col:'#16a34a', rate:c_verde>0 ? c_venda/c_verde*100 : 0,   meta:null},
-    // ── Saídas (perdidos) ────────────────────────────────
-    {name:'Perdidos (SDR · saída)',   count:perdidos,       col:COL_LOST, rate:null, meta:null, parallel:true},
-    {name:'Perdidos (Closer · saída)',count:closerPerdidos, col:COL_LOST, rate:null, meta:null, parallel:true},
+    {name:'Pré-atendimento',            count:snapAt(98618883), col:'#94a3b8', rate:_pctT(snapAt(98618883)), meta:null},
+    {name:'Lead novo',                  count:snapAt(98147479), col:'#3b82f6', rate:_pctT(snapAt(98147479)), meta:null},
+    {name:'Qualificação (em análise)',  count:snapAt(98147487), col:'#6366f1', rate:_pctT(snapAt(98147487)), meta:null},
+    {name:'Lead qualificado',           count:snapAt(98147491), col:'#a855f7', rate:_pctT(snapAt(98147491)), meta:null},
+    {name:'Reunião agendada',           count:snapAt(98162603), col:'#e85d28', rate:_pctT(snapAt(98162603)), meta:null},
+    {name:'Reunião realizada',          count:snapAt(142),      col:'#f59e0b', rate:_pctT(snapAt(142)),      meta:null},
+    {name:'Follow-up (SDR · paralelo)', count:snapAt(98147483), col:COL_FU,    rate:_pctT(snapAt(98147483)), meta:null, parallel:true},
+    {name:'Perdidos (SDR · saída)',     count:snapAt(143),      col:COL_LOST,  rate:_pctT(snapAt(143)),      meta:null, parallel:true},
   ];
-  renderPyramid('diag-pyr', steps.map(s => ({...s, rate: s.rate !== null ? +s.rate.toFixed(1) : null})));
+  renderPyramid('diag-pyr', steps);
 
-  // Identifica gargalo do funil (transições entre colunas dos pipelines SDR e Closer)
-  const transitions = [
-    {name:'Pré-atendimento → Lead novo',   from:c_pre,      to:c_novo},
-    {name:'Lead novo → Qualificação',      from:c_novo,     to:c_qual},
-    {name:'Qualificação → Lead qualif.',   from:c_qual,     to:c_lq},
-    {name:'Lead qualif. → Reunião ag.',    from:c_lq,       to:c_ra},
-    {name:'Reunião ag. → Reunião real.',   from:c_ra,       to:c_rr},
-    {name:'Reunião real. → Proposta',      from:c_rr,       to:c_proposta},
-    {name:'Proposta → Sinal verde',        from:c_proposta, to:c_verde},
-    {name:'Sinal verde → Venda ganha',     from:c_verde,    to:c_venda},
-  ].map(t => ({...t, txt: t.from>0 ? t.to/t.from*100 : 0, lost: Math.max(0, t.from - t.to)}));
-  // Critério: MAIOR perda absoluta (em quantidade de leads). Taxa baixa com N=2
-  // não é prioritária; o foco é onde mais leads se perdem.
-  const validTransitions = transitions.filter(t => t.from > 0);
-  const ranked = validTransitions.slice().sort((a,b) => b.lost - a.lost);
-  const top1 = ranked[0];
-  const top2 = ranked[1];
-  document.getElementById('diag-funnel-insight').innerHTML = top1 ? `
-    ⚡ <b>Maior gargalo:</b> ${top1.name}
-    — perde <b>${top1.lost} leads</b> nessa transição
-    (avançam apenas ${fmtP(top1.txt)}).
-    ${top2 && top2.lost > 0
-      ? `<div style="font-size:11.5px;color:var(--muted);margin-top:4px">2º maior: ${top2.name} — ${top2.lost} leads (${fmtP(top2.txt)} avançam)</div>`
-      : ''}
-    <div style="font-size:11.5px;color:var(--muted);margin-top:4px">Resolver o gargalo principal tem o maior impacto absoluto no número de vendas.</div>
+  // Insight: maior acúmulo de leads parados numa etapa não-terminal (aguardando desfecho)
+  const _stuck = [
+    {name:'Pré-atendimento', n:snapAt(98618883)},
+    {name:'Lead novo',       n:snapAt(98147479)},
+    {name:'Qualificação',    n:snapAt(98147487)},
+    {name:'Lead qualificado (aguardando agendamento)', n:snapAt(98147491)},
+  ].sort((a,b) => b.n - a.n)[0];
+  document.getElementById('diag-funnel-insight').innerHTML = _stuck && _stuck.n > 0 ? `
+    ⚡ <b>Maior acúmulo:</b> ${_stuck.n} leads parados em <b>${_stuck.name}</b>
+    (${_pctT(_stuck.n)}% do período) — aguardando desfecho do time.
+    <div style="font-size:11.5px;color:var(--muted);margin-top:4px">No período: ${c_lq} qualificaram (${fmtP(txQ)}) · ${snapAt(143)} perdidos · ${snapAt(142)} já em reunião realizada.</div>
   ` : '';
 
   // ── Render: Top Alavancas · 3 cards (1 laranja sólido) ────
