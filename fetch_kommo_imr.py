@@ -5,7 +5,7 @@ para o dashboard dinâmico.
 Saída: data/kommo_leads.json
 """
 
-import json, os, requests
+import json, os, requests, hashlib
 from datetime import datetime, date, timezone
 from pathlib import Path
 
@@ -24,10 +24,12 @@ _load_env()
 SUBDOMAIN = os.environ["KOMMO_SUBDOMAIN"]
 TOKEN     = os.environ["KOMMO_TOKEN"]
 
-# IMR pipelines
-PIPELINE_SDR    = 12716679
-PIPELINE_CLOSER = 12719415
-PIPELINE_DUQUE  = 12719007
+# IMR pipelines (IDs reais — confirmados via /api/v4/leads/pipelines)
+PIPELINE_SDR      = 12716679
+PIPELINE_BDR      = 12844667
+PIPELINE_CLOSER   = 12719415
+PIPELINE_NUTRICAO = 12719007   # antes rotulado erroneamente como "Duque"
+PIPELINE_DUQUE    = 13069100   # Duque real (não era buscado antes)
 
 # Lead custom fields
 CF_SCORE = 2929964   # Lead score A/B/C/D
@@ -230,6 +232,9 @@ def process_lead(lead, contacts_map):
     # (phone_hash preserva dedup por contato sem expor o número)
     phone_hash = raw_phone[-10:] if raw_phone else ""  # só usado internamente pra dedup
     phone_masked = (raw_phone[:2] + "X"*(len(raw_phone)-6) + raw_phone[-4:]) if len(raw_phone) >= 10 else ""
+    # Chave de dedup pública: hash não reversível dos últimos 10 dígitos.
+    # Permite o frontend deduplicar por pessoa sem expor o telefone.
+    dkey = hashlib.sha1(phone_hash.encode()).hexdigest()[:12] if len(phone_hash) >= 10 else ""
     tags  = get_lead_tags(lead)
     qualified, reuniao_agendada, reuniao_realizada, proposta, venda = classify(pipeline, status, tags, closed_in_period)
 
@@ -253,6 +258,7 @@ def process_lead(lead, contacts_map):
         "campaign":   contact.get(CF_CAMPANHA, ""),
         "medium":     contact.get(CF_MEDIUM, ""),
         "phone":      phone_masked,   # telefone mascarado (55XXXXXXXX1234) pra publicação
+        "dkey":       dkey,           # hash do telefone p/ dedup por pessoa no frontend (não reversível)
         "_phone_key": phone_hash,     # usado apenas em memória pra deduplicar; removido antes de salvar
         "tags":       tags,
         # Bot novo (a partir de ~30/04/2026)
@@ -295,7 +301,7 @@ def process_lead(lead, contacts_map):
 def get_pipeline_statuses():
     """Fetch real status IDs for all IMR pipelines."""
     status_map = {}
-    for pid in [PIPELINE_SDR, PIPELINE_CLOSER, PIPELINE_DUQUE]:
+    for pid in [PIPELINE_SDR, PIPELINE_BDR, PIPELINE_CLOSER, PIPELINE_NUTRICAO, PIPELINE_DUQUE]:
         data = kommo_get(f"/api/v4/leads/pipelines/{pid}")
         for st in data.get("_embedded", {}).get("statuses", []):
             status_map[st["id"]] = st["name"]
@@ -352,11 +358,19 @@ def main():
         leads_closer_all.append(l)
     print(f"  Total Closer (merge): {len(leads_closer_all)}")
 
+    print("📋 Buscando leads Nutrição...")
+    leads_nutricao = get_leads(PIPELINE_NUTRICAO)
+    print(f"  Total Nutrição: {len(leads_nutricao)}")
+
+    print("📋 Buscando leads BDR...")
+    leads_bdr = get_leads(PIPELINE_BDR)
+    print(f"  Total BDR: {len(leads_bdr)}")
+
     print("📋 Buscando leads Duque...")
     leads_duque = get_leads(PIPELINE_DUQUE)
     print(f"  Total Duque: {len(leads_duque)}")
 
-    all_leads = leads_sdr + leads_closer_all + leads_duque
+    all_leads = leads_sdr + leads_closer_all + leads_nutricao + leads_bdr + leads_duque
 
     # Fetch contacts
     contact_ids = [lead_contact_id(l) for l in all_leads if lead_contact_id(l)]
@@ -364,9 +378,11 @@ def main():
     contacts_map = get_contacts_map(contact_ids)
 
     # Process
-    processed_sdr    = [process_lead(l, contacts_map) for l in leads_sdr]
-    processed_closer = [process_lead(l, contacts_map) for l in leads_closer_all]
-    processed_duque  = [process_lead(l, contacts_map) for l in leads_duque]
+    processed_sdr      = [process_lead(l, contacts_map) for l in leads_sdr]
+    processed_closer   = [process_lead(l, contacts_map) for l in leads_closer_all]
+    processed_nutricao = [process_lead(l, contacts_map) for l in leads_nutricao]
+    processed_bdr      = [process_lead(l, contacts_map) for l in leads_bdr]
+    processed_duque    = [process_lead(l, contacts_map) for l in leads_duque]
 
     # Deduplicate SDR by phone (usa _phone_key não mascarado; removido depois)
     seen_phones, deduped_sdr = set(), []
@@ -376,11 +392,24 @@ def main():
             if p in seen_phones: continue
             seen_phones.add(p)
         deduped_sdr.append(l)
+    # Leads "campanha" (aba principal): Meta + Google, no funil SDR + os movidos
+    # pra Nutrição (quando o SDR não consegue contato), deduplicados por telefone.
+    CAMPANHA = {"Meta Ads", "Google+Ads", "google"}
+    camp_phones, leads_campanha = set(), 0
+    for l in deduped_sdr + processed_nutricao:
+        if (l.get("origem") or "") not in CAMPANHA: continue
+        p = l.get("_phone_key", "")
+        if p and len(p) >= 10:
+            if p in camp_phones: continue
+            camp_phones.add(p)
+        leads_campanha += 1
+
     # Remove chave interna antes de salvar (não pode ir pro JSON público)
-    for lst in (deduped_sdr, processed_closer, processed_duque):
+    for lst in (deduped_sdr, processed_closer, processed_nutricao, processed_bdr, processed_duque):
         for l in lst:
             l.pop("_phone_key", None)
     print(f"\n  SDR bruto: {len(processed_sdr)} → deduplicado: {len(deduped_sdr)}")
+    print(f"  Leads campanha (SDR+Nutrição, únicos): {leads_campanha}")
 
     from collections import Counter
     scores = Counter(l["score"] for l in deduped_sdr if l["score"])
@@ -414,7 +443,7 @@ def main():
         print(f"\n⚠️  {venda_dups} venda(s) duplicada(s) removida(s) (mesmo contato + mesma data de fechamento)")
 
     # Métricas agregadas (regras do cliente)
-    total_leads       = len(deduped_sdr) + len(processed_duque)
+    total_leads       = leads_campanha   # aba principal: campanha (Meta+Google) SDR + Nutrição, únicos
     total_qualificado = sum(1 for l in deduped_sdr if l["qualified"])
     total_reu_agend   = sum(1 for l in deduped_sdr if l["reuniao_agendada"])
     total_reu_real    = sum(1 for l in deduped_sdr if l["reuniao_realizada"])
@@ -423,10 +452,16 @@ def main():
     total_receita     = sum(l["price"] for l in processed_closer if l["venda"])
     total_perda       = (sum(1 for l in deduped_sdr if l["perda"]) +
                          sum(1 for l in processed_closer if l["perda"] and l["closed_in_period"]) +
+                         sum(1 for l in processed_nutricao if l["perda"]) +
+                         sum(1 for l in processed_bdr if l["perda"]) +
                          sum(1 for l in processed_duque if l["perda"]))
 
     metrics = {
         "leads":             total_leads,
+        "leads_sdr":         len(deduped_sdr),
+        "leads_nutricao":    len(processed_nutricao),
+        "leads_bdr":         len(processed_bdr),
+        "leads_duque":       len(processed_duque),
         "qualified":         total_qualificado,
         "reuniao_agendada":  total_reu_agend,
         "reuniao_realizada": total_reu_real,
@@ -445,16 +480,19 @@ def main():
         "status_map": {str(k): v for k, v in status_map.items()},
         "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},
         "metrics":    metrics,
-        "sdr":    deduped_sdr,
-        "closer": processed_closer,
-        "duque":  processed_duque,
+        "sdr":      deduped_sdr,
+        "closer":   processed_closer,
+        "nutricao": processed_nutricao,
+        "bdr":      processed_bdr,
+        "duque":    processed_duque,
     }
 
     out_path = Path(__file__).resolve().parent / "data/kommo_leads.json"
     out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2))
     print(f"\n✅ Salvo em: {out_path}")
-    print(f"   SDR: {len(deduped_sdr)} | Closer: {len(processed_closer)} | Duque: {len(processed_duque)}")
+    print(f"   SDR: {len(deduped_sdr)} | Closer: {len(processed_closer)} | "
+          f"Nutrição: {len(processed_nutricao)} | BDR: {len(processed_bdr)} | Duque: {len(processed_duque)}")
 
 if __name__ == "__main__":
     main()

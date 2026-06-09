@@ -1239,6 +1239,13 @@
   <!-- 4 KPIs hero -->
   <div class="ds-grid-4" id="disp-hero-kpis"></div>
 
+  <!-- Funil de Nutrição (pipeline Kommo) -->
+  <div class="ds-sec" style="margin-top:24px">
+    <h3>Funil de Nutrição (pipeline)</h3>
+    <span class="sub">Leads de campanha movidos pra Nutrição quando o SDR não consegue contato</span>
+  </div>
+  <div class="ds-chips" id="disp-nutricao-grid"></div>
+
   <!-- Cards de cada fluxo -->
   <div class="ds-sec">
     <h3>Performance por fluxo</h3>
@@ -1460,7 +1467,7 @@ const VENDA_EXCLUDE = new Set([
 // Helper: lead é venda válida? (true se l.venda E não está na lista de exclusão)
 function isValidVenda(l) { return !!(l && l.venda && !VENDA_EXCLUDE.has(l.id)); }
 
-const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0} });
+const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0}, nutricao:{total:0,sdr:0,bdr:0,closer:0,perdidos:0} });
 let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
@@ -1579,19 +1586,39 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
     receita:  closerWonInP.reduce((s,l) => s + (l.price || 0), 0),
   };
 
+  // Duque REAL (pipeline 13069100): Entrada → Lead Novo → Follow-Up → Qualificação → Reunião → (perda)
   const duqueInP = (kommo.duque || []).filter(l => _inWindow(l.created_at, win));
+  const _dq = ids => duqueInP.filter(l => ids.includes(l.status)).length;
   const duque = {
     total:     duqueInP.length,
     ativos:    0,
-    andamento: duqueInP.filter(l => l.status === 98165003 || l.status === 99170411).length,
-    avancado:  duqueInP.filter(l => l.status === 98524255).length,
-    reuniao:   duqueInP.filter(l => l.status === 98524255).length,
+    andamento: _dq([100773644, 100773648, 100773652, 142]),  // trabalhados (saíram de "Entrada")
+    avancado:  _dq([100773652, 142]),                         // qualificação + reunião
+    reuniao:   _dq([142]),                                    // reunião realizada
     perdidos:  duqueInP.filter(l => l.perda).length,
     disparo:   duqueInP.length,
   };
 
-  const bdr = { total: 0, won: 0, lost: 0, active: 0, outros: 0 };
-  return { label: periodLabel(periodKey, win, isPartial), sdr, closer, duque, bdr };
+  // BDR REAL (pipeline 12844667): base → qualificação/follow/agendada (ativo) → reunião (won) / perda
+  const bdrInP = (kommo.bdr || []).filter(l => _inWindow(l.created_at, win));
+  const bdr = {
+    total:  bdrInP.length,
+    active: bdrInP.filter(l => [99059507, 99059503, 99059711].includes(l.status)).length,
+    won:    bdrInP.filter(l => l.status === 142).length,
+    lost:   bdrInP.filter(l => l.perda).length,
+    outros: 0,
+  };
+
+  // Nutrição (pipeline 12719007): leads que o SDR não conseguiu contato (Nutrição SDR/BDR/Closer) → perda
+  const nutriInP = (kommo.nutricao || []).filter(l => _inWindow(l.created_at, win));
+  const nutricao = {
+    total:    nutriInP.length,
+    sdr:      nutriInP.filter(l => l.status === 98165003).length,
+    bdr:      nutriInP.filter(l => l.status === 99170411).length,
+    closer:   nutriInP.filter(l => l.status === 98524255).length,
+    perdidos: nutriInP.filter(l => l.perda).length,
+  };
+  return { label: periodLabel(periodKey, win, isPartial), sdr, closer, duque, bdr, nutricao };
 }
 
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
@@ -3029,6 +3056,17 @@ function renderDiagnostico() {
   const win = periodWindow(currentPeriod, ref);
   const sdr = KOMMO_DATA.sdr.filter(l => _inWindow(l.created_at, win));
   const total = sdr.length;
+  // "Leads" da aba principal: campanha (Meta+Google) no SDR + os movidos pra Nutrição
+  // (quando o SDR não consegue contato), deduplicados por telefone. Taxas continuam sobre o SDR.
+  const _CAMP = new Set(['Meta Ads','Google+Ads','google']);
+  const nutriInWin = (KOMMO_DATA.nutricao || []).filter(l => _inWindow(l.created_at, win));
+  const _seenPh = new Set(); let leadsCampanha = 0;
+  for (const l of [...sdr, ...nutriInWin]) {
+    if (!_CAMP.has(l.origem || '')) continue;
+    const k = l.dkey || '';
+    if (k) { if (_seenPh.has(k)) continue; _seenPh.add(k); }
+    leadsCampanha++;
+  }
   if (total === 0) {
     document.getElementById('diag-pyr').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Sem leads no período selecionado.</div>';
     return;
@@ -3130,7 +3168,7 @@ function renderDiagnostico() {
     <div class="kpi-highlight">
       <div class="lbl">Tx. Qualificação · agora</div>
       <div class="val">${fmtP(txQ)}</div>
-      <div class="meta-line">${qualif} de ${total} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
+      <div class="meta-line">${qualif} de ${total} leads SDR · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
       <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
     </div>
   `;
@@ -3193,8 +3231,8 @@ function renderDiagnostico() {
   const roasInbound = totalInvest > 0 ? (faturamentoInbound / totalInvest) : 0;
   const cacInbound  = vendasInboundN > 0 ? (totalInvest / vendasInboundN) : 0;
   const tiles = [
-    {lbl:'Leads',            val:fmtN(total),         iconColor:'#3b82f6',
-     trend:tdLeads, sub:'no período', sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
+    {lbl:'Leads',            val:fmtN(leadsCampanha), iconColor:'#3b82f6',
+     trend:tdLeads, sub:`campanha Meta+Google · SDR + Nutrição · ${fmtN(total)} no SDR`, sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
     {lbl:'Investimento',     val:fmtBRL(totalInvest), iconColor:'#d97706',
      trend:tdInv, sub:'Meta + Google · ' + (total > 0 ? 'CPL R$ '+(totalInvest/total).toFixed(0) : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
     {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed',
@@ -3204,7 +3242,7 @@ function renderDiagnostico() {
      sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
     {lbl:'Tx. Conversão',    val:fmtP(txConv),        iconColor:'#EE4D20',
      trend:{pct:0,cls:'neut',txt:''},
-     sub:`${vendas} vendas ÷ ${total} leads`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
+     sub:`${vendas} vendas ÷ ${total} leads SDR`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
     {lbl:'ROAS · geral',     val: roas > 0 ? roas.toFixed(1)+'x' : '—', iconColor:'#10b981',
      trend:{pct:0,cls:'neut',txt:''},
      sub: roas > 0 ? `${fmtBRL(faturamento)} ÷ ${fmtBRL(totalInvest)}` : 'sem dados',
@@ -3908,16 +3946,16 @@ function computeMensData(kommo, meta, google, monthOrWin) {
     }
   }
 
-  // ── Duque
-  const STATUS_LEADS_ENTRANTES_DUQUE = 98164999;
-  const STATUS_NUTR_CLOSER_DUQUE     = 98524255;
+  // ── Duque REAL (pipeline 13069100): Entrada → Lead Novo → ... → Reunião Realizada
+  const STATUS_ENTRADA_DUQUE  = 102334136;  // "Entrada" (lead ainda não trabalhado)
+  const STATUS_REUNIAO_DUQUE  = 142;        // "Reunião Realizada"
   for (const l of (kommo.duque || [])) {
     if (!passes(l)) continue;
     const w = l.week || 'w4';
     if (!D.duque[w]) continue;
     D.duque[w].disparo++;
-    if (l.status !== STATUS_LEADS_ENTRANTES_DUQUE) D.duque[w].leads++;
-    if (l.status === STATUS_NUTR_CLOSER_DUQUE)     D.duque[w].realiz++;
+    if (l.status !== STATUS_ENTRADA_DUQUE) D.duque[w].leads++;
+    if (l.status === STATUS_REUNIAO_DUQUE) D.duque[w].realiz++;
   }
 
   // ── Closer: leads (criados na janela/mês), prop, vendas (closed_at na janela/mês)
@@ -5361,6 +5399,27 @@ function renderDisparos() {
   if (!KOMMO_RAW) return;
   const leads = _dispLeadsInPeriod();
   const total = leads.length;
+
+  // ── Funil de Nutrição (pipeline Kommo) ────────────────
+  (function renderNutricaoPipeline() {
+    const el = document.getElementById('disp-nutricao-grid');
+    if (!el) return;
+    const n = (FUNNEL[currentPeriod] || {}).nutricao || {total:0,sdr:0,bdr:0,closer:0,perdidos:0};
+    const _p = (a,b) => b > 0 ? (a/b*100).toFixed(0) : '0';
+    const chips = [
+      {lbl:'Leads em Nutrição', val:n.total,    sub:'pipeline Nutrição',          color:'#8b5cf6'},
+      {lbl:'Nutrição SDR',      val:n.sdr,      sub:_p(n.sdr,n.total)+'% do total',    color:'#3b82f6'},
+      {lbl:'Nutrição BDR',      val:n.bdr,      sub:_p(n.bdr,n.total)+'% do total',    color:'#f5a623'},
+      {lbl:'Nutrição Closer',   val:n.closer,   sub:_p(n.closer,n.total)+'% do total', color:'#22c55e'},
+      {lbl:'Perdidos',          val:n.perdidos, sub:_p(n.perdidos,n.total)+'% do total', color:'#ef4444'},
+    ];
+    el.innerHTML = chips.map(c => `
+      <div class="ds-chip" style="border-top-color:${c.color}">
+        <div class="ch-lbl">${c.lbl}</div>
+        <div class="ch-val">${(c.val||0).toLocaleString('pt-BR')}</div>
+        <div class="ch-sub">${c.sub}</div>
+      </div>`).join('');
+  })();
 
   // ── Hero KPIs ─────────────────────────────────────────
   const fmtN = n => (n||0).toLocaleString('pt-BR');
