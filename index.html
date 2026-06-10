@@ -5391,7 +5391,9 @@ function renderDisparos() {
   // Ordena: ativos primeiro, depois em teste, depois sem uso
   const flowsSorted = DISP_FLOWS.map(flow => {
     const counts = _dispCountSteps(leads, flow);
-    return {flow, counts, n: counts[0]||0};
+    // n = volume do fluxo (usa MAX, não counts[0], pra acomodar fluxos
+    // onde a primeira etapa é opcional — vide Fluxo Duque)
+    return {flow, counts, n: Math.max(...counts, 0)};
   }).sort((a,b) => {
     const sa = _dispFlowStatus(a.n).key, sb = _dispFlowStatus(b.n).key;
     const order = {active:0, test:1, idle:2};
@@ -5401,7 +5403,12 @@ function renderDisparos() {
 
   const cards = flowsSorted.map(({flow, counts, n}) => {
     const status = _dispFlowStatus(n);
-    const entered = counts[0];
+    // 'entered' = base 100% do funil. Usa MAX dos counts (não counts[0])
+    // porque em alguns fluxos a primeira etapa é opcional/pré-fluxo (ex:
+    // Fluxo Duque tem 'Abordagem Inicial' com 7 leads mas Mensagem 3 tem
+    // 1334 — counts[0] daria 8400% de conclusão. Math.max é robusto pra
+    // funis cumulativos (counts[0] já é o maior) E não-cumulativos.
+    const entered = Math.max(...counts, 0);
     const completed = counts[counts.length-1];
     const completion = entered > 0 ? completed/entered*100 : 0;
 
@@ -5453,7 +5460,7 @@ function renderDisparos() {
         <div class="ds-card-b">
           ${rows}
           <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)">
-            <span><b style="color:var(--text)">${entered}</b> entraram</span>
+            <span><b style="color:var(--text)">${entered}</b> no pico do fluxo</span>
             <span><b class="${compClass}">${completion.toFixed(0)}%</b> chegaram na última etapa</span>
           </div>
           ${insightHtml}
