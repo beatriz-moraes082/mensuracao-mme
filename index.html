@@ -3085,12 +3085,26 @@ function renderDiagnostico() {
   const txR     = total > 0 ? realiz/total*100 : 0;
 
   // ── Bot ────────────────────────────────────────────────
-  const botC = sdr.filter(l => (l.tags||[]).includes('bot-concluído'));
-  const botI = sdr.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído'));
+  // Base = SDR + Nutrição: os leads movidos pra Nutrição também passaram
+  // pelo bot (só não engajaram), então contam pra eficiência do bot.
+  // Dedup por telefone (dkey) pra evitar contar o mesmo lead em ambos.
+  const _seenBot = new Set();
+  const botBase = [];
+  for (const l of [...sdr, ...nutriInWin]) {
+    const k = l.dkey || '';
+    if (k) { if (_seenBot.has(k)) continue; _seenBot.add(k); }
+    botBase.push(l);
+  }
+  const botC = botBase.filter(l => (l.tags||[]).includes('bot-concluído'));
+  const botI = botBase.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído'));
+  // Movidos pra Nutrição: subconjunto dos bot-incompleto que estão no pipeline Nutrição
+  const botNutri = botI.filter(l => l.pipeline === 12719007);
   const botCQual = botC.filter(l => l.qualified).length;
   const botIQual = botI.filter(l => l.qualified).length;
   const txBotC = botC.length > 0 ? botCQual/botC.length*100 : 0;
   const txBotI = botI.length > 0 ? botIQual/botI.length*100 : 0;
+  // Total de leads que o bot trabalhou (base honesta de eficiência)
+  const botTotal = botBase.length;
 
   // ── Por canal ──────────────────────────────────────────
   const byCh = {meta:[], google:[], org:[]};
@@ -3442,7 +3456,7 @@ function renderDiagnostico() {
     {
       lbl: 'Conclusão do Bot',
       val: fmtP(txBotC) + ' vs ' + fmtP(txBotI),
-      sub: `Bot concluído qualifica ${botMult} que incompleto · hoje ${fmtP(botC.length/total*100)} concluem`,
+      sub: `Bot concluído qualifica ${botMult} que incompleto · hoje ${fmtP(botC.length/botTotal*100)} concluem`,
       variant: 'accent'  // alavanca de maior impacto
     },
     {
@@ -3472,12 +3486,19 @@ function renderDiagnostico() {
   `).join('');
 
   // ── Render: Bot · ranking horizontal ────────────────────
-  const maxBot = Math.max(botC.length, botI.length, 1);
+  // 3 estados do bot: concluído (✅) · incompleto no SDR (⚠️) · abandono total na Nutrição (🧊)
+  const botISdr     = botI.filter(l => l.pipeline !== 12719007);
+  const botISdrQual = botISdr.filter(l => l.qualified).length;
+  const txBotISdr   = botISdr.length > 0 ? botISdrQual/botISdr.length*100 : 0;
+  const botNutriQ   = botNutri.filter(l => l.qualified).length;
+  const txBotNutri  = botNutri.length > 0 ? botNutriQ/botNutri.length*100 : 0;
+  const maxBot = Math.max(botC.length, botISdr.length, botNutri.length, 1);
   const botItems = [
-    {n:'Bot concluído',  c:botC.length, q:botCQual, tx:txBotC, cls:'success'},
-    {n:'Bot incompleto', c:botI.length, q:botIQual, tx:txBotI, cls:'danger'},
+    {n:'Bot concluído',                  c:botC.length,     q:botCQual,      tx:txBotC,     cls:'success'},
+    {n:'Bot incompleto · SDR',           c:botISdr.length,  q:botISdrQual,   tx:txBotISdr,  cls:'danger'},
+    {n:'Abandono total · Nutrição',      c:botNutri.length, q:botNutriQ,     tx:txBotNutri, cls:'danger'},
   ];
-  const ifBot70 = Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100);
+  const ifBot70 = Math.round(botTotal*0.70*txBotC/100 + botTotal*0.30*txBotI/100);
 
   // ── A/B test · pré-atendimento v1 vs v2 ─────────────────
   // Tags Kommo: 'pré-atendimento | v1' e 'pré-atendimento | v2'
@@ -3566,10 +3587,12 @@ function renderDiagnostico() {
       `).join('')}
     </div>
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
+      Base: <b>${botTotal}</b> leads que o bot trabalhou (SDR + Nutrição, dedup por telefone).
       Quem completa o bot qualifica <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'muito mais'}</b>.
-      Hoje, ${fmtP(botC.length/total*100)} concluem (${botC.length} de ${total}).
-      Se 70% concluíssem, a qualificação total subiria de <b>${qualif}</b> para ~<b>${ifBot70}</b>
-      leads (${fmtP(ifBot70/total*100)} tx. qualif).
+      Hoje, <b>${fmtP(botC.length/botTotal*100)}</b> concluem (${botC.length} de ${botTotal}) ·
+      <b>${fmtP(botNutri.length/botTotal*100)}</b> abandonam totalmente (vão pra Nutrição).
+      Se 70% concluíssem, a qualificação subiria de <b>${qualif}</b> para ~<b>${ifBot70}</b>
+      leads (${fmtP(ifBot70/botTotal*100)} tx. qualif).
     </div>
     ${abHtml}`;
 
