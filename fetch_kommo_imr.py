@@ -173,18 +173,31 @@ def lead_contact_id(lead):
     cs = lead.get("_embedded", {}).get("contacts", [])
     return cs[0]["id"] if cs else 0
 
-def get_lead_cf(lead, field_id):
+def get_lead_cf(lead, field_id, field_name=None):
+    """Busca por field_id; se não achar e field_name for dado, faz fallback
+    case-insensitive pelo nome (resolve quando o ID foi recriado no Kommo)."""
     for cf in (lead.get("custom_fields_values") or []):
         if cf["field_id"] == field_id:
             vals = cf.get("values") or []
             return str(vals[0]["value"]) if vals else ""
+    if field_name:
+        target = field_name.strip().lower()
+        for cf in (lead.get("custom_fields_values") or []):
+            if (cf.get("field_name") or "").strip().lower() == target:
+                vals = cf.get("values") or []
+                return str(vals[0]["value"]) if vals else ""
     return ""
 
-def get_lead_cf_multi(lead, field_id):
-    """Para multiselect: retorna lista de valores (etapas concluídas)."""
+def get_lead_cf_multi(lead, field_id, field_name=None):
+    """Para multiselect: retorna lista de valores. Fallback por nome igual ao single."""
     for cf in (lead.get("custom_fields_values") or []):
         if cf["field_id"] == field_id:
             return [str(v.get("value", "")) for v in (cf.get("values") or [])]
+    if field_name:
+        target = field_name.strip().lower()
+        for cf in (lead.get("custom_fields_values") or []):
+            if (cf.get("field_name") or "").strip().lower() == target:
+                return [str(v.get("value", "")) for v in (cf.get("values") or [])]
     return []
 
 def get_lead_tags(lead):
@@ -281,15 +294,17 @@ def process_lead(lead, contacts_map):
         # Closer (custom fields no lead)
         "produto":      get_lead_cf(lead, CF_PRODUTO),
         "objecao":      get_lead_cf(lead, CF_OBJECAO),
-        # Disparos / fluxos de nutrição (etapa atual no fluxo)
-        "disp_followup":  get_lead_cf(lead, CF_DISP_FOLLOWUP),
-        "disp_reagend":   get_lead_cf(lead, CF_DISP_REAGEND),
-        "disp_proposta":  get_lead_cf(lead, CF_DISP_PROPOSTA),
-        "disp_nutri_lq":  get_lead_cf(lead, CF_DISP_NUTRI_LQ),
-        "disp_nutri_clo": get_lead_cf(lead, CF_DISP_NUTRI_CLO),
-        "disp_preatend":  ",".join(get_lead_cf_multi(lead, CF_DISP_PREATEND)),
-        "disp_fluxo_duq": ",".join(get_lead_cf_multi(lead, CF_DISP_FLUXO_DUQ)),
-        "disp_fu_closer": get_lead_cf(lead, CF_DISP_FU_CLO),
+        # Disparos / fluxos de nutrição (etapa atual no fluxo).
+        # Passamos field_name como fallback — se o ID mudar no Kommo, o
+        # script ainda acha o campo pelo nome (case-insensitive).
+        "disp_followup":  get_lead_cf(lead, CF_DISP_FOLLOWUP, "Follow-up"),
+        "disp_reagend":   get_lead_cf(lead, CF_DISP_REAGEND,  "Reagendamento"),
+        "disp_proposta":  get_lead_cf(lead, CF_DISP_PROPOSTA, "Proposta Enviada"),
+        "disp_nutri_lq":  get_lead_cf(lead, CF_DISP_NUTRI_LQ, "Nutrição"),
+        "disp_nutri_clo": get_lead_cf(lead, CF_DISP_NUTRI_CLO,"Nutrição Closer"),
+        "disp_preatend":  ",".join(get_lead_cf_multi(lead, CF_DISP_PREATEND, "Pré-atendimento")),
+        "disp_fluxo_duq": ",".join(get_lead_cf_multi(lead, CF_DISP_FLUXO_DUQ, "Fluxo | Duque")),
+        "disp_fu_closer": get_lead_cf(lead, CF_DISP_FU_CLO,   "Follow-up Proposta Closer"),
         "qualified":         qualified,
         "reuniao_agendada":  reuniao_agendada,
         "reuniao_realizada": reuniao_realizada,

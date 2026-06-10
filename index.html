@@ -5305,13 +5305,15 @@ const DISP_FLOWS = [
 ];
 
 function _dispLeadsInPeriod() {
-  // Concatena SDR + Closer dentro da janela do período atual (created_at)
+  // Concatena SDR + Closer + Duque dentro da janela do período (created_at).
+  // Antes faltava Duque — por isso o Fluxo Duque mostrava zero, mesmo
+  // estando preenchido nos leads do pipeline outbound.
   if (!KOMMO_RAW) return [];
   const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
   const win = periodWindow(currentPeriod, ref);
   const fromTs = Math.floor(win.from.getTime()/1000);
   const toTs   = Math.floor(win.to.getTime()/1000);
-  const all = [...(KOMMO_RAW.sdr||[]), ...(KOMMO_RAW.closer||[])];
+  const all = [...(KOMMO_RAW.sdr||[]), ...(KOMMO_RAW.closer||[]), ...(KOMMO_RAW.duque||[])];
   return all.filter(l => {
     const t = l.created_at || 0;
     return t >= fromTs && t <= toTs;
