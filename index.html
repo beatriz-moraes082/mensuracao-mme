@@ -5102,7 +5102,13 @@ function vdRenderKPIs(vendas){
   document.getElementById('vd-kpi-vendas').textContent = total;
   document.getElementById('vd-kpi-vendas-sub').textContent = parts.join(' · ') || '—';
   document.getElementById('vd-kpi-receita').textContent = vdFmtBRL(receita);
-  document.getElementById('vd-kpi-ticket').textContent = total > 0 ? 'ticket médio: ' + vdFmtBRL(ticket) : 'ticket médio: —';
+  // Ticket: avisa quando amostra é pequena (< 5 vendas → 1 outlier distorce)
+  const ticketTxt = total === 0
+    ? 'ticket médio: —'
+    : total < 5
+      ? `ticket médio: ${vdFmtBRL(ticket)} · base pequena (${total} venda${total===1?'':'s'})`
+      : `ticket médio: ${vdFmtBRL(ticket)}`;
+  document.getElementById('vd-kpi-ticket').textContent = ticketTxt;
 }
 
 function vdCountBy(arr, field){
@@ -5292,7 +5298,13 @@ function vdRenderCycle(vendas){
   const fastest = valid.find(v => v.cycle_days === min);
   const slowest = valid.find(v => v.cycle_days === max);
   const fmtD = d => Math.round(d) + (Math.round(d) === 1 ? ' dia' : ' dias');
-  setEl('vd-cycle-avg', fmtD(avg), `média de ${valid.length} vendas`);
+  // Sub: singular/plural correto + flag de base pequena (< 5 → 1 venda atípica distorce)
+  const cycleSub = valid.length === 1
+    ? 'média de 1 venda · base muito pequena'
+    : valid.length < 5
+      ? `média de ${valid.length} vendas · base pequena`
+      : `média de ${valid.length} vendas`;
+  setEl('vd-cycle-avg', fmtD(avg), cycleSub);
   setEl('vd-cycle-med', fmtD(med));
   setEl('vd-cycle-min', fmtD(min), fastest ? fastest.name.split(' ').slice(0,2).join(' ') : '');
   setEl('vd-cycle-max', fmtD(max), slowest ? slowest.name.split(' ').slice(0,2).join(' ') : '');
