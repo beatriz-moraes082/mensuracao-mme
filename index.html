@@ -3152,8 +3152,10 @@ function renderDiagnostico() {
     audMap[l.audience].tot++;
     if (l.qualified) audMap[l.audience].q++;
   });
+  // Top públicos: exige base mínima de 10 leads pra evitar recomendação
+  // baseada em ruído estatístico (com 5 leads, 1 qualif vira 20% e "lidera").
   const topAud = Object.entries(audMap)
-    .filter(([,d]) => d.tot >= 5)
+    .filter(([,d]) => d.tot >= 10)
     .map(([aud,d]) => ({aud, tot:d.tot, q:d.q, txQ: d.q/d.tot*100}))
     .sort((a,b) => b.txQ - a.txQ)
     .slice(0,3);
@@ -3463,19 +3465,27 @@ function renderDiagnostico() {
       lbl: topAud.length > 0 ? 'Público top' : 'Públicos',
       val: topAud.length > 0 ? fmtP(topAud[0].txQ) : '—',
       sub: topAud.length > 0
-        ? topAud[0].aud.substring(0,55) + ' · escalar pode trazer +' + Math.round(topAud[0].txQ - txQ) + 'pp'
-        : 'sem amostra suficiente',
+        ? `${topAud[0].aud.substring(0,40)} (${topAud[0].q}/${topAud[0].tot}) · escalar pode trazer +${Math.round(topAud[0].txQ - txQ)}pp`
+        : 'sem público com base mínima (10+ leads)',
       variant: ''
     },
-    {
-      lbl: chRows[0].label.replace(/^\W+/,''),
-      val: fmtP(chRows[0].txQ),
-      sub: `${chRows[0].n} leads · ${chRows[0].q} qualif` +
-           (chRows.length > 1
-             ? ` · qualifica ${(chRows[0].txQ/Math.max(chRows[1].txQ,0.01)).toFixed(1)}× mais que ${chRows[1].label.replace(/^\W+/,'')}`
-             : ''),
-      variant: ''
-    }
+    (() => {
+      // Comparação canal só vale entre canais com base mínima (evita ratios
+      // tipo 100× quando o "segundo" tem 1 lead). chRows[0] sempre existe
+      // (foi montado a partir de meta/google/org), mas só tem sentido se
+      // tem leads. Se nem o líder tem ≥10, omite a comparação.
+      const lider = chRows[0];
+      const comparavel = chRows.slice(1).find(c => c.n >= 10);
+      const ratio = comparavel && comparavel.txQ > 0
+        ? ` · qualifica ${(lider.txQ/comparavel.txQ).toFixed(1)}× mais que ${comparavel.label.replace(/^\W+/,'')}`
+        : '';
+      return {
+        lbl: lider.label.replace(/^\W+/,''),
+        val: lider.n >= 10 ? fmtP(lider.txQ) : '—',
+        sub: lider.n >= 10 ? `${lider.n} leads · ${lider.q} qualif${ratio}` : 'base insuficiente (< 10 leads)',
+        variant: ''
+      };
+    })()
   ];
   document.getElementById('diag-alavancas').innerHTML = alavancas.map(a => `
     <div class="ds-kpi ${a.variant}">
