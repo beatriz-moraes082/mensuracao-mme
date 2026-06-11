@@ -5754,13 +5754,15 @@ function calcLeadScore(l) {
   // "Talvez" — interesse vago
   const talvez =
        prox.includes('talvez')                    // label antiga
-    || prox.includes('depende da oferta');        // P235 novo
+    || prox.includes('depende da oferta')         // P235 novo
+    || prox.includes('depende do destino');       // bot v2 inicial (mai/26)
 
   // "Não procuro esse tipo de hospedagem" — sem interesse explícito
-  // Cuidado: 'não tenho interesse' bate em ambos labels (novo e antigo).
   const semInteresse =
        prox.includes('não tenho interesse')
-    || prox.includes('nao tenho interesse');
+    || prox.includes('nao tenho interesse')
+    || prox.includes('não é o que procuro')       // bot v2 inicial (mai/26)
+    || prox.includes('nao e o que procuro');      // sem acento (fallback)
 
   // Hospedagem em Resorts All Inclusive (pergunta principal pra A)
   const jaUsaAllInc = hosp.includes('resorts all inclusive');
