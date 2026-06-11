@@ -308,12 +308,13 @@ def process_lead(lead, contacts_map):
         "timeshare":    contact.get(CF_TIMESHARE, ""),
         "cep":          contact.get(CF_CEP, ""),
         "profissao":    contact.get(CF_PROFISSAO, ""),
-        # Pergunta motivacional do bot v2 — field_id desconhecido, busca por nome.
-        # Aceita variações ('O que você estava buscando', 'O que voce estava buscando').
-        "o_que_buscava": get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você estava buscando")
-                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que voce estava buscando")
-                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você buscava")
-                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que estava buscando"),
+        # Pergunta motivacional do bot v2 — nome exato confirmado pela Bia:
+        # 'O que você estava buscando?' (com interrogação no final).
+        # Mantenho fallbacks de variações pra robustez.
+        "o_que_buscava": get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você estava buscando?")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você estava buscando")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que voce estava buscando?")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que voce estava buscando"),
         # Closer (custom fields no lead)
         "produto":      get_lead_cf(lead, CF_PRODUTO),
         "objecao":      get_lead_cf(lead, CF_OBJECAO),
