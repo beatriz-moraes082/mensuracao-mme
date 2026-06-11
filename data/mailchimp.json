@@ -1,10 +1,10 @@
 {
-  "fetched_at": "2026-06-11T14:12:49.683367+00:00",
+  "fetched_at": "2026-06-11T14:27:43.159203+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 882,
+    "member_count": 883,
     "unsubscribe_count": 7,
     "cleaned_count": 123,
     "open_rate": 20.207253886010363,
@@ -14,25 +14,6 @@
     "date_created": "2026-03-18T19:28:49+00:00"
   },
   "campaigns": [
-    {
-      "id": "c934d82e66",
-      "type": "automation-email",
-      "subject": "Falha ao adiar seu compromisso",
-      "title": "Email automation | Cadência → Dia 01 (copy 01)",
-      "status": "sending",
-      "send_time": "2026-06-11T09:37:06+00:00",
-      "month": "2026-06",
-      "sent": 1,
-      "opens_total": 1,
-      "unique_opens": 1,
-      "open_rate": 100,
-      "clicks_total": 0,
-      "unique_clicks": 0,
-      "click_rate": 0,
-      "unsubscribed": 0,
-      "hard_bounces": 0,
-      "soft_bounces": 0
-    },
     {
       "id": "c2d7e51f56",
       "type": "automation-email",
@@ -117,13 +98,13 @@
       "status": "sending",
       "send_time": "2026-04-09T16:58:09+00:00",
       "month": "2026-04",
-      "sent": 699,
+      "sent": 700,
       "opens_total": 79,
       "unique_opens": 63,
-      "open_rate": 11.013986013986015,
+      "open_rate": 10.99476439790576,
       "clicks_total": 6,
       "unique_clicks": 4,
-      "click_rate": 0.6993006993006993,
+      "click_rate": 0.6980802792321117,
       "unsubscribed": 4,
       "hard_bounces": 115,
       "soft_bounces": 12
@@ -149,21 +130,6 @@
     }
   ],
   "by_step": {
-    "Email automation | Cadência → Dia 01 (copy 01)": {
-      "n": 1,
-      "sent": 1,
-      "opens_total": 1,
-      "unique_opens": 1,
-      "clicks_total": 0,
-      "unique_clicks": 0,
-      "unsubscribed": 0,
-      "hard_bounces": 0,
-      "soft_bounces": 0,
-      "first_send": "2026-06-11",
-      "last_send": "2026-06-11",
-      "type": "automation-email",
-      "subject": "Falha ao adiar seu compromisso"
-    },
     "Email automation | Cadência → Dia 14": {
       "n": 1,
       "sent": 157,
@@ -226,7 +192,7 @@
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
-      "sent": 699,
+      "sent": 700,
       "opens_total": 79,
       "unique_opens": 63,
       "clicks_total": 6,
@@ -256,21 +222,6 @@
     }
   },
   "by_subject": {
-    "Email automation | Cadência → Dia 01 (copy 01)": {
-      "n": 1,
-      "sent": 1,
-      "opens_total": 1,
-      "unique_opens": 1,
-      "clicks_total": 0,
-      "unique_clicks": 0,
-      "unsubscribed": 0,
-      "hard_bounces": 0,
-      "soft_bounces": 0,
-      "first_send": "2026-06-11",
-      "last_send": "2026-06-11",
-      "type": "automation-email",
-      "subject": "Falha ao adiar seu compromisso"
-    },
     "Email automation | Cadência → Dia 14": {
       "n": 1,
       "sent": 157,
@@ -333,7 +284,7 @@
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
-      "sent": 699,
+      "sent": 700,
       "opens_total": 79,
       "unique_opens": 63,
       "clicks_total": 6,
@@ -363,12 +314,6 @@
     }
   },
   "by_month": {
-    "2026-06": {
-      "sent": 1,
-      "unique_opens": 1,
-      "clicks_total": 0,
-      "unsubscribed": 0
-    },
     "2026-05": {
       "sent": 157,
       "unique_opens": 15,
@@ -376,7 +321,7 @@
       "unsubscribed": 1
     },
     "2026-04": {
-      "sent": 2401,
+      "sent": 2402,
       "unique_opens": 228,
       "clicks_total": 9,
       "unsubscribed": 6

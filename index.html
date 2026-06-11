@@ -5489,8 +5489,12 @@ function renderMailchimp() {
   const a = mc.audience;
   // Usa by_step (agregado por título interno = posição na cadência) quando
   // disponível; cai pra by_subject (legado) se JSON antigo.
+  // Filtra etapas com menos de 5 envios — são testes/cópias internas (ex:
+  // 'Cadência → Dia 01 (copy 01)' com 1 envio) que poluem a tabela.
   const stepsMap = mc.by_step || mc.by_subject || {};
-  const steps = Object.entries(stepsMap).map(([title,d]) => ({title, ...d}));
+  const steps = Object.entries(stepsMap)
+    .map(([title,d]) => ({title, ...d}))
+    .filter(s => (s.sent || 0) >= 5);
   const totals = steps.reduce((s,m) => ({
     sent:     s.sent     + m.sent,
     uo:       s.uo       + m.unique_opens,

@@ -133,6 +133,11 @@ def main():
         ctype = c.get("type", "regular")
         subject = (c.get("settings", {}) or {}).get("subject_line", "—")
         title = (c.get("settings", {}) or {}).get("title", "—")
+        # Pula títulos marcados como cópia/teste (ex: '(copy 01)', '(test)')
+        # — são duplicações da régua oficial pra teste interno.
+        if any(tag in (title or "").lower() for tag in ("(copy", "(test", " teste")):
+            print(f"  [skip] {title}: sent={sent}")
+            continue
         send_time = c.get("send_time", "")
         rep = fetch_campaign_report(c["id"]) or {}
         enriched.append({
