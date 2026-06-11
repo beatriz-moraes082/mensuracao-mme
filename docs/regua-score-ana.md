@@ -19,6 +19,17 @@
 
 > Esse é o perfil que **já está acostumado com o modelo**.
 
+> ⚠️ **IMPORTANTE — Este critério vem do bot ANTIGO (intermediário de
+> maio/26 · `bot-v2-inicial-2026-05-05.json`), que tinha a pergunta**
+> *"Como sua família normalmente se hospeda quando viaja?"* com a opção
+> "Resorts All Inclusive". Esse bot foi **descontinuado** quando os
+> testes A/B (v1 LONGO + v2 CURTO) entraram em produção.
+>
+> **Leads NOVOS** (que passam pelos bots atuais) **não conseguem ser
+> classificados como A automaticamente**, porque nenhum dos 2 bots em
+> produção tem essa pergunta. Só leads **históricos do bot mai/26**
+> entram em A pela régua.
+
 ---
 
 ### 🟡 Lead B — Perfil Aspiracional Premium
@@ -47,11 +58,12 @@
 
 ---
 
-## 📌 Notas de implementação · mapeamento bot
+## 📌 Mapeamento bot → régua
 
 A régua usa abstrações ("pergunta 1", "pergunta 5", "Sim, tenho vontade")
-que mapeiam pra perguntas reais dos bots em produção. A função
-`calcLeadScore()` no `index.html` precisa reconhecer todas as variações.
+que vinham do bot intermediário de mai/26. A função `calcLeadScore()`
+no `index.html` precisa reconhecer as variações dos bots atuais
+pra continuar funcionando.
 
 ### Mapeamento de "pergunta 5" (Interesse em Resort All-Inclusive)
 
@@ -61,35 +73,26 @@ que mapeiam pra perguntas reais dos bots em produção. A função
 | **"Talvez"** | — | `Depende da oferta` | `Talvez` · `Depende do destino` | `Talvez, se houver uma boa oportunidade` |
 | **"Não procuro esse tipo de hospedagem"** | `Não tenho interesse` | `Não tenho interesse` | `Não é o que procuro` | `Não tenho interesse em resort all inclusive` |
 
-### ⚠️ Pendência · "pergunta 1" da régua A
+### Mapeamento de "pergunta 1" (define Lead A) — **só existe no bot antigo**
 
-Os bots v1 e v2 atuais (`bot-flows/bot-pre-atendimento-v{1,2}.json`)
-**NÃO têm uma pergunta sobre "Como se hospeda nas viagens"** com opção
-"Resorts All Inclusive" (essa pergunta existia no bot intermediário de
-mai/26, `bot-v2-inicial-2026-05-05.json`).
-
-**Confirmar com a Bia/Ana qual é a "pergunta 1" da régua A no fluxo
-atual.** Hipóteses:
-1. A régua se refere ao bot v2 inicial e não foi atualizada
-2. "Marcou Resorts All Inclusive" pode equivaler a:
-   - `hosp_allinc = Sim` (já se hospedou) → pessoa tem familiaridade
-   - `o_que_buscava = "Hospedagem"` (pergunta 1 do v2 atual)
-3. Outro critério
-
-**Até confirmação, a implementação atual usa o campo `hospedagem` (legado)
-quando ele está presente.**
+| Bot | Pergunta 1 do bot | Opção que define A |
+|---|---|---|
+| Bot mai/26 (descontinuado) | "Como sua família normalmente se hospeda quando viaja?" | **Resorts All Inclusive** ✅ |
+| Bot v1 atual (LONGO) | "Qual sua idade?" | ❌ não aplicável |
+| Bot v2 atual (CURTO) | "Me diz uma coisa, o que você estava buscando?" | ❌ não aplicável |
 
 ---
 
 ## Ordem de avaliação implementada
 
 ```
-1. Resorts All Inclusive na "pergunta 1" → A
-2. Gasta até R$ 5.000  → D
-3. "Talvez" / "Não procuro" → D
+1. hospedagem == "Resorts All Inclusive"  → A  (só leads do bot mai/26)
+2. Investimento até R$ 5.000               → D
+3. "Talvez" / "Não procuro"                → D
 4. "Sim, tenho vontade" + gasto > R$ 10.001 → B
 5. "Sim, tenho vontade" + gasto R$ 5.001-10.000 → C
-6. Caso contrário → Incompleto
+6. Caso contrário                          → Incompleto
 ```
 
-A primeira que casar define o perfil.
+A primeira que casar define o perfil. **Leads dos bots atuais (v1/v2)
+nunca casam com a regra 1**, então sempre caem em B, C, D ou Incompleto.
