@@ -1,10 +1,10 @@
 {
-  "fetched_at": "2026-06-11T14:47:50.594920+00:00",
+  "fetched_at": "2026-06-11T15:34:52.691889+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 883,
+    "member_count": 885,
     "unsubscribe_count": 7,
     "cleaned_count": 123,
     "open_rate": 20.207253886010363,
@@ -102,13 +102,15 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         },
         {
           "email_masked": "ej***@ecolab.com",
           "email_domain": "ecolab.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
         }
       ],
       "other_links": [
@@ -148,7 +150,8 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         }
       ],
       "other_links": [
@@ -166,13 +169,13 @@
       "status": "sending",
       "send_time": "2026-04-09T16:58:09+00:00",
       "month": "2026-04",
-      "sent": 700,
+      "sent": 702,
       "opens_total": 79,
       "unique_opens": 63,
-      "open_rate": 10.99476439790576,
+      "open_rate": 10.956521739130434,
       "clicks_total": 6,
       "unique_clicks": 4,
-      "click_rate": 0.6980802792321117,
+      "click_rate": 0.6956521739130435,
       "unsubscribed": 4,
       "hard_bounces": 115,
       "soft_bounces": 12,
@@ -184,25 +187,29 @@
           "email_masked": "eu***@gmail.com",
           "email_domain": "gmail.com",
           "is_internal": false,
-          "clicks": 2
+          "clicks": 2,
+          "ekey": "d8da3f7204c8"
         },
         {
           "email_masked": "be***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "77c46bda2d11"
         },
         {
           "email_masked": "ca***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bf17c283d9f"
         },
         {
           "email_masked": "lc***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "cc4010f61bf4"
         }
       ],
       "other_links": [
@@ -300,13 +307,15 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         },
         {
           "email_masked": "ej***@ecolab.com",
           "email_domain": "ecolab.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
         }
       ]
     },
@@ -331,13 +340,14 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         }
       ]
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
-      "sent": 700,
+      "sent": 702,
       "opens_total": 79,
       "unique_opens": 63,
       "clicks_total": 6,
@@ -356,25 +366,29 @@
           "email_masked": "eu***@gmail.com",
           "email_domain": "gmail.com",
           "is_internal": false,
-          "clicks": 2
+          "clicks": 2,
+          "ekey": "d8da3f7204c8"
         },
         {
           "email_masked": "be***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "77c46bda2d11"
         },
         {
           "email_masked": "ca***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bf17c283d9f"
         },
         {
           "email_masked": "lc***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "cc4010f61bf4"
         }
       ]
     },
@@ -455,13 +469,15 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         },
         {
           "email_masked": "ej***@ecolab.com",
           "email_domain": "ecolab.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
         }
       ]
     },
@@ -486,13 +502,14 @@
           "email_masked": "co***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "68a41c8aa29b"
         }
       ]
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
-      "sent": 700,
+      "sent": 702,
       "opens_total": 79,
       "unique_opens": 63,
       "clicks_total": 6,
@@ -511,25 +528,29 @@
           "email_masked": "eu***@gmail.com",
           "email_domain": "gmail.com",
           "is_internal": false,
-          "clicks": 2
+          "clicks": 2,
+          "ekey": "d8da3f7204c8"
         },
         {
           "email_masked": "be***@somostrilha.com.br",
           "email_domain": "somostrilha.com.br",
           "is_internal": true,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "77c46bda2d11"
         },
         {
           "email_masked": "ca***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "7bf17c283d9f"
         },
         {
           "email_masked": "lc***@hotmail.com",
           "email_domain": "hotmail.com",
           "is_internal": false,
-          "clicks": 1
+          "clicks": 1,
+          "ekey": "cc4010f61bf4"
         }
       ]
     },
@@ -560,7 +581,7 @@
       "unsubscribed": 1
     },
     "2026-04": {
-      "sent": 2402,
+      "sent": 2404,
       "unique_opens": 228,
       "clicks_total": 9,
       "unsubscribed": 6
