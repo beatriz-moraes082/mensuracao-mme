@@ -113,27 +113,54 @@ def fetch_campaign_report(cid):
     }
 
 
+def _mask_email(e):
+    """Mascara email pra publicação: ej***@ecolab.com → mantém domínio e 2 chars."""
+    if not e or "@" not in e: return e
+    local, _, dom = e.partition("@")
+    if len(local) <= 3:
+        return local[0] + "***@" + dom
+    return local[:2] + "***@" + dom
+
+
+# Domínios internos (vocês mesmas testando) — excluem do cruzamento com vendas
+INTERNAL_DOMAINS = {"somostrilha.com.br"}
+
+
 def fetch_campaign_cta(cid):
     """Busca os links clicáveis da campaign e extrai a mensagem do CTA
-    do WhatsApp (parâmetro ?text=...). Retorna {cta_msg, cta_url, links}."""
+    do WhatsApp (parâmetro ?text=...) + lista de quem clicou (email)."""
     data = mc_get(f"/reports/{cid}/click-details", count=100)
     urls = (data.get("urls_clicked") or []) if data else []
-    cta_msg, cta_url, cta_clicks = "", "", 0
+    cta_msg, cta_url, cta_clicks, cta_link_id = "", "", 0, ""
     other_links = []
     for u in urls:
         url = u.get("url", "") or ""
         clicks = u.get("total_clicks", 0) or 0
-        # WhatsApp: extrai mensagem pré-preenchida (?text=)
         if "wa.me" in url or "whatsapp.com" in url:
             m = re.search(r"[?&]text=([^&]+)", url)
             if m:
                 msg = urllib.parse.unquote_plus(m.group(1))
-                # Prefere o link com mais cliques como "CTA principal"
                 if clicks >= cta_clicks:
-                    cta_msg, cta_url, cta_clicks = msg, url, clicks
+                    cta_msg, cta_url, cta_clicks, cta_link_id = msg, url, clicks, u.get("id", "")
         else:
             other_links.append({"url": url, "clicks": clicks})
+
+    # Busca quem clicou no CTA (lista de membros) — só se tiver link_id
+    cta_clickers = []
+    if cta_link_id:
+        mdata = mc_get(f"/reports/{cid}/click-details/{cta_link_id}/members", count=100)
+        for m in (mdata.get("members") or []):
+            email = (m.get("email_address") or "").lower()
+            dom = email.split("@")[-1] if "@" in email else ""
+            cta_clickers.append({
+                "email_masked": _mask_email(email),
+                "email_domain": dom,
+                "is_internal":  dom in INTERNAL_DOMAINS,
+                "clicks":       m.get("clicks", 0) or 0,
+            })
+
     return {"cta_msg": cta_msg, "cta_url": cta_url, "cta_clicks": cta_clicks,
+            "cta_clickers": cta_clickers,
             "other_links": other_links[:5]}
 
 
@@ -191,6 +218,7 @@ def main():
         "subject": "",  # assunto que o destinatário vê
         "cta_msg": "",  # mensagem pré-preenchida do WhatsApp (CTA)
         "cta_url": "",
+        "cta_clickers": [],  # emails mascarados de quem clicou no CTA
     })
     for c in enriched:
         key = c["title"] or c["subject"] or "—"
@@ -206,6 +234,12 @@ def main():
             d["cta_msg"] = c.get("cta_msg", "")
             d["cta_url"] = c.get("cta_url", "")
             d["_last_st"] = c.get("send_time","")
+        # Clickers do CTA: agrega de todas execuções da etapa, dedup por email
+        seen_emails = {ck["email_masked"] for ck in d.get("cta_clickers", [])}
+        for ck in c.get("cta_clickers", []):
+            if ck["email_masked"] not in seen_emails:
+                d.setdefault("cta_clickers", []).append(ck)
+                seen_emails.add(ck["email_masked"])
         st = c.get("send_time", "")[:10]
         if st:
             if not d["first_send"] or st < d["first_send"]: d["first_send"] = st

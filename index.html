@@ -1273,6 +1273,10 @@
     <div id="mc-msgs-content"></div>
   </div>
   <div class="ds-card" style="margin-top:14px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Quem clicou no CTA do WhatsApp</div>
+    <div id="mc-clickers-content"></div>
+  </div>
+  <div class="ds-card" style="margin-top:14px">
     <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Evolução mensal</div>
     <div id="mc-monthly-content"></div>
   </div>
@@ -2229,15 +2233,45 @@ function renderAnalises() {
     return _statusLookup(META_SPEND.adset_status, name)
         || _heuristicStatus(META_SPEND.adset, name);
   }
+  // Mapa creative → canal de origem (Google/Meta) baseado nos leads Kommo.
+  // Construído sob demanda na 1ª chamada, depois cacheado.
+  let _CRI_ORIGEM = null;
+  function _buildCriOrigem() {
+    const map = {};
+    for (const l of (KOMMO_RAW?.sdr || [])) {
+      const cri = l.creative;
+      if (!cri) continue;
+      const o = (l.origem || '').toLowerCase();
+      if (!map[cri]) map[cri] = {meta:0, google:0, outro:0};
+      if (o.includes('google'))    map[cri].google++;
+      else if (o.includes('meta')) map[cri].meta++;
+      else                          map[cri].outro++;
+    }
+    return map;
+  }
   function criStatus(name) {
-    if (!META_SPEND) return null;
-    return _statusLookup(META_SPEND.creative_status, name)
-        || _heuristicStatus(META_SPEND.creative, name);
+    // Primeiro tenta no Meta
+    if (META_SPEND) {
+      const m = _statusLookup(META_SPEND.creative_status, name)
+             || _heuristicStatus(META_SPEND.creative, name);
+      if (m) return m;
+    }
+    // Fallback: detecta se o criativo é do Google Ads (vê origem dos leads)
+    if (!_CRI_ORIGEM) _CRI_ORIGEM = _buildCriOrigem();
+    const o = _CRI_ORIGEM[name];
+    if (o) {
+      const tot = o.meta + o.google + o.outro;
+      if (tot > 0 && o.google / tot >= 0.8) return 'GOOGLE_ADS';
+    }
+    return null;
   }
   function statusBadge(status) {
     if (!status) return '';
     if (status === 'ACTIVE') {
       return ` <span style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(34,197,94,.15);color:#16a34a;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">● ATIVO</span>`;
+    }
+    if (status === 'GOOGLE_ADS') {
+      return ` <span title="Criativo do Google Ads (≥80% dos leads dele vieram do Google)" style="display:inline-block;padding:1px 7px;border-radius:10px;background:rgba(22,163,74,.12);color:#15803d;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;vertical-align:1px">📱 GOOGLE</span>`;
     }
     // Sem dado na Meta (orgânico, criativo antigo, etc) — exibe N/D em tom mais neutro
     if (status === 'NO_DATA' || status === 'UNKNOWN') {
@@ -5581,6 +5615,70 @@ function renderMailchimp() {
         </table>
         <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11.5px;color:var(--text);line-height:1.5">
           📖 <b>Leia assim:</b> <b>Etapa</b> = posição na cadência (Dia 01, Dia 04 — interno do Mailchimp). <b>Assunto</b> = linha que o destinatário vê na caixa de entrada. <b style="color:#16a34a">💬 CTA</b> = mensagem pré-preenchida que vai pro WhatsApp quando o lead clica no botão do email. <b>RÉGUA</b> = automação por gatilho; <b>BROADCAST</b> = envio único manual. Open saudável <b>≥ 15-20%</b>; CTR saudável <b>≥ 2%</b>.
+        </div>`;
+    }
+  }
+
+  // ── Clickers do CTA WhatsApp (cruzamento manual com Kommo pra reativação)
+  const clickEl = document.getElementById('mc-clickers-content');
+  if (clickEl) {
+    // Coleta clickers por etapa, agrega externos vs internos (Trilha)
+    const allClickers = [];
+    steps.filter(s => s.cta_clickers && s.cta_clickers.length).forEach(s => {
+      const dia = (s.title||'').match(/Dia\s*0*\d+/i)?.[0] || (s.title||'').substring(0,30);
+      s.cta_clickers.forEach(c => {
+        allClickers.push({...c, etapa: dia, subject: s.subject, type: s.type});
+      });
+    });
+    // Dedup global por email (mesma pessoa pode clicar em vários emails)
+    const byEmail = {};
+    allClickers.forEach(c => {
+      if (!byEmail[c.email_masked]) byEmail[c.email_masked] = {...c, etapas: new Set(), clicks: 0};
+      byEmail[c.email_masked].etapas.add(c.etapa);
+      byEmail[c.email_masked].clicks += c.clicks;
+    });
+    const unique = Object.values(byEmail);
+    const externos = unique.filter(c => !c.is_internal);
+    const internos = unique.filter(c =>  c.is_internal);
+
+    if (unique.length === 0) {
+      clickEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Nenhum clique no CTA WhatsApp dos emails ainda.</div>';
+    } else {
+      const rowHtml = c => `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:9px 10px;font-weight:600">${c.email_masked}</td>
+        <td style="padding:9px 6px"><span style="font-size:10.5px;color:var(--muted)">${[...c.etapas].join(' · ')}</span></td>
+        <td style="padding:9px 6px;text-align:right"><b>${c.clicks}</b></td>
+        <td style="padding:9px 10px;text-align:right">${c.is_internal
+          ? '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(148,163,184,.18);color:#64748b;font-weight:700">INTERNO</span>'
+          : '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(34,197,94,.15);color:#16a34a;font-weight:700">LEAD EXTERNO</span>'}</td>
+      </tr>`;
+      clickEl.innerHTML = `
+        <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px;padding:10px 14px;background:rgba(34,197,94,.06);border-radius:8px">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Externos (leads)</div>
+            <div style="font-size:22px;font-weight:800;color:#16a34a;line-height:1.1">${externos.length}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">pessoas únicas clicaram</div>
+          </div>
+          <div style="flex:1;min-width:160px;padding:10px 14px;background:rgba(148,163,184,.08);border-radius:8px">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Internos (Trilha)</div>
+            <div style="font-size:22px;font-weight:800;color:#64748b;line-height:1.1">${internos.length}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">testes/QA da equipe</div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Email (mascarado)</th>
+            <th style="text-align:left;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Etapas que clicou</th>
+            <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Cliques</th>
+            <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tipo</th>
+          </tr></thead>
+          <tbody>
+            ${externos.map(rowHtml).join('')}
+            ${internos.map(rowHtml).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,.06);font-size:11.5px;color:var(--text);line-height:1.5">
+          ⚠️ <b>Atribuição de reativação</b>: pra cruzar esses cliques com vendas/qualificações no Kommo precisa do <b>email salvo nos contatos do CRM</b>. Hoje o JSON do Kommo guarda só telefone — vou ajustar o coletor numa próxima atualização pra incluir email. Por enquanto, o número de <b>${externos.length} cliques externos</b> indica o volume real de interesse gerado pela régua.
         </div>`;
     }
   }
