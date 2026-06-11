@@ -778,6 +778,7 @@
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
   <button onclick="switchTab('disparos',this)">Disparos &amp; Nutrição</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
+  <button onclick="switchTab('score',this)">Calculadora de Score</button>
 </nav>
 
 <!-- Month bar agora é renderizado dentro da seção 'Evolução semanal' do Diagnóstico -->
@@ -1446,6 +1447,84 @@
 </div>
 </div><!-- /tab-vendas -->
 
+
+<!-- ================================================================
+     TAB 8 — 🎯 CALCULADORA DE SCORE (régua data-driven da Ana)
+================================================================ -->
+<div id="tab-score" class="tab-pane">
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero-modern">
+    <div>
+      <div class="hl-eyebrow">Calculadora de Score · régua data-driven</div>
+      <h2 class="hl-title">Classificação automática do lead em <span style="color:var(--accent)">A · B · C · D · E</span></h2>
+      <div class="hl-sub">Régua de 8 regras avaliadas em ordem (a 1ª que o lead atende define o perfil), calibrada nas vendas reais do IMR. Aplica respostas do bot de pré-atendimento — campos: <i>Investimento, Próximas férias, Frequência, Hospedou All-Inclusive, Idade, Como se hospeda</i>. Autora: Ana (gestora do CRM).</div>
+    </div>
+    <div style="background:var(--surface2);padding:18px;border-radius:14px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Validação empírica · % que virou reunião</div>
+      <div style="font-size:12px;line-height:1.85">
+        <div><span style="display:inline-block;width:60px;font-weight:700;color:#16a34a">● A</span> <b>46%</b> · Comprador Ideal</div>
+        <div><span style="display:inline-block;width:60px;font-weight:700;color:#84cc16">● B</span> <b>39%</b> · Comprador Provável</div>
+        <div><span style="display:inline-block;width:60px;font-weight:700;color:#f59e0b">● C</span> <b>26%</b> · Aspiracional</div>
+        <div><span style="display:inline-block;width:60px;font-weight:700;color:#ef4444">● D</span> <b>9%</b> · Baixa aderência</div>
+        <div><span style="display:inline-block;width:60px;font-weight:700;color:#737373">● E</span> <b>0%</b> · Descartar</div>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:10px">Base: ~20 compradores reais</div>
+    </div>
+  </div>
+
+  <!-- KPI Hero — distribuição da base atual -->
+  <div class="ds-sec"><h3>Distribuição da base</h3><span class="sub" id="score-base-sub">Aplicando a régua em todos os leads SDR do período</span></div>
+  <div id="score-dist" class="kpi-grid-modern kpi-grid-ops" style="margin-bottom:18px"></div>
+
+  <!-- Validação em cima da base atual -->
+  <div class="ds-sec"><h3>Validação na base atual</h3><span class="sub">Tx. agendamento e tx. reunião realizada por classe — comparando com benchmark da Ana</span></div>
+  <div class="ds-card"><div id="score-validation"></div></div>
+
+  <!-- Concordância com Score atual do Kommo -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Concordância com Score atual (Kommo)</h3><span class="sub">Comparação entre régua nova e classificação manual atual</span></div>
+  <div class="ds-card"><div id="score-vs-kommo"></div></div>
+
+  <!-- Tabela de leads classificados -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Leads classificados</h3><span class="sub">Top 50 mais recentes — coluna 'motivo' mostra a regra aplicada</span></div>
+  <div class="ds-card">
+    <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="score-filter" class="period-select" style="font-size:11.5px;padding:6px 12px" onchange="renderScore()">
+        <option value="all" selected>Todas as classes</option>
+        <option value="A">Só A · Comprador Ideal</option>
+        <option value="B">Só B · Comprador Provável</option>
+        <option value="C">Só C · Aspiracional</option>
+        <option value="D">Só D · Baixa aderência</option>
+        <option value="E">Só E · Descartar</option>
+        <option value="Incompleto">Só Incompletos</option>
+      </select>
+    </div>
+    <div id="score-table" style="overflow-x:auto"></div>
+  </div>
+
+  <!-- Explicação da régua -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Como a régua funciona</h3><span class="sub">8 regras avaliadas em ordem — a primeira que casar define o perfil</span></div>
+  <div class="ds-card">
+    <ol style="font-size:13px;line-height:1.7;color:var(--text);padding-left:20px;margin:6px 0">
+      <li><b style="color:#737373">● Lead E</b> — Descartar · <i>Próximas férias = "Não tenho interesse em resort all inclusive"</i></li>
+      <li><b style="color:#737373">● Lead E</b> — Descartar · <i>Investimento = "Não invisto em férias"</i></li>
+      <li><b style="color:#ef4444">● Lead D</b> — Baixa aderência · <i>Investimento = "Até R$ 5.000"</i></li>
+      <li><b style="color:#f59e0b">● Lead C</b> — Aspiracional (gasta alto, viaja pouco) · <i>Investimento ≥ R$ 7.001 + Frequência baixa</i></li>
+      <li><b style="color:#16a34a">● Lead A</b> — Comprador Ideal · <i>Investimento ≥ R$ 7.001 + Hospedou All-Inc = Sim + Frequência ≥ 1×/ano</i></li>
+      <li><b style="color:#84cc16">● Lead B</b> — Comprador Provável · <i>Qualquer outro com Investimento ≥ R$ 7.001</i></li>
+      <li><b style="color:#84cc16">● Lead B</b> — Comprador Provável (gasto médio com reforço) · <i>Investimento R$ 5.001-7.000 + Frequência ≥ 1×/ano + (interesse OU All-Inc OU 45+ anos OU usa Resort All-Inc)</i></li>
+      <li><b style="color:#f59e0b">● Lead C</b> — Aspiracional (gasto médio sem reforço) · <i>Investimento R$ 5.001-7.000 (resto)</i></li>
+    </ol>
+    <div style="margin-top:12px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:12px;line-height:1.5">
+      📌 <b>Sem resposta de Investimento</b> = lead marcado como <b>Incompleto</b> (bot não chegou nessa pergunta).
+    </div>
+  </div>
+
+</div>
+</div><!-- /tab-score -->
+
+
 <footer>
   <b>Ipioca Mar Resort (IMR)</b> · Trilha Performance Digital · MME Vacation ·
   Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · <span id="footer-date">—</span>
@@ -1468,6 +1547,7 @@ function switchTab(id, btn) {
   if (id === 'outbound') renderOutbound();
   if (id === 'vendas') renderVendas();
   if (id === 'disparos') renderDisparos();
+  if (id === 'score')   renderScore();
 }
 
 /* ── Scroll-to-top visibility ── */
@@ -5495,6 +5575,211 @@ function _dispFlowInsight(flow, counts) {
   const after  = (flow.stepNames && flow.stepNames[maxDropIdx])   || `etapa ${flow.steps[maxDropIdx]}`;
   const lost   = counts[maxDropIdx-1] - counts[maxDropIdx];
   return {kind:'warn', txt:`Maior drop: <b>${before} → ${after}</b> perde ${maxDropPp.toFixed(0)}% (${lost} leads).`};
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CALCULADORA DE SCORE · régua data-driven da Ana (gestora CRM)
+   8 regras avaliadas em ordem — a 1ª que casar define o perfil.
+   Calibrada nas vendas reais (validação: A 46% · B 39% · C 26% · D 9% · E 0%).
+   ═══════════════════════════════════════════════════════════════ */
+const SCORE_BENCH = {A:46, B:39, C:26, D:9, E:0};
+const SCORE_COLOR = {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', E:'#737373', Incompleto:'#94a3b8'};
+const SCORE_LABEL = {A:'Comprador Ideal', B:'Comprador Provável', C:'Aspiracional', D:'Baixa aderência', E:'Descartar', Incompleto:'Bot incompleto'};
+
+// Aplica a régua de 8 regras a UM lead — retorna {score, motivo}
+function calcLeadScore(l) {
+  const _n = s => (s||'').toString().toLowerCase().trim();
+  const prox = _n(l.prox_ferias);
+  const inv  = _n(l.investimento);
+  const freq = _n(l.freq_viagem);
+  const hi   = _n(l.hosp_allinc);
+  const hosp = _n(l.hospedagem);
+  const idade = parseInt(l.idade, 10) || 0;
+  // Investimento "alto" (≥ R$ 7.001) e "médio" (5.001-7.000)
+  const invAlto = inv.includes('acima de r$ 10.001') || inv.includes('entre r$ 7.001');
+  const invMedio = inv.includes('entre r$ 5.001');
+  const freqAlta = freq.includes('mais de 1 vez') || (freq.includes('1 vez por ano') && !freq.includes('não'));
+  const freqBaixa = freq.includes('não viajo todos') || freq.includes('nunca viajo') || freq.includes('casa de família');
+
+  // Regra 1+2: Lead E (descartar)
+  if (prox.includes('não tenho interesse')) return {score:'E', motivo:'Sem interesse em resort all-inclusive'};
+  if (inv.includes('não invisto')) return {score:'E', motivo:'Não investe em férias'};
+  // Sem resposta de investimento → Incompleto
+  if (!inv) return {score:'Incompleto', motivo:'Bot não respondeu Investimento'};
+  // Regra 3: Lead D
+  if (inv.includes('até r$ 5.000')) return {score:'D', motivo:'Investe até R$ 5.000/ano'};
+  // Regra 4: Lead C (investe alto + frequência baixa)
+  if (invAlto && freqBaixa) return {score:'C', motivo:'Investe ≥ R$ 7.001 mas viaja pouco'};
+  // Regra 5: Lead A (investe alto + already All-Inc + freq alta)
+  if (invAlto && hi === 'sim' && freqAlta) return {score:'A', motivo:'Investe ≥ R$ 7.001 + já usa All-Inc + viaja ≥ 1×/ano'};
+  // Regra 6: Lead B (resto de investe alto)
+  if (invAlto) return {score:'B', motivo:'Investe ≥ R$ 7.001 (demais critérios não casam com A nem C)'};
+  // Regra 7: Lead B (investe médio + freq alta + reforço)
+  if (invMedio && freqAlta) {
+    const reforco = prox.includes('quero continuar') || prox.includes('talvez') || prox.includes('primeira experiência')
+                 || hi === 'sim' || idade >= 45 || hosp.includes('resorts all inclusive');
+    if (reforco) return {score:'B', motivo:'Investe R$ 5-7k + viaja ≥ 1×/ano + tem reforço (interesse/All-Inc/45+/usa Resort)'};
+  }
+  // Regra 8: Lead C (resto de investe médio)
+  if (invMedio) return {score:'C', motivo:'Investe R$ 5-7k sem reforço pra subir pra B'};
+  // Fallback (não deve cair aqui se Investimento foi respondido)
+  return {score:'Incompleto', motivo:'Dados insuficientes pra classificar'};
+}
+
+function renderScore() {
+  if (!KOMMO_RAW) return;
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const sdr = (KOMMO_RAW.sdr || []).filter(l => _inWindow(l.created_at, win));
+  const total = sdr.length;
+  const fmtN = n => (n||0).toLocaleString('pt-BR');
+  const fmtP = (n,d) => d > 0 ? (n/d*100).toFixed(1)+'%' : '—';
+
+  // Classifica todos os leads no período
+  const scored = sdr.map(l => ({...l, _scored: calcLeadScore(l)}));
+  const byClass = {A:[], B:[], C:[], D:[], E:[], Incompleto:[]};
+  scored.forEach(s => { if (byClass[s._scored.score]) byClass[s._scored.score].push(s); });
+
+  // Sub do header
+  const subEl = document.getElementById('score-base-sub');
+  if (subEl) subEl.textContent = `${fmtN(total)} leads SDR · ${PERIOD_LABELS[currentPeriod]||currentPeriod}`;
+
+  // ── KPI distribuição (6 cards: A, B, C, D, E, Incompleto)
+  const distEl = document.getElementById('score-dist');
+  if (distEl) {
+    distEl.innerHTML = ['A','B','C','D','E','Incompleto'].map(cls => {
+      const n = byClass[cls].length;
+      const pct = total > 0 ? (n/total*100).toFixed(1) : '0';
+      const c = SCORE_COLOR[cls];
+      return `<div class="ds-kpi" style="border-top:3px solid ${c}">
+        <div class="lbl" style="color:${c}">● ${cls === 'Incompleto' ? 'Incompleto' : 'Classe '+cls}</div>
+        <div class="val">${fmtN(n)}</div>
+        <div class="sub">${pct}% · ${SCORE_LABEL[cls]}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Validação na base (tx. agendamento e reunião realizada por classe)
+  const valEl = document.getElementById('score-validation');
+  if (valEl) {
+    const rows = ['A','B','C','D','E'].map(cls => {
+      const ls = byClass[cls];
+      const n = ls.length;
+      const agend  = ls.filter(l => l.reuniao_agendada).length;
+      const realiz = ls.filter(l => l.reuniao_realizada).length;
+      const txR = n > 0 ? realiz/n*100 : 0;
+      const bench = SCORE_BENCH[cls];
+      const delta = txR - bench;
+      const cls_delta = Math.abs(delta) < 5 ? 'tc-muted' : delta > 0 ? 'tc-g' : 'tc-r';
+      const sinal = delta > 0 ? '+' : '';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px"><b style="color:${SCORE_COLOR[cls]}">● Classe ${cls}</b> · <span style="color:var(--muted);font-size:11.5px">${SCORE_LABEL[cls]}</span></td>
+        <td style="padding:10px;text-align:right"><b>${fmtN(n)}</b></td>
+        <td style="padding:10px;text-align:right">${fmtN(agend)} · <span style="color:var(--muted)">${fmtP(agend,n)}</span></td>
+        <td style="padding:10px;text-align:right"><b>${fmtN(realiz)}</b> · <span style="color:var(--muted)">${fmtP(realiz,n)}</span></td>
+        <td style="padding:10px;text-align:right"><b style="color:${SCORE_COLOR[cls]}">${bench}%</b></td>
+        <td style="padding:10px;text-align:right"><b class="${cls_delta}">${n>=10 ? sinal+delta.toFixed(0)+'pp' : '<span class=tc-muted>base &lt; 10</span>'}</b></td>
+      </tr>`;
+    }).join('');
+    valEl.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Classe</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">N° leads</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Reun. agendada</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Reun. realizada</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Benchmark</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Δ vs bench</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11.5px;line-height:1.5">
+        📖 <b>Leia assim:</b> a régua foi calibrada com ~20 compradores reais. Se a sua base atual mostrar tx. realizada próximo do benchmark (±5pp), a régua está confirmando o padrão. Δ &gt; 0 = base atual está MELHOR que histórico; Δ &lt; 0 = pior. Classes com &lt; 10 leads não dão pra concluir nada (base muito pequena).
+      </div>`;
+  }
+
+  // ── Comparação com Score Kommo (matriz)
+  const vsEl = document.getElementById('score-vs-kommo');
+  if (vsEl) {
+    const matriz = {}; // matriz[calc][kommo] = count
+    ['A','B','C','D','E','Incompleto'].forEach(c => matriz[c] = {A:0, B:0, C:0, D:0, 'sem score':0});
+    scored.forEach(s => {
+      const k = (s.score||'').toUpperCase();
+      const kommoCol = ['A','B','C','D'].includes(k) ? k : 'sem score';
+      matriz[s._scored.score][kommoCol]++;
+    });
+    const concordam = (['A','B','C','D']).reduce((s,c) => s + matriz[c][c], 0);
+    const totalComScoreKommo = scored.filter(s => ['A','B','C','D'].includes((s.score||'').toUpperCase())).length;
+    const concordPct = totalComScoreKommo > 0 ? (concordam/totalComScoreKommo*100).toFixed(1) : '—';
+    const head = ['A','B','C','D','sem score'].map(k => `<th style="text-align:right;padding:8px 10px;font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase">Kommo ${k}</th>`).join('');
+    const rows = ['A','B','C','D','E','Incompleto'].map(cls => {
+      const cells = ['A','B','C','D','sem score'].map(k => {
+        const n = matriz[cls][k];
+        const isMatch = cls === k;
+        return `<td style="text-align:right;padding:9px 10px;${isMatch?'background:rgba(34,197,94,.08);font-weight:700;color:#16a34a':''}">${n||'—'}</td>`;
+      }).join('');
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:9px 10px"><b style="color:${SCORE_COLOR[cls]}">● ${cls}</b></td>
+        ${cells}
+      </tr>`;
+    }).join('');
+    vsEl.innerHTML = `
+      <div style="margin-bottom:14px;display:flex;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px;padding:10px 14px;background:rgba(34,197,94,.06);border-radius:8px">
+          <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase">Concordância</div>
+          <div style="font-size:22px;font-weight:800;color:#16a34a;line-height:1.1">${concordPct}%</div>
+          <div style="font-size:11px;color:var(--muted)">${concordam} de ${totalComScoreKommo} com Score no Kommo</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase">Calc ↓ × Kommo →</th>
+          ${head}
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11.5px;line-height:1.5">
+        📖 <b>Diagonal verde</b> = onde as 2 classificações batem. Fora da diagonal = divergências (a calculadora viu coisa diferente do score manual do Kommo). 'Sem score' = lead no Kommo sem classificação atribuída ainda.
+      </div>`;
+  }
+
+  // ── Tabela de leads classificados (top 50 mais recentes, com filtro)
+  const tblEl = document.getElementById('score-table');
+  if (tblEl) {
+    const filtroEl = document.getElementById('score-filter');
+    const f = filtroEl ? filtroEl.value : 'all';
+    const sorted = scored.slice().sort((a,b) => (b.created_at||0) - (a.created_at||0));
+    const filtered = f === 'all' ? sorted : sorted.filter(s => s._scored.score === f);
+    const limit = 50;
+    const rows = filtered.slice(0, limit).map(s => {
+      const c = SCORE_COLOR[s._scored.score];
+      const dt = new Date((s.created_at||0)*1000).toLocaleDateString('pt-BR');
+      const status = s.venda ? '💰 venda' : s.reuniao_realizada ? '🤝 realizada' : s.reuniao_agendada ? '📅 agendada' : s.qualified ? '✅ qualif' : '·';
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:9px 10px;font-weight:600">${s.name||'—'}</td>
+        <td style="padding:9px 10px;text-align:center"><span style="font-size:11px;padding:2px 9px;border-radius:10px;background:${c}22;color:${c};font-weight:800">● ${s._scored.score}</span></td>
+        <td style="padding:9px 10px;text-align:center"><span style="font-size:10.5px;color:var(--muted)">${(s.score||'').toUpperCase()||'—'}</span></td>
+        <td style="padding:9px 10px;font-size:11px;color:var(--muted)">${s._scored.motivo}</td>
+        <td style="padding:9px 10px;font-size:11.5px">${status}</td>
+        <td style="padding:9px 10px;text-align:right;color:var(--muted);font-size:11px">${dt}</td>
+      </tr>`;
+    }).join('');
+    tblEl.innerHTML = `
+      <div style="margin-bottom:10px;font-size:11.5px;color:var(--muted)">
+        Mostrando <b style="color:var(--text)">${Math.min(filtered.length, limit)}</b> de <b style="color:var(--text)">${filtered.length}</b> leads ${f === 'all' ? '' : `da classe ${f}`}
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Lead</th>
+          <th style="text-align:center;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Score calc</th>
+          <th style="text-align:center;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Score Kommo</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Motivo</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Status</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Criado</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan=6 style="padding:24px;text-align:center;color:var(--muted)">Sem leads nesse filtro.</td></tr>'}</tbody>
+      </table>`;
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
