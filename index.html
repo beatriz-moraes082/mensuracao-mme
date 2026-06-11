@@ -1467,7 +1467,7 @@
     <div>
       <div class="hl-eyebrow">Calculadora de Score · régua data-driven</div>
       <h2 class="hl-title">Classifique um lead em <span style="color:var(--accent)">A · B · C · D · E</span></h2>
-      <div class="hl-sub">Responda as 6 perguntas do bot de pré-atendimento — o sistema aplica as 8 regras da Ana (gestora CRM) e devolve o perfil em tempo real. Calibrada em ~20 compradores reais; validação na base atual está abaixo.</div>
+      <div class="hl-sub">Responda as 6 perguntas do bot de pré-atendimento — o sistema aplica a régua da Ana (gestora CRM) e devolve o perfil em tempo real.</div>
     </div>
     <div style="background:var(--surface2);padding:14px 18px;border-radius:14px;min-width:240px">
       <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Classes</div>
@@ -1575,49 +1575,55 @@
   <!-- Explicação da régua -->
   <div class="ds-sec" style="margin-top:24px"><h3>Como a régua funciona</h3><span class="sub">4 classes — regras avaliadas em ordem; a primeira que casar define o perfil</span></div>
   <div class="ds-card">
-    <div style="display:grid;gap:14px">
-      <div style="padding:14px;border-radius:10px;border-left:4px solid #16a34a;background:rgba(34,197,94,.05)">
-        <div style="font-weight:800;color:#16a34a;font-size:14px;margin-bottom:4px">🟢 Lead A — Perfil Ideal</div>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--text)">
-          <b>Critério:</b> Marcou <b>Resorts All Inclusive</b> na pergunta "Como se hospeda nas viagens?"<br>
-          <span style="color:var(--muted);font-style:italic">→ Já está acostumado com o modelo all-inclusive.</span>
+    <div style="display:grid;gap:18px">
+      <div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:6px;color:var(--text)">🟢 <span style="color:#16a34a">Lead A — Perfil Ideal</span></div>
+        <div style="font-size:13px;line-height:1.65;color:var(--text)">
+          Critério:
+          <ul style="margin:4px 0;padding-left:24px">
+            <li>Marcou <b>Resorts All Inclusive</b> na pergunta 1</li>
+          </ul>
+          Esse é o perfil que <b>já está acostumado com o modelo</b>.
         </div>
       </div>
-      <div style="padding:14px;border-radius:10px;border-left:4px solid #84cc16;background:rgba(132,204,22,.05)">
-        <div style="font-weight:800;color:#84cc16;font-size:14px;margin-bottom:4px">🟡 Lead B — Aspiracional Premium</div>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--text)">
-          <b>Critérios (TODOS):</b>
-          <ul style="margin:4px 0;padding-left:20px">
+      <hr style="border:0;border-top:1px solid var(--border);margin:0">
+
+      <div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:6px;color:var(--text)">🟡 <span style="color:#ca8a04">Lead B — Perfil Aspiracional Premium</span></div>
+        <div style="font-size:13px;line-height:1.65;color:var(--text)">
+          Critérios:
+          <ul style="margin:4px 0;padding-left:24px">
             <li>Não usa all inclusive atualmente</li>
-            <li>Respondeu <b>"Sim, tenho interesse"</b> (P22) ou <b>"Sim, quero conhecer"</b> (P235)</li>
-            <li>Gasta <b>acima de R$ 10.001</b> por ano em viagens</li>
+            <li>Respondeu <b>"Sim, tenho vontade"</b> na pergunta 5</li>
+            <li>Gasta <b>acima de R$ 10.001 por ano em viagens</b></li>
           </ul>
         </div>
       </div>
-      <div style="padding:14px;border-radius:10px;border-left:4px solid #f59e0b;background:rgba(245,158,11,.05)">
-        <div style="font-weight:800;color:#f59e0b;font-size:14px;margin-bottom:4px">🟠 Lead C — Aspiracional Médio</div>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--text)">
-          <b>Critérios (TODOS):</b>
-          <ul style="margin:4px 0;padding-left:20px">
+      <hr style="border:0;border-top:1px solid var(--border);margin:0">
+
+      <div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:6px;color:var(--text)">🟠 <span style="color:#ea580c">Lead C — Perfil Aspiracional Médio</span></div>
+        <div style="font-size:13px;line-height:1.65;color:var(--text)">
+          Critérios:
+          <ul style="margin:4px 0;padding-left:24px">
             <li>Não usa all inclusive atualmente</li>
-            <li>Respondeu <b>"Sim, tenho interesse"</b> (P22) ou <b>"Sim, quero conhecer"</b> (P235)</li>
-            <li>Gasta <b>entre R$ 5.001 e R$ 10.000</b> por ano</li>
+            <li>Respondeu <b>"Sim, tenho vontade"</b> na pergunta 5</li>
+            <li>Gasta <b>entre R$ 5.001 e R$ 10.000</b></li>
           </ul>
         </div>
       </div>
-      <div style="padding:14px;border-radius:10px;border-left:4px solid #ef4444;background:rgba(239,68,68,.05)">
-        <div style="font-weight:800;color:#ef4444;font-size:14px;margin-bottom:4px">🔴 Lead D — Baixa aderência</div>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--text)">
-          <b>Qualquer um destes:</b>
-          <ul style="margin:4px 0;padding-left:20px">
-            <li>Gasta <b>até R$ 5.000</b> por ano (ou "Não invisto em férias")</li>
-            <li>Respondeu <b>"Depende da oferta"</b> (P235) ou <b>"Não tenho interesse"</b> (P22/P235)</li>
+      <hr style="border:0;border-top:1px solid var(--border);margin:0">
+
+      <div>
+        <div style="font-weight:800;font-size:15px;margin-bottom:6px;color:var(--text)">🔴 <span style="color:#dc2626">Lead D — Baixa aderência</span></div>
+        <div style="font-size:13px;line-height:1.65;color:var(--text)">
+          Critérios:
+          <ul style="margin:4px 0;padding-left:24px">
+            <li>Gasta <b>até R$ 5.000</b>, ou</li>
+            <li>Respondeu <b>"Talvez"</b> ou <b>"Não procuro esse tipo de hospedagem"</b></li>
           </ul>
         </div>
       </div>
-    </div>
-    <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:12px;line-height:1.5">
-      📌 <b>Ordem de avaliação:</b> Regra A → D → B → C. A primeira que o lead atender define a classificação. Sem resposta de Investimento ou Próximas férias = <b>Incompleto</b>.
     </div>
   </div>
 
