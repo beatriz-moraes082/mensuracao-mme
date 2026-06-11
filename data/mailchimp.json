@@ -1,10 +1,10 @@
 {
-  "fetched_at": "2026-06-11T13:40:29.244311+00:00",
+  "fetched_at": "2026-06-11T14:12:49.683367+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 881,
+    "member_count": 882,
     "unsubscribe_count": 7,
     "cleaned_count": 123,
     "open_rate": 20.207253886010363,
@@ -61,7 +61,7 @@
       "send_time": "2026-04-22T22:20:07+00:00",
       "month": "2026-04",
       "sent": 560,
-      "opens_total": 55,
+      "opens_total": 56,
       "unique_opens": 47,
       "open_rate": 8.545454545454545,
       "clicks_total": 0,
@@ -117,13 +117,13 @@
       "status": "sending",
       "send_time": "2026-04-09T16:58:09+00:00",
       "month": "2026-04",
-      "sent": 698,
+      "sent": 699,
       "opens_total": 79,
       "unique_opens": 63,
-      "open_rate": 11.033274956217163,
+      "open_rate": 11.013986013986015,
       "clicks_total": 6,
       "unique_clicks": 4,
-      "click_rate": 0.7005253940455342,
+      "click_rate": 0.6993006993006993,
       "unsubscribed": 4,
       "hard_bounces": 115,
       "soft_bounces": 12
@@ -148,36 +148,68 @@
       "soft_bounces": 2
     }
   ],
-  "by_subject": {
-    "Falha ao adiar seu compromisso": {
-      "n": 2,
-      "sent": 699,
-      "opens_total": 80,
-      "unique_opens": 64,
-      "clicks_total": 6,
-      "unique_clicks": 4,
-      "unsubscribed": 4,
-      "hard_bounces": 115,
-      "soft_bounces": 12,
-      "first_send": "2026-04-09",
+  "by_step": {
+    "Email automation | Cadência → Dia 01 (copy 01)": {
+      "n": 1,
+      "sent": 1,
+      "opens_total": 1,
+      "unique_opens": 1,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 0,
+      "hard_bounces": 0,
+      "soft_bounces": 0,
+      "first_send": "2026-06-11",
       "last_send": "2026-06-11",
-      "type": "automation-email"
+      "type": "automation-email",
+      "subject": "Falha ao adiar seu compromisso"
     },
-    "Conheça quem já vive a experiência MME Vacation!": {
-      "n": 3,
-      "sent": 1287,
-      "opens_total": 154,
-      "unique_opens": 124,
+    "Email automation | Cadência → Dia 14": {
+      "n": 1,
+      "sent": 157,
+      "opens_total": 23,
+      "unique_opens": 15,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 1,
+      "hard_bounces": 0,
+      "soft_bounces": 2,
+      "first_send": "2026-05-18",
+      "last_send": "2026-05-18",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
+    },
+    "Email automation | Cadência → Dia 10": {
+      "n": 1,
+      "sent": 560,
+      "opens_total": 56,
+      "unique_opens": 47,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 0,
+      "hard_bounces": 0,
+      "soft_bounces": 10,
+      "first_send": "2026-04-22",
+      "last_send": "2026-04-22",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
+    },
+    "Email automation | Cadência → Dia 06": {
+      "n": 1,
+      "sent": 570,
+      "opens_total": 76,
+      "unique_opens": 62,
       "clicks_total": 2,
       "unique_clicks": 2,
-      "unsubscribed": 2,
+      "unsubscribed": 1,
       "hard_bounces": 0,
-      "soft_bounces": 22,
+      "soft_bounces": 10,
       "first_send": "2026-04-09",
-      "last_send": "2026-05-18",
-      "type": "automation-email"
+      "last_send": "2026-04-09",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
     },
-    "Não deixe a temporada decidir suas férias!": {
+    "Email automation | Cadência → Dia 04": {
       "n": 1,
       "sent": 572,
       "opens_total": 66,
@@ -189,9 +221,25 @@
       "soft_bounces": 11,
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
-      "type": "automation-email"
+      "type": "automation-email",
+      "subject": "Não deixe a temporada decidir suas férias!"
     },
-    "👀 Quem está de olho em Ipioca já entendeu": {
+    "Email automation | Cadência → Dia 01": {
+      "n": 1,
+      "sent": 699,
+      "opens_total": 79,
+      "unique_opens": 63,
+      "clicks_total": 6,
+      "unique_clicks": 4,
+      "unsubscribed": 4,
+      "hard_bounces": 115,
+      "soft_bounces": 12,
+      "first_send": "2026-04-09",
+      "last_send": "2026-04-09",
+      "type": "automation-email",
+      "subject": "Falha ao adiar seu compromisso"
+    },
+    "Disparo 01 - BDR [Wpp + E-mail]": {
       "n": 1,
       "sent": 153,
       "opens_total": 47,
@@ -203,7 +251,115 @@
       "soft_bounces": 2,
       "first_send": "2026-03-27",
       "last_send": "2026-03-27",
-      "type": "regular"
+      "type": "regular",
+      "subject": "👀 Quem está de olho em Ipioca já entendeu"
+    }
+  },
+  "by_subject": {
+    "Email automation | Cadência → Dia 01 (copy 01)": {
+      "n": 1,
+      "sent": 1,
+      "opens_total": 1,
+      "unique_opens": 1,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 0,
+      "hard_bounces": 0,
+      "soft_bounces": 0,
+      "first_send": "2026-06-11",
+      "last_send": "2026-06-11",
+      "type": "automation-email",
+      "subject": "Falha ao adiar seu compromisso"
+    },
+    "Email automation | Cadência → Dia 14": {
+      "n": 1,
+      "sent": 157,
+      "opens_total": 23,
+      "unique_opens": 15,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 1,
+      "hard_bounces": 0,
+      "soft_bounces": 2,
+      "first_send": "2026-05-18",
+      "last_send": "2026-05-18",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
+    },
+    "Email automation | Cadência → Dia 10": {
+      "n": 1,
+      "sent": 560,
+      "opens_total": 56,
+      "unique_opens": 47,
+      "clicks_total": 0,
+      "unique_clicks": 0,
+      "unsubscribed": 0,
+      "hard_bounces": 0,
+      "soft_bounces": 10,
+      "first_send": "2026-04-22",
+      "last_send": "2026-04-22",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
+    },
+    "Email automation | Cadência → Dia 06": {
+      "n": 1,
+      "sent": 570,
+      "opens_total": 76,
+      "unique_opens": 62,
+      "clicks_total": 2,
+      "unique_clicks": 2,
+      "unsubscribed": 1,
+      "hard_bounces": 0,
+      "soft_bounces": 10,
+      "first_send": "2026-04-09",
+      "last_send": "2026-04-09",
+      "type": "automation-email",
+      "subject": "Conheça quem já vive a experiência MME Vacation!"
+    },
+    "Email automation | Cadência → Dia 04": {
+      "n": 1,
+      "sent": 572,
+      "opens_total": 66,
+      "unique_opens": 56,
+      "clicks_total": 1,
+      "unique_clicks": 1,
+      "unsubscribed": 1,
+      "hard_bounces": 0,
+      "soft_bounces": 11,
+      "first_send": "2026-04-09",
+      "last_send": "2026-04-09",
+      "type": "automation-email",
+      "subject": "Não deixe a temporada decidir suas férias!"
+    },
+    "Email automation | Cadência → Dia 01": {
+      "n": 1,
+      "sent": 699,
+      "opens_total": 79,
+      "unique_opens": 63,
+      "clicks_total": 6,
+      "unique_clicks": 4,
+      "unsubscribed": 4,
+      "hard_bounces": 115,
+      "soft_bounces": 12,
+      "first_send": "2026-04-09",
+      "last_send": "2026-04-09",
+      "type": "automation-email",
+      "subject": "Falha ao adiar seu compromisso"
+    },
+    "Disparo 01 - BDR [Wpp + E-mail]": {
+      "n": 1,
+      "sent": 153,
+      "opens_total": 47,
+      "unique_opens": 36,
+      "clicks_total": 3,
+      "unique_clicks": 2,
+      "unsubscribed": 0,
+      "hard_bounces": 8,
+      "soft_bounces": 2,
+      "first_send": "2026-03-27",
+      "last_send": "2026-03-27",
+      "type": "regular",
+      "subject": "👀 Quem está de olho em Ipioca já entendeu"
     }
   },
   "by_month": {
@@ -220,7 +376,7 @@
       "unsubscribed": 1
     },
     "2026-04": {
-      "sent": 2400,
+      "sent": 2401,
       "unique_opens": 228,
       "clicks_total": 9,
       "unsubscribed": 6

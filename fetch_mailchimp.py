@@ -148,26 +148,36 @@ def main():
 
     print(f"  {len(enriched)} campaigns com envios reais")
 
-    # Agrega por subject (cada execução da régua vira uma campaign separada
-    # com o mesmo subject — somar dá métrica de mensagem da régua)
-    by_subject = defaultdict(lambda: {
+    # Agrega por TÍTULO interno (não subject) — title identifica a posição
+    # da mensagem na cadência (ex: 'Cadência → Dia 01'), enquanto subject
+    # pode se repetir entre emails diferentes (A/B test, variações).
+    # Cada execução da régua vira uma campaign — somar dá métrica da etapa.
+    by_step = defaultdict(lambda: {
         "n": 0, "sent": 0, "opens_total": 0, "unique_opens": 0,
         "clicks_total": 0, "unique_clicks": 0, "unsubscribed": 0,
         "hard_bounces": 0, "soft_bounces": 0,
         "first_send": "", "last_send": "", "type": "",
+        "subject": "",  # subject mais comum dessa etapa
     })
     for c in enriched:
-        s = c["subject"]
-        d = by_subject[s]
+        key = c["title"] or c["subject"] or "—"
+        d = by_step[key]
         d["n"] += 1
         for k in ("sent", "opens_total", "unique_opens", "clicks_total",
                   "unique_clicks", "unsubscribed", "hard_bounces", "soft_bounces"):
             d[k] += c.get(k, 0)
         d["type"] = c["type"]
+        # Subject: pega o mais recente (ou o primeiro se múltiplos)
+        if not d["subject"] or (c.get("send_time","") > (d.get("_last_st","") or "")):
+            d["subject"] = c["subject"]
+            d["_last_st"] = c.get("send_time","")
         st = c.get("send_time", "")[:10]
         if st:
             if not d["first_send"] or st < d["first_send"]: d["first_send"] = st
             if not d["last_send"]  or st > d["last_send"]:  d["last_send"] = st
+    # Limpa chave temporária
+    for d in by_step.values():
+        d.pop("_last_st", None)
 
     # Agrega por mês
     by_month = defaultdict(lambda: {
@@ -186,8 +196,9 @@ def main():
         "data_center": DC,
         "audience": aud,
         "campaigns": enriched,
-        "by_subject": dict(by_subject),
-        "by_month": dict(by_month),
+        "by_step":    dict(by_step),     # agregado por etapa da cadência (title)
+        "by_subject": dict(by_step),     # alias retrocompat — código antigo lia 'by_subject'
+        "by_month":   dict(by_month),
     }
 
     out_path = Path(__file__).resolve().parent / "data/mailchimp.json"
@@ -199,8 +210,8 @@ def main():
     out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(out, ensure_ascii=False, indent=2))
     print(f"\n✅ Salvo em: {out_path}")
-    print(f"   Mensagens únicas da régua: {len(by_subject)}")
-    print(f"   Envios totais: {sum(d['sent'] for d in by_subject.values())}")
+    print(f"   Etapas da cadência: {len(by_step)}")
+    print(f"   Envios totais: {sum(d['sent'] for d in by_step.values())}")
 
 
 if __name__ == "__main__":
