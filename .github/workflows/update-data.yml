@@ -38,6 +38,7 @@ jobs:
           GADS_REFRESH_TOKEN=${{ secrets.GADS_REFRESH_TOKEN }}
           GADS_CUSTOMER_ID=${{ secrets.GADS_CUSTOMER_ID }}
           GADS_LOGIN_CUSTOMER_ID=${{ secrets.GADS_LOGIN_CUSTOMER_ID }}
+          MAILCHIMP_API_KEY=${{ secrets.MAILCHIMP_API_KEY }}
           EOF
 
       - name: Fetch Kommo CRM
@@ -49,11 +50,15 @@ jobs:
       - name: Fetch Google Ads
         run: python3 fetch_google_ads.py
 
+      - name: Fetch Mailchimp
+        run: python3 fetch_mailchimp.py
+        continue-on-error: true   # Mailchimp ainda é integração nova — não derruba o workflow se falhar
+
       - name: Commit updated data
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          git add data/kommo_leads.json data/meta_spend.json data/google_ads_spend.json
+          git add data/kommo_leads.json data/meta_spend.json data/google_ads_spend.json data/mailchimp.json
           if git diff --staged --quiet; then
             echo "Nenhuma mudança nos dados."
           else
