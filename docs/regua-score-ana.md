@@ -19,16 +19,28 @@
 
 > Esse é o perfil que **já está acostumado com o modelo**.
 
-> ⚠️ **IMPORTANTE — Este critério vem do bot ANTIGO (intermediário de
-> maio/26 · `bot-v2-inicial-2026-05-05.json`), que tinha a pergunta**
-> *"Como sua família normalmente se hospeda quando viaja?"* com a opção
-> "Resorts All Inclusive". Esse bot foi **descontinuado** quando os
-> testes A/B (v1 LONGO + v2 CURTO) entraram em produção.
+> 🚧 **EM REVISÃO COM A ANA (11/06/2026)**
 >
-> **Leads NOVOS** (que passam pelos bots atuais) **não conseguem ser
-> classificados como A automaticamente**, porque nenhum dos 2 bots em
-> produção tem essa pergunta. Só leads **históricos do bot mai/26**
-> entram em A pela régua.
+> A pergunta original ("Como sua família normalmente se hospeda quando
+> viaja?" com opção "Resorts All Inclusive") **só existiu no bot
+> intermediário de maio/26** (`bot-v2-inicial-2026-05-05.json`).
+>
+> Nos bots em produção atual (v1 LONGO + v2 CURTO), essa pergunta com
+> opção "Resorts All Inclusive" **NÃO existe** — confirmado por análise
+> dos JSONs:
+> - `bot-pre-atendimento-v1.json` → 7 perguntas, nenhuma com essa opção
+> - `bot-pre-atendimento-v2.json` → 4 perguntas, nenhuma com essa opção
+>
+> **A Bia vai alinhar com a Ana** uma nova definição de Lead A
+> compatível com os bots em teste. Possíveis caminhos:
+> - Usar `hosp_allinc = Sim` ("Já se hospedou em All-Inclusive") como
+>   gatilho de A
+> - Definir nova combinação de respostas
+> - Outro critério
+>
+> **Implementação atual** continua usando `hospedagem = "Resorts All
+> Inclusive"` (campo legado), o que só funciona pra leads históricos
+> que passaram pelo bot de mai/26.
 
 ---
 
