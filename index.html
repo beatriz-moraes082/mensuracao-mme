@@ -1487,23 +1487,45 @@
       <!-- COLUNA 1: formulário -->
       <div style="display:grid;gap:16px">
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">1 · Interesse em Resort All-Inclusive</label>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4">O bot faz uma de duas perguntas dependendo se o lead já se hospedou em All-Inclusive antes:</div>
-          <select id="calc-prox" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">1 · Já se hospedou em All-Inclusive?</label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4">Define qual será a próxima pergunta do bot (P22 ou P235)</div>
+          <select id="calc-hi" onchange="calcHiChanged()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
-            <optgroup label="🟦 P22 — &quot;Você tem interesse em continuar viajando para Resort All-inclusive?&quot;">
-              <option>Sim, tenho interesse</option>
-              <option>Não tenho interesse</option>
-            </optgroup>
-            <optgroup label="🟪 P235 — &quot;Você gostaria de ter sua primeira experiência em um Resort All-inclusive?&quot;">
-              <option>Sim, quero conhecer</option>
-              <option>Depende da oferta</option>
-              <option>Não tenho interesse</option>
-            </optgroup>
+            <option>Sim</option>
+            <option>Não</option>
           </select>
         </div>
+
+        <!-- P22 · só aparece se Já hospedou = Sim -->
+        <div id="calc-p22-wrap" style="display:none">
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">2 · 🟦 P22 — Interesse em Resort All-Inclusive</label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4;font-style:italic">"Você tem interesse em continuar viajando para Resort All-inclusive?"</div>
+          <select id="calc-prox-p22" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Sim, tenho interesse</option>
+            <option>Não tenho interesse</option>
+          </select>
+        </div>
+
+        <!-- P235 · só aparece se Já hospedou = Não -->
+        <div id="calc-p235-wrap" style="display:none">
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">2 · 🟪 P235 — Primeira experiência em All-Inclusive</label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4;font-style:italic">"Você gostaria de ter sua primeira experiência em um Resort All-inclusive?"</div>
+          <select id="calc-prox-p235" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Sim, quero conhecer</option>
+            <option>Depende da oferta</option>
+            <option>Não tenho interesse</option>
+          </select>
+        </div>
+
+        <!-- Placeholder se P1 não foi respondida -->
+        <div id="calc-prox-placeholder" style="padding:14px;border-radius:10px;background:rgba(245,158,11,.08);border:1px dashed rgba(245,158,11,.4);font-size:12px;line-height:1.5;color:var(--muted)">
+          ⏳ <b>Responda a pergunta 1</b> primeiro — a próxima pergunta do bot depende dela.
+        </div>
+
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">2 · Quanto investe em viagens por ano</label>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">3 · Quanto investe em viagens por ano</label>
           <select id="calc-inv" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
             <option>Acima de R$ 10.001</option>
@@ -1514,7 +1536,7 @@
           </select>
         </div>
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">3 · Frequência de viagens</label>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">4 · Frequência de viagens</label>
           <select id="calc-freq" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
             <option>Mais de 1 vez por ano</option>
@@ -1525,19 +1547,11 @@
           </select>
         </div>
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">4 · Já se hospedou em all-inclusive?</label>
-          <select id="calc-hi" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
-            <option value="">— Selecione —</option>
-            <option>Sim</option>
-            <option>Não</option>
-          </select>
-        </div>
-        <div>
           <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">5 · Idade</label>
           <input type="number" id="calc-idade" oninput="calcLive()" placeholder="Ex: 45" min="18" max="100" class="period-select" style="width:100%;font-size:13px;padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
         </div>
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">6 · Como se hospeda nas viagens</label>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">6 · Como se hospeda nas viagens <span style="color:var(--accent);font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">(define Lead A)</span></label>
           <select id="calc-hosp" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
             <option>Resorts All Inclusive</option>
@@ -5801,10 +5815,34 @@ function calcLeadScore(l) {
 }
 
 // ── Calculadora interativa (formulário live) ──────────────────────
+// Mostra/oculta a pergunta 2 (P22 vs P235) conforme a resposta da pergunta 1
+function calcHiChanged() {
+  const hi = (document.getElementById('calc-hi') || {}).value || '';
+  const p22  = document.getElementById('calc-p22-wrap');
+  const p235 = document.getElementById('calc-p235-wrap');
+  const ph   = document.getElementById('calc-prox-placeholder');
+  if (hi === 'Sim') {
+    if (p22)  p22.style.display  = '';
+    if (p235) { p235.style.display = 'none'; const s = document.getElementById('calc-prox-p235'); if (s) s.value = ''; }
+    if (ph)   ph.style.display   = 'none';
+  } else if (hi === 'Não') {
+    if (p22)  { p22.style.display  = 'none'; const s = document.getElementById('calc-prox-p22');  if (s) s.value = ''; }
+    if (p235) p235.style.display = '';
+    if (ph)   ph.style.display   = 'none';
+  } else {
+    if (p22)  { p22.style.display  = 'none'; const s = document.getElementById('calc-prox-p22');  if (s) s.value = ''; }
+    if (p235) { p235.style.display = 'none'; const s = document.getElementById('calc-prox-p235'); if (s) s.value = ''; }
+    if (ph)   ph.style.display   = '';
+  }
+  calcLive();
+}
+
 function calcLive() {
-  // Coleta as 6 respostas atuais e simula um lead pra reaproveitar calcLeadScore
+  // prox_ferias é a resposta DA P22 ou DA P235 (só uma das duas pode estar preenchida)
+  const respP22  = (document.getElementById('calc-prox-p22')  || {}).value || '';
+  const respP235 = (document.getElementById('calc-prox-p235') || {}).value || '';
   const fake = {
-    prox_ferias:   (document.getElementById('calc-prox')  || {}).value || '',
+    prox_ferias:   respP22 || respP235 || '',
     investimento:  (document.getElementById('calc-inv')   || {}).value || '',
     freq_viagem:   (document.getElementById('calc-freq')  || {}).value || '',
     hosp_allinc:   (document.getElementById('calc-hi')    || {}).value || '',
@@ -5860,11 +5898,11 @@ function calcLive() {
 }
 
 function calcReset() {
-  ['calc-prox','calc-inv','calc-freq','calc-hi','calc-hosp'].forEach(id => {
+  ['calc-prox-p22','calc-prox-p235','calc-inv','calc-freq','calc-hi','calc-hosp'].forEach(id => {
     const e = document.getElementById(id); if (e) e.value = '';
   });
   const i = document.getElementById('calc-idade'); if (i) i.value = '';
-  calcLive();
+  calcHiChanged(); // reset esconde os 2 selects de prox_ferias e mostra placeholder
 }
 
 function renderScore() {
