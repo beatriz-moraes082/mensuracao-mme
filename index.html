@@ -1262,6 +1262,21 @@
     <div id="disp-impact-content"></div>
   </div>
 
+  <!-- ── Régua de Email · Mailchimp ─────────────────────────── -->
+  <div class="ds-sec" style="margin-top:32px">
+    <h3>Régua de Email · Mailchimp</h3>
+    <span class="sub" id="mc-sub">Audiência MME Vacation Club · automação ativa</span>
+  </div>
+  <div id="mc-hero" class="kpi-grid-modern kpi-grid-fin" style="margin-bottom:18px"></div>
+  <div class="ds-card">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Performance por mensagem</div>
+    <div id="mc-msgs-content"></div>
+  </div>
+  <div class="ds-card" style="margin-top:14px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Evolução mensal</div>
+    <div id="mc-monthly-content"></div>
+  </div>
+
 </div>
 </div><!-- /tab-disparos -->
 
@@ -1474,6 +1489,7 @@ let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel()
 let KOMMO_RAW = null;
 let META_RAW  = null;
 let GOOGLE_RAW = null;
+let MAILCHIMP_RAW = null;
 
 // Calcula janela de datas para um período
 function periodWindow(periodKey, refDate) {
@@ -4302,14 +4318,16 @@ function updateTopbarPills() {
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
-    const [kommoRes, metaRes, googleRes] = await Promise.all([
+    const [kommoRes, metaRes, googleRes, mcRes] = await Promise.all([
       fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json()),
-      fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+      fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+      fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
     GOOGLE_RAW = googleRes;
+    MAILCHIMP_RAW = mcRes;
     // Aliases compartilhados pelo restante do dashboard — mesma fonte de verdade.
     KOMMO_DATA = kommoRes;
     META_SPEND = metaRes;
@@ -5445,8 +5463,134 @@ function _dispFlowInsight(flow, counts) {
   return {kind:'warn', txt:`Maior drop: <b>${before} → ${after}</b> perde ${maxDropPp.toFixed(0)}% (${lost} leads).`};
 }
 
+/* ════════════════════════════════════════════════════════════════
+   MAILCHIMP · Régua de email da audiência MME Vacation Club
+   Renderizada dentro da aba Disparos & Nutrição.
+   ═══════════════════════════════════════════════════════════════ */
+function renderMailchimp() {
+  const mc = MAILCHIMP_RAW;
+  const hero = document.getElementById('mc-hero');
+  const sub  = document.getElementById('mc-sub');
+  const msgsEl = document.getElementById('mc-msgs-content');
+  const monEl  = document.getElementById('mc-monthly-content');
+  if (!hero) return; // seção não existe nesta página
+
+  if (!mc || !mc.audience) {
+    if (sub) sub.textContent = 'Dados Mailchimp ainda não disponíveis — configurar MAILCHIMP_API_KEY no workflow.';
+    hero.innerHTML = '';
+    if (msgsEl) msgsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem dados de email pra mostrar.</div>';
+    if (monEl)  monEl.innerHTML  = '';
+    return;
+  }
+
+  const fmt  = n => (n||0).toLocaleString('pt-BR');
+  const fmtP = (n,d) => d > 0 ? (n/d*100).toFixed(1)+'%' : '—';
+
+  const a = mc.audience;
+  const subjects = Object.entries(mc.by_subject || {}).map(([s,d]) => ({subject:s, ...d}));
+  const totals = subjects.reduce((s,m) => ({
+    sent:     s.sent     + m.sent,
+    uo:       s.uo       + m.unique_opens,
+    clicks:   s.clicks   + m.clicks_total,
+    unsub:    s.unsub    + m.unsubscribed,
+  }), {sent:0,uo:0,clicks:0,unsub:0});
+
+  // ── Sub do header
+  if (sub) {
+    sub.textContent = `Audiência ${a.name} · ${fmt(a.member_count)} membros ativos · ${subjects.length} mensagens distintas na régua`;
+  }
+
+  // ── KPIs hero (4 cards)
+  const kpis = [
+    {lbl:'Membros ativos', val:fmt(a.member_count),
+     sub:`${fmt(a.unsubscribe_count)} descadastros históricos`, iconColor:'#3b82f6'},
+    {lbl:'Envios totais',  val:fmt(totals.sent),
+     sub:`${subjects.length} mensagens distintas`, iconColor:'#8b5cf6'},
+    {lbl:'Taxa de abertura', val:fmtP(totals.uo, totals.sent),
+     sub:`${fmt(totals.uo)} aberturas únicas`, iconColor:'#16a34a'},
+    {lbl:'Taxa de clique',   val:fmtP(totals.clicks, totals.sent),
+     sub:`${fmt(totals.clicks)} cliques · ${fmt(totals.unsub)} unsub`, iconColor:'#EE4D20'},
+  ];
+  hero.innerHTML = kpis.map(k => `
+    <div class="ds-kpi">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val">${k.val}</div>
+      <div class="sub">${k.sub}</div>
+    </div>`).join('');
+
+  // ── Tabela por mensagem (ordenada por # de envios)
+  const sorted = subjects.sort((a,b) => b.sent - a.sent);
+  if (msgsEl) {
+    if (sorted.length === 0) {
+      msgsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Nenhuma mensagem enviada ainda.</div>';
+    } else {
+      msgsEl.innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Mensagem</th>
+            <th style="text-align:center;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tipo</th>
+            <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Envios</th>
+            <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Open</th>
+            <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">CTR</th>
+            <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Unsub</th>
+            <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Período</th>
+          </tr></thead>
+          <tbody>
+          ${sorted.map(m => {
+            const orate = m.sent > 0 ? m.unique_opens/m.sent*100 : 0;
+            const crate = m.sent > 0 ? m.clicks_total/m.sent*100 : 0;
+            const tipo = m.type === 'automation-email'
+              ? '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(139,92,246,.12);color:#7c3aed;font-weight:700">RÉGUA</span>'
+              : '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(59,130,246,.12);color:#2563eb;font-weight:700">BROADCAST</span>';
+            const oCls = orate >= 20 ? 'tc-g' : orate >= 10 ? 'tc-o' : 'tc-r';
+            return `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px;font-weight:600">${m.subject}</td>
+              <td style="text-align:center;padding:10px 6px">${tipo}</td>
+              <td style="text-align:right;padding:10px 6px"><b>${fmt(m.sent)}</b><br><span style="color:var(--muted);font-size:10.5px">${m.n} exec</span></td>
+              <td style="text-align:right;padding:10px 6px"><b class="${oCls}">${orate.toFixed(1)}%</b><br><span style="color:var(--muted);font-size:10.5px">${fmt(m.unique_opens)}</span></td>
+              <td style="text-align:right;padding:10px 6px"><b>${crate.toFixed(2)}%</b><br><span style="color:var(--muted);font-size:10.5px">${fmt(m.clicks_total)}</span></td>
+              <td style="text-align:right;padding:10px 6px;color:${m.unsubscribed>0?'#dc2626':'var(--muted)'}">${m.unsubscribed}</td>
+              <td style="text-align:right;padding:10px;color:var(--muted);font-size:11px">${m.first_send||'—'}<br>→ ${m.last_send||'—'}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11.5px;color:var(--text);line-height:1.5">
+          📖 <b>Leia assim:</b> <b>RÉGUA</b> = email automatizado disparado por gatilho (entra automaticamente quando o lead se cadastra ou cumpre uma condição). <b>BROADCAST</b> = envio manual único pra toda audiência. Taxa de abertura saudável fica em <b>≥ 15-20%</b>; CTR saudável <b>≥ 2%</b>.
+        </div>`;
+    }
+  }
+
+  // ── Evolução mensal (timeline simples)
+  if (monEl) {
+    const months = Object.entries(mc.by_month || {}).sort((a,b) => a[0].localeCompare(b[0]));
+    if (months.length === 0) {
+      monEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem dados mensais.</div>';
+    } else {
+      const maxSent = Math.max(...months.map(([_,d]) => d.sent), 1);
+      monEl.innerHTML = months.map(([m, d]) => {
+        const w = (d.sent/maxSent*100).toFixed(0);
+        const orate = d.sent > 0 ? d.unique_opens/d.sent*100 : 0;
+        const [yr, mo] = m.split('-');
+        const lbl = `${mo}/${yr.slice(2)}`;
+        return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;font-size:12px">
+          <div style="width:60px;font-weight:600;color:var(--muted)">${lbl}</div>
+          <div style="flex:1;height:18px;background:rgba(107,112,105,.08);border-radius:5px;overflow:hidden">
+            <div style="width:${w}%;height:100%;background:linear-gradient(90deg,#8b5cf6,#a855f7);border-radius:5px"></div>
+          </div>
+          <div style="width:200px;text-align:right">
+            <b>${fmt(d.sent)}</b> envios · <span style="color:var(--muted)">${orate.toFixed(1)}% open · ${fmt(d.unsubscribed)} unsub</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
 function renderDisparos() {
   if (!KOMMO_RAW) return;
+  // Renderiza Mailchimp junto (faz parte da aba "Disparos & Nutrição")
+  renderMailchimp();
   const leads = _dispLeadsInPeriod();
   const total = leads.length;
 
