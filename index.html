@@ -3073,23 +3073,22 @@ function renderAnalises() {
             </div>
           </div>`;
       };
-      // Constrói cards separados por origem do bot (4 grupos).
-      // Cada seção só aparece se tiver pelo menos 1 card com resposta.
-      const bothCards   = fields.filter(f => f.bot === 'both').map(cardHtml).filter(Boolean);
-      const v1Cards     = fields.filter(f => f.bot === 'v1').map(cardHtml).filter(Boolean);
-      const v2Cards     = fields.filter(f => f.bot === 'v2').map(cardHtml).filter(Boolean);
-      const legacyCards = fields.filter(f => f.bot === 'legacy').map(cardHtml).filter(Boolean);
-      const sectionLabel = (emoji, title, n, sub, color) => `
-        <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:14px 2px 4px;padding-top:8px;border-top:2px solid ${color}33">
-          <span style="font-size:16px">${emoji}</span>
-          <h4 style="margin:0;font-size:14px;font-weight:800;color:${color}">${title}</h4>
-          <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${n} card${n===1?'':'s'} · ${sub}</span>
+      // 2 seções limpas: v1 (LONGO) e v2 (CURTO).
+      // Cards 'both' aparecem nas 2 seções (porque ambos os bots coletam).
+      // 'legacy' (bots descontinuados) NÃO entra na renderização.
+      const v1Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v1').map(cardHtml).filter(Boolean);
+      const v2Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v2').map(cardHtml).filter(Boolean);
+      // Quantidade total de PERGUNTAS no bot (incluindo a bifurcação P22/P235)
+      const V1_PERGUNTAS = 8;
+      const V2_PERGUNTAS = 5;
+      const sectionLabel = (title, qtd, color) => `
+        <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:14px 2px 4px;padding-top:8px;border-top:2px solid ${color}33">
+          <h4 style="margin:0;font-size:15px;font-weight:800;color:${color}">${title}</h4>
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">${qtd} pergunta${qtd===1?'':'s'}</span>
         </div>`;
       const cards =
-          (bothCards.length   ? sectionLabel('🟢', 'Em AMBOS os fluxos (v1 + v2)',          bothCards.length,   'todos respondem',                       '#16a34a') + bothCards.join('')   : '')
-        + (v1Cards.length     ? sectionLabel('🟦', 'Exclusivo Pré-atendimento v1 (LONGO)',  v1Cards.length,     'só leads do bot longo',                  '#3b82f6') + v1Cards.join('')     : '')
-        + (v2Cards.length     ? sectionLabel('🟪', 'Exclusivo Pré-atendimento v2 (CURTO)',  v2Cards.length,     'só leads do bot curto',                  '#a855f7') + v2Cards.join('')     : '')
-        + (legacyCards.length ? sectionLabel('🟠', 'Legado (bots descontinuados)',          legacyCards.length, 'histórico de bots anteriores · pré-mai/26', '#f97316') + legacyCards.join('') : '');
+          (v1Cards.length ? sectionLabel('Pré-atendimento v1 (versão longa)', V1_PERGUNTAS, '#3b82f6') + v1Cards.join('') : '')
+        + (v2Cards.length ? sectionLabel('Pré-atendimento v2 (versão curta)', V2_PERGUNTAS, '#a855f7') + v2Cards.join('') : '');
 
       preGrid.innerHTML = cards;
       const subEl = document.getElementById('perfil-preatend-sub');
