@@ -57,6 +57,9 @@ CF_VIAGEM_PROG = 2824628  # Viagem programada?
 CF_TIMESHARE   = 2824626  # Conhece Timeshare?
 CF_CEP         = 2824624  # CEP
 CF_PROFISSAO   = 2824622  # Profissão
+# Campo do lead com pergunta motivacional (bot v2)
+# field_id desconhecido — usamos fallback por nome ('O que você estava buscando')
+CF_O_QUE_BUSCAVA = 0
 # Closer
 CF_PRODUTO     = 4207098  # Produto comprado (Closer)
 CF_OBJECAO     = 4156446  # Principal objeção (Closer)
@@ -305,6 +308,12 @@ def process_lead(lead, contacts_map):
         "timeshare":    contact.get(CF_TIMESHARE, ""),
         "cep":          contact.get(CF_CEP, ""),
         "profissao":    contact.get(CF_PROFISSAO, ""),
+        # Pergunta motivacional do bot v2 — field_id desconhecido, busca por nome.
+        # Aceita variações ('O que você estava buscando', 'O que voce estava buscando').
+        "o_que_buscava": get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você estava buscando")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que voce estava buscando")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que você buscava")
+                        or get_lead_cf(lead, CF_O_QUE_BUSCAVA, "O que estava buscando"),
         # Closer (custom fields no lead)
         "produto":      get_lead_cf(lead, CF_PRODUTO),
         "objecao":      get_lead_cf(lead, CF_OBJECAO),
