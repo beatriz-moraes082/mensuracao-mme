@@ -1487,13 +1487,17 @@
       <!-- COLUNA 1: formulário -->
       <div style="display:grid;gap:16px">
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">1 · Próximas férias em relação a all inclusive</label>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">1 · Interesse em Resort All-Inclusive (P22/P235 do bot)</label>
           <select id="calc-prox" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
-            <option>Quero continuar viajando para resorts all inclusive</option>
-            <option>Gostaria de ter minha primeira experiência em resort all inclusive</option>
-            <option>Talvez, se houver uma boa oportunidade</option>
-            <option>Não tenho interesse em resort all inclusive</option>
+            <optgroup label="Já hospedou em All-Inc (P22)">
+              <option>Sim, tenho interesse</option>
+              <option>Não tenho interesse</option>
+            </optgroup>
+            <optgroup label="Primeira experiência (P235)">
+              <option>Sim, quero conhecer</option>
+              <option>Depende da oferta</option>
+            </optgroup>
           </select>
         </div>
         <div>
@@ -1583,7 +1587,7 @@
           <b>Critérios (TODOS):</b>
           <ul style="margin:4px 0;padding-left:20px">
             <li>Não usa all inclusive atualmente</li>
-            <li>Respondeu "Quero continuar viajando..." ou "Gostaria de ter primeira experiência..." em Próximas férias</li>
+            <li>Respondeu <b>"Sim, tenho interesse"</b> (P22) ou <b>"Sim, quero conhecer"</b> (P235)</li>
             <li>Gasta <b>acima de R$ 10.001</b> por ano em viagens</li>
           </ul>
         </div>
@@ -1594,7 +1598,7 @@
           <b>Critérios (TODOS):</b>
           <ul style="margin:4px 0;padding-left:20px">
             <li>Não usa all inclusive atualmente</li>
-            <li>Respondeu "Quero continuar viajando..." ou "Gostaria de ter primeira experiência..." em Próximas férias</li>
+            <li>Respondeu <b>"Sim, tenho interesse"</b> (P22) ou <b>"Sim, quero conhecer"</b> (P235)</li>
             <li>Gasta <b>entre R$ 5.001 e R$ 10.000</b> por ano</li>
           </ul>
         </div>
@@ -1605,7 +1609,7 @@
           <b>Qualquer um destes:</b>
           <ul style="margin:4px 0;padding-left:20px">
             <li>Gasta <b>até R$ 5.000</b> por ano (ou "Não invisto em férias")</li>
-            <li>Respondeu "Talvez" ou "Não tenho interesse" em Próximas férias</li>
+            <li>Respondeu <b>"Depende da oferta"</b> (P235) ou <b>"Não tenho interesse"</b> (P22/P235)</li>
           </ul>
         </div>
       </div>
@@ -5694,50 +5698,83 @@ const SCORE_COLOR = {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', Incompl
 const SCORE_LABEL = {A:'Perfil Ideal', B:'Aspiracional Premium', C:'Aspiracional Médio', D:'Baixa aderência', Incompleto:'Bot incompleto'};
 
 // Aplica a régua a UM lead — retorna {score, motivo}
-// Régua oficial (revisada pela Ana):
+// Régua oficial da Ana (confirmada via prints do Kommo em 11/06/2026):
 //   A: Hospeda em Resorts All Inclusive (já usa o modelo)
-//   B: Não usa All-Inc + tem vontade + investe acima de R$ 10.001
-//   C: Não usa All-Inc + tem vontade + investe R$ 5.001-10.000
-//   D: Investe até R$ 5.000 OU "Talvez" OU "Não tem interesse"
+//   B: Não usa All-Inc + "Sim, tenho vontade" + investe acima de R$ 10.001
+//   C: Não usa All-Inc + "Sim, tenho vontade" + investe R$ 5.001-10.000
+//   D: Investe até R$ 5.000  OR  "Talvez"  OR  "Não procuro esse tipo"
+//
+// O bot tem 2 perguntas de Próximas Férias (uma pra quem já hospedou em
+// All-Inc, outra pra quem não hospedou) com labels DIFERENTES. Além disso,
+// histórico tem labels antigas. Por isso cada categoria semântica cobre
+// múltiplas strings literais:
+//
+// "Sim, tenho vontade":
+//   • "Sim, tenho interesse"          (P22 novo · já hospedou)
+//   • "Sim, quero conhecer"           (P235 novo · não hospedou)
+//   • "Quero continuar viajando..."   (label antiga = "já hospedou")
+//   • "Gostaria de ter primeira..."   (label antiga = "não hospedou")
+//
+// "Talvez":
+//   • "Talvez, se houver uma boa oportunidade"   (label antiga)
+//   • "Depende da oferta"                         (P235 novo)
+//
+// "Não procuro esse tipo de hospedagem":
+//   • "Não tenho interesse"                          (P22/P235 novo)
+//   • "Não tenho interesse em resort all inclusive"  (label antiga)
 function calcLeadScore(l) {
   const _n = s => (s||'').toString().toLowerCase().trim();
   const prox = _n(l.prox_ferias);
   const inv  = _n(l.investimento);
   const hosp = _n(l.hospedagem);
 
-  // "Tem vontade" = "Quero continuar viajando..." OU "Gostaria de ter minha primeira experiência..."
-  const temVontade = prox.includes('quero continuar') || prox.includes('primeira experiência') || prox.includes('primeira experiencia');
-  // "Talvez" ou desinteresse
-  const talvez = prox.includes('talvez');
-  const semInteresse = prox.includes('não tenho interesse') || prox.includes('nao tenho interesse');
+  // "Sim, tenho vontade" — cobre os 4 labels (antigos + novos · P22 + P235)
+  const temVontade =
+       prox.includes('sim, tenho interesse')      // P22 novo
+    || prox.includes('sim, quero conhecer')       // P235 novo
+    || prox.includes('quero continuar')           // label antiga
+    || prox.includes('primeira experiência')      // label antiga
+    || prox.includes('primeira experiencia');     // sem acento (fallback)
+
+  // "Talvez" — interesse vago
+  const talvez =
+       prox.includes('talvez')                    // label antiga
+    || prox.includes('depende da oferta');        // P235 novo
+
+  // "Não procuro esse tipo de hospedagem" — sem interesse explícito
+  // Cuidado: 'não tenho interesse' bate em ambos labels (novo e antigo).
+  const semInteresse =
+       prox.includes('não tenho interesse')
+    || prox.includes('nao tenho interesse');
+
   // Hospedagem em Resorts All Inclusive (pergunta principal pra A)
   const jaUsaAllInc = hosp.includes('resorts all inclusive');
-  // Faixas de investimento
-  const invAlto  = inv.includes('acima de r$ 10.001');                       // > R$ 10.001
-  const invMedio = inv.includes('entre r$ 7.001') || inv.includes('entre r$ 5.001');  // R$ 5.001 – 10.000
-  const invBaixo = inv.includes('até r$ 5.000') || inv.includes('ate r$ 5.000') || inv.includes('não invisto') || inv.includes('nao invisto');
+
+  // Faixas de investimento (labels do bot são fixos)
+  const invAlto  = inv.includes('acima de r$ 10.001');
+  const invMedio = inv.includes('entre r$ 7.001') || inv.includes('entre r$ 5.001');
+  const invBaixo = inv.includes('até r$ 5.000') || inv.includes('ate r$ 5.000')
+                || inv.includes('não invisto') || inv.includes('nao invisto');
 
   // ── Regra 1: A · Perfil Ideal
   if (jaUsaAllInc) return {score:'A', motivo:'Hospeda em Resorts All Inclusive — já está acostumado com o modelo'};
 
   // ── Regra 4 antecipada: D · Baixa aderência (qualquer destes)
-  if (invBaixo) return {score:'D', motivo:'Investe até R$ 5.000/ano (ou não investe em férias)'};
-  if (talvez)   return {score:'D', motivo:'Respondeu "Talvez" — interesse vago em all-inclusive'};
+  if (invBaixo)     return {score:'D', motivo:'Investe até R$ 5.000/ano (ou não investe em férias)'};
+  if (talvez)       return {score:'D', motivo:'Respondeu "Talvez/Depende da oferta" — interesse vago em all-inclusive'};
   if (semInteresse) return {score:'D', motivo:'Sem interesse em resort all-inclusive'};
 
-  // Para B e C, precisa de "tem vontade"
+  // Para B e C, precisa de "Sim, tenho vontade"
   if (temVontade) {
-    // ── Regra 2: B · Aspiracional Premium
-    if (invAlto)  return {score:'B', motivo:'Tem vontade de experimentar All-Inc + investe acima de R$ 10.001/ano'};
-    // ── Regra 3: C · Aspiracional Médio
-    if (invMedio) return {score:'C', motivo:'Tem vontade de experimentar All-Inc + investe R$ 5.001-10.000/ano'};
+    if (invAlto)  return {score:'B', motivo:'"Sim, tenho vontade" + investe acima de R$ 10.001/ano'};
+    if (invMedio) return {score:'C', motivo:'"Sim, tenho vontade" + investe R$ 5.001-10.000/ano'};
   }
 
   // Sem investimento respondido → não conseguiu classificar
   if (!inv) return {score:'Incompleto', motivo:'Bot não respondeu Investimento'};
   if (!prox) return {score:'Incompleto', motivo:'Bot não respondeu Próximas férias'};
 
-  return {score:'Incompleto', motivo:'Perfil não casa em nenhuma das 4 regras (falta tem vontade ou hospedagem clara)'};
+  return {score:'Incompleto', motivo:'Perfil não casa em nenhuma das 4 regras'};
 }
 
 // ── Calculadora interativa (formulário live) ──────────────────────
