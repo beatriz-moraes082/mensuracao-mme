@@ -3000,14 +3000,19 @@ function renderAnalises() {
           counts[v] = (counts[v]||0) + 1;
           filled++;
         }
+        // Esconde o card quando não há nenhuma resposta no período — evita
+        // poluir a página com 'Sem respostas no período' em campos do bot v1
+        // (que está desativado) e perguntas que ninguém responde.
+        if (filled === 0) return null;
+
         const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
         const top = sorted.slice(0,5);
         const others = sorted.slice(5).reduce((s,[,c]) => s+c, 0);
         const maxC = Math.max(...top.map(([,c]) => c), 1);
         const pctResp = totalLeads > 0 ? (filled/totalLeads*100) : 0;
 
-        const rows = top.length > 0 ? top.map(([name, c]) => {
-          const pct = filled > 0 ? c/filled*100 : 0;
+        const rows = top.map(([name, c]) => {
+          const pct = c/filled*100;
           return `
             <div class="item">
               <div class="row1">
@@ -3016,7 +3021,7 @@ function renderAnalises() {
               </div>
               <div class="bar"><div class="fill" style="width:${(c/maxC*100).toFixed(0)}%;background:${f.color}"></div></div>
             </div>`;
-        }).join('') : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:18px">Sem respostas no período.</div>';
+        }).join('');
 
         return `
           <div class="ds-card">
@@ -3030,7 +3035,7 @@ function renderAnalises() {
               ${others > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right">+${others} outras respostas</div>` : ''}
             </div>
           </div>`;
-      }).join('');
+      }).filter(Boolean).join('');
 
       preGrid.innerHTML = cards;
       const subEl = document.getElementById('perfil-preatend-sub');
