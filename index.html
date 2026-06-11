@@ -6097,6 +6097,39 @@ function renderMailchimp() {
     if (unique.length === 0) {
       clickEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Nenhum clique no CTA WhatsApp dos emails ainda.</div>';
     } else {
+      // Constrói índice ekey → lead pra match Mailchimp ↔ Kommo.
+      // Cobre todos os pipelines (sdr, closer, duque, nutricao, bdr).
+      // Match retorna o lead com maior 'estágio' (venda > qualif > resto)
+      // pra mostrar o card mais útil.
+      const kommoByEkey = {};
+      const KOMMO_PIPES = ['sdr','closer','duque','nutricao','bdr'];
+      const KOMMO_SUB = 'ipiocamarresort';  // subdomínio do Kommo (igual ao fetch_kommo_imr.py)
+      const _stageWeight = l => (l.venda ? 4 : l.reuniao_realizada ? 3 : l.reuniao_agendada ? 2 : l.qualified ? 1 : 0);
+      for (const pipe of KOMMO_PIPES) {
+        for (const l of (KOMMO_RAW?.[pipe] || [])) {
+          const k = l.ekey;
+          if (!k) continue;
+          if (!kommoByEkey[k] || _stageWeight(l) > _stageWeight(kommoByEkey[k])) {
+            kommoByEkey[k] = l;
+          }
+        }
+      }
+      const kommoLinkCell = c => {
+        // Internos da Trilha não interessam pra atribuição
+        if (c.is_internal) return `<td style="padding:9px 10px;text-align:right;color:var(--muted);font-size:11px">—</td>`;
+        const match = c.ekey ? kommoByEkey[c.ekey] : null;
+        if (!match) {
+          return `<td style="padding:9px 10px;text-align:right;color:var(--muted);font-size:11px;font-style:italic" title="Email não encontrado em nenhum pipeline do Kommo">não está no CRM</td>`;
+        }
+        // Status atual pra dar contexto no link
+        const status = match.venda ? '💰' : match.reuniao_realizada ? '🤝' : match.reuniao_agendada ? '📅' : match.qualified ? '✅' : '·';
+        const url = `https://${KOMMO_SUB}.kommo.com/leads/detail/${match.id}`;
+        return `<td style="padding:9px 10px;text-align:right">
+          <a href="${url}" target="_blank" rel="noopener" style="font-size:11px;font-weight:700;color:var(--accent);text-decoration:none;padding:3px 8px;border-radius:9px;background:rgba(238,77,32,.08);display:inline-block" title="Abrir lead ${match.id} no Kommo">
+            ${status} #${match.id} ↗
+          </a>
+        </td>`;
+      };
       const rowHtml = c => `<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:9px 10px;font-weight:600">${c.email_masked}</td>
         <td style="padding:9px 6px"><span style="font-size:10.5px;color:var(--muted)">${[...c.etapas].join(' · ')}</span></td>
@@ -6104,6 +6137,7 @@ function renderMailchimp() {
         <td style="padding:9px 10px;text-align:right">${c.is_internal
           ? '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(148,163,184,.18);color:#64748b;font-weight:700">INTERNO</span>'
           : '<span style="font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(34,197,94,.15);color:#16a34a;font-weight:700">LEAD EXTERNO</span>'}</td>
+        ${kommoLinkCell(c)}
       </tr>`;
       clickEl.innerHTML = `
         <div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap">
@@ -6124,14 +6158,15 @@ function renderMailchimp() {
             <th style="text-align:left;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Etapas que clicou</th>
             <th style="text-align:right;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Cliques</th>
             <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tipo</th>
+            <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Lead no Kommo</th>
           </tr></thead>
           <tbody>
             ${externos.map(rowHtml).join('')}
             ${internos.map(rowHtml).join('')}
           </tbody>
         </table>
-        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,.06);font-size:11.5px;color:var(--text);line-height:1.5">
-          ⚠️ <b>Atribuição de reativação</b>: pra cruzar esses cliques com vendas/qualificações no Kommo precisa do <b>email salvo nos contatos do CRM</b>. Hoje o JSON do Kommo guarda só telefone — vou ajustar o coletor numa próxima atualização pra incluir email. Por enquanto, o número de <b>${externos.length} cliques externos</b> indica o volume real de interesse gerado pela régua.
+        <div style="margin-top:14px;padding:10px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11.5px;color:var(--text);line-height:1.5">
+          🔗 <b>Lead no Kommo:</b> clique no botão <span style="color:var(--accent);font-weight:700">#ID ↗</span> pra abrir o lead direto no CRM (nova aba). Match é feito por hash do email (SHA-1) — sem expor o endereço completo. Ícone indica estágio: 💰 venda · 🤝 reunião realizada · 📅 agendada · ✅ qualif · · sem progresso ainda. Leads "não está no CRM" significa que o email do clicker ainda não foi cadastrado em nenhum contato do Kommo.
         </div>`;
     }
   }

@@ -12,7 +12,7 @@ Estrutura do output:
 }
 """
 
-import json, os, requests, urllib.parse, re
+import json, os, requests, urllib.parse, re, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from collections import defaultdict
@@ -150,13 +150,18 @@ def fetch_campaign_cta(cid):
     if cta_link_id:
         mdata = mc_get(f"/reports/{cid}/click-details/{cta_link_id}/members", count=100)
         for m in (mdata.get("members") or []):
-            email = (m.get("email_address") or "").lower()
+            email = (m.get("email_address") or "").lower().strip()
             dom = email.split("@")[-1] if "@" in email else ""
+            # ekey: hash não-reversível SHA-1[:12] do email — mesmo formato
+            # usado no fetch_kommo_imr.py pra fazer match leads ↔ clickers
+            # sem expor o email completo no JSON público.
+            ekey = hashlib.sha1(email.encode()).hexdigest()[:12] if email else ""
             cta_clickers.append({
                 "email_masked": _mask_email(email),
                 "email_domain": dom,
                 "is_internal":  dom in INTERNAL_DOMAINS,
                 "clicks":       m.get("clicks", 0) or 0,
+                "ekey":         ekey,
             })
 
     return {"cta_msg": cta_msg, "cta_url": cta_url, "cta_clicks": cta_clicks,
@@ -234,12 +239,14 @@ def main():
             d["cta_msg"] = c.get("cta_msg", "")
             d["cta_url"] = c.get("cta_url", "")
             d["_last_st"] = c.get("send_time","")
-        # Clickers do CTA: agrega de todas execuções da etapa, dedup por email
-        seen_emails = {ck["email_masked"] for ck in d.get("cta_clickers", [])}
+        # Clickers do CTA: agrega de todas execuções da etapa, dedup por ekey
+        # (hash do email — mais robusto que email_masked que pode colidir).
+        seen_keys = {ck.get("ekey") or ck["email_masked"] for ck in d.get("cta_clickers", [])}
         for ck in c.get("cta_clickers", []):
-            if ck["email_masked"] not in seen_emails:
+            k = ck.get("ekey") or ck["email_masked"]
+            if k not in seen_keys:
                 d.setdefault("cta_clickers", []).append(ck)
-                seen_emails.add(ck["email_masked"])
+                seen_keys.add(k)
         st = c.get("send_time", "")[:10]
         if st:
             if not d["first_send"] or st < d["first_send"]: d["first_send"] = st
