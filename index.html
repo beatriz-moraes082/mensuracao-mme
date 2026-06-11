@@ -1551,7 +1551,8 @@
           <input type="number" id="calc-idade" oninput="calcLive()" placeholder="Ex: 45" min="18" max="100" class="period-select" style="width:100%;font-size:13px;padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
         </div>
         <div>
-          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">6 · Como se hospeda nas viagens</label>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">6 · Como se hospeda nas viagens <span style="color:#f59e0b;font-weight:600;text-transform:none;letter-spacing:0;font-size:11px">(legado · bot antigo)</span></label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4">⚠️ Esta pergunta existia só no <b>bot intermediário de mai/26</b>. Define <b>Lead A</b> pra leads antigos. Bots em produção (v1/v2) não fazem mais esta pergunta.</div>
           <select id="calc-hosp" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
             <option value="">— Selecione —</option>
             <option>Resorts All Inclusive</option>
@@ -1598,6 +1599,10 @@
             <li>Marcou <b>Resorts All Inclusive</b> na pergunta 1</li>
           </ul>
           Esse é o perfil que <b>já está acostumado com o modelo</b>.
+        </div>
+        <div style="margin-top:8px;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,.08);border-left:3px solid #f59e0b;font-size:12px;line-height:1.5;color:var(--text)">
+          ⚠️ <b>Atenção:</b> esse critério vem do <b>bot antigo</b> (intermediário de maio/26, que tinha a pergunta "Como sua família normalmente se hospeda quando viaja?" com opção "Resorts All Inclusive"). Esse bot foi descontinuado quando os testes A/B atuais (v1 + v2) entraram em produção.<br>
+          <b>Leads novos não conseguem ser classificados como A automaticamente</b> — só leads históricos do bot mai/26.
         </div>
       </div>
       <hr style="border:0;border-top:1px solid var(--border);margin:0">
@@ -3078,9 +3083,10 @@ function renderAnalises() {
       // 'legacy' (bots descontinuados) NÃO entra na renderização.
       const v1Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v1').map(cardHtml).filter(Boolean);
       const v2Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v2').map(cardHtml).filter(Boolean);
-      // Quantidade total de PERGUNTAS no bot (incluindo a bifurcação P22/P235)
-      const V1_PERGUNTAS = 8;
-      const V2_PERGUNTAS = 5;
+      // Quantidade de PERGUNTAS que o lead REALMENTE responde
+      // (P22 e P235 são ramificadas — lead só vê uma das duas, então conta 1)
+      const V1_PERGUNTAS = 7;
+      const V2_PERGUNTAS = 4;
       const sectionLabel = (title, qtd, color) => `
         <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:14px 2px 4px;padding-top:8px;border-top:2px solid ${color}33">
           <h4 style="margin:0;font-size:15px;font-weight:800;color:${color}">${title}</h4>
