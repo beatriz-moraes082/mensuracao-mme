@@ -160,11 +160,15 @@ def get_contacts_map(contact_ids):
             cf_map = {}
             for cf in (c.get("custom_fields_values") or []):
                 vals = cf.get("values") or []
-                # phone is multitext — grab first
                 val = str(vals[0].get("value", "")) if vals else ""
-                if val:
-                    cf_map[cf["field_id"]] = val
-            # `name` é top-level (não custom_field); guardamos sob chave sentinela
+                if not val:
+                    continue
+                cf_map[cf["field_id"]] = val
+                # Campos nativos (EMAIL/PHONE) vêm com field_code — guarda
+                # tb pelo code pra acesso por nome semântico em process_lead.
+                code = cf.get("field_code") or ""
+                if code:
+                    cf_map[code] = val
             cf_map["_name"] = (c.get("name") or "").strip()
             result[c["id"]] = cf_map
     return result
@@ -248,6 +252,14 @@ def process_lead(lead, contacts_map):
     # Chave de dedup pública: hash não reversível dos últimos 10 dígitos.
     # Permite o frontend deduplicar por pessoa sem expor o telefone.
     dkey = hashlib.sha1(phone_hash.encode()).hexdigest()[:12] if len(phone_hash) >= 10 else ""
+    # Email do contato — campo nativo do Kommo (field_code='EMAIL').
+    # Usado pra cruzar com Mailchimp (atribuição da régua de email).
+    # Lowercase + trim pra match consistente. Email completo (não mascarado)
+    # — preserva no JSON pra fazer match exato; UI pode mascarar na exibição.
+    raw_email = (contact.get("EMAIL") or "").strip().lower()
+    # ekey = hash não-reversível pra dedup público mesmo se decidirmos não
+    # expor o email completo no futuro.
+    ekey = hashlib.sha1(raw_email.encode()).hexdigest()[:12] if raw_email else ""
     tags  = get_lead_tags(lead)
     qualified, reuniao_agendada, reuniao_realizada, proposta, venda = classify(pipeline, status, tags, closed_in_period)
 
@@ -273,6 +285,8 @@ def process_lead(lead, contacts_map):
         "phone":      phone_masked,   # telefone mascarado (55XXXXXXXX1234) pra publicação
         "dkey":       dkey,           # hash do telefone p/ dedup por pessoa no frontend (não reversível)
         "_phone_key": phone_hash,     # usado apenas em memória pra deduplicar; removido antes de salvar
+        "email":      raw_email,      # email do contato (lowercase) — match com Mailchimp
+        "ekey":       ekey,           # hash SHA-1[:12] do email — dedup público sem expor email
         "tags":       tags,
         # Bot novo (a partir de ~30/04/2026)
         "hospedagem":   contact.get(CF_HOSPEDAGEM, ""),
