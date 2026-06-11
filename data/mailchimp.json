@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-11T14:27:43.159203+00:00",
+  "fetched_at": "2026-06-11T14:32:49.424415+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
@@ -31,7 +31,16 @@
       "click_rate": 0,
       "unsubscribed": 1,
       "hard_bounces": 0,
-      "soft_bounces": 2
+      "soft_bounces": 2,
+      "cta_msg": "Olá! Recebi o e-mail sobre começar a planejar as férias e gostaria de falar com um consultor para entender melhor.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20começar%20a%20planejar%20as%20férias%20e%20gostaria%20de%20falar%20com%20um%20consultor%20para%20entender%20melhor.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia14",
+      "cta_clicks": 0,
+      "other_links": [
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 0
+        }
+      ]
     },
     {
       "id": "c1f7284777",
@@ -50,7 +59,20 @@
       "click_rate": 0,
       "unsubscribed": 0,
       "hard_bounces": 0,
-      "soft_bounces": 10
+      "soft_bounces": 10,
+      "cta_msg": "Olá! Recebi o e-mail sobre a segurança e a estrutura da MME e queria entender melhor como funciona o modelo.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20a%20segurança%20e%20a%20estrutura%20da%20MME%20e%20queria%20entender%20melhor%20como%20funciona%20o%20modelo.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia10",
+      "cta_clicks": 0,
+      "other_links": [
+        {
+          "url": "https://www.youtube.com/shorts/-R04_YiR2ww",
+          "clicks": 0
+        },
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 0
+        }
+      ]
     },
     {
       "id": "e96c9f9ebe",
@@ -69,7 +91,20 @@
       "click_rate": 0.35714285714285715,
       "unsubscribed": 1,
       "hard_bounces": 0,
-      "soft_bounces": 10
+      "soft_bounces": 10,
+      "cta_msg": "Olá! Vi o e-mail com os depoimentos de quem já vive a experiência e gostaria de saber mais informações.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20com%20os%20depoimentos%20de%20quem%20já%20vive%20a%20experiência%20e%20gostaria%20de%20saber%20mais%20informações.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia06",
+      "cta_clicks": 2,
+      "other_links": [
+        {
+          "url": "https://www.youtube.com/shorts/1IztSgtPEic",
+          "clicks": 0
+        },
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 0
+        }
+      ]
     },
     {
       "id": "e1e03c1286",
@@ -88,7 +123,16 @@
       "click_rate": 0.17825311942959002,
       "unsubscribed": 1,
       "hard_bounces": 0,
-      "soft_bounces": 11
+      "soft_bounces": 11,
+      "cta_msg": "Olá! Vi o e-mail sobre garantir férias todos os anos e queria entender como isso funciona na prática.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20sobre%20garantir%20férias%20todos%20os%20anos%20e%20queria%20entender%20como%20isso%20funciona%20na%20prática.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia04_01",
+      "cta_clicks": 1,
+      "other_links": [
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 0
+        }
+      ]
     },
     {
       "id": "f2f1c22d01",
@@ -107,7 +151,16 @@
       "click_rate": 0.6980802792321117,
       "unsubscribed": 4,
       "hard_bounces": 115,
-      "soft_bounces": 12
+      "soft_bounces": 12,
+      "cta_msg": "Olá! Recebi o e-mail sobre planejar melhor as pausas e gostaria de entender como funciona o Ipioca Mar Resort.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20planejar%20melhor%20as%20pausas%20e%20gostaria%20de%20entender%20como%20funciona%20o%20Ipioca%20Mar%20Resort.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia01_01",
+      "cta_clicks": 5,
+      "other_links": [
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 1
+        }
+      ]
     },
     {
       "id": "fb66a0a75a",
@@ -126,7 +179,16 @@
       "click_rate": 1.3986013986013985,
       "unsubscribed": 0,
       "hard_bounces": 8,
-      "soft_bounces": 2
+      "soft_bounces": 2,
+      "cta_msg": "",
+      "cta_url": "",
+      "cta_clicks": 0,
+      "other_links": [
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 2
+        }
+      ]
     }
   ],
   "by_step": {
@@ -143,7 +205,9 @@
       "first_send": "2026-05-18",
       "last_send": "2026-05-18",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Recebi o e-mail sobre começar a planejar as férias e gostaria de falar com um consultor para entender melhor.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20começar%20a%20planejar%20as%20férias%20e%20gostaria%20de%20falar%20com%20um%20consultor%20para%20entender%20melhor.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia14"
     },
     "Email automation | Cadência → Dia 10": {
       "n": 1,
@@ -158,7 +222,9 @@
       "first_send": "2026-04-22",
       "last_send": "2026-04-22",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Recebi o e-mail sobre a segurança e a estrutura da MME e queria entender melhor como funciona o modelo.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20a%20segurança%20e%20a%20estrutura%20da%20MME%20e%20queria%20entender%20melhor%20como%20funciona%20o%20modelo.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia10"
     },
     "Email automation | Cadência → Dia 06": {
       "n": 1,
@@ -173,7 +239,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Vi o e-mail com os depoimentos de quem já vive a experiência e gostaria de saber mais informações.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20com%20os%20depoimentos%20de%20quem%20já%20vive%20a%20experiência%20e%20gostaria%20de%20saber%20mais%20informações.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia06"
     },
     "Email automation | Cadência → Dia 04": {
       "n": 1,
@@ -188,7 +256,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Não deixe a temporada decidir suas férias!"
+      "subject": "Não deixe a temporada decidir suas férias!",
+      "cta_msg": "Olá! Vi o e-mail sobre garantir férias todos os anos e queria entender como isso funciona na prática.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20sobre%20garantir%20férias%20todos%20os%20anos%20e%20queria%20entender%20como%20isso%20funciona%20na%20prática.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia04_01"
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
@@ -203,7 +273,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Falha ao adiar seu compromisso"
+      "subject": "Falha ao adiar seu compromisso",
+      "cta_msg": "Olá! Recebi o e-mail sobre planejar melhor as pausas e gostaria de entender como funciona o Ipioca Mar Resort.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20planejar%20melhor%20as%20pausas%20e%20gostaria%20de%20entender%20como%20funciona%20o%20Ipioca%20Mar%20Resort.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia01_01"
     },
     "Disparo 01 - BDR [Wpp + E-mail]": {
       "n": 1,
@@ -218,7 +290,9 @@
       "first_send": "2026-03-27",
       "last_send": "2026-03-27",
       "type": "regular",
-      "subject": "👀 Quem está de olho em Ipioca já entendeu"
+      "subject": "👀 Quem está de olho em Ipioca já entendeu",
+      "cta_msg": "",
+      "cta_url": ""
     }
   },
   "by_subject": {
@@ -235,7 +309,9 @@
       "first_send": "2026-05-18",
       "last_send": "2026-05-18",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Recebi o e-mail sobre começar a planejar as férias e gostaria de falar com um consultor para entender melhor.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20começar%20a%20planejar%20as%20férias%20e%20gostaria%20de%20falar%20com%20um%20consultor%20para%20entender%20melhor.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia14"
     },
     "Email automation | Cadência → Dia 10": {
       "n": 1,
@@ -250,7 +326,9 @@
       "first_send": "2026-04-22",
       "last_send": "2026-04-22",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Recebi o e-mail sobre a segurança e a estrutura da MME e queria entender melhor como funciona o modelo.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20a%20segurança%20e%20a%20estrutura%20da%20MME%20e%20queria%20entender%20melhor%20como%20funciona%20o%20modelo.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia10"
     },
     "Email automation | Cadência → Dia 06": {
       "n": 1,
@@ -265,7 +343,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Conheça quem já vive a experiência MME Vacation!"
+      "subject": "Conheça quem já vive a experiência MME Vacation!",
+      "cta_msg": "Olá! Vi o e-mail com os depoimentos de quem já vive a experiência e gostaria de saber mais informações.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20com%20os%20depoimentos%20de%20quem%20já%20vive%20a%20experiência%20e%20gostaria%20de%20saber%20mais%20informações.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia06"
     },
     "Email automation | Cadência → Dia 04": {
       "n": 1,
@@ -280,7 +360,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Não deixe a temporada decidir suas férias!"
+      "subject": "Não deixe a temporada decidir suas férias!",
+      "cta_msg": "Olá! Vi o e-mail sobre garantir férias todos os anos e queria entender como isso funciona na prática.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Vi%20o%20e-mail%20sobre%20garantir%20férias%20todos%20os%20anos%20e%20queria%20entender%20como%20isso%20funciona%20na%20prática.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia04_01"
     },
     "Email automation | Cadência → Dia 01": {
       "n": 1,
@@ -295,7 +377,9 @@
       "first_send": "2026-04-09",
       "last_send": "2026-04-09",
       "type": "automation-email",
-      "subject": "Falha ao adiar seu compromisso"
+      "subject": "Falha ao adiar seu compromisso",
+      "cta_msg": "Olá! Recebi o e-mail sobre planejar melhor as pausas e gostaria de entender como funciona o Ipioca Mar Resort.",
+      "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20planejar%20melhor%20as%20pausas%20e%20gostaria%20de%20entender%20como%20funciona%20o%20Ipioca%20Mar%20Resort.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia01_01"
     },
     "Disparo 01 - BDR [Wpp + E-mail]": {
       "n": 1,
@@ -310,7 +394,9 @@
       "first_send": "2026-03-27",
       "last_send": "2026-03-27",
       "type": "regular",
-      "subject": "👀 Quem está de olho em Ipioca já entendeu"
+      "subject": "👀 Quem está de olho em Ipioca já entendeu",
+      "cta_msg": "",
+      "cta_url": ""
     }
   },
   "by_month": {

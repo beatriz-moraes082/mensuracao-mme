@@ -6,13 +6,13 @@ Estrutura do output:
 {
   "fetched_at": ISO timestamp,
   "audience": { name, member_count, ... },
-  "campaigns": [ {id, subject, type, sent_at, sent, opens, clicks, unsub, ...} ],
-  "by_subject": { subject: { n, sent, opens, clicks, unsub, ... } },  # agregado pela régua
+  "campaigns": [ {id, subject, type, sent_at, sent, opens, clicks, unsub, cta_msg, links, ...} ],
+  "by_step":    { title: { n, sent, opens, clicks, unsub, cta_msg, ... } },  # agregado por etapa
   "by_month":   { "YYYY-MM": { sent, opens, clicks, unsub } }
 }
 """
 
-import json, os, requests
+import json, os, requests, urllib.parse, re
 from datetime import datetime, timezone
 from pathlib import Path
 from collections import defaultdict
@@ -113,6 +113,30 @@ def fetch_campaign_report(cid):
     }
 
 
+def fetch_campaign_cta(cid):
+    """Busca os links clicáveis da campaign e extrai a mensagem do CTA
+    do WhatsApp (parâmetro ?text=...). Retorna {cta_msg, cta_url, links}."""
+    data = mc_get(f"/reports/{cid}/click-details", count=100)
+    urls = (data.get("urls_clicked") or []) if data else []
+    cta_msg, cta_url, cta_clicks = "", "", 0
+    other_links = []
+    for u in urls:
+        url = u.get("url", "") or ""
+        clicks = u.get("total_clicks", 0) or 0
+        # WhatsApp: extrai mensagem pré-preenchida (?text=)
+        if "wa.me" in url or "whatsapp.com" in url:
+            m = re.search(r"[?&]text=([^&]+)", url)
+            if m:
+                msg = urllib.parse.unquote_plus(m.group(1))
+                # Prefere o link com mais cliques como "CTA principal"
+                if clicks >= cta_clicks:
+                    cta_msg, cta_url, cta_clicks = msg, url, clicks
+        else:
+            other_links.append({"url": url, "clicks": clicks})
+    return {"cta_msg": cta_msg, "cta_url": cta_url, "cta_clicks": cta_clicks,
+            "other_links": other_links[:5]}
+
+
 def main():
     print("=== Mailchimp Fetch ===")
     print(f"Data center: {DC}")
@@ -140,6 +164,7 @@ def main():
             continue
         send_time = c.get("send_time", "")
         rep = fetch_campaign_report(c["id"]) or {}
+        cta = fetch_campaign_cta(c["id"])
         enriched.append({
             "id": c["id"],
             "type": ctype,                   # automation-email | regular
@@ -149,6 +174,7 @@ def main():
             "send_time": send_time,
             "month": send_time[:7] if send_time else "",
             **rep,
+            **cta,
         })
 
     print(f"  {len(enriched)} campaigns com envios reais")
@@ -162,7 +188,9 @@ def main():
         "clicks_total": 0, "unique_clicks": 0, "unsubscribed": 0,
         "hard_bounces": 0, "soft_bounces": 0,
         "first_send": "", "last_send": "", "type": "",
-        "subject": "",  # subject mais comum dessa etapa
+        "subject": "",  # assunto que o destinatário vê
+        "cta_msg": "",  # mensagem pré-preenchida do WhatsApp (CTA)
+        "cta_url": "",
     })
     for c in enriched:
         key = c["title"] or c["subject"] or "—"
@@ -172,9 +200,11 @@ def main():
                   "unique_clicks", "unsubscribed", "hard_bounces", "soft_bounces"):
             d[k] += c.get(k, 0)
         d["type"] = c["type"]
-        # Subject: pega o mais recente (ou o primeiro se múltiplos)
+        # Subject + CTA: pega do envio mais recente (régua pode mudar com tempo)
         if not d["subject"] or (c.get("send_time","") > (d.get("_last_st","") or "")):
             d["subject"] = c["subject"]
+            d["cta_msg"] = c.get("cta_msg", "")
+            d["cta_url"] = c.get("cta_url", "")
             d["_last_st"] = c.get("send_time","")
         st = c.get("send_time", "")[:10]
         if st:
