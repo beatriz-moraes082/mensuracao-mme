@@ -2424,20 +2424,26 @@ function renderAnalises() {
     return map;
   }
   function criStatus(name) {
-    // Primeiro tenta no Meta
+    // Primeiro tenta status REAL no Meta (ACTIVE/PAUSED/ARCHIVED/DELETED).
+    // _heuristicStatus retorna 'NO_DATA' como fallback genérico, mas isso
+    // não invalida o teste do Google — precisamos passar reto pelo NO_DATA.
     if (META_SPEND) {
       const m = _statusLookup(META_SPEND.creative_status, name)
              || _heuristicStatus(META_SPEND.creative, name);
-      if (m) return m;
+      if (m && m !== 'NO_DATA' && m !== 'UNKNOWN') return m;
     }
-    // Fallback: detecta se o criativo é do Google Ads (vê origem dos leads)
-    if (!_CRI_ORIGEM) _CRI_ORIGEM = _buildCriOrigem();
+    // Fallback: detecta se o criativo é do Google Ads (vê origem dos leads).
+    // Cache invalida quando vazio pra suportar 1ª chamada antes do KOMMO_RAW.
+    if (!_CRI_ORIGEM || !Object.keys(_CRI_ORIGEM).length) {
+      _CRI_ORIGEM = _buildCriOrigem();
+    }
     const o = _CRI_ORIGEM[name];
     if (o) {
       const tot = o.meta + o.google + o.outro;
       if (tot > 0 && o.google / tot >= 0.8) return 'GOOGLE_ADS';
     }
-    return null;
+    // Mantém NO_DATA pra criativos realmente sem origem identificável
+    return META_SPEND ? 'NO_DATA' : null;
   }
   function statusBadge(status) {
     if (!status) return '';
