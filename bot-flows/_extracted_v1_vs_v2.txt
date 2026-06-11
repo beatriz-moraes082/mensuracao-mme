@@ -1,0 +1,93 @@
+
+========================================================================
+PRÉ-ATENDIMENTO v1 (versão LONGA · 8 perguntas)
+========================================================================
+
+Bloco 0: Qual sua *idade*?
+   ▸ Menos que 29
+   ▸ Entre 30 e 39
+   ▸ Entre 40 e 55
+   ▸ Entre 56 e 65
+   ▸ Mais que 66
+
+Bloco 5: Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive?
+   ▸ Sim, já me hospedei
+   ▸ Nunca me hospedei
+
+Bloco 8: Você tem interesse em continuar viajando para Resort All-inclusive?
+   ▸ Sim, tenho interesse
+   ▸ Não tenho interesse
+
+Bloco 15: Hoje, quanto vocês costumam investir por ano em viagens?
+   ▸ Até R$ 5.000
+   ▸ R$ 5.001 e R$ 7.000
+   ▸ R$ 7.001 e R$ 10.000
+   ▸ Acima de R$ 10.001
+   ▸ Não invisto
+
+Bloco 30: Me diga, qual é o seu *CEP* da sua residência? (Formato xxxxxx-xxx)
+
+Bloco 60: Pra finalizar, qual a sua profissão?
+
+Bloco 63: Com que frequência você costuma viajar de férias?
+   ▸ 1x por ano
+   ▸ Mais de 1x no ano
+   ▸ Não viajo todo ano
+   ▸ Nunca viajo
+   ▸ Casa de familiares
+
+Bloco 70: Você gostaria de ter sua primeira experiência em um Resort All-inclusive?
+   ▸ Sim, quero conhecer
+   ▸ Depende da oferta
+   ▸ Não tenho interesse
+
+========================================================================
+PRÉ-ATENDIMENTO v2 (versão CURTA · 5 perguntas)
+========================================================================
+
+Bloco 0: Me diz uma coisa, o que você estava buscando quando enviou seu cadastro?
+   ▸ Férias por 26 anos!
+   ▸ Hospedagem
+
+Bloco 5: Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive?
+   ▸ Sim, já me hospedei
+   ▸ Nunca me hospedei
+
+Bloco 8: Você tem interesse em continuar viajando para Resort All-inclusive?
+   ▸ Sim, tenho interesse
+   ▸ Não tenho interesse
+
+Bloco 15: Hoje, quanto vocês costumam investir por ano em viagens?
+   ▸ Até R$ 5.000
+   ▸ R$ 5.001 e R$ 7.000
+   ▸ R$ 7.001 e R$ 10.000
+   ▸ Acima de R$ 10.001
+   ▸ Não invisto
+
+Bloco 70: Você gostaria de ter sua primeira experiência em um Resort All-inclusive?
+   ▸ Sim, quero conhecer
+   ▸ Depende da oferta
+   ▸ Não tenho interesse
+
+========================================================================
+COMPARATIVO RÁPIDO
+========================================================================
+
+CAMPOS EM AMBOS (v1 + v2):
+  • hosp_allinc      'Já se hospedaram em Resort All Inclusive?'
+  • prox_ferias      P22/P235 (ramificado)
+  • investimento     'Quanto investe por ano em viagens?'
+
+EXCLUSIVO v1 (versão LONGA):
+  • idade
+  • cep
+  • profissao
+  • freq_viagem
+
+EXCLUSIVO v2 (versão CURTA):
+  • o_que_buscava    'O que você estava buscando quando enviou seu cadastro?'
+
+LEGADO (bots descontinuados — pré-mai/26):
+  • hospedagem, viaja_mais, custo_ano, interesse_ai
+  • desafio, timeshare, viagem_prog
+

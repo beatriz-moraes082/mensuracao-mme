@@ -13,123 +13,104 @@ classificado corretamente.
 
 ## 📚 Versões catalogadas
 
-### 1. `bot-v2-inicial-2026-05-05.json` (05/05/2026)
+### 1. `bot-pre-atendimento-v1.json` 🟦 (versão LONGA · em teste A/B)
 
-Versão intermediária do bot v2, ativa em maio/26. **Esse é o bot que a
-Ana usou de referência quando escreveu a régua de score**.
+**8 perguntas** — mais completa, captura mais dados pra qualificação.
 
-**Perguntas e respostas:**
+| # | Bloco | Pergunta | Campo Kommo |
+|---|---|---|---|
+| 1 | 0 | Qual sua idade? | `idade` |
+| 2 | 5 | Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive? (Sim/Não) | `hosp_allinc` |
+| 3 | 8 | **(se Sim na 2)** Você tem interesse em continuar viajando para Resort All-inclusive? | `prox_ferias` (P22) |
+| 4 | 15 | Hoje, quanto vocês costumam investir por ano em viagens? | `investimento` |
+| 5 | 30 | CEP | `cep` |
+| 6 | 60 | Pra finalizar, qual a sua profissão? | `profissao` |
+| 7 | 63 | Com que frequência você costuma viajar de férias? | `freq_viagem` |
+| 8 | 70 | **(se Não na 2)** Você gostaria de ter sua primeira experiência em um Resort All-inclusive? | `prox_ferias` (P235) |
 
-```
-Bloco 5 · "Como sua família normalmente se hospeda quando viaja?"
-   ▸ Resort All Inclusive
-   ▸ Resorts
-   ▸ Hotéis
-   ▸ Casa ou apartamento
-   ▸ Pousadas
-   ▸ Nenhuma dessas acima
+### 2. `bot-pre-atendimento-v2.json` 🟪 (versão CURTA · em teste A/B)
 
-Bloco 8 · "Você costuma viajar mais:"
-   ▸ Em casal · Com filhos · Com família · Com amigos · Sozinhos
+**5 perguntas** — mais rápida, foca no essencial pra qualificação.
 
-Bloco 15 · "Hoje, quanto vocês costumam investir por ano em viagens?"
-   ▸ Até R$ 5.000
-   ▸ R$ 5.001 - R$ 10.000
-   ▸ Acima de R$ 10.001
+| # | Bloco | Pergunta | Campo Kommo |
+|---|---|---|---|
+| 1 | 0 | Me diz uma coisa, o que você estava buscando quando enviou seu cadastro? | `o_que_buscava` |
+| 2 | 5 | Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive? (Sim/Não) | `hosp_allinc` |
+| 3 | 8 | **(se Sim na 2)** Você tem interesse em continuar viajando para Resort All-inclusive? | `prox_ferias` (P22) |
+| 4 | 15 | Hoje, quanto vocês costumam investir por ano em viagens? | `investimento` |
+| 5 | 70 | **(se Não na 2)** Você gostaria de ter sua primeira experiência em um Resort All-inclusive? | `prox_ferias` (P235) |
 
-Bloco 30 · CEP
+### 3. `bot-v2-inicial-2026-05-05.json` (versão INTERMEDIÁRIA · maio/26)
 
-Bloco 49 · "Você teria interesse em se hospedar em Resorts All Inclusive?"
-   ▸ Sim, tenho vontade        ← termo usado na régua da Ana
-   ▸ Talvez
-   ▸ Depende do destino
-   ▸ Não é o que procuro       ← termo usado na régua da Ana
-
-Bloco 56 · Idade
-```
-
-**Resumo extraído em `_extracted_questions_v2_inicial.txt`.**
+Versão usada como base inicial pra régua da Ana. Tem 'Sim, tenho vontade',
+'Talvez', 'Depende do destino', 'Não é o que procuro'. Mantido pra
+compatibilidade — leads classificados com essa versão usam essas labels.
 
 ---
 
-### 2. `bot-v2-atual-pre22-p235.json` ⚠️ **PENDENTE**
+## 🔄 Comparativo v1 vs v2 (testes A/B)
 
-Versão atual do bot v2 (≈jun/26+). Tem **ramificação P22/P235**
-dependendo da resposta em "Já se hospedou em All-Inclusive?":
+| Campo | v1 (longo) | v2 (curto) | Em ambos |
+|---|---|---|---|
+| `hosp_allinc` | ✅ | ✅ | ✅ |
+| `prox_ferias` (P22/P235) | ✅ | ✅ | ✅ |
+| `investimento` | ✅ | ✅ | ✅ |
+| `idade` | ✅ | ❌ | só v1 |
+| `freq_viagem` | ✅ | ❌ | só v1 |
+| `profissao` | ✅ | ❌ | só v1 |
+| `cep` | ✅ | ❌ | só v1 |
+| `o_que_buscava` | ❌ | ✅ | só v2 |
 
-```
-Bloco 22 · (mostrado SE 'Já hospedou = Sim')
-   "Você tem interesse em continuar viajando para Resort All-inclusive?"
-   ▸ Sim, tenho interesse
-   ▸ Não tenho interesse
-
-Bloco 235 · (mostrado SE 'Já hospedou = Não')
-   "Você gostaria de ter sua primeira experiência em um Resort All-inclusive?"
-   ▸ Sim, quero conhecer
-   ▸ Depende da oferta
-   ▸ Não tenho interesse
-
-Investimento (mantém a granularidade do v2 inicial mas com 5 faixas):
-   ▸ Até R$ 5.000
-   ▸ Entre R$ 5.001 e R$ 7.000
-   ▸ Entre R$ 7.001 e R$ 10.000
-   ▸ Acima de R$ 10.001
-   ▸ Não invisto em férias
-```
-
-📥 **TODO:** exportar este arquivo do Kommo (Configurações → Salesbots →
-'Pré-atendimento' → ⋯ → Exportar JSON) e salvar aqui como
-`bot-v2-atual-pre22-p235.json`.
+**Por isso a aba "Respostas do Pré-atendimento" agora tem 4 seções:**
+- 🟢 **Em ambos os fluxos** (3 campos sempre coletados)
+- 🟦 **Exclusivo v1 LONGO** (4 campos só pros leads que fizeram v1)
+- 🟪 **Exclusivo v2 CURTO** (1 campo só pros leads que fizeram v2)
+- 🟠 **Legado** (campos de bots antigos descontinuados)
 
 ---
 
-## 🔄 Mapping de respostas entre versões
+## 🔄 Mapping de respostas entre versões (régua da Ana)
 
 A função `calcLeadScore()` no `index.html` precisa reconhecer todas estas
 strings ao avaliar `prox_ferias`:
 
-| Régua Ana (abstração) | Bot v2 inicial (mai/26) | Bot v2 atual P22 (já hospedou) | Bot v2 atual P235 (não hospedou) |
-|---|---|---|---|
-| **"Sim, tenho vontade"** | `Sim, tenho vontade` | `Sim, tenho interesse` | `Sim, quero conhecer` |
-| **"Talvez"** | `Talvez` · `Depende do destino` | — | `Depende da oferta` |
-| **"Não procuro"** | `Não é o que procuro` | `Não tenho interesse` | `Não tenho interesse` |
-
-E também labels antigos do bot v1 (até abril/26):
-- `Quero continuar viajando para resorts all inclusive`
-- `Gostaria de ter minha primeira experiência em resort all inclusive`
-- `Talvez, se houver uma boa oportunidade`
-- `Não tenho interesse em resort all inclusive`
+| Régua Ana (abstração) | v1+v2 P22 (já hospedou) | v1+v2 P235 (não hospedou) | Bot mai/26 inicial | Bot v1 antigo |
+|---|---|---|---|---|
+| **"Sim, tenho vontade"** | `Sim, tenho interesse` | `Sim, quero conhecer` | `Sim, tenho vontade` | `Quero continuar viajando` · `Gostaria de ter primeira experiência` |
+| **"Talvez"** | — | `Depende da oferta` | `Talvez` · `Depende do destino` | `Talvez, se houver uma boa oportunidade` |
+| **"Não procuro"** | `Não tenho interesse` | `Não tenho interesse` | `Não é o que procuro` | `Não tenho interesse em resort all inclusive` |
 
 ---
 
 ## 🧩 Custom fields do Kommo mapeados
 
-Pra cada pergunta do bot existe um custom field correspondente no
-contato/lead. Conferir no `fetch_kommo_imr.py` as constantes `CF_*`:
+Pra cada pergunta do bot existe um custom field correspondente. Conferir
+no `fetch_kommo_imr.py` as constantes `CF_*`:
 
-| Campo | ID Kommo | Versão |
+| Campo | ID Kommo | Versões que coletam |
 |---|---|---|
-| `CF_HOSPEDAGEM` | 4226162 | v2 (Como se hospeda) |
-| `CF_VIAJA_MAIS` | 4226170 | v2 (Com quem viaja) |
-| `CF_INVESTIMENTO` | 4226176 | v2 (Quanto investe/ano) |
-| `CF_INTERESSE_AI` | 4226180 | v2 inicial (Interesse em Resort All-Inc) |
-| `CF_HOSP_ALLINC` | 4324059 | v2 atual (Hospedou All-Inc Sim/Não) |
-| `CF_PROX_FERIAS` | 4324061 | v2 atual (P22/P235) |
-| `CF_FREQ_VIAGEM` | 4324063 | v2 atual (Frequência) |
-| `CF_IDADE` | 2824620 | v1+v2 |
-| `CF_CEP` | 2824624 | v1+v2 |
-| `CF_PROFISSAO` | 2824622 | v1+v2 |
-| `CF_CUSTO_ANO` | 2824632 | **v1 só** (legado) |
-| `CF_DESAFIO` | 2824630 | **v1 só** (legado) |
-| `CF_VIAGEM_PROG` | 2824628 | **v1 só** (legado) |
-| `CF_TIMESHARE` | 2824626 | **v1 só** (legado) |
+| `CF_HOSPEDAGEM` | 4226162 | legado (não está em v1/v2 atuais) |
+| `CF_VIAJA_MAIS` | 4226170 | legado |
+| `CF_INVESTIMENTO` | 4226176 | **v1 + v2 (atual)** |
+| `CF_INTERESSE_AI` | 4226180 | legado |
+| `CF_HOSP_ALLINC` | 4324059 | **v1 + v2 (atual)** |
+| `CF_PROX_FERIAS` | 4324061 | **v1 + v2 (atual)** — P22/P235 |
+| `CF_FREQ_VIAGEM` | 4324063 | **v1 (só)** |
+| `CF_IDADE` | 2824620 | **v1 (só)** |
+| `CF_CEP` | 2824624 | **v1 (só)** |
+| `CF_PROFISSAO` | 2824622 | **v1 (só)** |
+| `CF_CUSTO_ANO` | 2824632 | legado |
+| `CF_DESAFIO` | 2824630 | legado |
+| `CF_VIAGEM_PROG` | 2824628 | legado |
+| `CF_TIMESHARE` | 2824626 | legado |
+| `CF_O_QUE_BUSCAVA` | (busca por nome) | **v2 (só)** |
 
 ---
 
 ## 📝 Como atualizar este diretório quando o bot mudar
 
 1. No Kommo: **Configurações → Salesbots → [bot] → ⋯ → Exportar JSON**
-2. Salva aqui com nome `bot-v{X}-{descrição}-{YYYY-MM-DD}.json`
+2. Salva aqui com nome `bot-{descrição}.json`
 3. Roda o script abaixo pra extrair perguntas legíveis:
    ```bash
    python3 -c "
@@ -150,6 +131,6 @@ contato/lead. Conferir no `fetch_kommo_imr.py` as constantes `CF_*`:
                    for b in btns: print(f'   ▸ {b}')
    "
    ```
-4. Atualiza o README aqui com a nova versão + mapping
+4. Atualiza este README + mapping
 5. Se respostas mudaram, ajusta `calcLeadScore()` em `index.html` pra
-   reconhecer as novas labels
+   reconhecer as novas labels + classifica corretamente no histórico
