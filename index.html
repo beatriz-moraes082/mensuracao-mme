@@ -2996,26 +2996,35 @@ function renderAnalises() {
         return pairs[cap] || cap;
       };
 
-      // bot: 'v2' (atual, usado pela régua da Ana) | 'v1' (legado/desativado)
+      // bot:
+      //   'both'   → em AMBOS fluxos em teste (Pré-atendimento v1 LONGO + v2 CURTO)
+      //   'v1'     → exclusivo do v1 (versão longa · 8 perguntas)
+      //   'v2'     → exclusivo do v2 (versão curta · 5 perguntas)
+      //   'legacy' → bot descontinuado (campos coletados em datas anteriores)
       const fields = [
-        // ── Bot v2 · perguntas atuais (régua da Ana usa estas) ──
-        {bot:'v2', key:'hospedagem',   lbl:'Como se hospeda',           q:'Como sua família normalmente se hospeda quando viaja? (define Lead A da régua)', color:'#3b82f6'},
-        {bot:'v2', key:'hosp_allinc',  lbl:'Já se hospedou em All-Inclusive?', q:'Você já se hospedou em algum resort all-inclusive?',                       color:'#06b6d4'},
-        {bot:'v2', key:'prox_ferias',  lbl:'Interesse em Resort All-Inclusive', q:'Você tem interesse em ir para um Resort All-Inclusive?', color:'#8b5cf6',
+        // ── Em AMBOS os fluxos atuais (v1 + v2) ──
+        {bot:'both', key:'hosp_allinc',  lbl:'Já se hospedou em All-Inclusive?', q:'Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive?', color:'#06b6d4'},
+        {bot:'both', key:'prox_ferias',  lbl:'Interesse em Resort All-Inclusive', q:'Você tem interesse em ir para um Resort All-Inclusive?', color:'#8b5cf6',
          note:'O bot bifurca em 2 perguntas conforme a resposta anterior em "Já se hospedou em All-Inclusive?": quem disse Sim recebe a pergunta sobre <b>continuar viajando</b> (P22); quem disse Não recebe a pergunta sobre <b>primeira experiência</b> (P235). As respostas das duas caem nesta mesma coluna.'},
-        {bot:'v2', key:'freq_viagem',  lbl:'Frequência de viagens',     q:'Com que frequência você viaja?',                                                  color:'#f97316'},
-        {bot:'v2', key:'o_que_buscava',lbl:'O que você estava buscando',q:'O que você estava buscando? (motivação que trouxe o lead até nós)',               color:'#ec4899'},
-        {bot:'v2', key:'investimento', lbl:'Investimento em viagens',   q:'Quanto investe em viagens por ano? (define faixa B/C/D da régua)',                color:'#e85d28'},
-        {bot:'v2', key:'idade',        lbl:'Faixa etária',              q:'Qual sua idade?',                                                                 color:'#0ea5e9', transform:idadeBucket},
-        {bot:'v2', key:'profissao',    lbl:'Profissão',                 q:'Qual sua profissão?',                                                             color:'#7c3aed', transform:profNorm},
-        {bot:'v2', key:'cep',          lbl:'CEP (origem geográfica)',   q:'Qual o seu CEP?',                                                                 color:'#0891b2', transform:(r)=>{ if(!r) return null; const s=String(r).replace(/\D/g,''); return s.length>=5 ? s.slice(0,2)+'.xxx-xxx' : null; }},
-        // ── Bot v1 · perguntas antigas (descontinuadas) ──
-        {bot:'v1', key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?',                       color:'#f59e0b'},
-        {bot:'v1', key:'viaja_mais',   lbl:'Com quem viaja',            q:'Você costuma viajar mais com quem?',                                              color:'#a855f7'},
-        {bot:'v1', key:'interesse_ai', lbl:'Interesse em Resort All-Inc (v1)', q:'Você teria interesse em se hospedar em Resorts All Inclusive?',           color:'#14b8a6'},
-        {bot:'v1', key:'desafio',      lbl:'Maior desafio em viajar',   q:'Qual o maior desafio para viajar?',                                               color:'#ef4444'},
-        {bot:'v1', key:'timeshare',    lbl:'Conhece timeshare?',        q:'Já ouviu falar de timeshare?',                                                    color:'#10b981'},
-        {bot:'v1', key:'viagem_prog',  lbl:'Viagem programada',         q:'Tem viagem programada nos próximos meses?',                                       color:'#6366f1'},
+        {bot:'both', key:'investimento', lbl:'Investimento em viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?', color:'#e85d28'},
+
+        // ── EXCLUSIVOS do v1 (versão LONGA · 8 perguntas) ──
+        {bot:'v1', key:'idade',        lbl:'Faixa etária',              q:'Qual sua idade?',                                                                  color:'#0ea5e9', transform:idadeBucket},
+        {bot:'v1', key:'freq_viagem',  lbl:'Frequência de viagens',     q:'Com que frequência você costuma viajar de férias?',                                color:'#f97316'},
+        {bot:'v1', key:'profissao',    lbl:'Profissão',                 q:'Pra finalizar, qual a sua profissão?',                                             color:'#7c3aed', transform:profNorm},
+        {bot:'v1', key:'cep',          lbl:'CEP (origem geográfica)',   q:'Me diga, qual é o seu CEP da sua residência?',                                     color:'#0891b2', transform:(r)=>{ if(!r) return null; const s=String(r).replace(/\D/g,''); return s.length>=5 ? s.slice(0,2)+'.xxx-xxx' : null; }},
+
+        // ── EXCLUSIVOS do v2 (versão CURTA · 5 perguntas) ──
+        {bot:'v2', key:'o_que_buscava',lbl:'O que você estava buscando',q:'Me diz uma coisa, o que você estava buscando quando enviou seu cadastro?', color:'#ec4899'},
+
+        // ── LEGADO (bots descontinuados · pré-mai/26) ──
+        {bot:'legacy', key:'hospedagem',   lbl:'Como se hospeda',           q:'Como sua família normalmente se hospeda quando viaja?',                       color:'#3b82f6'},
+        {bot:'legacy', key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?',                    color:'#f59e0b'},
+        {bot:'legacy', key:'viaja_mais',   lbl:'Com quem viaja',            q:'Você costuma viajar mais com quem?',                                          color:'#a855f7'},
+        {bot:'legacy', key:'interesse_ai', lbl:'Interesse em Resort All-Inc (legado)', q:'Você teria interesse em se hospedar em Resorts All Inclusive?',    color:'#14b8a6'},
+        {bot:'legacy', key:'desafio',      lbl:'Maior desafio em viajar',   q:'Qual o maior desafio para viajar?',                                           color:'#ef4444'},
+        {bot:'legacy', key:'timeshare',    lbl:'Conhece timeshare?',        q:'Já ouviu falar de timeshare?',                                                color:'#10b981'},
+        {bot:'legacy', key:'viagem_prog',  lbl:'Viagem programada',         q:'Tem viagem programada nos próximos meses?',                                   color:'#6366f1'},
       ];
 
       const totalLeads = sdr.length;
@@ -3064,17 +3073,23 @@ function renderAnalises() {
             </div>
           </div>`;
       };
-      // Constrói cards separados por versão do bot (v2 atual · v1 legado).
+      // Constrói cards separados por origem do bot (4 grupos).
       // Cada seção só aparece se tiver pelo menos 1 card com resposta.
-      const v2cards = fields.filter(f => f.bot === 'v2').map(cardHtml).filter(Boolean);
-      const v1cards = fields.filter(f => f.bot === 'v1').map(cardHtml).filter(Boolean);
-      const sectionLabel = (title, n, sub) => `
-        <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:6px 2px 4px">
-          <h4 style="margin:0;font-size:14px;font-weight:800;color:var(--text)">${title}</h4>
+      const bothCards   = fields.filter(f => f.bot === 'both').map(cardHtml).filter(Boolean);
+      const v1Cards     = fields.filter(f => f.bot === 'v1').map(cardHtml).filter(Boolean);
+      const v2Cards     = fields.filter(f => f.bot === 'v2').map(cardHtml).filter(Boolean);
+      const legacyCards = fields.filter(f => f.bot === 'legacy').map(cardHtml).filter(Boolean);
+      const sectionLabel = (emoji, title, n, sub, color) => `
+        <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:14px 2px 4px;padding-top:8px;border-top:2px solid ${color}33">
+          <span style="font-size:16px">${emoji}</span>
+          <h4 style="margin:0;font-size:14px;font-weight:800;color:${color}">${title}</h4>
           <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">${n} card${n===1?'':'s'} · ${sub}</span>
         </div>`;
-      const cards = (v2cards.length ? sectionLabel('Bot v2 · perguntas atuais', v2cards.length, 'em uso agora') + v2cards.join('') : '')
-                  + (v1cards.length ? sectionLabel('Bot v1 · perguntas antigas (legado)', v1cards.length, 'descontinuadas') + v1cards.join('') : '');
+      const cards =
+          (bothCards.length   ? sectionLabel('🟢', 'Em AMBOS os fluxos (v1 + v2)',          bothCards.length,   'todos respondem',                       '#16a34a') + bothCards.join('')   : '')
+        + (v1Cards.length     ? sectionLabel('🟦', 'Exclusivo Pré-atendimento v1 (LONGO)',  v1Cards.length,     'só leads do bot longo',                  '#3b82f6') + v1Cards.join('')     : '')
+        + (v2Cards.length     ? sectionLabel('🟪', 'Exclusivo Pré-atendimento v2 (CURTO)',  v2Cards.length,     'só leads do bot curto',                  '#a855f7') + v2Cards.join('')     : '')
+        + (legacyCards.length ? sectionLabel('🟠', 'Legado (bots descontinuados)',          legacyCards.length, 'histórico de bots anteriores · pré-mai/26', '#f97316') + legacyCards.join('') : '');
 
       preGrid.innerHTML = cards;
       const subEl = document.getElementById('perfil-preatend-sub');
