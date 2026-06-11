@@ -737,6 +737,14 @@
       #scrollTop{width:36px;height:36px;bottom:14px;right:14px;font-size:16px}
     }
 
+    /* Calculadora: empilha colunas no mobile */
+    @media(max-width:860px){
+      #tab-score .ds-card > div[style*='grid-template-columns'] {
+        grid-template-columns:1fr !important;
+      }
+      #tab-score #calc-result { position:static !important; }
+    }
+
     /* Telas bem pequenas (iPhone SE etc) */
     @media(max-width:420px){
       .main{padding:12px 10px}
@@ -1454,28 +1462,97 @@
 <div id="tab-score" class="tab-pane">
 <div class="main">
 
-  <!-- Hero -->
+  <!-- Hero compacto -->
   <div class="hero-modern">
     <div>
       <div class="hl-eyebrow">Calculadora de Score · régua data-driven</div>
-      <h2 class="hl-title">Classificação automática do lead em <span style="color:var(--accent)">A · B · C · D · E</span></h2>
-      <div class="hl-sub">Régua de 8 regras avaliadas em ordem (a 1ª que o lead atende define o perfil), calibrada nas vendas reais do IMR. Aplica respostas do bot de pré-atendimento — campos: <i>Investimento, Próximas férias, Frequência, Hospedou All-Inclusive, Idade, Como se hospeda</i>. Autora: Ana (gestora do CRM).</div>
+      <h2 class="hl-title">Classifique um lead em <span style="color:var(--accent)">A · B · C · D · E</span></h2>
+      <div class="hl-sub">Responda as 6 perguntas do bot de pré-atendimento — o sistema aplica as 8 regras da Ana (gestora CRM) e devolve o perfil em tempo real. Calibrada em ~20 compradores reais; validação na base atual está abaixo.</div>
     </div>
-    <div style="background:var(--surface2);padding:18px;border-radius:14px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Validação empírica · % que virou reunião</div>
-      <div style="font-size:12px;line-height:1.85">
-        <div><span style="display:inline-block;width:60px;font-weight:700;color:#16a34a">● A</span> <b>46%</b> · Comprador Ideal</div>
-        <div><span style="display:inline-block;width:60px;font-weight:700;color:#84cc16">● B</span> <b>39%</b> · Comprador Provável</div>
-        <div><span style="display:inline-block;width:60px;font-weight:700;color:#f59e0b">● C</span> <b>26%</b> · Aspiracional</div>
-        <div><span style="display:inline-block;width:60px;font-weight:700;color:#ef4444">● D</span> <b>9%</b> · Baixa aderência</div>
-        <div><span style="display:inline-block;width:60px;font-weight:700;color:#737373">● E</span> <b>0%</b> · Descartar</div>
+    <div style="background:var(--surface2);padding:14px 18px;border-radius:14px;min-width:240px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Benchmark · % vira reunião</div>
+      <div style="font-size:12px;line-height:1.8">
+        <div><span style="display:inline-block;width:50px;font-weight:700;color:#16a34a">● A</span> <b>46%</b></div>
+        <div><span style="display:inline-block;width:50px;font-weight:700;color:#84cc16">● B</span> <b>39%</b></div>
+        <div><span style="display:inline-block;width:50px;font-weight:700;color:#f59e0b">● C</span> <b>26%</b></div>
+        <div><span style="display:inline-block;width:50px;font-weight:700;color:#ef4444">● D</span> <b>9%</b></div>
+        <div><span style="display:inline-block;width:50px;font-weight:700;color:#737373">● E</span> <b>0%</b></div>
       </div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:10px">Base: ~20 compradores reais</div>
     </div>
   </div>
 
-  <!-- KPI Hero — distribuição da base atual -->
-  <div class="ds-sec"><h3>Distribuição da base</h3><span class="sub" id="score-base-sub">Aplicando a régua em todos os leads SDR do período</span></div>
+  <!-- ── CALCULADORA INTERATIVA ──────────────────────────────────── -->
+  <div class="ds-sec" style="margin-top:8px"><h3>Calcular o perfil de um lead</h3><span class="sub">Selecione as respostas — o perfil é calculado em tempo real</span></div>
+  <div class="ds-card">
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;align-items:start">
+      <!-- COLUNA 1: formulário -->
+      <div style="display:grid;gap:16px">
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">1 · Próximas férias em relação a all inclusive</label>
+          <select id="calc-prox" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Quero continuar viajando para resorts all inclusive</option>
+            <option>Gostaria de ter minha primeira experiência em resort all inclusive</option>
+            <option>Talvez, se houver uma boa oportunidade</option>
+            <option>Não tenho interesse em resort all inclusive</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">2 · Quanto investe em viagens por ano</label>
+          <select id="calc-inv" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Acima de R$ 10.001</option>
+            <option>Entre R$ 7.001 e R$ 10.000</option>
+            <option>Entre R$ 5.001 e R$ 7.000</option>
+            <option>Até R$ 5.000</option>
+            <option>Não invisto em férias</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">3 · Frequência de viagens</label>
+          <select id="calc-freq" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Mais de 1 vez por ano</option>
+            <option>1 vez por ano</option>
+            <option>Não viajo todos os anos</option>
+            <option>Nunca viajo</option>
+            <option>Viajo p/ casa de família</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">4 · Já se hospedou em all-inclusive?</label>
+          <select id="calc-hi" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Sim</option>
+            <option>Não</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">5 · Idade</label>
+          <input type="number" id="calc-idade" oninput="calcLive()" placeholder="Ex: 45" min="18" max="100" class="period-select" style="width:100%;font-size:13px;padding:10px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        </div>
+        <div>
+          <label style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-bottom:6px">6 · Como se hospeda nas viagens</label>
+          <select id="calc-hosp" onchange="calcLive()" class="period-select" style="width:100%;font-size:13px;padding:10px 14px">
+            <option value="">— Selecione —</option>
+            <option>Resorts All Inclusive</option>
+            <option>Resorts</option>
+            <option>Hotéis</option>
+            <option>Pousadas</option>
+            <option>Casa ou apartamento (Airbnb / aluguel)</option>
+            <option>Nenhuma dessas opções</option>
+          </select>
+        </div>
+        <button onclick="calcReset()" style="margin-top:6px;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit">↺ Limpar</button>
+      </div>
+
+      <!-- COLUNA 2: resultado -->
+      <div id="calc-result" style="position:sticky;top:80px"></div>
+    </div>
+  </div>
+
+  <!-- ── ABAIXO: análise da base ─────────────────────────────────── -->
+  <div class="ds-sec" style="margin-top:32px"><h3>Distribuição da base</h3><span class="sub" id="score-base-sub">Aplicando a régua em todos os leads SDR do período</span></div>
   <div id="score-dist" class="kpi-grid-modern kpi-grid-ops" style="margin-bottom:18px"></div>
 
   <!-- Validação em cima da base atual -->
@@ -5626,8 +5703,80 @@ function calcLeadScore(l) {
   return {score:'Incompleto', motivo:'Dados insuficientes pra classificar'};
 }
 
+// ── Calculadora interativa (formulário live) ──────────────────────
+function calcLive() {
+  // Coleta as 6 respostas atuais e simula um lead pra reaproveitar calcLeadScore
+  const fake = {
+    prox_ferias:   (document.getElementById('calc-prox')  || {}).value || '',
+    investimento:  (document.getElementById('calc-inv')   || {}).value || '',
+    freq_viagem:   (document.getElementById('calc-freq')  || {}).value || '',
+    hosp_allinc:   (document.getElementById('calc-hi')    || {}).value || '',
+    idade:         (document.getElementById('calc-idade') || {}).value || '',
+    hospedagem:    (document.getElementById('calc-hosp')  || {}).value || '',
+  };
+  const respondidas = Object.values(fake).filter(v => v && v.toString().trim()).length;
+  const out = document.getElementById('calc-result');
+  if (!out) return;
+
+  if (respondidas < 2) {
+    out.innerHTML = `
+      <div style="padding:32px;text-align:center;background:var(--surface2);border-radius:14px;border:2px dashed var(--border)">
+        <div style="font-size:42px;line-height:1;margin-bottom:8px">🎯</div>
+        <div style="font-size:14px;color:var(--muted);line-height:1.5">Responda as perguntas ao lado<br>pra ver o perfil do lead em tempo real</div>
+      </div>`;
+    return;
+  }
+
+  const r = calcLeadScore(fake);
+  const c = SCORE_COLOR[r.score];
+  const lbl = SCORE_LABEL[r.score];
+  const bench = SCORE_BENCH[r.score];
+  // Recomendação por classe
+  const REC = {
+    A: {icon:'🚀', txt:'<b>Prioridade ALTA</b> · trabalhar imediatamente (ligar/agendar)', cor:'#16a34a'},
+    B: {icon:'⭐', txt:'<b>Prioridade ALTA</b> · perfil forte com chance real de venda', cor:'#84cc16'},
+    C: {icon:'📞', txt:'<b>Prioridade média</b> · nutrir com conteúdo antes de pressionar', cor:'#f59e0b'},
+    D: {icon:'⏳', txt:'<b>Prioridade baixa</b> · entra em régua longa; ROI pequeno se trabalhar agora', cor:'#ef4444'},
+    E: {icon:'🚫', txt:'<b>Descartar</b> · sem fit. Bot pode encerrar conversa', cor:'#737373'},
+    Incompleto: {icon:'⏸️', txt:'Responda <b>Investimento</b> pelo menos pra classificar', cor:'#94a3b8'},
+  };
+  const rec = REC[r.score] || REC.Incompleto;
+
+  out.innerHTML = `
+    <div style="border-radius:14px;border:2px solid ${c};padding:22px;background:linear-gradient(135deg,${c}11 0%,${c}05 100%)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Perfil calculado</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+        <div style="font-size:48px;font-weight:900;color:${c};line-height:1">${r.score === 'Incompleto' ? '?' : r.score}</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text)">${lbl}</div>
+      </div>
+      ${bench !== undefined ? `<div style="font-size:13px;color:var(--text);margin-bottom:14px">Benchmark: <b style="color:${c}">${bench}%</b> dos leads dessa classe viraram reunião nas vendas históricas</div>` : ''}
+
+      <div style="padding:12px;border-radius:10px;background:var(--surface);margin-bottom:14px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Regra aplicada</div>
+        <div style="font-size:12.5px;line-height:1.5;color:var(--text)">${r.motivo}</div>
+      </div>
+
+      <div style="padding:12px;border-radius:10px;background:${rec.cor}15;border-left:3px solid ${rec.cor}">
+        <div style="font-size:11px;font-weight:700;color:${rec.cor};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${rec.icon} Próxima ação sugerida</div>
+        <div style="font-size:12.5px;line-height:1.5;color:var(--text)">${rec.txt}</div>
+      </div>
+
+      ${respondidas < 6 ? `<div style="margin-top:12px;padding:8px 11px;background:rgba(245,158,11,.08);border-radius:8px;font-size:11px;color:var(--muted)">⚠️ ${6 - respondidas} pergunta(s) ainda em branco — resultado pode mudar com mais dados</div>` : ''}
+    </div>`;
+}
+
+function calcReset() {
+  ['calc-prox','calc-inv','calc-freq','calc-hi','calc-hosp'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.value = '';
+  });
+  const i = document.getElementById('calc-idade'); if (i) i.value = '';
+  calcLive();
+}
+
 function renderScore() {
   if (!KOMMO_RAW) return;
+  // Inicializa calculadora com placeholder
+  calcLive();
   const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
   const win = periodWindow(currentPeriod, ref);
   const sdr = (KOMMO_RAW.sdr || []).filter(l => _inWindow(l.created_at, win));
