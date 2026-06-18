@@ -1062,9 +1062,22 @@ document.querySelectorAll('[data-carousel]').forEach(function(car){
   sync();
 });
 
+// ▼▼▼ COLE AQUI A URL DO WEBHOOK (Make ou Zapier) — entre as aspas ▼▼▼
+var KOMMO_WEBHOOK_URL = '';
+// ▲▲▲ ex: 'https://hook.us2.make.com/abc123...'  ▲▲▲
 function lpSubmit(e){
   e.preventDefault();
+  var dados={
+    nome:(document.getElementById('nome')||{}).value||'',
+    email:(document.getElementById('email')||{}).value||'',
+    whatsapp:(document.getElementById('whats')||{}).value||'',
+    origem:location.href,
+    pagina:document.title
+  };
   if(typeof fbq==='function'){fbq('track','Lead');}
+  if(KOMMO_WEBHOOK_URL.indexOf('http')===0){
+    try{fetch(KOMMO_WEBHOOK_URL,{method:'POST',mode:'no-cors',keepalive:true,body:new URLSearchParams(dados)});}catch(err){}
+  }
   e.target.reset();
   setTimeout(function(){alert('Recebemos seu contato! Em breve um consultor falará com você.');},60);
   return false;
