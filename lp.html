@@ -1065,8 +1065,8 @@ document.querySelectorAll('[data-carousel]').forEach(function(car){
 function lpSubmit(e){
   e.preventDefault();
   if(typeof fbq==='function'){fbq('track','Lead');}
-  alert('Recebemos seu contato! Em breve um consultor falará com você.');
   e.target.reset();
+  setTimeout(function(){alert('Recebemos seu contato! Em breve um consultor falará com você.');},60);
   return false;
 }
 
