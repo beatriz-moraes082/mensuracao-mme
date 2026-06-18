@@ -1064,6 +1064,7 @@ document.querySelectorAll('[data-carousel]').forEach(function(car){
 
 function lpSubmit(e){
   e.preventDefault();
+  if(typeof fbq==='function'){fbq('track','Lead');}
   alert('Recebemos seu contato! Em breve um consultor falará com você.');
   e.target.reset();
   return false;
