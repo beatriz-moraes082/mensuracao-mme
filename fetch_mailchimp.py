@@ -256,16 +256,25 @@ def main():
         d.pop("_last_st", None)
 
     # Agrega por mês
+    # Automações "sending" são contínuas — usa o mês do fetch como referência
+    # para mostrar atividade no mês atual no lugar da data de criação.
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
     by_month = defaultdict(lambda: {
         "sent": 0, "unique_opens": 0, "clicks_total": 0, "unsubscribed": 0
     })
     for c in enriched:
-        m = c.get("month", "")
-        if not m: continue
-        by_month[m]["sent"]         += c["sent"]
-        by_month[m]["unique_opens"] += c["unique_opens"]
-        by_month[m]["clicks_total"] += c["clicks_total"]
-        by_month[m]["unsubscribed"] += c["unsubscribed"]
+        origin_m = c.get("month", "")
+        if not origin_m: continue
+        # Campanha encerrada: contabiliza só no mês de origem
+        # Campanha ativa: contabiliza no mês de origem (histórico) e no mês atual (atividade corrente)
+        months_to_add = [origin_m]
+        if c.get("status") == "sending" and current_month != origin_m:
+            months_to_add.append(current_month)
+        for m in months_to_add:
+            by_month[m]["sent"]         += c["sent"]
+            by_month[m]["unique_opens"] += c["unique_opens"]
+            by_month[m]["clicks_total"] += c["clicks_total"]
+            by_month[m]["unsubscribed"] += c["unsubscribed"]
 
     out = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),

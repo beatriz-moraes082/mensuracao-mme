@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-24T13:30:15.536291+00:00",
+  "fetched_at": "2026-06-24T13:40:39.123270+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
@@ -51,7 +51,7 @@
       "status": "sending",
       "send_time": "2026-04-22T22:20:07+00:00",
       "month": "2026-04",
-      "sent": 579,
+      "sent": 580,
       "opens_total": 60,
       "unique_opens": 51,
       "open_rate": 8.963093145869948,
@@ -60,7 +60,7 @@
       "click_rate": 0,
       "unsubscribed": 0,
       "hard_bounces": 0,
-      "soft_bounces": 10,
+      "soft_bounces": 11,
       "cta_msg": "Olá! Recebi o e-mail sobre a segurança e a estrutura da MME e queria entender melhor como funciona o modelo.",
       "cta_url": "https://wa.me/5582981791360?text=Olá!%20Recebi%20o%20e-mail%20sobre%20a%20segurança%20e%20a%20estrutura%20da%20MME%20e%20queria%20entender%20melhor%20como%20funciona%20o%20modelo.&utm_source=email&utm_medium=email_marketing&utm_campaign=ipioca_mar_resort&utm_content=email_dia10",
       "cta_clicks": 0,
@@ -270,14 +270,14 @@
     },
     "Email automation | Cadência → Dia 10": {
       "n": 1,
-      "sent": 579,
+      "sent": 580,
       "opens_total": 60,
       "unique_opens": 51,
       "clicks_total": 0,
       "unique_clicks": 0,
       "unsubscribed": 0,
       "hard_bounces": 0,
-      "soft_bounces": 10,
+      "soft_bounces": 11,
       "first_send": "2026-04-22",
       "last_send": "2026-04-22",
       "type": "automation-email",
@@ -432,14 +432,14 @@
     },
     "Email automation | Cadência → Dia 10": {
       "n": 1,
-      "sent": 579,
+      "sent": 580,
       "opens_total": 60,
       "unique_opens": 51,
       "clicks_total": 0,
       "unique_clicks": 0,
       "unsubscribed": 0,
       "hard_bounces": 0,
-      "soft_bounces": 10,
+      "soft_bounces": 11,
       "first_send": "2026-04-22",
       "last_send": "2026-04-22",
       "type": "automation-email",
@@ -580,8 +580,14 @@
       "clicks_total": 0,
       "unsubscribed": 1
     },
+    "2026-06": {
+      "sent": 3062,
+      "unique_opens": 288,
+      "clicks_total": 9,
+      "unsubscribed": 7
+    },
     "2026-04": {
-      "sent": 2494,
+      "sent": 2495,
       "unique_opens": 244,
       "clicks_total": 9,
       "unsubscribed": 6
