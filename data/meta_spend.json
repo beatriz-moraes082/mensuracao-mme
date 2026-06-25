@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-25T11:42:43.989128+00:00",
+  "fetched_at": "2026-06-25T22:23:19.892476+00:00",
   "period": {
     "since": "2026-04-01",
     "until": "2026-06-25"
@@ -50,7 +50,7 @@
         "w1": 142.32,
         "w2": 137.16000000000003,
         "w3": 141.41,
-        "w4": 63.410000000000004
+        "w4": 83.81
       }
     },
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": {
@@ -73,7 +73,7 @@
         "w1": 392.4100000000001,
         "w2": 547.76,
         "w3": 552.91,
-        "w4": 245.02000000000004
+        "w4": 289.3
       }
     },
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": {
@@ -90,7 +90,7 @@
         "w1": 1.39,
         "w2": 0.32,
         "w3": 0.49000000000000005,
-        "w4": 0.14
+        "w4": 0.31000000000000005
       }
     },
     "26 - 50 | LookaLike Score A": {
@@ -104,7 +104,7 @@
         "w1": 285.56,
         "w2": 507.04,
         "w3": 568.1000000000001,
-        "w4": 230.3
+        "w4": 266.46000000000004
       }
     },
     "30 - 50 | BR | Profissões [+] viajantes frequentes": {
@@ -116,7 +116,7 @@
         "w1": 356.15999999999997,
         "w2": 306.02,
         "w3": 318.57000000000005,
-        "w4": 140.81
+        "w4": 172.51000000000002
       }
     },
     "30 - 50 | Videoview 50-95% | Topo de Funil": {
@@ -128,13 +128,18 @@
         "w1": 228.03,
         "w2": 218.34999999999997,
         "w3": 241.34,
-        "w4": 119.55
+        "w4": 142.82999999999998
       }
     },
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+)": {
       "2026-06": {
         "w3": 160.8,
-        "w4": 155.11
+        "w4": 182.41000000000003
+      }
+    },
+    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": {
+      "2026-06": {
+        "w4": 2.48
       }
     }
   },
@@ -156,7 +161,7 @@
         "w1": 38.599999999999994,
         "w2": 9.98,
         "w3": 12.950000000000003,
-        "w4": 3.98
+        "w4": 4.8500000000000005
       }
     },
     "VD01": {
@@ -193,7 +198,7 @@
         "w1": 269.48999999999995,
         "w2": 505.88000000000005,
         "w3": 562.62,
-        "w4": 233.55999999999997
+        "w4": 268.59
       }
     },
     "BN01": {
@@ -224,7 +229,7 @@
         "w1": 137.92,
         "w2": 143.60999999999999,
         "w3": 161.27999999999997,
-        "w4": 66.64
+        "w4": 87.04
       }
     },
     "BN03": {
@@ -241,7 +246,7 @@
         "w1": 825.0,
         "w2": 949.9699999999998,
         "w3": 1121.3700000000001,
-        "w4": 597.62
+        "w4": 718.4099999999999
       }
     },
     "VD04": {
@@ -269,18 +274,22 @@
         "w1": 127.2,
         "w2": 103.88999999999999,
         "w3": 118.93999999999998,
-        "w4": 51.28999999999999
+        "w4": 59.96999999999999
       }
     }
   },
   "adset_status": {
+    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPB]": "PAUSED",
+    "30 - 50 | Videoview 50-95% | Topo de Funil [LPA]": "PAUSED",
+    "30 - 50 | BR | Profissões [+] viajantes frequentes": "ACTIVE",
+    "26 - 50 | LookaLike 2% Clientes IMR (Iphone 13+)": "ACTIVE",
+    "26 - 50 | LookaLike Score A [LPA]": "PAUSED",
+    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": "PAUSED",
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+)": "ACTIVE",
     "26 - 50 | LookaLike Score A": "ACTIVE",
-    "30 - 50 | BR | Profissões [+] viajantes frequentes": "ACTIVE",
     "30 - 50 | Videoview 50-95% | Topo de Funil": "ACTIVE",
     "30 - 55 | LokaLike 2% Compradores | IG": "ACTIVE",
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": "ACTIVE",
-    "26 - 50 | LookaLike 2% Clientes IMR (Iphone 13+)": "ACTIVE",
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": "PAUSED",
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive (Iphone 13+)": "PAUSED",
     "30 - 55 | SP/MG | Resort All-inclusive": "PAUSED",
@@ -297,12 +306,12 @@
   },
   "creative_status": {
     "VD03": "ACTIVE",
-    "VD02": "ACTIVE",
+    "VD04": "ACTIVE",
     "BN03": "ACTIVE",
-    "BN02": "ACTIVE",
+    "VD02": "ACTIVE",
     "VD01": "PAUSED",
     "BN01": "PAUSED",
-    "VD04": "ACTIVE",
+    "BN02": "ACTIVE",
     "VD04 - Motion (Depoimento)": "ACTIVE",
     "16/02 - Depoimento": "ADSET_PAUSED",
     "17/03 - Não é um hotel": "PAUSED",
