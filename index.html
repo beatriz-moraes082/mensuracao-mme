@@ -956,6 +956,17 @@
       return false;
     }
     window.w1w4Auth = w1w4Auth;
+    function analises15Auth(e) {
+      const el = document.getElementById('analises15-accordion');
+      if (el.open) return true;
+      if (sessionStorage.getItem(KEY) === '1') return true;
+      e.preventDefault();
+      const pwd = prompt('Acesso restrito · Trilha Performance Digital\n\nSenha:');
+      if (pwd === 'trilha#82') { sessionStorage.setItem(KEY, '1'); el.open = true; }
+      else if (pwd !== null) alert('Senha incorreta.');
+      return false;
+    }
+    window.analises15Auth = analises15Auth;
   })();
   </script>
 
@@ -1017,8 +1028,8 @@
   <div class="ds-grid-2" id="perfil-preatend-grid"></div>
 
   <!-- Detalhamento das 15 análises em accordion -->
-  <details class="ds-accordion" style="margin-top:18px">
-    <summary><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
+  <details class="ds-accordion" id="analises15-accordion" style="margin-top:18px">
+    <summary onclick="return analises15Auth(event)"><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
     <div class="acc-body">
       <div id="analises-main">
         <div style="padding:60px;text-align:center;color:var(--muted)">
