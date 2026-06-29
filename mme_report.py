@@ -81,6 +81,8 @@ PROPOSAL_STATUSES  = {98169055}                       # Proposta enviada (Closer
 SINAL_VERDE_STATUS = 98334563                         # Sinal Verde (Closer — quase venda)
 LOST_STATUS = 143                                     # Venda perdida
 WON_STATUS  = 142                                     # Venda ganha
+# Estágios de bot/intake do SDR — excluídos do count de "leads reais"
+INTAKE_STATUSES = {98147475, 99055915, 98618883}      # Incoming leads (SDR), Abordagem inicial, Pré-atendimento
 
 STATUS_NAMES = {
     # SDR
@@ -435,8 +437,13 @@ def kommo_aggregate(start_ts, end_ts):
     vendas = kommo_closer_won(start_ts, end_ts)
 
     qualified = sum(n for s, n in status_dist.items() if s in QUALIFIED_STATUSES)
+    sdr_real_leads = sum(
+        1 for l in leads
+        if l.get("pipeline_id") == SDR_PIPELINE_ID and l.get("status_id") not in INTAKE_STATUSES
+    )
     return {
         "total_leads": len(leads),
+        "sdr_real_leads": sdr_real_leads,
         "qualified": qualified,
         "lost": len(losses),
         "vendas": vendas,
@@ -541,8 +548,9 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
 
     total_invest_now  = mt["spend"] + gt["spend"]
     total_invest_prev = mp["spend"] + gp["spend"]
-    total_leads_now   = mt["leads"] + gt["leads"]
-    total_leads_prev  = mp["leads"] + gp["leads"]
+    # Leads reais = Kommo SDR excluindo intake (bot); fallback pra Meta+Google se Kommo indisponível
+    total_leads_now  = (kommo_now or {}).get("sdr_real_leads") or (mt["leads"] + gt["leads"])
+    total_leads_prev = (kommo_prev or {}).get("sdr_real_leads") or (mp["leads"] + gp["leads"])
     lead_spend_now  = mt.get("lead_spend", mt["spend"]) + gt["spend"]
     lead_spend_prev = mp.get("lead_spend", mp["spend"]) + gp["spend"]
     cpl_medio_now  = lead_spend_now  / total_leads_now  if total_leads_now  else 0.0
