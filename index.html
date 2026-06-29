@@ -933,8 +933,8 @@
     <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
   </div>
 
-  <details class="ds-accordion">
-    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
+  <details class="ds-accordion" id="w1w4-accordion">
+    <summary onclick="return w1w4Auth(event)"><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
     <div class="acc-body">
       <div id="mens-table-wrap" style="overflow-x:auto"></div>
       <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
@@ -942,6 +942,22 @@
       </p>
     </div>
   </details>
+  <script>
+  (function(){
+    const KEY = 'w1w4_unlocked';
+    function w1w4Auth(e) {
+      const el = document.getElementById('w1w4-accordion');
+      if (el.open) return true;
+      if (sessionStorage.getItem(KEY) === '1') return true;
+      e.preventDefault();
+      const pwd = prompt('Acesso restrito · Trilha Performance Digital\n\nSenha:');
+      if (pwd === 'trilha#82') { sessionStorage.setItem(KEY, '1'); el.open = true; }
+      else if (pwd !== null) alert('Senha incorreta.');
+      return false;
+    }
+    window.w1w4Auth = w1w4Auth;
+  })();
+  </script>
 
   <!-- KPI legado (oculto, mantido p/ compat) -->
   <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
