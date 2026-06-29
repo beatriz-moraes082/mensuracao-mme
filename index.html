@@ -2569,6 +2569,8 @@ function renderAnalises() {
     }).join('');
   }
 
+  const CRE_LABEL = {'BN01':'IMR - Genérico','BN02':'IMR - Cálculo de férias','BN03':'IMR - Novo modelo de férias','VD01':'Ana','VD02':'Cota imobiliária','VD03':'IMR - Não é hospedagem','VD04':'IMR - Sócios no Brasil'};
+
   // Score by dimension table rows — sorted by pct of target score
   function scoreRows(leads, scoreTarget, topN=8) {
     const byDim = groupBy(
@@ -2681,7 +2683,8 @@ function renderAnalises() {
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
-      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}</td>
+      const dimLabel = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}${dimLabel}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2705,7 +2708,8 @@ function renderAnalises() {
     return rows.slice(0, topN).map((r, i) => {
       const cls = fpc(r.pct, 25, 10);
       const gold = i === 0 ? ' class="row-gold"' : '';
-      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}</td>
+      const dimLabel2 = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
+      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${dimLabel2}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2939,13 +2943,13 @@ function renderAnalises() {
     sdr.filter(l => l.creative && !isInvalidAud(l.creative)).forEach(l => {
       const c = _normCre(l.creative);
       if (!c) return;
-      if (!criMap[c]) criMap[c] = {tot:0, ab:0};
+      if (!criMap[c]) criMap[c] = {tot:0, ab:0, full: l.creative};
       criMap[c].tot++;
       if (l.score === 'A' || l.score === 'B') criMap[c].ab++;
     });
     const topCriList = Object.entries(criMap)
       .filter(([,d]) => d.tot >= 5)
-      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
+      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0, full: d.full}))
       .sort((a,b) => b.pct - a.pct)
       .slice(0,3);
     const criEl = document.getElementById('perfil-top-cri');
@@ -2956,7 +2960,7 @@ function renderAnalises() {
           ${topCriList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}</div>
+                <div class="lbl" title="${CRE_LABEL[r.c] || r.full || r.c}">${r.c}${statusBadge(criStatus(r.c))}${CRE_LABEL[r.c] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.c]}</span>` : ''}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
