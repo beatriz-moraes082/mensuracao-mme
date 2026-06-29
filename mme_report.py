@@ -301,6 +301,7 @@ def meta_insights(act_id, since, until, status_map=None):
             "leads": _action_value(actions, LEAD_ACTION_TYPE),
             # Topo de funil: link_click proxy pra visitas ao perfil; post = shares; post_save = salvamentos
             "profile_visits": _action_value(actions, "link_click"),
+            "follows": _action_value(actions, "onsite_conversion.follow"),
             "shares": _action_value(actions, "post"),
             "saves": _action_value(actions, "onsite_conversion.post_save"),
             "status": status_map.get(cid, ""),
@@ -531,41 +532,39 @@ def status_emoji(status):
 
 
 def build_description(meta_now, meta_prev, google_now, google_prev, period_now, period_prev, mode, kommo_now=None, kommo_prev=None):
-    """Description do IMR: Visão Geral consolidada + Meta + Google + Kommo + Detalhamento por campanha."""
+    """Description do IMR: Visão Geral consolidada + Meta + Google."""
     s_now, e_now = period_now
     s_prev, e_prev = period_prev
     mt, mp = meta_now["total"], meta_prev["total"]
     gt = (google_now or {}).get("total") or {"spend": 0.0, "impressions": 0, "clicks": 0, "leads": 0, "cpl": 0.0}
     gp = (google_prev or {}).get("total") or {"spend": 0.0, "impressions": 0, "clicks": 0, "leads": 0, "cpl": 0.0}
 
-    # Visão Geral consolidada (Meta + Google)
     total_invest_now  = mt["spend"] + gt["spend"]
     total_invest_prev = mp["spend"] + gp["spend"]
     total_leads_now   = mt["leads"] + gt["leads"]
     total_leads_prev  = mp["leads"] + gp["leads"]
-    # CPL médio = lead_spend (Meta fundo + Google total) / leads totais
     lead_spend_now  = mt.get("lead_spend", mt["spend"]) + gt["spend"]
     lead_spend_prev = mp.get("lead_spend", mp["spend"]) + gp["spend"]
     cpl_medio_now  = lead_spend_now  / total_leads_now  if total_leads_now  else 0.0
     cpl_medio_prev = lead_spend_prev / total_leads_prev if total_leads_prev else 0.0
 
-    def _delta_str(n, p, is_money=False, lower_is_better=False):
+    def _delta_str(n, p, is_money=False):
         if not p:
             return f"(vs {fmt_money(p) if is_money else p})"
         d = n - p
-        pct = (d / p * 100) if p else 0
+        pct = (d / p * 100)
         sign = "+" if d >= 0 else ""
         d_str = f"{sign}{fmt_money(d)}" if is_money else f"{sign}{d}"
         return f"({fmt_money(p) if is_money else p} → {fmt_money(n) if is_money else n}, {d_str} / {sign}{pct:.1f}%)"
 
     lines = [
-        "📊 RESULTADOS DAS CAMPANHAS — Ipioca Mar Resort",
+        "📊 RESULTADOS DAS CAMPANHAS",
         f"Período analisado: {period_label(s_now, e_now, mode)} → {br_date(s_now)} a {br_date(e_now)}",
         "",
         "🎯 VISÃO GERAL (Meta + Google)",
         f"Investimento total: {fmt_money(total_invest_now)}",
         f"Leads gerados: {total_leads_now}",
-        f"CPL médio: {fmt_money(cpl_medio_now)} *",
+        f"CPL médio: {fmt_money(cpl_medio_now)}",
         "",
     ]
 
@@ -574,32 +573,25 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
         lines += [
             f"📈 Comparativo {comp_label} ({br_date(s_prev)} a {br_date(e_prev)}):",
             f"Leads: {_delta_str(total_leads_now, total_leads_prev)}",
-            f"CPL: {_delta_str(cpl_medio_now, cpl_medio_prev, is_money=True, lower_is_better=True)}",
+            f"CPL: {_delta_str(cpl_medio_now, cpl_medio_prev, is_money=True)}",
             f"Investimento: {_delta_str(total_invest_now, total_invest_prev, is_money=True)}",
             "",
         ]
 
     # ── Meta Ads ─────────────────────────────────────────────────────────────
-    lines += ["🔵 *META ADS*", ""]
-    # Fundo de funil agregado (exclui topo)
+    lines += ["🔵 META ADS", ""]
     fundo_camps = [c for c in meta_now["campaigns"] if not is_topo_funil(c["name"])]
     fundo_spend = sum(c["spend"] for c in fundo_camps)
     fundo_leads = sum(c["leads"] for c in fundo_camps)
-    fundo_reach = sum(c["reach"] for c in fundo_camps)
-    fundo_impr  = sum(c["impressions"] for c in fundo_camps)
-    fundo_clk   = sum(c["clicks"] for c in fundo_camps)
     fundo_cpl   = fundo_spend / fundo_leads if fundo_leads else 0
     if fundo_camps:
         lines += [
-            "*Campanha de Leads (Fundo de Funil)*",
-            f"- Alcance: {fmt_int(fundo_reach)}",
-            f"- Impressões: {fmt_int(fundo_impr)}",
-            f"- Cliques: {fmt_int(fundo_clk)}",
-            f"- Leads: {fundo_leads}",
-            f"- CPL: {fmt_money(fundo_cpl)}",
+            "Campanha de Leads (Fundo de Funil)",
+            f"Investido = {fmt_money(fundo_spend)}",
+            f"Leads: {fundo_leads}",
+            f"CPL: {fmt_money(fundo_cpl)}",
             "",
         ]
-        # Comparativo só do fundo
         fundo_prev_camps = [c for c in meta_prev["campaigns"] if not is_topo_funil(c["name"])]
         f_p_spend = sum(c["spend"] for c in fundo_prev_camps)
         f_p_leads = sum(c["leads"] for c in fundo_prev_camps)
@@ -608,130 +600,40 @@ def build_description(meta_now, meta_prev, google_now, google_prev, period_now, 
             lines += [
                 f"{_comp_label_for(mode, s_prev, e_prev)}:",
                 f"Leads: {_delta_str(fundo_leads, f_p_leads)}",
-                f"CPL: {_delta_str(fundo_cpl, f_p_cpl, is_money=True, lower_is_better=True)}",
+                f"CPL: {_delta_str(fundo_cpl, f_p_cpl, is_money=True)}",
                 "",
             ]
-    # Topo de funil agregado
+
     topo_camps = [c for c in meta_now["campaigns"] if is_topo_funil(c["name"])]
     topo_spend  = sum(c["spend"] for c in topo_camps)
-    topo_visits = sum(c.get("profile_visits", 0) for c in topo_camps)
-    topo_shares = sum(c.get("shares", 0) for c in topo_camps)
-    topo_saves  = sum(c.get("saves", 0) for c in topo_camps)
+    topo_visits  = sum(c.get("profile_visits", 0) for c in topo_camps)
+    topo_follows = sum(c.get("follows", 0) for c in topo_camps)
+    topo_shares  = sum(c.get("shares", 0) for c in topo_camps)
+    topo_saves   = sum(c.get("saves", 0) for c in topo_camps)
     if topo_camps:
         lines += [
-            "*Campanha de Marca (Topo de Funil)*",
+            "Campanha de Marca (Topo de Funil)",
             f"Investido: {fmt_money(topo_spend)}",
-            f"- Visitas ao perfil: {fmt_int(topo_visits)}",
-            f"- Compartilhamentos: {fmt_int(topo_shares)}",
-            f"- Salvamentos: {fmt_int(topo_saves)}",
+            f"Visitas ao perfil: {fmt_int(topo_visits)}",
+            f"Número de seguidores: {fmt_int(topo_follows)}",
+            f"Compartilhamentos: {fmt_int(topo_shares)}",
+            f"Salvamentos: {fmt_int(topo_saves)}",
             "",
         ]
 
     # ── Google Ads ──────────────────────────────────────────────────────────
     if gt["spend"] > 0 or gt["leads"] > 0:
-        lines += ["🟢 *GOOGLE ADS*", ""]
+        lines += ["🟢 GOOGLE ADS", ""]
         for c in (google_now or {}).get("campaigns", []):
-            lines.append(f"{status_emoji(c.get('status',''))} *{c['name']}*")
-            lines.append(f"- Impressões: {fmt_int(c['impressions'])}")
-            lines.append(f"- Cliques: {fmt_int(c['clicks'])}")
-            lines.append(f"- Leads: {c['leads']}")
-            lines.append(f"- CPL: {fmt_money(c['cpl'])}")
+            if c["spend"] == 0 and c["leads"] == 0:
+                continue
+            lines.append(f"{status_emoji(c.get('status',''))} {c['name']}")
             lines.append("")
-        # Comparativo
-        if gp["leads"] or gp["spend"]:
-            lines += [
-                f"{_comp_label_for(mode, s_prev, e_prev)}:",
-                f"Leads: {_delta_str(gt['leads'], gp['leads'])}",
-                f"CPL: {_delta_str(gt['cpl'], gp['cpl'], is_money=True, lower_is_better=True)}",
-                "",
-            ]
-
-    # ── Funil Kommo ─────────────────────────────────────────────────────────
-    if kommo_now and kommo_now.get("status_dist"):
-        def _count(sd, ids):
-            return sum(n for sid, n in sd.items() if sid in ids)
-        sd = kommo_now["status_dist"]
-        sd_prev = (kommo_prev or {}).get("status_dist", {}) if kommo_prev else {}
-
-        # Vendas: SEMPRE vem de kommo_now["vendas"] (pipeline Closer + closed_at), nunca do status_dist
-        # (status 142 no SDR significa "Reunião realizada", contaria errado)
-        vendas_now_n  = len(kommo_now.get("vendas") or [])
-        vendas_prev_n = len((kommo_prev or {}).get("vendas") or []) if kommo_prev else 0
-        rows = [
-            ("Entrada (SDR)",       _count(sd, {98147475}),                _count(sd_prev, {98147475})),
-            ("Lead qualificado",    _count(sd, QUALIFIED_STATUSES),        _count(sd_prev, QUALIFIED_STATUSES)),
-            ("Reunião agendada",    _count(sd, {98162603}),                _count(sd_prev, {98162603})),
-            ("Reunião realizada",   _count(sd, {98168239}),                _count(sd_prev, {98168239})),
-            ("Proposta enviada",    _count(sd, PROPOSAL_STATUSES),         _count(sd_prev, PROPOSAL_STATUSES)),
-            ("Vendas fechadas",     vendas_now_n,                          vendas_prev_n),
-        ]
-        def _delta_k(n, p):
-            if not kommo_prev: return ""
-            d = n - p
-            if d == 0 and p == 0: return f" (vs 0)"
-            if p == 0: return f" (vs 0 / +{n})"
-            pct = (d / p * 100)
-            sign = "+" if d >= 0 else ""
-            return f" (vs {p} / {sign}{d} / {sign}{pct:.0f}%)"
-        lines += ["📋 FUNIL COMERCIAL (Kommo)", ""]
-        for label, n, p in rows:
-            lines.append(f"{label}: {n}{_delta_k(n, p)}")
-        lines.append("")
-
-        # Vendas detalhadas (se houver)
-        vendas = kommo_now.get("vendas") or []
-        if vendas:
-            users = kommo_now.get("users") or {}
-            receita = kommo_now.get("receita") or 0
-            header = f"💰 Vendas no período: {len(vendas)}"
-            if receita > 0:
-                header += f" — {fmt_money(receita)} faturado"
-            lines += [header]
-            for v in vendas[:5]:
-                corr = users.get(v["corretor_id"], "(sem closer)") if v["corretor_id"] else "(sem closer)"
-                preco_str = f" — {fmt_money(v['price'])}" if v.get("price") else ""
-                lines.append(f"• {v['name']}{preco_str} (closer {corr})")
+            lines.append(f"Investido = {fmt_money(c['spend'])}")
+            lines.append(f"Leads: {c['leads']}")
+            lines.append(f"CPL: {fmt_money(c['cpl'])}")
             lines.append("")
 
-        # Top 3 motivos de perda
-        loss_reasons_map = kommo_now.get("loss_reasons") or {}
-        loss_reason_counter = Counter()
-        for l in (kommo_now.get("losses") or []):
-            rid = l.get("reason_id")
-            if rid:
-                loss_reason_counter[rid] += 1
-        if loss_reason_counter:
-            lines.append("Top motivos de perda:")
-            for rid, n in loss_reason_counter.most_common(3):
-                name = loss_reasons_map.get(rid, f"motivo #{rid}")
-                lines.append(f"• {name}: {n}")
-            lines.append("")
-
-    # ── Detalhamento por campanha (Meta + Google) ──────────────────────────
-    lines += ["📑 DETALHAMENTO POR CAMPANHA", ""]
-    for c in sorted(meta_now["campaigns"], key=lambda x: -x["spend"]):
-        if c["spend"] == 0 and c["leads"] == 0:
-            continue
-        lines.append(f"{status_emoji(c['status'])} [Meta] {c['name']}")
-        if is_topo_funil(c["name"]):
-            lines.append(f"   {fmt_money(c['spend'])}  ·  Visitas: {fmt_int(c.get('profile_visits',0))}  ·  Shares: {fmt_int(c.get('shares',0))}  ·  Saves: {fmt_int(c.get('saves',0))}")
-        else:
-            cpl_c = c["spend"] / c["leads"] if c["leads"] else 0
-            lines.append(f"   {fmt_money(c['spend'])}  ·  {c['leads']} leads  ·  CPL {fmt_money(cpl_c)}")
-        lines.append("")
-    for c in (google_now or {}).get("campaigns", []):
-        if c["spend"] == 0 and c["leads"] == 0:
-            continue
-        lines.append(f"{status_emoji(c.get('status',''))} [Google] {c['name']}")
-        lines.append(f"   {fmt_money(c['spend'])}  ·  {c['leads']} leads  ·  CPL {fmt_money(c['cpl'])}")
-        lines.append("")
-
-    lines += [
-        "🟢 Ativa  ·  ⏸️ Pausada",
-        "",
-        "* CPL médio = investimento em campanhas de lead (Meta Fundo + Google) ÷ leads totais. Campanhas de marca/tráfego ficam fora do cálculo.",
-        "Fontes: Meta Ads API + Google Ads API + Kommo CRM.",
-    ]
     return "\n".join(lines)
 
 
