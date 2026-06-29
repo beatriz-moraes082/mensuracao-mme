@@ -2562,7 +2562,7 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}${CRE_LABEL[r.cri]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.cri]}</span>`:''}</td>
+        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}${_crePreviewBtn(r.cri)}${CRE_LABEL[r.cri]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.cri]}</span>`:''}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
@@ -2570,6 +2570,9 @@ function renderAnalises() {
   }
 
   const CRE_LABEL = {'BN01':'IMR - Genérico','BN02':'IMR - Cálculo de férias','BN03':'IMR - Novo modelo de férias','VD01':'Ana','VD02':'Cota imobiliária','VD03':'IMR - Não é hospedagem','VD04':'IMR - Sócios no Brasil'};
+  const _crePreviewBtn = (code) => (window.CRE_PREVIEW || {})[code]
+    ? `<button onclick="openCrePreview('${code}','${CRE_LABEL[code]||''}')" title="Ver prévia do anúncio" style="background:none;border:none;cursor:pointer;padding:0 0 0 4px;font-size:12px;color:var(--muted);vertical-align:middle;line-height:1">👁</button>`
+    : '';
 
   // Score by dimension table rows — sorted by pct of target score
   function scoreRows(leads, scoreTarget, topN=8) {
@@ -2684,7 +2687,7 @@ function renderAnalises() {
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
       const dimLabel = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
-      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}${dimLabel}</td>
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}${_crePreviewBtn(r.dim)}${dimLabel}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2709,7 +2712,7 @@ function renderAnalises() {
       const cls = fpc(r.pct, 25, 10);
       const gold = i === 0 ? ' class="row-gold"' : '';
       const dimLabel2 = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
-      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${dimLabel2}</td>
+      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${_crePreviewBtn(r.dim)}${dimLabel2}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2859,7 +2862,7 @@ function renderAnalises() {
       const _criN = (r.cri||'').split('|')[0].trim();
       return `<tr${gold}><td>${rank}</td>
         <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
-        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}${CRE_LABEL[_criN]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[_criN]}</span>`:''}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}${_crePreviewBtn(_criN)}${CRE_LABEL[_criN]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[_criN]}</span>`:''}</td>
         <td class="num ${cls}">${r.ab}</td>
         <td class="num ${cls}">${fp(pAB)}${note}</td>
         <td class="num">${r.total}</td>
@@ -2960,7 +2963,7 @@ function renderAnalises() {
           ${topCriList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl" title="${CRE_LABEL[r.c] || r.full || r.c}">${r.c}${statusBadge(criStatus(r.c))}${CRE_LABEL[r.c] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.c]}</span>` : ''}</div>
+                <div class="lbl" title="${CRE_LABEL[r.c] || r.full || r.c}">${r.c}${statusBadge(criStatus(r.c))}${_crePreviewBtn(r.c)}${CRE_LABEL[r.c] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.c]}</span>` : ''}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
@@ -4604,12 +4607,14 @@ function updateTopbarPills() {
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
-    const [kommoRes, metaRes, googleRes, mcRes] = await Promise.all([
+    const [kommoRes, metaRes, googleRes, mcRes, crePreviewRes] = await Promise.all([
       fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})),
-      fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null)
+      fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('data/meta_creatives_preview.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}))
     ]);
+    window.CRE_PREVIEW = crePreviewRes;
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
     GOOGLE_RAW = googleRes;
@@ -6559,6 +6564,26 @@ function renderDisparos() {
     if (KOMMO_RAW) vdRenderTable(vdBuildVendas());
   });
 })();
+</script>
+<!-- Modal preview criativo -->
+<div id="cre-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;overflow:hidden;width:360px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.3);position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eee">
+      <span id="cre-modal-title" style="font-weight:700;font-size:14px"></span>
+      <button onclick="document.getElementById('cre-modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;color:#666">✕</button>
+    </div>
+    <iframe id="cre-modal-iframe" src="" width="360" height="480" scrolling="yes" style="border:none;display:block" allow="autoplay"></iframe>
+  </div>
+</div>
+<script>
+function openCrePreview(code, label) {
+  const url = (window.CRE_PREVIEW || {})[code];
+  if (!url) return;
+  document.getElementById('cre-modal-title').textContent = code + (label ? ' · ' + label : '');
+  document.getElementById('cre-modal-iframe').src = url;
+  const m = document.getElementById('cre-modal');
+  m.style.display = 'flex';
+}
 </script>
 </body>
 </html>
