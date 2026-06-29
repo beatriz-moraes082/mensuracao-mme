@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-29T13:10:21.028380+00:00",
+  "fetched_at": "2026-06-29T22:10:29.734139+00:00",
   "period": {
     "since": "2026-04-01",
     "until": "2026-06-29"
@@ -50,7 +50,7 @@
         "w1": 142.32,
         "w2": 137.16000000000003,
         "w3": 141.41,
-        "w4": 256.98
+        "w4": 274.36
       }
     },
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": {
@@ -73,7 +73,7 @@
         "w1": 392.4100000000001,
         "w2": 547.76,
         "w3": 552.91,
-        "w4": 590.51
+        "w4": 623.77
       }
     },
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": {
@@ -90,7 +90,7 @@
         "w1": 1.39,
         "w2": 0.32,
         "w3": 0.49000000000000005,
-        "w4": 3.07
+        "w4": 3.24
       }
     },
     "26 - 50 | LookaLike Score A": {
@@ -104,7 +104,7 @@
         "w1": 285.56,
         "w2": 507.04,
         "w3": 568.1000000000001,
-        "w4": 562.94
+        "w4": 588.5800000000002
       }
     },
     "30 - 50 | BR | Profissões [+] viajantes frequentes": {
@@ -116,10 +116,10 @@
         "w1": 356.15999999999997,
         "w2": 306.02,
         "w3": 318.57000000000005,
-        "w4": 413.76000000000005
+        "w4": 439.69000000000005
       }
     },
-    "30 - 50 | Videoview 50-95% | Topo de Funil": {
+    "30 - 50 | Videoview 50-95% | Topo de Funil [teste]": {
       "2026-05": {
         "w3": 171.19,
         "w4": 421.3
@@ -128,13 +128,13 @@
         "w1": 228.03,
         "w2": 218.34999999999997,
         "w3": 241.34,
-        "w4": 289.88
+        "w4": 300.46
       }
     },
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+)": {
       "2026-06": {
         "w3": 160.8,
-        "w4": 366.37
+        "w4": 386.27
       }
     },
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": {
@@ -161,7 +161,7 @@
         "w1": 38.599999999999994,
         "w2": 9.98,
         "w3": 12.950000000000003,
-        "w4": 27.960000000000004
+        "w4": 31.73
       }
     },
     "VD01": {
@@ -198,7 +198,7 @@
         "w1": 269.48999999999995,
         "w2": 505.88000000000005,
         "w3": 562.62,
-        "w4": 548.9300000000001
+        "w4": 578.9
       }
     },
     "BN01": {
@@ -212,6 +212,9 @@
         "w1": 255.43,
         "w2": 460.75999999999993,
         "w3": 86.96000000000001
+      },
+      "2026-06": {
+        "w4": 1.83
       }
     },
     "VD03": {
@@ -229,7 +232,7 @@
         "w1": 137.92,
         "w2": 143.60999999999999,
         "w3": 161.27999999999997,
-        "w4": 262.05
+        "w4": 275.23999999999995
       }
     },
     "BN03": {
@@ -246,7 +249,7 @@
         "w1": 825.0,
         "w2": 949.9699999999998,
         "w3": 1121.3700000000001,
-        "w4": 1518.18
+        "w4": 1590.1800000000005
       }
     },
     "VD04": {
@@ -274,22 +277,62 @@
         "w1": 127.2,
         "w2": 103.88999999999999,
         "w3": 118.93999999999998,
-        "w4": 122.86999999999996
+        "w4": 124.60999999999996
+      }
+    },
+    "19/06 - pov": {
+      "2026-06": {
+        "w4": 2.1399999999999997
+      }
+    },
+    "16/06 - objeções": {
+      "2026-06": {
+        "w4": 0.28
+      }
+    },
+    "30/04 - comprei? e agora?": {
+      "2026-06": {
+        "w4": 2.75
+      }
+    },
+    "28/04 - custo de viagem": {
+      "2026-06": {
+        "w4": 1.0
+      }
+    },
+    "14/04 - especialista": {
+      "2026-06": {
+        "w4": 0.36000000000000004
+      }
+    },
+    "19/02 - Apresentação": {
+      "2026-06": {
+        "w4": 2.4000000000000004
+      }
+    },
+    "23/02 - Apresentação V2 (Leo)": {
+      "2026-06": {
+        "w4": 1.43
+      }
+    },
+    "22/05 - direito de uso": {
+      "2026-06": {
+        "w4": 0.0
       }
     }
   },
   "adset_status": {
-    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPB]": "PAUSED",
-    "30 - 50 | Videoview 50-95% | Topo de Funil [LPA]": "PAUSED",
-    "30 - 50 | BR | Profissões [+] viajantes frequentes": "ACTIVE",
-    "26 - 50 | LookaLike 2% Clientes IMR (Iphone 13+)": "ACTIVE",
-    "26 - 50 | LookaLike Score A [LPA]": "PAUSED",
-    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": "PAUSED",
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+)": "ACTIVE",
     "26 - 50 | LookaLike Score A": "ACTIVE",
-    "30 - 50 | Videoview 50-95% | Topo de Funil": "ACTIVE",
+    "26 - 50 | LookaLike 2% Clientes IMR (Iphone 13+)": "ACTIVE",
+    "30 - 50 | BR | Profissões [+] viajantes frequentes": "ACTIVE",
     "30 - 55 | LokaLike 2% Compradores | IG": "ACTIVE",
-    "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": "ACTIVE",
+    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPB]": "PAUSED",
+    "30 - 50 | Videoview 50-95% | Topo de Funil [LPA]": "PAUSED",
+    "26 - 50 | LookaLike Score A [LPA]": "PAUSED",
+    "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": "PAUSED",
+    "30 - 50 | Videoview 50-95% | Topo de Funil [teste]": "PAUSED",
+    "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": "PAUSED",
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": "PAUSED",
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive (Iphone 13+)": "PAUSED",
     "30 - 55 | SP/MG | Resort All-inclusive": "PAUSED",
@@ -305,14 +348,22 @@
     "27 - 55 | BR | IG | [+] Férias": "CAMPAIGN_PAUSED"
   },
   "creative_status": {
-    "VD03": "ACTIVE",
-    "VD04": "ACTIVE",
-    "BN03": "ACTIVE",
-    "VD02": "ACTIVE",
-    "VD01": "PAUSED",
-    "BN01": "PAUSED",
     "BN02": "ACTIVE",
-    "VD04 - Motion (Depoimento)": "ACTIVE",
+    "VD02": "ACTIVE",
+    "BN03": "ACTIVE",
+    "BN01": "ACTIVE",
+    "16/06 - objeções": "ACTIVE",
+    "23/02 - Apresentação V2 (Leo)": "ACTIVE",
+    "30/04 - comprei? e agora?": "ACTIVE",
+    "VD03": "ACTIVE",
+    "22/05 - direito de uso": "ACTIVE",
+    "VD04": "ACTIVE",
+    "14/04 - especialista": "ACTIVE",
+    "28/04 - custo de viagem": "ACTIVE",
+    "19/02 - Apresentação": "ACTIVE",
+    "19/06 - pov": "ACTIVE",
+    "VD01": "PAUSED",
+    "VD04 - Motion (Depoimento)": "CAMPAIGN_PAUSED",
     "16/02 - Depoimento": "ADSET_PAUSED",
     "17/03 - Não é um hotel": "PAUSED",
     "24/12 - Confiança": "PAUSED"
