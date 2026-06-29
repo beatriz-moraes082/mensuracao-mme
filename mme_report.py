@@ -983,7 +983,8 @@ def main():
     args = ap.parse_args()
 
     today = datetime.strptime(args.date, "%Y-%m-%d").date() if args.date else br_today()
-    today = effective_today(today)
+    if not args.date:
+        today = effective_today(today)
     mode = decide_mode(today, args.force_mode)
 
     print(f"== IMR / MME Vacation Club — description: {mode}, comentário: sempre semanal ==")
