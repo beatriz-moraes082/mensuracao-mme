@@ -2562,7 +2562,7 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}</td>
+        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}${CRE_LABEL[r.cri]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.cri]}</span>`:''}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
@@ -2859,7 +2859,7 @@ function renderAnalises() {
       const _criN = (r.cri||'').split('|')[0].trim();
       return `<tr${gold}><td>${rank}</td>
         <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
-        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}${CRE_LABEL[_criN]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[_criN]}</span>`:''}</td>
         <td class="num ${cls}">${r.ab}</td>
         <td class="num ${cls}">${fp(pAB)}${note}</td>
         <td class="num">${r.total}</td>
