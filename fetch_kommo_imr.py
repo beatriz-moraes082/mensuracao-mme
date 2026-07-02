@@ -526,6 +526,19 @@ def main():
         "duque":    processed_duque,
     }
 
+    # Correções manuais de data de fechamento (leads registrados no Kommo com data errada).
+    # Luciano (96575841), Henry Monteiro (97413261), Leonardo Lindemberg (99922721)
+    # foram fechados em 01/06 no sistema mas a venda ocorreu em maio/2026.
+    _CLOSED_AT_OVERRIDES = {
+        96575841: int(datetime(2026, 5, 31, 12, 0, 0).timestamp()),
+        97413261: int(datetime(2026, 5, 31, 12, 0, 0).timestamp()),
+        99922721: int(datetime(2026, 5, 31, 12, 0, 0).timestamp()),
+    }
+    for l in processed_closer:
+        if l.get("id") in _CLOSED_AT_OVERRIDES:
+            l["closed_at"] = _CLOSED_AT_OVERRIDES[l["id"]]
+            l["month"] = "2026-05"
+
     out_path = Path(__file__).resolve().parent / "data/kommo_leads.json"
     out_path.parent.mkdir(exist_ok=True)
     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2))

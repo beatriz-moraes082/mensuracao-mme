@@ -348,6 +348,18 @@
       transition:border-color .15s, box-shadow .15s}
     .period-select:hover{border-color:var(--accent)}
     .period-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(238,77,32,.12)}
+    /* Modal período personalizado */
+    #custom-period-modal{display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center}
+    #custom-period-modal.open{display:flex}
+    #custom-period-modal .cpm-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+    #custom-period-modal .cpm-box{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px 24px 22px;width:min(340px,92vw);box-shadow:0 12px 40px rgba(0,0,0,.22)}
+    #custom-period-modal h3{margin:0 0 18px;font-size:15px;font-weight:800;color:var(--text)}
+    #custom-period-modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+    #custom-period-modal input[type=date]{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;margin-bottom:14px}
+    #custom-period-modal input[type=date]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(238,77,32,.12)}
+    #custom-period-modal .cpm-actions{display:flex;gap:8px;margin-top:4px}
+    #custom-period-modal .cpm-cancel{flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+    #custom-period-modal .cpm-apply{flex:2;padding:10px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
     .pbtn.active{
       background:var(--accent)!important;color:#fff!important;
       border-color:var(--accent)!important;
@@ -816,6 +828,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -998,6 +1011,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
@@ -1064,6 +1078,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
     </div>
@@ -1166,6 +1181,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
     </div>
@@ -1224,6 +1240,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
     </div>
@@ -1394,6 +1411,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Personalizado...</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -1719,10 +1737,11 @@ const VENDA_EXCLUDE = new Set([
 function isValidVenda(l) { return !!(l && l.venda && !VENDA_EXCLUDE.has(l.id)); }
 
 const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0}, nutricao:{total:0,sdr:0,bdr:0,closer:0,perdidos:0} });
-let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel() };
+let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel(), 'custom': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
+let _customFrom = null, _customTo = null;
 let META_RAW  = null;
 let GOOGLE_RAW = null;
 let MAILCHIMP_RAW = null;
@@ -1778,6 +1797,14 @@ function periodWindow(periodKey, refDate) {
     // mas vendas inbound/indicação/IBR aconteceram antes).
     fromTs = new Date(2026, 0, 1); // mês 0 = janeiro (0-indexed)
   }
+  else if (periodKey === 'custom') {
+    if (_customFrom && _customTo) {
+      const f = new Date(_customFrom + 'T00:00:00');
+      const t = new Date(_customTo   + 'T23:59:59');
+      return { from: f, to: t };
+    }
+    fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
+  }
   else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
@@ -1804,6 +1831,7 @@ function periodLabel(periodKey, win, isPartial) {
   if (periodKey === 'wlast') return `Semana passada · ${s}–${e}`;
   if (periodKey === 'mes')      return `Este mês · ${s}–${e}${p}`;
   if (periodKey === 'mes_prev') return `Mês passado · ${s}–${e}`;
+  if (periodKey === 'custom')   return `Personalizado · ${s}–${e}`;
   if (periodKey === 'max')   return `Período máximo · ${s}–${e}${p}`;
   if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
   return `${s}–${e}`;
@@ -2208,6 +2236,7 @@ let PERIOD_LABELS = {
 function refreshPeriodSelectLabels() {}
 
 function setGlobalPeriod(key, btn) {
+  if (key === 'custom') { openCustomPeriodModal(); return; }
   currentPeriod    = key;
   currentOutPeriod = key;   // ← sincroniza Duque & BDR
   // Sincroniza todos os botões de período em todas as abas
@@ -5583,7 +5612,7 @@ function vdRenderTable(vendas){
     const origemLabel = v.origem || 'sem origem';
     const origemTag = `<span class="vd-tag ${v.bucket}">${origemLabel}</span>`;
     return `<tr>
-      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
+      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}${v.closer_id ? `<br><a href="https://ipiocamarresort.kommo.com/leads/detail/${v.closer_id}" target="_blank" style="font-size:10px;color:#e85d28;text-decoration:none;opacity:.75" title="Abrir no Kommo">🔗 ver no Kommo</a>` : ''}</td>
       <td>${vdFmtDate(v.closed_at)}</td>
       <td>${origemTag}</td>
       <td>${v.price > 0 ? vdFmtBRL(v.price) : '<span class="vd-empty">—</span>'}</td>
@@ -6611,6 +6640,85 @@ function openCrePreview(code, label) {
   const m = document.getElementById('cre-modal');
   m.style.display = 'flex';
 }
+
+/* ── Período personalizado ── */
+function openCustomPeriodModal() {
+  const m = document.getElementById('custom-period-modal');
+  if (_customFrom) document.getElementById('cpm-from').value = _customFrom;
+  if (_customTo)   document.getElementById('cpm-to').value   = _customTo;
+  m.classList.add('open');
+  document.getElementById('cpm-from').focus();
+}
+
+function closeCustomPeriodModal(revert) {
+  document.getElementById('custom-period-modal').classList.remove('open');
+  if (revert) {
+    // volta os selects ao valor anterior (ou 30d como fallback)
+    const prev = (_customFrom && _customTo) ? 'custom' : '30d';
+    for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
+                      'funis-period-sel','outbound-period-sel','vendas-period-sel','disp-period-sel']) {
+      const sel = document.getElementById(id);
+      if (sel && prev !== 'custom') { sel.value = '30d'; }
+    }
+    if (!(_customFrom && _customTo)) { currentPeriod = '30d'; currentOutPeriod = '30d'; }
+  }
+}
+
+function applyCustomPeriod() {
+  const from = document.getElementById('cpm-from').value;
+  const to   = document.getElementById('cpm-to').value;
+  if (!from || !to || from > to) {
+    document.getElementById('cpm-error').textContent = from > to ? 'Data inicial deve ser anterior à final.' : 'Preencha as duas datas.';
+    return;
+  }
+  document.getElementById('cpm-error').textContent = '';
+  _customFrom = from;
+  _customTo   = to;
+  closeCustomPeriodModal(false);
+
+  // Computa e registra o período custom no FUNNEL
+  if (KOMMO_RAW) {
+    FUNNEL['custom'] = computeFunnelForPeriod(KOMMO_RAW, 'custom', new Date(_customTo + 'T23:59:59'));
+    PERIOD_LABELS['custom'] = FUNNEL['custom'].label;
+  }
+  currentPeriod = 'custom'; currentOutPeriod = 'custom';
+
+  // Sincroniza selects
+  for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
+                    'funis-period-sel','outbound-period-sel','vendas-period-sel','disp-period-sel']) {
+    const sel = document.getElementById(id);
+    if (sel) sel.value = 'custom';
+  }
+
+  if (KOMMO_RAW && META_RAW) {
+    const win = periodWindow('custom', new Date(_customTo + 'T23:59:59'));
+    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW, win);
+  }
+  const lbl = document.getElementById('analises-period-lbl');
+  if (lbl) lbl.textContent = PERIOD_LABELS['custom'] || 'Personalizado';
+  if (typeof updateTopbarPills === 'function') updateTopbarPills();
+  renderFunis(); renderOutbound(); renderMensuracao(); renderAnalises();
+  if (typeof renderDiagnostico === 'function') renderDiagnostico();
+  if (typeof renderVendas === 'function') renderVendas();
+  if (typeof renderDisparos === 'function') renderDisparos();
+}
 </script>
+
+<!-- Modal período personalizado -->
+<div id="custom-period-modal" role="dialog" aria-modal="true">
+  <div class="cpm-overlay" onclick="closeCustomPeriodModal(true)"></div>
+  <div class="cpm-box">
+    <h3>Período personalizado</h3>
+    <label for="cpm-from">De</label>
+    <input type="date" id="cpm-from" min="2026-01-01">
+    <label for="cpm-to">Até</label>
+    <input type="date" id="cpm-to" min="2026-01-01">
+    <div id="cpm-error" style="font-size:11px;color:#ef4444;min-height:16px;margin-bottom:6px"></div>
+    <div class="cpm-actions">
+      <button class="cpm-cancel" onclick="closeCustomPeriodModal(true)">Cancelar</button>
+      <button class="cpm-apply" onclick="applyCustomPeriod()">Aplicar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
