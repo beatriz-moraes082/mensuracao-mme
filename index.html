@@ -2565,6 +2565,28 @@ function renderAnalises() {
     // Mantém NO_DATA pra criativos realmente sem origem identificável
     return META_SPEND ? 'NO_DATA' : null;
   }
+  // Retorna botão 👁 clicável que abre o preview do criativo no Facebook,
+  // se houver link salvo no meta_spend.json. Tenta match exato + fuzzy
+  // (Levenshtein) pra tolerar variações tipo 'BN01' vs 'BN01 · Ana'.
+  function criPreviewButton(name) {
+    if (!META_SPEND || !META_SPEND.creative_preview) return '';
+    const previews = META_SPEND.creative_preview;
+    let link = previews[name];
+    if (!link) {
+      const target = _normForMatch(name);
+      let best = null, bestDist = 3;
+      for (const [key, url] of Object.entries(previews)) {
+        const k = _normForMatch(key);
+        if (k === target) { best = url; break; }
+        const d = _levenshtein(target, k);
+        if (d < bestDist) { bestDist = d; best = url; }
+      }
+      link = best;
+    }
+    if (!link) return '';
+    return ` <a href="${link}" target="_blank" rel="noopener" title="Ver preview do anúncio no Facebook" style="display:inline-block;padding:1px 6px;border-radius:8px;background:rgba(59,130,246,.12);color:#2563eb;font-size:11px;text-decoration:none;vertical-align:1px;line-height:1.4">👁</a>`;
+  }
+
   function statusBadge(status) {
     if (!status) return '';
     if (status === 'ACTIVE') {
@@ -2651,7 +2673,7 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}</td>
+        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}${criPreviewButton(r.cri)}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
@@ -2770,7 +2792,7 @@ function renderAnalises() {
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
-      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}</td>
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}${criPreviewButton(r.dim)}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2944,7 +2966,7 @@ function renderAnalises() {
       const _criN = (r.cri||'').split('|')[0].trim();
       return `<tr${gold}><td>${rank}</td>
         <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
-        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}${criPreviewButton(r.cri)}</td>
         <td class="num ${cls}">${r.ab}</td>
         <td class="num ${cls}">${fp(pAB)}${note}</td>
         <td class="num">${r.total}</td>
@@ -3045,7 +3067,7 @@ function renderAnalises() {
           ${topCriList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}</div>
+                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}${criPreviewButton(r.c)}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>

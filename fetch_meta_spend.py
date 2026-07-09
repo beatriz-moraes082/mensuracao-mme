@@ -52,12 +52,16 @@ def normalize_adset(name):
     if not name: return '—'
     return name.replace('*', '').strip()
 
-def fetch_status(endpoint, name_field):
-    """Busca effective_status de cada adset/ad (ACTIVE, PAUSED, ARCHIVED, etc.)."""
+def fetch_status(endpoint, name_field, extra_fields=''):
+    """Busca effective_status de cada adset/ad (ACTIVE, PAUSED, ARCHIVED, etc.).
+    Aceita extra_fields (ex: 'preview_shareable_link' pros ads)."""
     rows, url = [], f'https://graph.facebook.com/v21.0/{ACCOUNT}/{endpoint}'
+    fields = f'{name_field},effective_status,status'
+    if extra_fields:
+        fields = f'{fields},{extra_fields}'
     params = {
         'access_token': TOKEN,
-        'fields':       f'{name_field},effective_status,status',
+        'fields':       fields,
         'limit':        500,
     }
     print(f'  GET {url} (status)')
@@ -154,15 +158,23 @@ def main():
         if name not in adset_status or st == 'ACTIVE':
             adset_status[name] = st
 
-    print('Fetching ad status...')
-    ad_status_rows = fetch_status('ads', 'name')
+    print('Fetching ad status + preview links...')
+    ad_status_rows = fetch_status('ads', 'name', extra_fields='preview_shareable_link')
     print(f'  {len(ad_status_rows)} ads')
     cri_status = {}
+    cri_preview = {}   # creative_name → link do preview do anúncio no Facebook
     for row in ad_status_rows:
         name = normalize_creative(row.get('name', ''))
         st   = row.get('effective_status', 'UNKNOWN')
+        prv  = row.get('preview_shareable_link', '')
+        # Guarda status (prioriza ACTIVE) + link do preview (prioriza ad ACTIVE também)
         if name not in cri_status or st == 'ACTIVE':
             cri_status[name] = st
+            if prv:
+                cri_preview[name] = prv
+        # Se ainda não tem preview mas essa row traz um, salva de qualquer forma
+        elif name not in cri_preview and prv:
+            cri_preview[name] = prv
 
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
@@ -172,6 +184,7 @@ def main():
         'creative':       _unwrap(cri_spend),
         'adset_status':   adset_status,
         'creative_status':cri_status,
+        'creative_preview': cri_preview,   # {nome → URL de preview}
     }
 
     # Salvaguarda: se a API falhou (token expirado etc) e voltou tudo vazio,
