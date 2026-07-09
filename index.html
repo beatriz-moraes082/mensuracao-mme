@@ -3636,7 +3636,10 @@ function renderDiagnostico() {
   const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
   const fmtN   = v => (v||0).toLocaleString('pt-BR');
 
-  const txConv = total > 0 ? (vendas/total*100) : 0;
+  // Tx. Conversão: usa leadsCampanha (SDR + Nutrição dedup por telefone),
+  // não só total (sdr). Confirmado com Bia — denominador tem que ser o
+  // MESMO usado no card 'Leads' do hero (140), pra ser coerente.
+  const txConv = leadsCampanha > 0 ? (vendas/leadsCampanha*100) : 0;
   const faturamento = closerVendas.reduce((s,v) => s + (v.price||0), 0);
   // ROAS / CAC GERAL: usa todas as vendas Closer (inclui IBR, indicação)
   const roas = totalInvest > 0 ? (faturamento / totalInvest) : 0;
@@ -3667,7 +3670,7 @@ function renderDiagnostico() {
      sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
     {lbl:'Tx. Conversão',    val:fmtP(txConv),        iconColor:'#EE4D20',
      trend:{pct:0,cls:'neut',txt:''},
-     sub:`${vendas} vendas ÷ ${total} leads SDR`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
+     sub:`${vendas} vendas ÷ ${fmtN(leadsCampanha)} leads (campanha · SDR + Nutrição)`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
     {lbl:'ROAS · geral',     val: roas > 0 ? roas.toFixed(1)+'x' : '—', iconColor:'#10b981',
      trend:{pct:0,cls:'neut',txt:''},
      sub: roas > 0 ? `${fmtBRL(faturamento)} ÷ ${fmtBRL(totalInvest)}` : 'sem dados',
