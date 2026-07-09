@@ -348,18 +348,6 @@
       transition:border-color .15s, box-shadow .15s}
     .period-select:hover{border-color:var(--accent)}
     .period-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(238,77,32,.12)}
-    /* Modal período personalizado */
-    #custom-period-modal{display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center}
-    #custom-period-modal.open{display:flex}
-    #custom-period-modal .cpm-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-    #custom-period-modal .cpm-box{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px 24px 22px;width:min(340px,92vw);box-shadow:0 12px 40px rgba(0,0,0,.22)}
-    #custom-period-modal h3{margin:0 0 18px;font-size:15px;font-weight:800;color:var(--text)}
-    #custom-period-modal label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
-    #custom-period-modal input[type=date]{width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;margin-bottom:14px}
-    #custom-period-modal input[type=date]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(238,77,32,.12)}
-    #custom-period-modal .cpm-actions{display:flex;gap:8px;margin-top:4px}
-    #custom-period-modal .cpm-cancel{flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
-    #custom-period-modal .cpm-apply{flex:2;padding:10px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
     .pbtn.active{
       background:var(--accent)!important;color:#fff!important;
       border-color:var(--accent)!important;
@@ -768,6 +756,7 @@
       .hero-modern h2{font-size:16px}
       .ds-kpi .val{font-size:18px}
     }
+    #custom-period-dialog::backdrop{background:rgba(0,0,0,.45);backdrop-filter:blur(3px)}
   </style>
 </head>
 <body>
@@ -828,7 +817,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -913,6 +902,7 @@
       <option value="mes_prev">Mês passado</option>
       <option value="30d" selected>Últimos 30 dias</option>
       <option value="max">Período máximo</option>
+      <option value="custom">Período personalizado…</option>
     </select>
     <span style="font-size:11px;color:var(--muted)" id="evol-period-hint">semanas dentro da janela selecionada</span>
   </div>
@@ -946,8 +936,8 @@
     <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
   </div>
 
-  <details class="ds-accordion" id="w1w4-accordion">
-    <summary onclick="return w1w4Auth(event)"><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
+  <details class="ds-accordion">
+    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
     <div class="acc-body">
       <div id="mens-table-wrap" style="overflow-x:auto"></div>
       <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
@@ -955,33 +945,6 @@
       </p>
     </div>
   </details>
-  <script>
-  (function(){
-    const KEY = 'w1w4_unlocked';
-    function w1w4Auth(e) {
-      const el = document.getElementById('w1w4-accordion');
-      if (el.open) return true;
-      if (sessionStorage.getItem(KEY) === '1') return true;
-      e.preventDefault();
-      const pwd = prompt('Acesso restrito · Trilha Performance Digital\n\nSenha:');
-      if (pwd === 'trilha#82') { sessionStorage.setItem(KEY, '1'); el.open = true; }
-      else if (pwd !== null) alert('Senha incorreta.');
-      return false;
-    }
-    window.w1w4Auth = w1w4Auth;
-    function analises15Auth(e) {
-      const el = document.getElementById('analises15-accordion');
-      if (el.open) return true;
-      if (sessionStorage.getItem(KEY) === '1') return true;
-      e.preventDefault();
-      const pwd = prompt('Acesso restrito · Trilha Performance Digital\n\nSenha:');
-      if (pwd === 'trilha#82') { sessionStorage.setItem(KEY, '1'); el.open = true; }
-      else if (pwd !== null) alert('Senha incorreta.');
-      return false;
-    }
-    window.analises15Auth = analises15Auth;
-  })();
-  </script>
 
   <!-- KPI legado (oculto, mantido p/ compat) -->
   <div class="mens-kpi" id="mens-kpi" style="display:none"></div>
@@ -1011,7 +974,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
@@ -1042,8 +1005,8 @@
   <div class="ds-grid-2" id="perfil-preatend-grid"></div>
 
   <!-- Detalhamento das 15 análises em accordion -->
-  <details class="ds-accordion" id="analises15-accordion" style="margin-top:18px">
-    <summary onclick="return analises15Auth(event)"><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
+  <details class="ds-accordion" style="margin-top:18px">
+    <summary><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
     <div class="acc-body">
       <div id="analises-main">
         <div style="padding:60px;text-align:center;color:var(--muted)">
@@ -1078,7 +1041,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1181,7 +1144,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1240,7 +1203,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1411,7 +1374,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
-          <option value="custom">Personalizado...</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -1695,6 +1658,22 @@
 </div><!-- /tab-score -->
 
 
+<!-- Dialog do "Período personalizado" · reutilizado por todas as abas -->
+<dialog id="custom-period-dialog" style="padding:0;border:none;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:340px;background:var(--surface);color:var(--text)">
+  <form method="dialog" onsubmit="event.preventDefault(); applyCustomPeriod()" style="padding:22px 24px">
+    <h3 style="margin:0 0 4px;font-size:16px;font-weight:800">Período personalizado</h3>
+    <p style="margin:0 0 18px;font-size:12px;color:var(--muted);line-height:1.4">Escolha uma janela de datas para filtrar todas as abas do dashboard.</p>
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px">De</label>
+    <input type="date" id="custom-from" required style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);margin-bottom:14px;font-family:inherit">
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px">Até</label>
+    <input type="date" id="custom-to" required style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);margin-bottom:20px;font-family:inherit">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button type="button" onclick="cancelCustomPeriod()" style="padding:8px 14px;font-size:12.5px;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;cursor:pointer;font-family:inherit">Cancelar</button>
+      <button type="submit" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-family:inherit">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
 <footer>
   <b>Ipioca Mar Resort (IMR)</b> · Trilha Performance Digital · MME Vacation ·
   Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · <span id="footer-date">—</span>
@@ -1741,7 +1720,6 @@ let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel()
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
-let _customFrom = null, _customTo = null;
 let META_RAW  = null;
 let GOOGLE_RAW = null;
 let MAILCHIMP_RAW = null;
@@ -1798,10 +1776,12 @@ function periodWindow(periodKey, refDate) {
     fromTs = new Date(2026, 0, 1); // mês 0 = janeiro (0-indexed)
   }
   else if (periodKey === 'custom') {
-    if (_customFrom && _customTo) {
-      const f = new Date(_customFrom + 'T00:00:00');
-      const t = new Date(_customTo   + 'T23:59:59');
-      return { from: f, to: t };
+    // "Período personalizado" — usa datas escolhidas via dialog
+    // Fallback: últimos 30 dias se nada foi setado ainda.
+    if (window.CUSTOM_FROM && window.CUSTOM_TO) {
+      const cf = new Date(window.CUSTOM_FROM); cf.setHours(0,0,0,0);
+      const ct = new Date(window.CUSTOM_TO);   ct.setHours(23,59,59,999);
+      return { from: cf, to: ct };
     }
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
@@ -1831,9 +1811,9 @@ function periodLabel(periodKey, win, isPartial) {
   if (periodKey === 'wlast') return `Semana passada · ${s}–${e}`;
   if (periodKey === 'mes')      return `Este mês · ${s}–${e}${p}`;
   if (periodKey === 'mes_prev') return `Mês passado · ${s}–${e}`;
-  if (periodKey === 'custom')   return `Personalizado · ${s}–${e}`;
   if (periodKey === 'max')   return `Período máximo · ${s}–${e}${p}`;
   if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
+  if (periodKey === 'custom')return `Personalizado · ${s}–${e}`;
   return `${s}–${e}`;
 }
 
@@ -1904,7 +1884,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
 function rebuildAllFunnels(kommo) {
   const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
-  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','max','30d']) {
+  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','max','30d','custom']) {
     FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
     PERIOD_LABELS[k] = FUNNEL[k].label;
   }
@@ -2229,6 +2209,7 @@ let PERIOD_LABELS = {
   'mes':      'Este mês',
   'mes_prev': 'Mês passado',
   'max':      'Período máximo',
+  'custom':   'Personalizado',
   '30d':      'Últimos 30 dias',
 };
 // No-op: rótulos do select são fixos (definidos no HTML, sem range de datas).
@@ -2236,7 +2217,20 @@ let PERIOD_LABELS = {
 function refreshPeriodSelectLabels() {}
 
 function setGlobalPeriod(key, btn) {
-  if (key === 'custom') { openCustomPeriodModal(); return; }
+  // 'custom' abre o diálogo pra usuária escolher as datas.
+  // Se ela cancelar, mantém o período anterior. Se aplicar, seta
+  // CUSTOM_FROM/CUSTOM_TO e chama setGlobalPeriod('custom') de novo.
+  if (key === 'custom' && !window.CUSTOM_APPLYING) {
+    openCustomPeriodDialog();
+    // Volta o select pro período anterior enquanto o diálogo tá aberto
+    for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
+                      'funis-period-sel','outbound-period-sel','vendas-period-sel',
+                      'disp-period-sel']) {
+      const sel = document.getElementById(id);
+      if (sel && sel.value === 'custom' && currentPeriod !== 'custom') sel.value = currentPeriod;
+    }
+    return;
+  }
   currentPeriod    = key;
   currentOutPeriod = key;   // ← sincroniza Duque & BDR
   // Sincroniza todos os botões de período em todas as abas
@@ -2271,6 +2265,45 @@ function setGlobalPeriod(key, btn) {
   if (typeof renderDisparos === 'function') renderDisparos();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
+
+// ── Período personalizado (dialog HTML5) ────────────────────────────
+function openCustomPeriodDialog() {
+  const dlg = document.getElementById('custom-period-dialog');
+  if (!dlg) return;
+  // Pre-preenche com o período atual (ou últimos 30 dias)
+  const ref = (KOMMO_RAW && KOMMO_RAW.fetched_at) ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod === 'custom' ? '30d' : currentPeriod, ref);
+  const fmtISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const fromEl = document.getElementById('custom-from');
+  const toEl   = document.getElementById('custom-to');
+  if (fromEl) fromEl.value = window.CUSTOM_FROM ? fmtISO(new Date(window.CUSTOM_FROM)) : fmtISO(win.from);
+  if (toEl)   toEl.value   = window.CUSTOM_TO   ? fmtISO(new Date(window.CUSTOM_TO))   : fmtISO(win.to);
+  dlg.showModal();
+}
+
+function applyCustomPeriod() {
+  const fromEl = document.getElementById('custom-from');
+  const toEl   = document.getElementById('custom-to');
+  const fromV = fromEl && fromEl.value;
+  const toV   = toEl && toEl.value;
+  if (!fromV || !toV) return;
+  const f = new Date(fromV + 'T00:00:00');
+  const t = new Date(toV + 'T23:59:59');
+  if (f > t) { alert('A data inicial precisa ser anterior à data final.'); return; }
+  window.CUSTOM_FROM = f;
+  window.CUSTOM_TO   = t;
+  const dlg = document.getElementById('custom-period-dialog');
+  if (dlg) dlg.close();
+  // Re-executa setGlobalPeriod com flag pra evitar loop de abertura do diálogo
+  window.CUSTOM_APPLYING = true;
+  setGlobalPeriod('custom');
+  window.CUSTOM_APPLYING = false;
+}
+
+function cancelCustomPeriod() {
+  const dlg = document.getElementById('custom-period-dialog');
+  if (dlg) dlg.close();
+}
 
 function applyCustom() {
   const from = document.getElementById('dt-from').value;
@@ -2618,17 +2651,12 @@ function renderAnalises() {
           ? `<span style="color:var(--muted);font-size:10px">Sem spend Meta (período)</span>`
           : `<span style="color:var(--muted)">0 qualif.</span>`;
       return `<tr${gold}>
-        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}${_crePreviewBtn(r.cri)}${CRE_LABEL[r.cri]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.cri]}</span>`:''}</td>
+        <td class="nm">${r.cri}${statusBadge(criStatus(r.cri))}</td>
         <td class="num">${r.spend > 0 ? fmtR(r.spend) : '—'}</td>
         <td class="num">${r.qualif}</td>
         <td class="num">${cplTd}</td></tr>`;
     }).join('');
   }
-
-  const CRE_LABEL = {'BN01':'IMR - Genérico','BN02':'IMR - Cálculo de férias','BN03':'IMR - Novo modelo de férias','VD01':'Ana','VD02':'Cota imobiliária','VD03':'IMR - Não é hospedagem','VD04':'IMR - Sócios no Brasil'};
-  const _crePreviewBtn = (code) => (window.CRE_PREVIEW || {})[code]
-    ? `<button onclick="openCrePreview('${code}','${CRE_LABEL[code]||''}')" title="Ver prévia do anúncio" style="background:none;border:none;cursor:pointer;padding:0 0 0 4px;font-size:12px;color:var(--muted);vertical-align:middle;line-height:1">👁</button>`
-    : '';
 
   // Score by dimension table rows — sorted by pct of target score
   function scoreRows(leads, scoreTarget, topN=8) {
@@ -2742,8 +2770,7 @@ function renderAnalises() {
       const cls = r.pct >= 50 ? 'tc-r' : r.pct >= 30 ? 'tc-o' : 'tc-g';
       const warn = i === 0 ? ' class="row-gold"' : '';
       const flag = i === 0 ? ' ⚠️' : '';
-      const dimLabel = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
-      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}${_crePreviewBtn(r.dim)}${dimLabel}</td>
+      return `<tr${warn}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${flag}${statusBadge(criStatus(r.dim))}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2767,8 +2794,7 @@ function renderAnalises() {
     return rows.slice(0, topN).map((r, i) => {
       const cls = fpc(r.pct, 25, 10);
       const gold = i === 0 ? ' class="row-gold"' : '';
-      const dimLabel2 = CRE_LABEL[r.dim] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.dim]}</span>` : '';
-      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}${_crePreviewBtn(r.dim)}${dimLabel2}</td>
+      return `<tr${gold}><td class="nm">${i===0?`<b>${r.dim}</b>`:r.dim}</td>
         <td class="num ${cls}">${i===0?`<b>${r.cnt}</b>`:r.cnt}</td>
         <td class="num">${r.total}</td>
         <td class="num ${cls}">${i===0?`<b>${fp(r.pct)}</b>`:fp(r.pct)}</td></tr>`;
@@ -2918,7 +2944,7 @@ function renderAnalises() {
       const _criN = (r.cri||'').split('|')[0].trim();
       return `<tr${gold}><td>${rank}</td>
         <td class="nm">${r.aud}${statusBadge(audStatus(r.aud))}</td>
-        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}${_crePreviewBtn(_criN)}${CRE_LABEL[_criN]?`<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[_criN]}</span>`:''}</td>
+        <td>${i<3?`<b>${r.cri}</b>`:r.cri}${statusBadge(criStatus(_criN))}</td>
         <td class="num ${cls}">${r.ab}</td>
         <td class="num ${cls}">${fp(pAB)}${note}</td>
         <td class="num">${r.total}</td>
@@ -3002,13 +3028,13 @@ function renderAnalises() {
     sdr.filter(l => l.creative && !isInvalidAud(l.creative)).forEach(l => {
       const c = _normCre(l.creative);
       if (!c) return;
-      if (!criMap[c]) criMap[c] = {tot:0, ab:0, full: l.creative};
+      if (!criMap[c]) criMap[c] = {tot:0, ab:0};
       criMap[c].tot++;
       if (l.score === 'A' || l.score === 'B') criMap[c].ab++;
     });
     const topCriList = Object.entries(criMap)
       .filter(([,d]) => d.tot >= 5)
-      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0, full: d.full}))
+      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
       .sort((a,b) => b.pct - a.pct)
       .slice(0,3);
     const criEl = document.getElementById('perfil-top-cri');
@@ -3019,7 +3045,7 @@ function renderAnalises() {
           ${topCriList.map((r, i) => `
             <div class="item medal-${i+1}">
               <div class="row1">
-                <div class="lbl" title="${CRE_LABEL[r.c] || r.full || r.c}">${r.c}${statusBadge(criStatus(r.c))}${_crePreviewBtn(r.c)}${CRE_LABEL[r.c] ? `<span style="display:block;font-size:10px;font-weight:400;color:var(--muted)">${CRE_LABEL[r.c]}</span>` : ''}</div>
+                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
               <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
@@ -4663,14 +4689,12 @@ function updateTopbarPills() {
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
-    const [kommoRes, metaRes, googleRes, mcRes, crePreviewRes] = await Promise.all([
+    const [kommoRes, metaRes, googleRes, mcRes] = await Promise.all([
       fetch('data/kommo_leads.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/meta_spend.json?t=' + Date.now()).then(r => r.json()),
       fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})),
-      fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('data/meta_creatives_preview.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+      fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
-    window.CRE_PREVIEW = crePreviewRes;
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
     GOOGLE_RAW = googleRes;
@@ -4796,6 +4820,9 @@ function rebuildMensPeriodMap(refDate) {
   // "Período máximo" = desde início da operação — todas as 4 semanas
   MENS_PERIOD_MAP['max']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07','W2 · 08–14','W3 · 15–21','W4 · 22–fim'] };
   MENS_PERIOD_MAP['30d']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] };
+  // "Personalizado" — todas as 4 semanas (a janela filtra os leads por data;
+  // aqui só definimos quais buckets w1-w4 aparecem no gráfico da Evolução)
+  MENS_PERIOD_MAP['custom'] = { ws: ['w1','w2','w3','w4'], lbls: ['W1','W2','W3','W4'] };
 }
 
 function renderMensuracao(){
@@ -5612,7 +5639,7 @@ function vdRenderTable(vendas){
     const origemLabel = v.origem || 'sem origem';
     const origemTag = `<span class="vd-tag ${v.bucket}">${origemLabel}</span>`;
     return `<tr>
-      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}${v.closer_id ? `<br><a href="https://ipiocamarresort.kommo.com/leads/detail/${v.closer_id}" target="_blank" style="font-size:10px;color:#e85d28;text-decoration:none;opacity:.75" title="Abrir no Kommo">🔗 ver no Kommo</a>` : ''}</td>
+      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
       <td>${vdFmtDate(v.closed_at)}</td>
       <td>${origemTag}</td>
       <td>${v.price > 0 ? vdFmtBRL(v.price) : '<span class="vd-empty">—</span>'}</td>
@@ -6621,104 +6648,5 @@ function renderDisparos() {
   });
 })();
 </script>
-<!-- Modal preview criativo -->
-<div id="cre-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;overflow:hidden;width:360px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.3);position:relative">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eee">
-      <span id="cre-modal-title" style="font-weight:700;font-size:14px"></span>
-      <button onclick="document.getElementById('cre-modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;line-height:1;color:#666">✕</button>
-    </div>
-    <iframe id="cre-modal-iframe" src="" width="360" height="480" scrolling="yes" style="border:none;display:block" allow="autoplay"></iframe>
-  </div>
-</div>
-<script>
-function openCrePreview(code, label) {
-  const url = (window.CRE_PREVIEW || {})[code];
-  if (!url) return;
-  document.getElementById('cre-modal-title').textContent = code + (label ? ' · ' + label : '');
-  document.getElementById('cre-modal-iframe').src = url;
-  const m = document.getElementById('cre-modal');
-  m.style.display = 'flex';
-}
-
-/* ── Período personalizado ── */
-function openCustomPeriodModal() {
-  const m = document.getElementById('custom-period-modal');
-  if (_customFrom) document.getElementById('cpm-from').value = _customFrom;
-  if (_customTo)   document.getElementById('cpm-to').value   = _customTo;
-  m.classList.add('open');
-  document.getElementById('cpm-from').focus();
-}
-
-function closeCustomPeriodModal(revert) {
-  document.getElementById('custom-period-modal').classList.remove('open');
-  if (revert) {
-    // volta os selects ao valor anterior (ou 30d como fallback)
-    const prev = (_customFrom && _customTo) ? 'custom' : '30d';
-    for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
-                      'funis-period-sel','outbound-period-sel','vendas-period-sel','disp-period-sel']) {
-      const sel = document.getElementById(id);
-      if (sel && prev !== 'custom') { sel.value = '30d'; }
-    }
-    if (!(_customFrom && _customTo)) { currentPeriod = '30d'; currentOutPeriod = '30d'; }
-  }
-}
-
-function applyCustomPeriod() {
-  const from = document.getElementById('cpm-from').value;
-  const to   = document.getElementById('cpm-to').value;
-  if (!from || !to || from > to) {
-    document.getElementById('cpm-error').textContent = from > to ? 'Data inicial deve ser anterior à final.' : 'Preencha as duas datas.';
-    return;
-  }
-  document.getElementById('cpm-error').textContent = '';
-  _customFrom = from;
-  _customTo   = to;
-  closeCustomPeriodModal(false);
-
-  // Computa e registra o período custom no FUNNEL
-  if (KOMMO_RAW) {
-    FUNNEL['custom'] = computeFunnelForPeriod(KOMMO_RAW, 'custom', new Date(_customTo + 'T23:59:59'));
-    PERIOD_LABELS['custom'] = FUNNEL['custom'].label;
-  }
-  currentPeriod = 'custom'; currentOutPeriod = 'custom';
-
-  // Sincroniza selects
-  for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
-                    'funis-period-sel','outbound-period-sel','vendas-period-sel','disp-period-sel']) {
-    const sel = document.getElementById(id);
-    if (sel) sel.value = 'custom';
-  }
-
-  if (KOMMO_RAW && META_RAW) {
-    const win = periodWindow('custom', new Date(_customTo + 'T23:59:59'));
-    MENS_DATA = computeMensData(KOMMO_RAW, META_RAW, GOOGLE_RAW, win);
-  }
-  const lbl = document.getElementById('analises-period-lbl');
-  if (lbl) lbl.textContent = PERIOD_LABELS['custom'] || 'Personalizado';
-  if (typeof updateTopbarPills === 'function') updateTopbarPills();
-  renderFunis(); renderOutbound(); renderMensuracao(); renderAnalises();
-  if (typeof renderDiagnostico === 'function') renderDiagnostico();
-  if (typeof renderVendas === 'function') renderVendas();
-  if (typeof renderDisparos === 'function') renderDisparos();
-}
-</script>
-
-<!-- Modal período personalizado -->
-<div id="custom-period-modal" role="dialog" aria-modal="true">
-  <div class="cpm-overlay" onclick="closeCustomPeriodModal(true)"></div>
-  <div class="cpm-box">
-    <h3>Período personalizado</h3>
-    <label for="cpm-from">De</label>
-    <input type="date" id="cpm-from" min="2026-01-01">
-    <label for="cpm-to">Até</label>
-    <input type="date" id="cpm-to" min="2026-01-01">
-    <div id="cpm-error" style="font-size:11px;color:#ef4444;min-height:16px;margin-bottom:6px"></div>
-    <div class="cpm-actions">
-      <button class="cpm-cancel" onclick="closeCustomPeriodModal(true)">Cancelar</button>
-      <button class="cpm-apply" onclick="applyCustomPeriod()">Aplicar</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
