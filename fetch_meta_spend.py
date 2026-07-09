@@ -159,22 +159,47 @@ def main():
             adset_status[name] = st
 
     print('Fetching ad status + preview links...')
-    ad_status_rows = fetch_status('ads', 'name', extra_fields='preview_shareable_link')
+    ad_status_rows = fetch_status('ads', 'name', extra_fields='preview_shareable_link,id')
     print(f'  {len(ad_status_rows)} ads')
     cri_status = {}
-    cri_preview = {}   # creative_name → link do preview do anúncio no Facebook
+    cri_preview = {}         # creative_name → link fb.me (fallback pra "abrir no FB")
+    cri_preview_iframe = {}  # creative_name → URL do iframe embedável (usada no modal)
+    ad_id_by_name = {}       # pra buscar iframe do ad ACTIVE preferencialmente
+
+    def _fetch_iframe_src(ad_id):
+        """Chama /previews e extrai o src do iframe (embedável no dashboard)."""
+        import re as _re
+        url = f'https://graph.facebook.com/v21.0/{ad_id}/previews'
+        params = {'access_token': TOKEN, 'ad_format': 'DESKTOP_FEED_STANDARD'}
+        try:
+            r = requests.get(url, params=params, timeout=10)
+            body = r.json().get('data', [{}])[0].get('body', '') if r.ok else ''
+            m = _re.search(r'src=[\'"]([^\'"]+)[\'"]', body)
+            return m.group(1).replace('&amp;', '&') if m else ''
+        except Exception:
+            return ''
+
     for row in ad_status_rows:
         name = normalize_creative(row.get('name', ''))
         st   = row.get('effective_status', 'UNKNOWN')
         prv  = row.get('preview_shareable_link', '')
-        # Guarda status (prioriza ACTIVE) + link do preview (prioriza ad ACTIVE também)
+        aid  = row.get('id', '')
+        # Guarda status (prioriza ACTIVE) + link + ID (pra buscar iframe depois)
         if name not in cri_status or st == 'ACTIVE':
             cri_status[name] = st
-            if prv:
-                cri_preview[name] = prv
-        # Se ainda não tem preview mas essa row traz um, salva de qualquer forma
+            if prv: cri_preview[name] = prv
+            if aid: ad_id_by_name[name] = aid
         elif name not in cri_preview and prv:
             cri_preview[name] = prv
+            if aid and name not in ad_id_by_name: ad_id_by_name[name] = aid
+
+    # Busca iframe URL pra cada creative (só o ad ACTIVE preferido)
+    print(f'Fetching preview iframes for {len(ad_id_by_name)} unique creatives...')
+    for name, aid in ad_id_by_name.items():
+        iframe = _fetch_iframe_src(aid)
+        if iframe:
+            cri_preview_iframe[name] = iframe
+    print(f'  {len(cri_preview_iframe)} iframes coletados')
 
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
@@ -184,7 +209,8 @@ def main():
         'creative':       _unwrap(cri_spend),
         'adset_status':   adset_status,
         'creative_status':cri_status,
-        'creative_preview': cri_preview,   # {nome → URL de preview}
+        'creative_preview': cri_preview,   # {nome → URL fb.me (abre no FB)}
+        'creative_preview_iframe': cri_preview_iframe,  # {nome → URL iframe embedável}
     }
 
     # Salvaguarda: se a API falhou (token expirado etc) e voltou tudo vazio,
