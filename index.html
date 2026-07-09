@@ -756,6 +756,7 @@
       .hero-modern h2{font-size:16px}
       .ds-kpi .val{font-size:18px}
     }
+    #custom-period-dialog::backdrop{background:rgba(0,0,0,.45);backdrop-filter:blur(3px)}
   </style>
 </head>
 <body>
@@ -816,6 +817,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -900,6 +902,7 @@
       <option value="mes_prev">Mês passado</option>
       <option value="30d" selected>Últimos 30 dias</option>
       <option value="max">Período máximo</option>
+      <option value="custom">Período personalizado…</option>
     </select>
     <span style="font-size:11px;color:var(--muted)" id="evol-period-hint">semanas dentro da janela selecionada</span>
   </div>
@@ -971,6 +974,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">Exibindo: <b id="analises-period-lbl" style="color:var(--text)">Últimos 30 dias</b></div>
@@ -1037,6 +1041,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1139,6 +1144,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1197,6 +1203,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
     </div>
@@ -1367,6 +1374,7 @@
           <option value="mes_prev">Mês passado</option>
           <option value="30d" selected>Últimos 30 dias</option>
           <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
         </select>
       </div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px">
@@ -1650,6 +1658,22 @@
 </div><!-- /tab-score -->
 
 
+<!-- Dialog do "Período personalizado" · reutilizado por todas as abas -->
+<dialog id="custom-period-dialog" style="padding:0;border:none;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:340px;background:var(--surface);color:var(--text)">
+  <form method="dialog" onsubmit="event.preventDefault(); applyCustomPeriod()" style="padding:22px 24px">
+    <h3 style="margin:0 0 4px;font-size:16px;font-weight:800">Período personalizado</h3>
+    <p style="margin:0 0 18px;font-size:12px;color:var(--muted);line-height:1.4">Escolha uma janela de datas para filtrar todas as abas do dashboard.</p>
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px">De</label>
+    <input type="date" id="custom-from" required style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);margin-bottom:14px;font-family:inherit">
+    <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px">Até</label>
+    <input type="date" id="custom-to" required style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);margin-bottom:20px;font-family:inherit">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button type="button" onclick="cancelCustomPeriod()" style="padding:8px 14px;font-size:12.5px;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;cursor:pointer;font-family:inherit">Cancelar</button>
+      <button type="submit" style="padding:8px 16px;font-size:12.5px;font-weight:700;border:none;background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;font-family:inherit">Aplicar</button>
+    </div>
+  </form>
+</dialog>
+
 <footer>
   <b>Ipioca Mar Resort (IMR)</b> · Trilha Performance Digital · MME Vacation ·
   Meta Ads API v21.0 · Kommo CRM ipiocamarresort.kommo.com · <span id="footer-date">—</span>
@@ -1692,7 +1716,7 @@ const VENDA_EXCLUDE = new Set([
 function isValidVenda(l) { return !!(l && l.venda && !VENDA_EXCLUDE.has(l.id)); }
 
 const _emptyFunnel = () => ({ label:'', sdr:{total:0,qualificacao:0,qualif:0,lq:0,agend:0,concret:0,perdidos:0}, closer:{total:0,reuniao:0,prop:0,sinal:0,vendas:0,perdidos:0,receita:0}, duque:{total:0,ativos:0,andamento:0,avancado:0,reuniao:0,perdidos:0,disparo:0}, bdr:{total:0,won:0,lost:0,active:0,outros:0}, nutricao:{total:0,sdr:0,bdr:0,closer:0,perdidos:0} });
-let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel() };
+let FUNNEL = { '7d': _emptyFunnel(), '14d': _emptyFunnel(), 'w3': _emptyFunnel(), 'wlast': _emptyFunnel(), 'mes': _emptyFunnel(), 'mes_prev': _emptyFunnel(), 'max': _emptyFunnel(), '30d': _emptyFunnel(), 'custom': _emptyFunnel() };
 
 // Dados do Kommo/Meta (populados por loadDashboardData)
 let KOMMO_RAW = null;
@@ -1751,6 +1775,16 @@ function periodWindow(periodKey, refDate) {
     // mas vendas inbound/indicação/IBR aconteceram antes).
     fromTs = new Date(2026, 0, 1); // mês 0 = janeiro (0-indexed)
   }
+  else if (periodKey === 'custom') {
+    // "Período personalizado" — usa datas escolhidas via dialog
+    // Fallback: últimos 30 dias se nada foi setado ainda.
+    if (window.CUSTOM_FROM && window.CUSTOM_TO) {
+      const cf = new Date(window.CUSTOM_FROM); cf.setHours(0,0,0,0);
+      const ct = new Date(window.CUSTOM_TO);   ct.setHours(23,59,59,999);
+      return { from: cf, to: ct };
+    }
+    fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
+  }
   else { // 30d
     fromTs = new Date(ref); fromTs.setDate(ref.getDate() - 29);
   }
@@ -1779,6 +1813,7 @@ function periodLabel(periodKey, win, isPartial) {
   if (periodKey === 'mes_prev') return `Mês passado · ${s}–${e}`;
   if (periodKey === 'max')   return `Período máximo · ${s}–${e}${p}`;
   if (periodKey === '30d')   return `Últimos 30 dias · ${s}–${e}${p}`;
+  if (periodKey === 'custom')return `Personalizado · ${s}–${e}`;
   return `${s}–${e}`;
 }
 
@@ -1849,7 +1884,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
 // Atualiza FUNNEL e PERIOD_LABELS para todos os períodos
 function rebuildAllFunnels(kommo) {
   const ref = kommo.fetched_at ? new Date(kommo.fetched_at) : new Date();
-  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','max','30d']) {
+  for (const k of ['7d','14d','w3','wlast','mes','mes_prev','max','30d','custom']) {
     FUNNEL[k] = computeFunnelForPeriod(kommo, k, ref);
     PERIOD_LABELS[k] = FUNNEL[k].label;
   }
@@ -2174,6 +2209,7 @@ let PERIOD_LABELS = {
   'mes':      'Este mês',
   'mes_prev': 'Mês passado',
   'max':      'Período máximo',
+  'custom':   'Personalizado',
   '30d':      'Últimos 30 dias',
 };
 // No-op: rótulos do select são fixos (definidos no HTML, sem range de datas).
@@ -2181,6 +2217,20 @@ let PERIOD_LABELS = {
 function refreshPeriodSelectLabels() {}
 
 function setGlobalPeriod(key, btn) {
+  // 'custom' abre o diálogo pra usuária escolher as datas.
+  // Se ela cancelar, mantém o período anterior. Se aplicar, seta
+  // CUSTOM_FROM/CUSTOM_TO e chama setGlobalPeriod('custom') de novo.
+  if (key === 'custom' && !window.CUSTOM_APPLYING) {
+    openCustomPeriodDialog();
+    // Volta o select pro período anterior enquanto o diálogo tá aberto
+    for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
+                      'funis-period-sel','outbound-period-sel','vendas-period-sel',
+                      'disp-period-sel']) {
+      const sel = document.getElementById(id);
+      if (sel && sel.value === 'custom' && currentPeriod !== 'custom') sel.value = currentPeriod;
+    }
+    return;
+  }
   currentPeriod    = key;
   currentOutPeriod = key;   // ← sincroniza Duque & BDR
   // Sincroniza todos os botões de período em todas as abas
@@ -2215,6 +2265,45 @@ function setGlobalPeriod(key, btn) {
   if (typeof renderDisparos === 'function') renderDisparos();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
+
+// ── Período personalizado (dialog HTML5) ────────────────────────────
+function openCustomPeriodDialog() {
+  const dlg = document.getElementById('custom-period-dialog');
+  if (!dlg) return;
+  // Pre-preenche com o período atual (ou últimos 30 dias)
+  const ref = (KOMMO_RAW && KOMMO_RAW.fetched_at) ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod === 'custom' ? '30d' : currentPeriod, ref);
+  const fmtISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const fromEl = document.getElementById('custom-from');
+  const toEl   = document.getElementById('custom-to');
+  if (fromEl) fromEl.value = window.CUSTOM_FROM ? fmtISO(new Date(window.CUSTOM_FROM)) : fmtISO(win.from);
+  if (toEl)   toEl.value   = window.CUSTOM_TO   ? fmtISO(new Date(window.CUSTOM_TO))   : fmtISO(win.to);
+  dlg.showModal();
+}
+
+function applyCustomPeriod() {
+  const fromEl = document.getElementById('custom-from');
+  const toEl   = document.getElementById('custom-to');
+  const fromV = fromEl && fromEl.value;
+  const toV   = toEl && toEl.value;
+  if (!fromV || !toV) return;
+  const f = new Date(fromV + 'T00:00:00');
+  const t = new Date(toV + 'T23:59:59');
+  if (f > t) { alert('A data inicial precisa ser anterior à data final.'); return; }
+  window.CUSTOM_FROM = f;
+  window.CUSTOM_TO   = t;
+  const dlg = document.getElementById('custom-period-dialog');
+  if (dlg) dlg.close();
+  // Re-executa setGlobalPeriod com flag pra evitar loop de abertura do diálogo
+  window.CUSTOM_APPLYING = true;
+  setGlobalPeriod('custom');
+  window.CUSTOM_APPLYING = false;
+}
+
+function cancelCustomPeriod() {
+  const dlg = document.getElementById('custom-period-dialog');
+  if (dlg) dlg.close();
+}
 
 function applyCustom() {
   const from = document.getElementById('dt-from').value;
@@ -4731,6 +4820,9 @@ function rebuildMensPeriodMap(refDate) {
   // "Período máximo" = desde início da operação — todas as 4 semanas
   MENS_PERIOD_MAP['max']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07','W2 · 08–14','W3 · 15–21','W4 · 22–fim'] };
   MENS_PERIOD_MAP['30d']   = { ws: ['w1','w2','w3','w4'], lbls: ['W1 · 01–07/04','W2 · 08–14/04','W3 · 15–21/04','W4 · 22–30/04'] };
+  // "Personalizado" — todas as 4 semanas (a janela filtra os leads por data;
+  // aqui só definimos quais buckets w1-w4 aparecem no gráfico da Evolução)
+  MENS_PERIOD_MAP['custom'] = { ws: ['w1','w2','w3','w4'], lbls: ['W1','W2','W3','W4'] };
 }
 
 function renderMensuracao(){
