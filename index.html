@@ -936,8 +936,8 @@
     <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
   </div>
 
-  <details class="ds-accordion">
-    <summary><span>Ver tabela completa W1–W4 (todos os canais)</span></summary>
+  <details class="ds-accordion" data-protected="trilha">
+    <summary><span>🔒 Ver tabela completa W1–W4 (todos os canais) · uso interno Trilha</span></summary>
     <div class="acc-body">
       <div id="mens-table-wrap" style="overflow-x:auto"></div>
       <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
@@ -1006,7 +1006,7 @@
 
   <!-- Detalhamento das 15 análises em accordion -->
   <details class="ds-accordion" style="margin-top:18px">
-    <summary><span>Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos)</span></summary>
+    <summary><span>🔒 Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos) · uso interno Trilha</span></summary>
     <div class="acc-body">
       <div id="analises-main">
         <div style="padding:60px;text-align:center;color:var(--muted)">
@@ -6645,6 +6645,43 @@ function renderDisparos() {
   const c = document.getElementById('vd-canal-filter');
   if (c) c.addEventListener('change', () => {
     if (KOMMO_RAW) vdRenderTable(vdBuildVendas());
+  });
+})();
+
+/* ══════════════════════════════════════════════════════════════════════
+   Proteção por senha das seções internas da Trilha
+   - Aplicado nos <details data-protected="trilha">
+   - Pede senha a cada abertura (sem persistência de sessão)
+   - Usa SHA-256 pra não expor senha em texto puro no código público
+   ══════════════════════════════════════════════════════════════════════ */
+// TODO: quando a Bia mandar a senha real, substituir este hash.
+// Hash atual = SHA-256("trilha2026") — placeholder até a senha oficial.
+const TRILHA_PASSWORD_HASH = 'b7b35feb280a4ff504a3664b2c47c73523c0d8a83e78ebc4a9e55892ab3f1350';
+
+async function _sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+(function protectTrilhaSections(){
+  const details = document.querySelectorAll('details[data-protected="trilha"]');
+  details.forEach(d => {
+    const summary = d.querySelector('summary');
+    if (!summary) return;
+    summary.addEventListener('click', async (e) => {
+      // Se já está aberto, deixa fechar normalmente (não pede senha pra fechar)
+      if (d.open) return;
+      e.preventDefault();
+      const pass = prompt('🔒 Uso interno da Trilha\n\nDigite a senha para acessar esta seção:');
+      if (pass === null) return; // cancelado
+      const hash = await _sha256(pass);
+      if (hash === TRILHA_PASSWORD_HASH) {
+        d.open = true;
+      } else {
+        alert('Senha incorreta.');
+      }
+    });
   });
 })();
 </script>
