@@ -4310,14 +4310,23 @@ function renderDiagnostico() {
     };
     const metaByMonth   = _sumSpendByMonth(META_RAW && META_RAW.adset);
     const googleByMonth = _sumSpendByMonth(GOOGLE_RAW && GOOGLE_RAW.campaign);
+    // Investimentos históricos (Jan/Fev/Mar/26) — Meta+Google não coletam antes de
+    // abril/26, então valores manuais foram informados pela Bia (11/07/2026).
+    const INVEST_HISTORICO = {
+      '2026-01': 6115.51,
+      '2026-02': 3363.34,
+      '2026-03': 5657.72,
+    };
     // Junta meses de investimento + leads
     const monthsSet = new Set();
     Object.keys(metaByMonth).forEach(m => monthsSet.add(m));
     Object.keys(googleByMonth).forEach(m => monthsSet.add(m));
+    Object.keys(INVEST_HISTORICO).forEach(m => monthsSet.add(m));
     for (const l of sdrAll) { const m = monthKey(l.created_at); if (m) monthsSet.add(m); }
     for (const l of nutriAll) { const m = monthKey(l.created_at); if (m) monthsSet.add(m); }
     for (const l of closerAll) { const m = monthKey(l.closed_at); if (m && l.venda && isValidVenda(l)) monthsSet.add(m); }
-    const months = [...monthsSet].sort();
+    // Filtra: só de janeiro/26 em diante (remove dez/25 e anteriores)
+    const months = [...monthsSet].filter(m => m >= '2026-01').sort();
     if (months.length === 0) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem dados mensais.</div>'; return; }
     // Pra cada mês, calcula os 8 KPIs
     const _CAMP = new Set(['Meta Ads','Google+Ads','google']);
@@ -4336,7 +4345,8 @@ function renderDiagnostico() {
       const lqM  = sdrM.filter(l => l.qualified).length;
       const reuM = sdrM.filter(l => l.reuniao_realizada).length;
       const venM = closerAll.filter(l => l.venda && isValidVenda(l) && monthKey(l.closed_at) === m).length;
-      const invM = (metaByMonth[m]||0) + (googleByMonth[m]||0);
+      // Investimento = Meta + Google (do JSON) OU valor manual histórico (Jan-Mar/26)
+      const invM = (metaByMonth[m]||0) + (googleByMonth[m]||0) + (INVEST_HISTORICO[m]||0);
       rowsByKpi.invest[m] = invM;
       rowsByKpi.leads[m]  = leadsM;
       rowsByKpi.lq[m]     = lqM;
