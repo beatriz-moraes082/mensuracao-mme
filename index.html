@@ -419,16 +419,13 @@
     .hero-modern .hl-sub{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:540px}
     .hero-modern .hl-pills{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
 
-    /* Highlight KPI card · Dark/orange foco principal */
+    /* Highlight KPI card · Dark clean */
     .kpi-highlight{
-      background:linear-gradient(135deg,#1a1a1a 0%,#2a1810 60%,#3a1c0c 100%);
+      background:#171717;
       color:#fff;border-radius:var(--r-lg);padding:22px 26px;
-      box-shadow:0 4px 18px rgba(238,77,32,.18),0 12px 40px rgba(0,0,0,.18);
-      position:relative;overflow:hidden;
+      box-shadow:0 1px 3px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.10);
+      position:relative;
     }
-    .kpi-highlight::after{content:'';position:absolute;top:-30px;right:-30px;
-      width:120px;height:120px;background:radial-gradient(circle,rgba(238,77,32,.35),transparent 70%);
-      pointer-events:none}
     .kpi-highlight .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;
       text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:10px}
     .kpi-highlight .val{font-size:46px;font-weight:900;line-height:1;
@@ -450,21 +447,22 @@
     }
     .kpi-highlight .info-btn:hover{background:rgba(255,255,255,.28)}
     .kpi-highlight .info-btn .tip{
-      position:absolute;top:calc(100% + 10px);left:0;
-      width:340px;max-width:calc(100vw - 40px);
-      background:#111;color:#fff;padding:14px 16px;border-radius:10px;
-      box-shadow:0 12px 40px rgba(0,0,0,.4);
+      position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%) translateY(-6px);
+      width:360px;max-width:calc(100vw - 40px);
+      background:#fff;color:#1a1a1a;padding:14px 16px;border-radius:10px;
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow:0 12px 40px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.06);
       font-size:12px;font-weight:400;line-height:1.55;letter-spacing:0;
       text-transform:none;text-align:left;
-      opacity:0;pointer-events:none;transform:translateY(-6px);
+      opacity:0;pointer-events:none;
       transition:opacity .18s,transform .18s;
       z-index:100;
     }
     .kpi-highlight .info-btn:hover .tip,
-    .kpi-highlight .info-btn:focus .tip{opacity:1;transform:translateY(0);pointer-events:auto}
-    .kpi-highlight .info-btn .tip b{color:#fbbf24}
-    .kpi-highlight .info-btn .tip hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:10px 0}
-    .kpi-highlight .info-btn .tip code{background:rgba(251,191,36,.15);color:#fbbf24;padding:1px 5px;border-radius:3px;font-size:11px}
+    .kpi-highlight .info-btn:focus .tip{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+    .kpi-highlight .info-btn .tip b{color:#ee4d20}
+    .kpi-highlight .info-btn .tip hr{border:0;border-top:1px solid rgba(0,0,0,.08);margin:10px 0}
+    .kpi-highlight .info-btn .tip code{background:rgba(238,77,32,.10);color:#c2410c;padding:1px 5px;border-radius:3px;font-size:11px;font-family:'SF Mono','Monaco',monospace}
 
     /* KPI Tile · Modern */
     .kpi-tile{
