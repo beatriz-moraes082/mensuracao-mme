@@ -273,6 +273,8 @@ def process_lead(lead, contacts_map):
         "created_at": ts,
         "closed_at":  closed_at,
         "closed_in_period": closed_in_period,
+        # Responsable user (SDR/Closer atribuído ao lead — top-level do Kommo)
+        "responsible_user_id": lead.get("responsible_user_id") or 0,
         "week":      week_of(ts) if ts else "w4",
         "month":     month_of(ts) if ts else "2026-04",
         "status":    status,
@@ -346,6 +348,20 @@ def get_pipeline_statuses():
             status_map[st["id"]] = st["name"]
     return status_map
 
+def get_users_map():
+    """Fetch mapping user_id → name. Usado pra identificar SDR/Closer nos leads."""
+    users = {}
+    page = 1
+    while True:
+        data = kommo_get("/api/v4/users", params={"limit": 250, "page": page})
+        batch = data.get("_embedded", {}).get("users", []) if data else []
+        if not batch: break
+        for u in batch:
+            users[u["id"]] = {"name": u.get("name", ""), "email": u.get("email", "")}
+        if len(batch) < 250: break
+        page += 1
+    return users
+
 def get_loss_reasons():
     """Busca mapeamento de loss_reason_id → nome."""
     reasons = {}
@@ -370,6 +386,10 @@ def main():
     status_map = get_pipeline_statuses()
     for sid, name in status_map.items():
         print(f"  status {sid}: {name}")
+
+    print("👥 Buscando usuários do Kommo (SDRs/Closers)...")
+    users_map = get_users_map()
+    print(f"  {len(users_map)} usuários coletados")
 
     print("\n📋 Buscando motivos de perda...")
     loss_reasons_map = get_loss_reasons()
@@ -517,6 +537,7 @@ def main():
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "period":     {"start": str(PERIOD_START), "end": str(PERIOD_END)},
         "status_map": {str(k): v for k, v in status_map.items()},
+        "users_map":  {str(k): v for k, v in users_map.items()},
         "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},
         "metrics":    metrics,
         "sdr":      deduped_sdr,
