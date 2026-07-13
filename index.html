@@ -465,10 +465,14 @@
 
     .kpi-grid-modern{display:grid;gap:14px;margin-bottom:0}
     .kpi-grid-ops{grid-template-columns:repeat(5,1fr)}
-    .kpi-grid-fin{grid-template-columns:repeat(4,1fr)}
-    @media(max-width:1400px){.kpi-grid-ops{grid-template-columns:repeat(3,1fr)}.kpi-grid-fin{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:700px){.kpi-grid-ops,.kpi-grid-fin{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:500px){.kpi-grid-ops,.kpi-grid-fin{grid-template-columns:1fr}}
+    .kpi-grid-tax{grid-template-columns:repeat(3,1fr)}
+    .kpi-grid-fin{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:1400px){.kpi-grid-ops{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:900px){.kpi-grid-tax,.kpi-grid-fin{grid-template-columns:1fr 1fr}}
+    @media(max-width:700px){.kpi-grid-ops{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:500px){.kpi-grid-ops,.kpi-grid-tax,.kpi-grid-fin{grid-template-columns:1fr}}
+    /* Evolução diária: 3 gráficos empilham no mobile */
+    @media(max-width:900px){#diag-daily-charts{grid-template-columns:1fr !important}}
     .kpi-section-label{
       font-size:10.5px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;
       color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:10px;
@@ -831,11 +835,21 @@
   <!-- KPI Grid moderna com sparklines semanais -->
   <div class="kpi-section-label">Volumetria · operação</div>
   <div class="kpi-grid-modern kpi-grid-ops" id="diag-kpi-ops"></div>
+  <div class="kpi-section-label" style="margin-top:18px">Taxas de conversão</div>
+  <div class="kpi-grid-modern kpi-grid-tax" id="diag-kpi-tax"></div>
   <div class="kpi-section-label" style="margin-top:18px">Eficiência financeira</div>
   <div class="kpi-grid-modern kpi-grid-fin" id="diag-kpi-fin"></div>
   <div class="kpi-grid-modern" id="diag-kpi-grid" style="display:none">
     <!-- preenchido por JS · 4 tiles + 1 destaque -->
   </div>
+
+  <!-- Comparativo mês a mês -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Comparativo mês a mês</h3><span class="sub">Evolução dos KPIs por mês (independe do filtro de período acima)</span></div>
+  <div class="ds-card"><div id="diag-monthly-table" style="overflow-x:auto"></div></div>
+
+  <!-- Evolução diária (3 gráficos) -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Evolução diária</h3><span class="sub" id="diag-daily-sub">Leads, reuniões e vendas por dia — respeitando o filtro de período</span></div>
+  <div class="ds-card"><div id="diag-daily-charts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div></div>
 
   <!-- Funil de Qualificação -->
   <div class="ds-sec"><h3>Funil de Qualificação</h3><span class="sub" id="diag-funnel-sub">—</span></div>
@@ -3708,38 +3722,58 @@ function renderDiagnostico() {
   const faturamentoInbound = vendasInbound.reduce((s,v) => s + (v.price||0), 0);
   const roasInbound = totalInvest > 0 ? (faturamentoInbound / totalInvest) : 0;
   const cacInbound  = vendasInboundN > 0 ? (totalInvest / vendasInboundN) : 0;
+  // ── Métricas extras pra novos KPIs ──────────────────────
+  // Taxa de Reunião = realizadas / total de leads
+  const txReuniao = leadsCampanha > 0 ? (realiz/leadsCampanha*100) : 0;
+  // Taxa de Conversão do Closer = vendas / reuniões realizadas
+  const txConvCloser = realiz > 0 ? (vendas/realiz*100) : 0;
+  // Sinal Verde: SEMPRE atual (não filtra por período) — pipeline Closer status 98334563
+  const sinalVerdeCount = (KOMMO_RAW.closer || []).filter(l => l.status === 98334563).length;
+
   const tiles = [
+    // ── Linha 1 · Volumetria (5 absolutos) ──
+    {lbl:'Investimento',     val:fmtBRL(totalInvest), iconColor:'#d97706',
+     trend:tdInv, sub:'Meta + Google · ' + (leadsCampanha > 0 ? 'CPL R$ '+(totalInvest/leadsCampanha).toFixed(0) : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
     {lbl:'Leads',            val:fmtN(leadsCampanha), iconColor:'#3b82f6',
      trend:tdLeads, sub:`campanha Meta+Google · SDR + Nutrição · ${fmtN(total)} no SDR`, sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
-    {lbl:'Investimento',     val:fmtBRL(totalInvest), iconColor:'#d97706',
-     trend:tdInv, sub:'Meta + Google · ' + (total > 0 ? 'CPL R$ '+(totalInvest/total).toFixed(0) : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
+    {lbl:'Leads qualificados', val:fmtN(qualif),      iconColor:'#8b5cf6',
+     trend:tdQualif, sub: leadsCampanha > 0 ? `${(qualif/leadsCampanha*100).toFixed(1)}% dos leads` : 'sem base', sparkData:wkTot.map(w=>w.qualif), sparkColor:'#8b5cf6'},
     {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed',
      trend:tdRealiz, sub:fmtP(txR)+' do total de leads', sparkData:wkTot.map(w=>w.realiz), sparkColor:'#7c3aed'},
     {lbl:'Vendas',           val:fmtN(vendas),        iconColor:'#16a34a',
-     trend:{pct:0,cls:'neut',txt:fmtBRL(faturamento)},
-     sub:'Faturamento no período', sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
-    {lbl:'Tx. Conversão',    val:fmtP(txConv),        iconColor:'#EE4D20',
      trend:{pct:0,cls:'neut',txt:''},
-     sub:`${vendas} vendas ÷ ${fmtN(leadsCampanha)} leads (campanha · SDR + Nutrição)`, sparkData:wkTot.map(w => w.leads > 0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
-    {lbl:'ROAS · geral',     val: roas > 0 ? roas.toFixed(1)+'x' : '—', iconColor:'#10b981',
+     sub: sinalVerdeCount > 0
+       ? `🚦 <b>${sinalVerdeCount}</b> em Sinal Verde <span title="Não filtra pelo período — mostra estado atual do pipeline Closer" style="color:var(--muted)">(atual)</span>`
+       : (vendas > 0 ? 'no período · sem Sinal Verde ativo' : 'sem vendas nem Sinal Verde'),
+     sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
+
+    // ── Linha 2 · Taxas de conversão (3 taxas) ──
+    {lbl:'Tx. Reunião',      val:fmtP(txReuniao),     iconColor:'#a855f7',
      trend:{pct:0,cls:'neut',txt:''},
-     sub: roas > 0 ? `${fmtBRL(faturamento)} ÷ ${fmtBRL(totalInvest)}` : 'sem dados',
-     sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
-    {lbl:'ROAS · inbound',   val: roasInbound > 0 ? roasInbound.toFixed(1)+'x' : '—', iconColor:'#059669',
+     sub:`${realiz} reuniões realizadas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.realiz/w.leads*100) : 0), sparkColor:'#a855f7'},
+    {lbl:'Tx. Conversão Closer', val:fmtP(txConvCloser), iconColor:'#c2410c',
      trend:{pct:0,cls:'neut',txt:''},
-     sub: roasInbound > 0 ? `${vendasInboundN} venda${vendasInboundN===1?'':'s'} Meta/Google · ${fmtBRL(faturamentoInbound)}` : `${vendasInboundN} venda inbound`,
-     sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#059669'},
-    {lbl:'CAC · geral',      val: cac > 0 ? fmtBRL(cac) : '—', iconColor:'#dc2626',
+     sub:`${vendas} vendas ÷ ${realiz} reuniões realizadas`, sparkData:wkTot.map(w=>w.realiz>0 ? (w.vendas/w.realiz*100) : 0), sparkColor:'#c2410c'},
+    {lbl:'Tx. Conversão Geral', val:fmtP(txConv),    iconColor:'#EE4D20',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub:`${vendas} vendas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
+
+    // ── Linha 3 · Financeiro (3 KPIs) ──
+    {lbl:'Faturamento',      val:fmtBRL(faturamento), iconColor:'#16a34a',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub: vendas > 0 ? `${vendas} venda${vendas===1?'':'s'} · ticket R$ ${Math.round(faturamento/vendas).toLocaleString('pt-BR')}` : 'sem vendas no período',
+     sparkData:wkTot.map(w=>w.fat||0), sparkColor:'#16a34a'},
+    {lbl:'CAC',              val: cac > 0 ? fmtBRL(cac) : '—', iconColor:'#dc2626',
      trend:{pct:0,cls:'neut',txt:''},
      sub: cac > 0 ? `${fmtBRL(totalInvest)} ÷ ${vendas} vendas` : 'sem vendas',
      sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#dc2626'},
-    {lbl:'CAC · inbound',    val: cacInbound > 0 ? fmtBRL(cacInbound) : '—', iconColor:'#b91c1c',
+    {lbl:'ROAS',             val: roas > 0 ? roas.toFixed(1)+'x' : '—', iconColor:'#10b981',
      trend:{pct:0,cls:'neut',txt:''},
-     sub: cacInbound > 0 ? `Invest ÷ ${vendasInboundN} venda${vendasInboundN===1?'':'s'} Meta/Google` : `${vendasInboundN} venda inbound`,
-     sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#b91c1c'},
+     sub: roas > 0 ? `${fmtBRL(faturamento)} ÷ ${fmtBRL(totalInvest)}` : 'sem dados',
+     sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
   ];
 
-  // Renderiza split: 5 primeiros (volumetria) em ops, 4 últimos (financeira) em fin
+  // Renderiza em 3 grids: [0-4] ops (5) · [5-7] tax (3) · [8-10] fin (3)
   const tileHtml = (t, i) => `
     <div class="ds-kpi">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
@@ -3751,7 +3785,8 @@ function renderDiagnostico() {
       <canvas class="spark" id="spark-${i}"></canvas>
     </div>`;
   document.getElementById('diag-kpi-ops').innerHTML = tiles.slice(0,5).map((t,i) => tileHtml(t, i)).join('');
-  document.getElementById('diag-kpi-fin').innerHTML = tiles.slice(5).map((t,i) => tileHtml(t, i+5)).join('');
+  document.getElementById('diag-kpi-tax').innerHTML = tiles.slice(5,8).map((t,i) => tileHtml(t, i+5)).join('');
+  document.getElementById('diag-kpi-fin').innerHTML = tiles.slice(8).map((t,i) => tileHtml(t, i+8)).join('');
 
   // Render sparklines (simple line chart sem labels)
   setTimeout(() => {
@@ -4239,6 +4274,168 @@ function renderDiagnostico() {
       `).join('')}
     </div>
   `;
+
+  // ── Comparativo mês a mês ─────────────────────────────
+  // Agrega TODOS os leads/vendas por mês (não filtra pelo período — dá visão de evolução)
+  (function renderMonthlyTable() {
+    const el = document.getElementById('diag-monthly-table');
+    if (!el) return;
+    const sdrAll = KOMMO_DATA.sdr || [];
+    const closerAll = KOMMO_DATA.closer || [];
+    const nutriAll = KOMMO_DATA.nutricao || [];
+    const monthKey = (ts) => { if (!ts) return null; const d = new Date(ts*1000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
+    // Investimento por mês (Meta + Google)
+    const _sumSpendByMonth = (obj) => {
+      const out = {};
+      if (!obj) return out;
+      for (const spend of Object.values(obj)) {
+        for (const [m, weeks] of Object.entries(spend || {})) {
+          if (typeof weeks !== 'object') continue;
+          out[m] = (out[m] || 0);
+          for (const s of Object.values(weeks)) if (typeof s === 'number') out[m] += s;
+        }
+      }
+      return out;
+    };
+    const metaByMonth   = _sumSpendByMonth(META_RAW && META_RAW.adset);
+    const googleByMonth = _sumSpendByMonth(GOOGLE_RAW && GOOGLE_RAW.campaign);
+    // Junta meses de investimento + leads
+    const monthsSet = new Set();
+    Object.keys(metaByMonth).forEach(m => monthsSet.add(m));
+    Object.keys(googleByMonth).forEach(m => monthsSet.add(m));
+    for (const l of sdrAll) { const m = monthKey(l.created_at); if (m) monthsSet.add(m); }
+    for (const l of nutriAll) { const m = monthKey(l.created_at); if (m) monthsSet.add(m); }
+    for (const l of closerAll) { const m = monthKey(l.closed_at); if (m && l.venda && isValidVenda(l)) monthsSet.add(m); }
+    const months = [...monthsSet].sort();
+    if (months.length === 0) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem dados mensais.</div>'; return; }
+    // Pra cada mês, calcula os 8 KPIs
+    const _CAMP = new Set(['Meta Ads','Google+Ads','google']);
+    const rowsByKpi = { invest:{}, leads:{}, lq:{}, reu:{}, ven:{}, txReu:{}, txCC:{}, txCG:{} };
+    for (const m of months) {
+      // Leads campanha (SDR + Nutrição do mês, dedup por telefone)
+      const sdrM   = sdrAll.filter(l => monthKey(l.created_at) === m);
+      const nutriM = nutriAll.filter(l => monthKey(l.created_at) === m);
+      const seen = new Set(); let leadsM = 0;
+      for (const l of [...sdrM, ...nutriM]) {
+        if (!_CAMP.has(l.origem || '')) continue;
+        const k = l.dkey || '';
+        if (k) { if (seen.has(k)) continue; seen.add(k); }
+        leadsM++;
+      }
+      const lqM  = sdrM.filter(l => l.qualified).length;
+      const reuM = sdrM.filter(l => l.reuniao_realizada).length;
+      const venM = closerAll.filter(l => l.venda && isValidVenda(l) && monthKey(l.closed_at) === m).length;
+      const invM = (metaByMonth[m]||0) + (googleByMonth[m]||0);
+      rowsByKpi.invest[m] = invM;
+      rowsByKpi.leads[m]  = leadsM;
+      rowsByKpi.lq[m]     = lqM;
+      rowsByKpi.reu[m]    = reuM;
+      rowsByKpi.ven[m]    = venM;
+      rowsByKpi.txReu[m]  = leadsM > 0 ? reuM/leadsM*100 : 0;
+      rowsByKpi.txCC[m]   = reuM > 0 ? venM/reuM*100 : 0;
+      rowsByKpi.txCG[m]   = leadsM > 0 ? venM/leadsM*100 : 0;
+    }
+    const monthLabel = (m) => { const [y,mo] = m.split('-'); const n = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][+mo-1]; return `${n}/${y.slice(2)}`; };
+    const fmtBR2 = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+    const rows = [
+      {k:'invest', lbl:'Investimento',       fmt:fmtBR2},
+      {k:'leads',  lbl:'Leads (campanha)',   fmt:v => fmtN(v)},
+      {k:'lq',     lbl:'Leads qualificados', fmt:v => fmtN(v)},
+      {k:'reu',    lbl:'Reuniões realizadas',fmt:v => fmtN(v)},
+      {k:'ven',    lbl:'Vendas',             fmt:v => fmtN(v)},
+      {k:'txReu',  lbl:'Tx. Reunião',        fmt:v => v.toFixed(1)+'%'},
+      {k:'txCC',   lbl:'Tx. Conversão Closer', fmt:v => v.toFixed(1)+'%'},
+      {k:'txCG',   lbl:'Tx. Conversão Geral',  fmt:v => v.toFixed(1)+'%'},
+    ];
+    el.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:${100+months.length*90}px">
+        <thead><tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">KPI</th>
+          ${months.map(m => `<th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">${monthLabel(m)}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:10px;font-weight:600">${r.lbl}</td>
+            ${months.map(m => `<td style="text-align:right;padding:10px;font-variant-numeric:tabular-nums">${r.fmt(rowsByKpi[r.k][m])}</td>`).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  })();
+
+  // ── 3 gráficos por dia (Leads · Reuniões · Vendas) ────────
+  (function renderDailyCharts() {
+    const el = document.getElementById('diag-daily-charts');
+    if (!el || typeof Chart === 'undefined') return;
+    // Gera lista de dias na janela
+    const days = [];
+    const cur = new Date(win.from); cur.setHours(0,0,0,0);
+    const stop = new Date(win.to); stop.setHours(0,0,0,0);
+    while (cur <= stop) {
+      const iso = `${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}-${String(cur.getDate()).padStart(2,'0')}`;
+      days.push(iso);
+      cur.setDate(cur.getDate() + 1);
+    }
+    if (days.length > 90) { // limita eixo pra não estourar
+      el.innerHTML = '<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">Período longo demais pra visualização diária — use filtro mais curto (até 90 dias).</div>';
+      return;
+    }
+    const dayKey = (ts) => { const d = new Date(ts*1000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+    const leadsByDay = {}, reuByDay = {}, venByDay = {};
+    days.forEach(d => { leadsByDay[d]=0; reuByDay[d]=0; venByDay[d]=0; });
+    // leadsCampanha = SDR + Nutrição dedup por telefone
+    const _CAMP2 = new Set(['Meta Ads','Google+Ads','google']);
+    const seenDay = new Set();
+    for (const l of [...sdr, ...nutriInWin]) {
+      if (!_CAMP2.has(l.origem || '')) continue;
+      const k = l.dkey || ('x'+l.id);
+      if (seenDay.has(k)) continue; seenDay.add(k);
+      const d = dayKey(l.created_at);
+      if (leadsByDay[d] !== undefined) leadsByDay[d]++;
+    }
+    for (const l of sdr) {
+      if (!l.reuniao_realizada) continue;
+      const d = dayKey(l.created_at);
+      if (reuByDay[d] !== undefined) reuByDay[d]++;
+    }
+    for (const l of closerVendas) {
+      const d = dayKey(l.closed_at);
+      if (venByDay[d] !== undefined) venByDay[d]++;
+    }
+    const shortDay = (iso) => { const [_,mo,d] = iso.split('-'); return `${d}/${mo}`; };
+    const charts = [
+      {id:'diag-daily-leads', lbl:'Leads por dia', data:days.map(d=>leadsByDay[d]), color:'#3b82f6'},
+      {id:'diag-daily-reu',   lbl:'Reuniões por dia', data:days.map(d=>reuByDay[d]), color:'#7c3aed'},
+      {id:'diag-daily-ven',   lbl:'Vendas por dia', data:days.map(d=>venByDay[d]), color:'#16a34a'},
+    ];
+    el.innerHTML = charts.map(c => `
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${c.lbl}<span style="color:var(--muted);font-weight:500;font-size:11px;margin-left:6px">total: <b>${c.data.reduce((a,b)=>a+b,0)}</b></span></div>
+        <div style="height:180px"><canvas id="${c.id}"></canvas></div>
+      </div>`).join('');
+    // Destroi charts antigos se existirem, cria novos
+    setTimeout(() => {
+      charts.forEach(c => {
+        const canvas = document.getElementById(c.id);
+        if (!canvas) return;
+        if (canvas._chart) canvas._chart.destroy();
+        canvas._chart = new Chart(canvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: days.map(shortDay),
+            datasets: [{data: c.data, backgroundColor: c.color, borderRadius: 3}]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { title: (items) => days[items[0].dataIndex] } } },
+            scales: {
+              x: { ticks: { font: { size: 9 }, maxRotation: 0, autoSkip: true, autoSkipPadding: 10 }, grid: { display: false } },
+              y: { beginAtZero: true, ticks: { font: { size: 10 }, precision: 0 }, grid: { color: 'rgba(0,0,0,.04)' } }
+            }
+          }
+        });
+      });
+    }, 50);
+  })();
 
   // Atualiza data de fetch no header
   const f = document.getElementById('diag-fetched');
