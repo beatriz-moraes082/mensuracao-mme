@@ -3705,6 +3705,13 @@ function renderDiagnostico() {
   const tdRealiz = deltaTrend(wkTot[0]?.realiz, wkTot[wkTot.length-1]?.realiz);
   const tdInv    = deltaTrend(wkTot[0]?.invest, wkTot[wkTot.length-1]?.invest);
 
+  // Deltas das TAXAS de conversão (comparativo intra-período · W1 → W_last)
+  const _wF = wkTot[0], _wL = wkTot[wkTot.length-1];
+  const _rate = (num, den) => (den > 0 ? (num/den*100) : 0);
+  const tdTxReu = _wF && _wL ? deltaTrend(_rate(_wF.realiz, _wF.leads), _rate(_wL.realiz, _wL.leads)) : {pct:0,cls:'neut',txt:''};
+  const tdTxCC  = _wF && _wL ? deltaTrend(_rate(_wF.vendas, _wF.realiz), _rate(_wL.vendas, _wL.realiz)) : {pct:0,cls:'neut',txt:''};
+  const tdTxCG  = _wF && _wL ? deltaTrend(_rate(_wF.vendas, _wF.leads),  _rate(_wL.vendas, _wL.leads))  : {pct:0,cls:'neut',txt:''};
+
   const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
   const fmtN   = v => (v||0).toLocaleString('pt-BR');
 
@@ -3757,13 +3764,13 @@ function renderDiagnostico() {
 
     // ── Linha 2 · Taxas de conversão (3 taxas) ──
     {lbl:'Tx. Reunião',      val:fmtP(txReuniao),     iconColor:'#a855f7',
-     trend:{pct:0,cls:'neut',txt:''},
+     trend:tdTxReu,
      sub:`${realiz} reuniões realizadas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.realiz/w.leads*100) : 0), sparkColor:'#a855f7'},
     {lbl:'Tx. Conversão Closer', val:fmtP(txConvCloser), iconColor:'#c2410c',
-     trend:{pct:0,cls:'neut',txt:''},
+     trend:tdTxCC,
      sub:`${vendas} vendas ÷ ${realiz} reuniões realizadas`, sparkData:wkTot.map(w=>w.realiz>0 ? (w.vendas/w.realiz*100) : 0), sparkColor:'#c2410c'},
     {lbl:'Tx. Conversão Geral', val:fmtP(txConv),    iconColor:'#EE4D20',
-     trend:{pct:0,cls:'neut',txt:''},
+     trend:tdTxCG,
      sub:`${vendas} vendas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
 
     // ── Linha 3 · Financeiro (3 KPIs) ──
