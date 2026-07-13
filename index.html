@@ -899,9 +899,6 @@
     <div id="diag-sinais-content"></div>
   </div>
 
-  <!-- Plano de ação · 4 cards · #1 preto sólido -->
-  <div class="ds-sec"><h3>Plano de ação</h3><span class="sub">Quatro alavancas priorizadas</span></div>
-  <div id="diag-plano"></div>
 
 </div>
 </div><!-- /tab-diagnostico -->
@@ -4234,57 +4231,6 @@ function renderDiagnostico() {
     </div>
   `;
 
-  // ── Render: Plano de ação · 4 cards (#1 preto sólido) ────
-  const ifBotImpacto = Math.round(total*0.70*txBotC/100 + total*0.30*txBotI/100 - qualif);
-  const acoes = [
-    {n:'01', titulo:'Reduzir abandono no bot',
-     detalhe:`Hoje só ${fmtP(botC.length/total*100)} concluem o bot. Investigar onde abandonam, encurtar fluxo, retomar quem parou. Alavanca de maior impacto.`,
-     impacto:`Conclusão de ${(botC.length/total*100).toFixed(0)}% → 70% gera +${ifBotImpacto} qualif/mês`,
-     variant:'ink'},
-    (() => {
-       // Só compara canais PAGOS (Meta/Google) com base mínima de leads —
-       // não faz sentido recomendar realocar verba pra/de orgânico (que
-       // não tem verba) ou de canal com amostra ínfima.
-       const MIN_LEADS = 10;
-       const pagos = chRows.filter(r => (r.key === 'meta' || r.key === 'google') && r.n >= MIN_LEADS);
-       if (pagos.length < 2) {
-         return {n:'02', titulo:'Escalar canal de maior tx. qualificação',
-           detalhe: pagos.length === 1
-             ? `Só ${pagos[0].label.replace(/^\W+/,'')} tem amostra (${pagos[0].n} leads). Sem outro canal pago com base mínima (${MIN_LEADS}+ leads) pra comparar.`
-             : `Sem canal pago com amostra mínima (${MIN_LEADS}+ leads) no período. Comparação indisponível.`,
-           impacto: '—', variant:''};
-       }
-       const melhor = pagos[0], pior = pagos[pagos.length-1];
-       return {n:'02', titulo:'Escalar canal de maior tx. qualificação',
-         detalhe: `${melhor.label.replace(/^\W+/,'')} qualifica ${fmtP(melhor.txQ)} (${melhor.q}/${melhor.n}) vs ${fmtP(pior.txQ)} (${pior.q}/${pior.n}) do ${pior.label.replace(/^\W+/,'')}. Realocar verba do mais fraco para o melhor.`,
-         impacto: `+${(melhor.txQ - pior.txQ).toFixed(0)}pp de tx. qualif por R$ realocado`,
-         variant:''};
-     })(),
-    {n:'03', titulo:'Priorizar públicos/criativos preditivos',
-     detalhe: topAud.length > 0
-       ? `Top 3 públicos: ${topAud.map(a => a.aud+' ('+fmtP(a.txQ)+')').join(' · ')}`
-       : 'Sem amostra suficiente — necessário mais leads por público.',
-     impacto: topAud.length > 0 ? 'Concentra verba em públicos com maior densidade qualif' : '—',
-     variant:''},
-    {n:'04', titulo:'Refinar formulário com sinais preditivos',
-     detalhe:`Campos com Δ > 15pp são os mais preditivos: ${sinais.filter(s => s.diff > 10).slice(0,2).map(s => s.l).join(' + ') || '—'}. Ajustar copy do anúncio para reforçar esse perfil.`,
-     impacto:'Aumenta densidade de leads do perfil ideal',
-     variant:''},
-  ];
-  document.getElementById('diag-plano').innerHTML = `
-    <div class="ds-grid-2">
-      ${acoes.map(a => `
-        <div class="ds-kpi ${a.variant}">
-          <div class="lbl">${a.n} · ${a.titulo}</div>
-          <div style="font-size:14px;font-weight:500;line-height:1.55;margin:6px 0">${a.detalhe}</div>
-          <div style="font-size:12px;font-weight:700;letter-spacing:.02em;padding-top:10px;
-            border-top:1px solid ${a.variant ? 'rgba(255,255,255,.18)' : 'var(--border)'}">
-            ${a.impacto}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
 
   // ── Comparativo mês a mês ─────────────────────────────
   // Agrega TODOS os leads/vendas por mês (não filtra pelo período — dá visão de evolução)
