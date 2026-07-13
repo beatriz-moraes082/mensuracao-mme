@@ -439,6 +439,32 @@
       border-radius:3px;overflow:hidden}
     .kpi-highlight .gauge-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#ee4d20);
       border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+    /* Tooltip explicativo · aparece ao hover no ícone ⓘ */
+    .kpi-highlight .info-btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:16px;height:16px;border-radius:50%;
+      background:rgba(255,255,255,.14);color:rgba(255,255,255,.85);
+      font-size:10px;font-weight:800;font-family:'Inter',sans-serif;
+      margin-left:8px;cursor:help;vertical-align:middle;
+      transition:background .15s;position:relative;
+    }
+    .kpi-highlight .info-btn:hover{background:rgba(255,255,255,.28)}
+    .kpi-highlight .info-btn .tip{
+      position:absolute;top:calc(100% + 10px);left:0;
+      width:340px;max-width:calc(100vw - 40px);
+      background:#111;color:#fff;padding:14px 16px;border-radius:10px;
+      box-shadow:0 12px 40px rgba(0,0,0,.4);
+      font-size:12px;font-weight:400;line-height:1.55;letter-spacing:0;
+      text-transform:none;text-align:left;
+      opacity:0;pointer-events:none;transform:translateY(-6px);
+      transition:opacity .18s,transform .18s;
+      z-index:100;
+    }
+    .kpi-highlight .info-btn:hover .tip,
+    .kpi-highlight .info-btn:focus .tip{opacity:1;transform:translateY(0);pointer-events:auto}
+    .kpi-highlight .info-btn .tip b{color:#fbbf24}
+    .kpi-highlight .info-btn .tip hr{border:0;border-top:1px solid rgba(255,255,255,.12);margin:10px 0}
+    .kpi-highlight .info-btn .tip code{background:rgba(251,191,36,.15);color:#fbbf24;padding:1px 5px;border-radius:3px;font-size:11px}
 
     /* KPI Tile · Modern */
     .kpi-tile{
@@ -3656,7 +3682,25 @@ function renderDiagnostico() {
   const gaugePct = Math.min(txQ/META_TX_QUALIF*100, 100);
   document.getElementById('diag-hero-kpi').innerHTML = `
     <div class="kpi-highlight">
-      <div class="lbl">Tx. Qualificação · agora</div>
+      <div class="lbl">Tx. Qualificação · agora
+        <span class="info-btn" tabindex="0">?<span class="tip">
+          <b>Como é calculado?</b><br>
+          <code>Tx. = qualificados ÷ total SDR × 100</code>
+          <hr>
+          <b>Denominador</b> · ${total} leads SDR<br>
+          Todos os leads criados no <b>pipeline SDR</b> dentro do período selecionado
+          (filtro por <code>created_at</code>). Não inclui Nutrição, Closer nem Duque.
+          <hr>
+          <b>Numerador</b> · ${qualif} qualificados<br>
+          Lead conta como qualificado se <b>qualquer uma</b>:<br>
+          • Está (ou passou) por status <b>Lead Qualificado</b>, <b>Reunião Agendada</b> ou <b>Realizada</b><br>
+          • Tem tag <code>reunião-agendada</code>, <code>reunião-realizada</code> ou <code>reagendar</code><br>
+          • Já venceu no SDR (status 142)
+          <hr>
+          <b>Meta:</b> ${META_TX_QUALIF}% (hardcoded no dashboard)<br>
+          <b>Gap:</b> meta − taxa (em pontos percentuais)
+        </span></span>
+      </div>
       <div class="val">${fmtP(txQ)}</div>
       <div class="meta-line">${qualif} de ${total} leads SDR · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
       <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
