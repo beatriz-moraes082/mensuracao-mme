@@ -482,7 +482,10 @@
     .kpi-grid-modern .ds-kpi{padding:16px 18px;gap:6px}
     .kpi-grid-modern .ds-kpi .lbl{font-size:10px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .kpi-grid-modern .ds-kpi .val{font-size:26px;line-height:1.1}
-    .kpi-grid-modern .ds-kpi .sub{font-size:10.5px;line-height:1.4}
+    .kpi-grid-modern .ds-kpi .sub{font-size:10.5px;line-height:1.4;opacity:0;transition:opacity .18s ease;pointer-events:none}
+    .kpi-grid-modern .ds-kpi:hover .sub,
+    .kpi-grid-modern .ds-kpi:focus-within .sub{opacity:1;pointer-events:auto}
+    @media (hover:none){.kpi-grid-modern .ds-kpi .sub{opacity:1}} /* mobile/touch sempre mostra */
     .kpi-grid-modern .ds-kpi canvas.spark{height:30px!important;width:100%!important;margin-top:2px}
     .kpi-grid-modern .ds-kpi .delta-pill{font-size:10px;padding:2px 6px}
     /* Cards "financeiros" com fundo levemente diferente pra destacar a seção */
