@@ -874,8 +874,8 @@
   <div class="ds-sec" style="margin-top:24px"><h3>Evolução diária</h3><span class="sub" id="diag-daily-sub">Leads, reuniões e vendas por dia — respeitando o filtro de período</span></div>
   <div class="ds-card"><div id="diag-daily-charts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div></div>
 
-  <!-- Funil por perfil de lead (A/B/C/D) -->
-  <div class="ds-sec" style="margin-top:24px"><h3>Funil por perfil de lead</h3><span class="sub">Segmentado pela régua de score (A/B/C/D) — filtra pelo período selecionado</span></div>
+  <!-- Funil por perfil de lead (A/B/C/D/E/F — score do Kommo) -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Funil por perfil de lead</h3><span class="sub">Segmentado pelo score do Kommo (A/B/C/D/E/F) — filtra pelo período selecionado</span></div>
   <div class="ds-card"><div id="diag-funil-perfil" style="overflow-x:auto"></div></div>
 
   <!-- Funil por consultor (SDR) -->
@@ -4402,17 +4402,16 @@ function renderDiagnostico() {
     }, 50);
   })();
 
-  // ── Funil por perfil de lead (A/B/C/D) ─────────────────
+  // ── Funil por perfil de lead (A/B/C/D/E/F) ─────────────────
+  // Usa o campo 'score' do Kommo (custom field populado pelo bot/CRM),
+  // NÃO a régua calculada em JS. Alinha com a aba Perfil do qualificado.
   (function renderFunilPerfil() {
     const el = document.getElementById('diag-funil-perfil');
     if (!el) return;
-    if (typeof calcLeadScore !== 'function') {
-      el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Régua de score não carregada.</div>';
-      return;
-    }
-    // Classifica cada lead SDR do período pelo score
-    const scored = sdr.map(l => ({...l, _score: calcLeadScore(l).score}));
-    const classes = ['A','B','C','D','Incompleto'];
+    // Classifica pelo campo score do Kommo (fallback 'Sem score' quando vazio)
+    const scoreOf = l => (l.score && String(l.score).trim()) || 'Sem score';
+    const scored = sdr.map(l => ({...l, _score: scoreOf(l)}));
+    const classes = ['A','B','C','D','E','F','Sem score'];
     const byClass = {}; classes.forEach(c => byClass[c] = scored.filter(s => s._score === c));
     // Mapeia contact_id → classe pra cruzar com leads do Closer
     const _sdrByCid = {};
@@ -4440,8 +4439,12 @@ function renderDiagnostico() {
       const cls = v.contact_id ? _sdrByCid[v.contact_id] : null;
       if (cls && vendasByClass[cls] !== undefined) vendasByClass[cls]++;
     }
-    const clsColor = (typeof SCORE_COLOR !== 'undefined' && SCORE_COLOR)
-      ? SCORE_COLOR : {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', Incompleto:'#94a3b8'};
+    // Cores por score (bate com o SCORE_COLOR global; E/F/Sem score adicionados)
+    const clsColor = {
+      A: '#16a34a', B: '#84cc16', C: '#f59e0b',
+      D: '#ef4444', E: '#b91c1c', F: '#7f1d1d',
+      'Sem score': '#94a3b8',
+    };
     // Etapas EXATAMENTE como no Kommo — snapshot (onde os leads estão AGORA)
     const rows = [
       // ── SDR ────────────────────────────────
@@ -4481,13 +4484,13 @@ function renderDiagnostico() {
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
         <thead><tr style="border-bottom:2px solid var(--border)">
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Etapa</th>
-          ${classes.map(c => `<th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${clsColor[c]}">${c === 'Incompleto' ? 'Incompl.' : c}</th>`).join('')}
+          ${classes.map(c => `<th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${clsColor[c]}">${c === 'Sem score' ? 'S/ score' : c}</th>`).join('')}
         </tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table>
       <div style="font-size:10.5px;color:var(--muted);margin-top:10px;line-height:1.5">
-        📌 Snapshot: cada célula mostra <b>quantos leads estão AGORA</b> naquele status do Kommo (não é cumulativo).
-        Leads Closer atribuídos ao perfil A/B/C/D via <code>contact_id</code> do SDR original.
+        📌 Score vem do campo <code>score</code> do Kommo (A/B/C/D/E/F). Snapshot: cada célula mostra <b>quantos leads estão AGORA</b> naquele status (não é cumulativo).
+        Leads Closer atribuídos ao score via <code>contact_id</code> do SDR original.
       </div>`;
   })();
 
