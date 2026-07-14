@@ -4483,7 +4483,15 @@ function renderDiagnostico() {
     }
     const _sdrByCid = {};
     for (const l of sdr) if (l.contact_id) _sdrByCid[l.contact_id] = l.responsible_user_id || 0;
-    const vendasByUser = {};
+    // Agrega Closer (Proposta / Sinal Verde) por SDR responsável, via contact_id
+    const CLO_VERDE = 98334563;
+    const propByUser = {}, verdeByUser = {}, vendasByUser = {};
+    for (const l of closerC) {
+      const uid = l.contact_id ? _sdrByCid[l.contact_id] : null;
+      if (uid == null) continue;
+      if (l.proposta || l.status === 142 || l.status === CLO_VERDE) propByUser[uid] = (propByUser[uid] || 0) + 1;
+      if (l.status === CLO_VERDE || l.status === 142) verdeByUser[uid] = (verdeByUser[uid] || 0) + 1;
+    }
     for (const v of closerVendas) {
       const uid = v.contact_id ? _sdrByCid[v.contact_id] : null;
       if (uid != null) vendasByUser[uid] = (vendasByUser[uid] || 0) + 1;
@@ -4496,6 +4504,8 @@ function renderDiagnostico() {
         qualif: d.leads.filter(l => l.qualified).length,
         agend:  d.leads.filter(l => l.reuniao_agendada).length,
         realiz: d.leads.filter(l => l.reuniao_realizada).length,
+        prop:   propByUser[uid] || 0,
+        verde:  verdeByUser[uid] || 0,
         vendas: vendasByUser[uid] || 0,
       }))
       .sort((a,b) => b.leads - a.leads);
@@ -4517,13 +4527,15 @@ function renderDiagnostico() {
     }
 
     el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:800px">
         <thead><tr style="border-bottom:2px solid var(--border)">
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Consultor</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Leads</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Qualif</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Agend</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Realiz</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Proposta</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">S. Verde</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Vendas</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Qualif</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Reunião</th>
@@ -4540,6 +4552,8 @@ function renderDiagnostico() {
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.qualif}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.agend}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.realiz}</td>
+              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.prop}</td>
+              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.verde}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.vendas>0?'#16a34a':'inherit'}">${u.vendas}</b></td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txQ}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txR}</td>
