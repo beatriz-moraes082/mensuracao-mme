@@ -5684,7 +5684,7 @@ function renderMensuracao(){
     const txA = tg.leads > 0 ? tg.agend/tg.leads*100 : 0;
     const txC = tg.agend > 0 ? tg.realiz/tg.agend*100 : 0;
     const qToA = tg.qualif > 0 ? tg.agend/tg.qualif*100 : 0;
-    const cpo = tg.agend > 0 ? tg.invest/tg.agend : 0;
+    const cpr = tg.realiz > 0 ? tg.invest/tg.realiz : 0;
     const ppDelta = (a, b) => {
       if (a == null || b == null || !isFinite(a) || !isFinite(b)) return {cls:'',txt:'—'};
       const d = b - a;
@@ -5702,9 +5702,9 @@ function renderMensuracao(){
         delta:_delta(tot[0]?.agend, tot[tot.length-1]?.agend)}),
       metricCard({lbl:'Reuniões concretizadas', val:fmtNum(tg.realiz),
         delta:_delta(tot[0]?.realiz, tot[tot.length-1]?.realiz)}),
-      metricCard({lbl:'CPO', val:cpo > 0 ? fmtBRL(cpo) : '—',
-        sub:'Investimento ÷ agendadas',
-        delta:tot.length > 1 ? _delta(tot[0].agend>0?tot[0].invest/tot[0].agend:0, tot[tot.length-1].agend>0?tot[tot.length-1].invest/tot[tot.length-1].agend:0) : {cls:'',txt:'—'}}),
+      metricCard({lbl:'Custo por Reunião Realizada', val:cpr > 0 ? fmtBRL(cpr) : '—',
+        sub:'Investimento ÷ realizadas',
+        delta:tot.length > 1 ? _delta(tot[0].realiz>0?tot[0].invest/tot[0].realiz:0, tot[tot.length-1].realiz>0?tot[tot.length-1].invest/tot[tot.length-1].realiz:0) : {cls:'',txt:'—'}}),
       metricCard({lbl:'Tx. Agendamento', val:txA.toFixed(1)+'%',
         delta:ppDelta(_txA0, _txAL), progPct: txA/G.txA*100, progMeta:G.txA}),
       metricCard({lbl:'Tx. Comparecimento', val:txC.toFixed(1)+'%',
