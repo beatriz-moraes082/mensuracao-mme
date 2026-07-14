@@ -5146,6 +5146,10 @@ async function loadDashboardData() {
     });
     const footerDate = document.getElementById('footer-date');
     if (footerDate) footerDate.textContent = dateStr;
+    // "Última atualização" do hero do Diagnóstico (antes só era preenchida
+    // ao abrir a aba Perfil do qualificado — renderAnalises)
+    const diagFetched = document.getElementById('diag-fetched');
+    if (diagFetched) diagFetched.textContent = dateStr;
 
     // Atualiza label de período e pílulas
     const lbl = document.getElementById('analises-period-lbl');
