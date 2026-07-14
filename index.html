@@ -947,15 +947,9 @@
   <div class="ds-grid-3" id="evol-conversao"></div>
 
   <div class="ds-sec"><h3>Visão semanal por canal</h3></div>
-  <div class="ds-grid-2">
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Leads por Canal</h4><span class="sub">Meta · Google · Duque · Orgânico</span></div>
-      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensLeads"></canvas></div>
-    </div>
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Funil de Conversão</h4><span class="sub">Inbound · Qualificados · Realizadas · Vendas</span></div>
-      <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensFunil"></canvas></div>
-    </div>
+  <div class="ds-card">
+    <div class="ds-card-h"><h4>Leads por Canal</h4><span class="sub">Meta · Google · Duque · Orgânico</span></div>
+    <div class="ds-card-b" style="height:230px;position:relative"><canvas id="cMensLeads"></canvas></div>
   </div>
   <div class="ds-card" style="margin-top:18px">
     <div class="ds-card-h"><h4>Investimento e CPL</h4><span class="sub">Meta vs Google · invest. total e CPL</span></div>
@@ -5751,29 +5745,7 @@ function renderMensuracao(){
       },
     });
 
-    // Chart 2 — Funil de Conversão (multi-line)
-    const c2 = document.getElementById('cMensFunil');
-    if (c2) _mensCharts['cMensFunil'] = new Chart(c2, {
-      type: 'line',
-      data: {
-        labels: wkLbls,
-        datasets: [
-          { label: 'Leads',         data: tot.map(t=>t.leads),  borderColor: '#3b82f6', backgroundColor: '#3b82f620', fill: true,  tension: 0.3, pointRadius: 5 },
-          { label: 'Qualificados',  data: tot.map(t=>t.qualif), borderColor: '#8b5cf6', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5 },
-          { label: 'Reuniões real.',data: tot.map(t=>t.realiz), borderColor: '#22c55e', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5 },
-          { label: 'Vendas',        data: tot.map(t=>t.vendas), borderColor: '#f5a623', backgroundColor: 'transparent', fill: false, tension: 0.3, pointRadius: 5, borderDash: [4,3] },
-        ],
-      },
-      options: {
-        ...chartDefaults,
-        scales: {
-          x: { ticks: { font: { size: 10 } } },
-          y: { beginAtZero: true, ticks: { font: { size: 10 } } },
-        },
-      },
-    });
-
-    // Chart 3 — Investimento Meta vs Google (grouped bar) + CPL linha
+    // Chart — Investimento Meta vs Google (grouped bar) + CPL linha
     const c3 = document.getElementById('cMensInvest');
     if (c3) _mensCharts['cMensInvest'] = new Chart(c3, {
       type: 'bar',
