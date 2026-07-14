@@ -4420,9 +4420,21 @@ function renderDiagnostico() {
     const scored = sdr.map(l => ({...l, _score: calcLeadScore(l).score}));
     const classes = ['A','B','C','D','Incompleto'];
     const byClass = {}; classes.forEach(c => byClass[c] = scored.filter(s => s._score === c));
-    // Métricas por classe: Leads · Qualif · Reuniões · Vendas · Tx. Conv. Geral
+    // Mapeia contact_id → classe pra cruzar com leads do Closer
     const _sdrByCid = {};
-    for (const l of sdr) if (l.contact_id) _sdrByCid[l.contact_id] = l._score;
+    for (const l of scored) if (l.contact_id) _sdrByCid[l.contact_id] = l._score;
+    // Agrega leads Closer (Proposta/Sinal Verde/Vendas) por perfil, via contact_id
+    const CLO_VERDE = 98334563;
+    const propByClass = {}; classes.forEach(c => propByClass[c] = 0);
+    const verdeByClass = {}; classes.forEach(c => verdeByClass[c] = 0);
+    for (const l of closerC) {
+      const cls = l.contact_id ? _sdrByCid[l.contact_id] : null;
+      if (!cls || propByClass[cls] === undefined) continue;
+      // Proposta = já teve proposta enviada (inclui follow/sinal verde/vendida)
+      if (l.proposta || l.status === 142 || l.status === CLO_VERDE) propByClass[cls]++;
+      // Sinal Verde = está em sinal verde OU já vendeu (passou por lá)
+      if (l.status === CLO_VERDE || l.status === 142) verdeByClass[cls]++;
+    }
     const vendasByClass = {}; classes.forEach(c => vendasByClass[c] = 0);
     for (const v of closerVendas) {
       const cls = v.contact_id ? _sdrByCid[v.contact_id] : null;
@@ -4430,12 +4442,16 @@ function renderDiagnostico() {
     }
     const clsColor = (typeof SCORE_COLOR !== 'undefined' && SCORE_COLOR)
       ? SCORE_COLOR : {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', Incompleto:'#94a3b8'};
+    // Etapas do funil comercial (espelham as do Kommo: SDR → Closer)
     const rows = [
-      {lbl:'Leads',              fn: c => byClass[c].length},
-      {lbl:'Qualificados',       fn: c => byClass[c].filter(l => l.qualified).length},
-      {lbl:'Reuniões realizadas',fn: c => byClass[c].filter(l => l.reuniao_realizada).length},
-      {lbl:'Vendas',             fn: c => vendasByClass[c]},
-      {lbl:'Tx. Conv. Geral',    fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }},
+      {lbl:'Leads (entrada SDR)',    fn: c => byClass[c].length},
+      {lbl:'Qualificados',           fn: c => byClass[c].filter(l => l.qualified).length},
+      {lbl:'Reunião agendada',       fn: c => byClass[c].filter(l => l.reuniao_agendada).length},
+      {lbl:'Reunião realizada',      fn: c => byClass[c].filter(l => l.reuniao_realizada).length},
+      {lbl:'Proposta enviada',       fn: c => propByClass[c]},
+      {lbl:'Sinal Verde',            fn: c => verdeByClass[c]},
+      {lbl:'Vendas',                 fn: c => vendasByClass[c]},
+      {lbl:'Tx. Conv. Geral',        fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }},
     ];
     el.innerHTML = `
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
