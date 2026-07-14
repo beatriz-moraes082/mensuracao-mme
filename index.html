@@ -7058,9 +7058,8 @@ function renderDisparos() {
    - Pede senha a cada abertura (sem persistência de sessão)
    - Usa SHA-256 pra não expor senha em texto puro no código público
    ══════════════════════════════════════════════════════════════════════ */
-// TODO: quando a Bia mandar a senha real, substituir este hash.
-// Hash atual = SHA-256("trilha2026") — placeholder até a senha oficial.
-const TRILHA_PASSWORD_HASH = 'b7b35feb280a4ff504a3664b2c47c73523c0d8a83e78ebc4a9e55892ab3f1350';
+// Senha oficial das seções internas Trilha — SHA-256("5582")
+const TRILHA_PASSWORD_HASH = 'c1698979b983b265490545013156924518af07faf7f25905a78a1813054860d8';
 
 async function _sha256(str) {
   const buf = new TextEncoder().encode(str);
