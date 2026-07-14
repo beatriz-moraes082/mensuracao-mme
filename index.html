@@ -4423,18 +4423,24 @@ function renderDiagnostico() {
     // Mapeia contact_id → classe pra cruzar com leads do Closer
     const _sdrByCid = {};
     for (const l of scored) if (l.contact_id) _sdrByCid[l.contact_id] = l._score;
-    // Agrega leads Closer (Proposta/Sinal Verde/Vendas) por perfil, via contact_id
-    const CLO_VERDE = 98334563;
-    const propByClass = {}; classes.forEach(c => propByClass[c] = 0);
-    const verdeByClass = {}; classes.forEach(c => verdeByClass[c] = 0);
+    // Status IDs — SDR
+    const S_PRE = 98618883, S_NOVO = 98147479, S_QUAL_ANL = 98147487,
+          S_LQ = 98147491,  S_RA = 98162603,  S_FU = 98147483,
+          S_WON = 142,      S_LOST = 143;
+    // Status IDs — Closer
+    const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563;
+    // Helper: conta leads SDR na classe c com status st AGORA
+    const sdrAt = (c, st) => byClass[c].filter(l => l.status === st).length;
+    // Helper: conta leads Closer na classe c com status st AGORA (via contact_id)
+    const cloByClassStatus = {}; classes.forEach(c => cloByClassStatus[c] = {});
     for (const l of closerC) {
       const cls = l.contact_id ? _sdrByCid[l.contact_id] : null;
-      if (!cls || propByClass[cls] === undefined) continue;
-      // Proposta = já teve proposta enviada (inclui follow/sinal verde/vendida)
-      if (l.proposta || l.status === 142 || l.status === CLO_VERDE) propByClass[cls]++;
-      // Sinal Verde = está em sinal verde OU já vendeu (passou por lá)
-      if (l.status === CLO_VERDE || l.status === 142) verdeByClass[cls]++;
+      if (!cls || cloByClassStatus[cls] === undefined) continue;
+      const st = l.status;
+      cloByClassStatus[cls][st] = (cloByClassStatus[cls][st] || 0) + 1;
     }
+    const cloAt = (c, st) => cloByClassStatus[c][st] || 0;
+    // Vendas fechadas no período (usa closerVendas — filtro por closed_at)
     const vendasByClass = {}; classes.forEach(c => vendasByClass[c] = 0);
     for (const v of closerVendas) {
       const cls = v.contact_id ? _sdrByCid[v.contact_id] : null;
@@ -4442,30 +4448,53 @@ function renderDiagnostico() {
     }
     const clsColor = (typeof SCORE_COLOR !== 'undefined' && SCORE_COLOR)
       ? SCORE_COLOR : {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', Incompleto:'#94a3b8'};
-    // Etapas do funil comercial (espelham as do Kommo: SDR → Closer)
+    // Etapas EXATAMENTE como no Kommo — snapshot (onde os leads estão AGORA)
     const rows = [
-      {lbl:'Leads (entrada SDR)',    fn: c => byClass[c].length},
-      {lbl:'Qualificados',           fn: c => byClass[c].filter(l => l.qualified).length},
-      {lbl:'Reunião agendada',       fn: c => byClass[c].filter(l => l.reuniao_agendada).length},
-      {lbl:'Reunião realizada',      fn: c => byClass[c].filter(l => l.reuniao_realizada).length},
-      {lbl:'Proposta enviada',       fn: c => propByClass[c]},
-      {lbl:'Sinal Verde',            fn: c => verdeByClass[c]},
-      {lbl:'Vendas',                 fn: c => vendasByClass[c]},
-      {lbl:'Tx. Conv. Geral',        fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }},
+      // ── SDR ────────────────────────────────
+      {lbl:'Pré-atendimento',          fn: c => sdrAt(c, S_PRE),      group:'SDR'},
+      {lbl:'Lead novo',                fn: c => sdrAt(c, S_NOVO),     group:'SDR'},
+      {lbl:'Qualificação em análise',  fn: c => sdrAt(c, S_QUAL_ANL), group:'SDR'},
+      {lbl:'Lead qualificado',         fn: c => sdrAt(c, S_LQ),       group:'SDR'},
+      {lbl:'Reunião agendada',         fn: c => sdrAt(c, S_RA),       group:'SDR'},
+      {lbl:'Reunião realizada (SDR)',  fn: c => sdrAt(c, S_WON),      group:'SDR'},
+      {lbl:'Follow-up (SDR)',          fn: c => sdrAt(c, S_FU),       group:'SDR'},
+      {lbl:'Perdidos (SDR)',           fn: c => sdrAt(c, S_LOST),     group:'SDR'},
+      // ── Closer ─────────────────────────────
+      {lbl:'Reunião Realizada (Closer)', fn: c => cloAt(c, C_RR),    group:'Closer'},
+      {lbl:'Proposta Enviada',           fn: c => cloAt(c, C_PROP),  group:'Closer'},
+      {lbl:'Follow-up (Closer)',         fn: c => cloAt(c, C_FU),    group:'Closer'},
+      {lbl:'Sinal Verde',                fn: c => cloAt(c, C_VERDE), group:'Closer'},
+      {lbl:'Venda',                      fn: c => vendasByClass[c],  group:'Closer'},
+      {lbl:'Perdidos (Closer)',          fn: c => cloAt(c, S_LOST),  group:'Closer'},
+      // ── Total ──────────────────────────────
+      {lbl:'Tx. Conv. Geral',            fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }, group:'Total'},
     ];
+    // Renderiza com labels de grupo (SDR / Closer)
+    let lastGroup = '';
+    const rowsHtml = rows.map(r => {
+      const showGroup = r.group !== lastGroup;
+      lastGroup = r.group;
+      const groupHeader = showGroup ? `
+        <tr><td colspan="${classes.length+1}" style="padding:10px 10px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-alt,#fafafa)">
+          Pipeline ${r.group}
+        </td></tr>` : '';
+      return groupHeader + `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:9px 10px 9px 20px;font-weight:500">${r.lbl}</td>
+        ${classes.map(c => `<td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${r.fn(c)}</td>`).join('')}
+      </tr>`;
+    }).join('');
     el.innerHTML = `
       <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
         <thead><tr style="border-bottom:2px solid var(--border)">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">KPI</th>
+          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Etapa</th>
           ${classes.map(c => `<th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${clsColor[c]}">${c === 'Incompleto' ? 'Incompl.' : c}</th>`).join('')}
         </tr></thead>
-        <tbody>
-          ${rows.map(r => `<tr style="border-bottom:1px solid var(--border)">
-            <td style="padding:9px 10px;font-weight:600">${r.lbl}</td>
-            ${classes.map(c => `<td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${r.fn(c)}</td>`).join('')}
-          </tr>`).join('')}
-        </tbody>
-      </table>`;
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:10px;line-height:1.5">
+        📌 Snapshot: cada célula mostra <b>quantos leads estão AGORA</b> naquele status do Kommo (não é cumulativo).
+        Leads Closer atribuídos ao perfil A/B/C/D via <code>contact_id</code> do SDR original.
+      </div>`;
   })();
 
   // ── Funil por consultor (SDR / Usuário responsável) ────
