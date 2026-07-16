@@ -4467,16 +4467,21 @@ function renderDiagnostico() {
       {lbl:'Tx. Conv. Geral',            fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }, group:'Total'},
     ];
     // Renderiza com labels de grupo (SDR / Closer)
+    // Slugify pra usar como classe CSS por grupo
+    const slug = g => g.toLowerCase().replace(/[^a-z0-9]+/g,'-');
     let lastGroup = '';
     const rowsHtml = rows.map(r => {
       const showGroup = r.group !== lastGroup;
       lastGroup = r.group;
+      const gSlug = slug(r.group);
       const groupHeader = showGroup ? `
-        <tr><td colspan="${classes.length+1}" style="padding:10px 10px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-alt,#fafafa)">
-          Pipeline ${r.group}
-        </td></tr>` : '';
-      return groupHeader + `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:9px 10px 9px 20px;font-weight:500">${r.lbl}</td>
+        <tr class="funil-group-header" data-group="${gSlug}" style="cursor:pointer;user-select:none">
+          <td colspan="${classes.length+1}" style="padding:12px 10px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-alt,#fafafa)">
+            <span class="chev" style="display:inline-block;width:12px;transition:transform .18s;margin-right:6px">▾</span>Pipeline ${r.group}
+          </td>
+        </tr>` : '';
+      return groupHeader + `<tr class="funil-row" data-group="${gSlug}" style="border-bottom:1px solid var(--border)">
+        <td style="padding:9px 10px 9px 28px;font-weight:500">${r.lbl}</td>
         ${classes.map(c => `<td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${r.fn(c)}</td>`).join('')}
       </tr>`;
     }).join('');
@@ -4492,6 +4497,17 @@ function renderDiagnostico() {
         📌 Score vem do campo <code>score</code> do Kommo (A/B/C/D/E/F). Snapshot: cada célula mostra <b>quantos leads estão AGORA</b> naquele status (não é cumulativo).
         Leads Closer atribuídos ao score via <code>contact_id</code> do SDR original.
       </div>`;
+    // Click nos headers de grupo → expande/retrai as linhas do grupo
+    el.querySelectorAll('.funil-group-header').forEach(h => {
+      h.addEventListener('click', () => {
+        const g = h.dataset.group;
+        const collapsed = h.classList.toggle('collapsed');
+        h.querySelector('.chev').style.transform = collapsed ? 'rotate(-90deg)' : '';
+        el.querySelectorAll(`.funil-row[data-group="${g}"]`).forEach(r => {
+          r.style.display = collapsed ? 'none' : '';
+        });
+      });
+    });
   })();
 
   // ── Funil por consultor (SDR / Usuário responsável) ────
