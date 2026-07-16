@@ -4413,9 +4413,20 @@ function renderDiagnostico() {
     const scored = sdr.map(l => ({...l, _score: scoreOf(l)}));
     const classes = ['A','B','C','D','E','F','Sem score'];
     const byClass = {}; classes.forEach(c => byClass[c] = scored.filter(s => s._score === c));
-    // Mapeia contact_id → classe pra cruzar com leads do Closer
+    // Mapeia contact_id → classe. Para leads que passaram pro Closer, o score
+    // pode ter sido REAVALIADO pela Ana depois da conversa — quando existir
+    // score no lead Closer, ele PREVALECE sobre o score do SDR.
     const _sdrByCid = {};
     for (const l of scored) if (l.contact_id) _sdrByCid[l.contact_id] = l._score;
+    // Cria mapping override do Closer (só se tiver score preenchido)
+    const _cloScoreByCid = {};
+    for (const l of closerC) {
+      if (l.contact_id && l.score && String(l.score).trim()) {
+        _cloScoreByCid[l.contact_id] = String(l.score).trim();
+      }
+    }
+    // Resolver final: Closer > SDR
+    const classOfCid = cid => _cloScoreByCid[cid] || _sdrByCid[cid] || null;
     // Status IDs — SDR
     const S_PRE = 98618883, S_NOVO = 98147479, S_QUAL_ANL = 98147487,
           S_LQ = 98147491,  S_RA = 98162603,  S_FU = 98147483,
@@ -4427,7 +4438,7 @@ function renderDiagnostico() {
     // Helper: conta leads Closer na classe c com status st AGORA (via contact_id)
     const cloByClassStatus = {}; classes.forEach(c => cloByClassStatus[c] = {});
     for (const l of closerC) {
-      const cls = l.contact_id ? _sdrByCid[l.contact_id] : null;
+      const cls = l.contact_id ? classOfCid(l.contact_id) : null;
       if (!cls || cloByClassStatus[cls] === undefined) continue;
       const st = l.status;
       cloByClassStatus[cls][st] = (cloByClassStatus[cls][st] || 0) + 1;
@@ -4436,7 +4447,9 @@ function renderDiagnostico() {
     // Vendas fechadas no período (usa closerVendas — filtro por closed_at)
     const vendasByClass = {}; classes.forEach(c => vendasByClass[c] = 0);
     for (const v of closerVendas) {
-      const cls = v.contact_id ? _sdrByCid[v.contact_id] : null;
+      // Score do próprio lead Closer prevalece (pode ter sido reavaliado)
+      const cls = (v.score && String(v.score).trim())
+        || (v.contact_id ? classOfCid(v.contact_id) : null);
       if (cls && vendasByClass[cls] !== undefined) vendasByClass[cls]++;
     }
     // Cores por score (bate com o SCORE_COLOR global; E/F/Sem score adicionados)
