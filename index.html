@@ -686,6 +686,41 @@
     .ds-card .ds-card-h .sub{font-size:12px;color:var(--muted)}
     .ds-card .ds-card-b{padding:20px 22px}
 
+    /* Eficiência SDR/Closer — tabela polida com avatar, barra e destaque */
+    .eff-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+    .eff-table th{text-align:right;padding:10px 12px;font-size:10px;font-weight:700;
+      letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+      border-bottom:2px solid var(--border);background:var(--surface2,#fafafa)}
+    .eff-table th.col-name{text-align:left}
+    .eff-table td{padding:11px 12px;border-bottom:1px solid var(--border);
+      font-variant-numeric:tabular-nums;text-align:right;transition:background .12s}
+    .eff-table td.col-name{text-align:left;font-weight:600;color:var(--text)}
+    .eff-table tbody tr:hover td{background:rgba(238,77,32,.035)}
+    .eff-table tbody tr.top-row td{background:rgba(238,77,32,.05)}
+    .eff-table tfoot td{padding:11px 12px;font-weight:700;font-variant-numeric:tabular-nums;
+      text-align:right;background:var(--surface2,#fafafa);border-top:2px solid var(--border);color:var(--text)}
+    .eff-table tfoot td.col-name{text-align:left;text-transform:uppercase;
+      font-size:10.5px;letter-spacing:.06em;color:var(--muted)}
+    /* Iniciais coloridas do consultor */
+    .eff-avatar{display:inline-flex;width:24px;height:24px;
+      align-items:center;justify-content:center;border-radius:50%;
+      font-size:10px;font-weight:700;color:#fff;margin-right:10px;
+      vertical-align:middle;letter-spacing:0}
+    /* Barra de proporção atrás do número principal */
+    .eff-bar{position:relative;isolation:isolate}
+    .eff-bar::before{content:'';position:absolute;top:6px;bottom:6px;right:8px;
+      width:calc(var(--bar,0)*1%);max-width:calc(100% - 16px);
+      background:linear-gradient(90deg,rgba(238,77,32,.03),rgba(238,77,32,.14));
+      border-radius:4px;z-index:-1}
+    /* Top de cada coluna (crown) */
+    .eff-crown{position:relative;font-weight:700;color:#16a34a}
+    .eff-crown::after{content:'👑';font-size:9px;margin-left:5px;opacity:.85;vertical-align:middle}
+    /* Taxas por faixa */
+    .tx-good{color:#16a34a;font-weight:700}
+    .tx-mid {color:#d97706;font-weight:600}
+    .tx-bad {color:#dc2626;font-weight:600}
+    .tx-neutral{color:var(--muted)}
+
     /* Grids */
     .ds-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
     .ds-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
@@ -4570,30 +4605,66 @@ function renderDiagnostico() {
       return;
     }
 
+    // Helpers visuais compartilhados
+    const _effInitials = n => (n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const _effColor = n => {
+      const palette = ['#ee4d20','#3b82f6','#a855f7','#16a34a','#f59e0b','#0891b2','#e11d48','#7c3aed','#059669'];
+      let h = 0; for (const c of (n||'')) h = (h*31 + c.charCodeAt(0)) >>> 0;
+      return palette[h % palette.length];
+    };
+    const _effAvatar = n => `<span class="eff-avatar" style="background:${_effColor(n)}">${_effInitials(n)}</span>${n}`;
+    const _effTxClass = (v, good, mid) => v >= good ? 'tx-good' : v >= mid ? 'tx-mid' : 'tx-bad';
+    const _effTop = (arr, key) => Math.max(...arr.map(x => x[key] || 0));
+    const _effCell = (val, max, isTop) => {
+      const w = max > 0 ? Math.round(val/max*100) : 0;
+      const cls = isTop ? 'eff-bar eff-crown' : 'eff-bar';
+      return `<td class="${cls}" style="--bar:${w}">${val}</td>`;
+    };
+
+    // Descobre o top de cada coluna (pra coroar)
+    const topLeads = _effTop(users, 'leads');
+    const topQualif = _effTop(users, 'qualif');
+    const topAgend = _effTop(users, 'agend');
+    const totLeadsF = users.reduce((s,u)=>s+u.leads,0);
+    const totQualifF = users.reduce((s,u)=>s+u.qualif,0);
+    const totAgendF = users.reduce((s,u)=>s+u.agend,0);
+
     el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
-        <thead><tr style="border-bottom:2px solid var(--border)">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Consultor</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Leads</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Qualif</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Reuniões agendadas</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Qualif</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Agendamento</th>
+      <table class="eff-table">
+        <thead><tr>
+          <th class="col-name">Consultor</th>
+          <th>Leads</th>
+          <th>Qualif</th>
+          <th>Reuniões agendadas</th>
+          <th>Tx. Qualif</th>
+          <th>Tx. Agendamento</th>
         </tr></thead>
         <tbody>
           ${users.map(u => {
-            const txQ = u.leads > 0 ? (u.qualif/u.leads*100).toFixed(1)+'%' : '—';
-            const txA = u.leads > 0 ? (u.agend/u.leads*100).toFixed(1)+'%' : '—';
-            return `<tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:9px 10px;font-weight:600">${u.name}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b>${u.leads}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.qualif}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.agend>0?'#e85d28':'inherit'}">${u.agend}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txQ}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txA}</td>
+            const txQ = u.leads > 0 ? (u.qualif/u.leads*100) : 0;
+            const txA = u.leads > 0 ? (u.agend/u.leads*100) : 0;
+            const txQCls = u.leads > 0 ? _effTxClass(txQ, 30, 15) : 'tx-neutral';
+            const txACls = u.leads > 0 ? _effTxClass(txA, 25, 10) : 'tx-neutral';
+            return `<tr>
+              <td class="col-name">${_effAvatar(u.name)}</td>
+              ${_effCell(u.leads,  topLeads,  u.leads  === topLeads  && u.leads  > 0)}
+              ${_effCell(u.qualif, topQualif, u.qualif === topQualif && u.qualif > 0)}
+              ${_effCell(u.agend,  topAgend,  u.agend  === topAgend  && u.agend  > 0)}
+              <td class="${txQCls}">${u.leads > 0 ? txQ.toFixed(1)+'%' : '—'}</td>
+              <td class="${txACls}">${u.leads > 0 ? txA.toFixed(1)+'%' : '—'}</td>
             </tr>`;
           }).join('')}
         </tbody>
+        <tfoot>
+          <tr>
+            <td class="col-name">Total</td>
+            <td>${totLeadsF}</td>
+            <td>${totQualifF}</td>
+            <td>${totAgendF}</td>
+            <td>${totLeadsF > 0 ? (totQualifF/totLeadsF*100).toFixed(1)+'%' : '—'}</td>
+            <td>${totLeadsF > 0 ? (totAgendF/totLeadsF*100).toFixed(1)+'%' : '—'}</td>
+          </tr>
+        </tfoot>
       </table>`;
   })();
 
@@ -4646,32 +4717,70 @@ function renderDiagnostico() {
       </div>`;
       return;
     }
+    // Helpers visuais compartilhados (mesmos do SDR)
+    const _effInitials = n => (n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const _effColor = n => {
+      const palette = ['#ee4d20','#3b82f6','#a855f7','#16a34a','#f59e0b','#0891b2','#e11d48','#7c3aed','#059669'];
+      let h = 0; for (const c of (n||'')) h = (h*31 + c.charCodeAt(0)) >>> 0;
+      return palette[h % palette.length];
+    };
+    const _effAvatar = n => `<span class="eff-avatar" style="background:${_effColor(n)}">${_effInitials(n)}</span>${n}`;
+    const _effTxClass = (v, good, mid) => v >= good ? 'tx-good' : v >= mid ? 'tx-mid' : 'tx-bad';
+    const _effTop = (arr, key) => Math.max(...arr.map(x => x[key] || 0));
+    const _effCell = (val, max, isTop) => {
+      const w = max > 0 ? Math.round(val/max*100) : 0;
+      const cls = isTop ? 'eff-bar eff-crown' : 'eff-bar';
+      return `<td class="${cls}" style="--bar:${w}">${val}</td>`;
+    };
+
+    const topRealiz = _effTop(users, 'realiz');
+    const topProp   = _effTop(users, 'prop');
+    const topVerde  = _effTop(users, 'verde');
+    const topVendas = _effTop(users, 'vendas');
+    const totRealizF = users.reduce((s,u)=>s+u.realiz,0);
+    const totPropF   = users.reduce((s,u)=>s+u.prop,0);
+    const totVerdeF  = users.reduce((s,u)=>s+u.verde,0);
+    const totVendasF = users.reduce((s,u)=>s+u.vendas,0);
+
     el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
-        <thead><tr style="border-bottom:2px solid var(--border)">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Consultor</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Reunião realizada</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Proposta</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Sinal Verde</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Vendas</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Proposta</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Fechamento</th>
+      <table class="eff-table">
+        <thead><tr>
+          <th class="col-name">Consultor</th>
+          <th>Reunião realizada</th>
+          <th>Proposta</th>
+          <th>Sinal Verde</th>
+          <th>Vendas</th>
+          <th>Tx. Proposta</th>
+          <th>Tx. Fechamento</th>
         </tr></thead>
         <tbody>
           ${users.map(u => {
-            const txP = u.realiz > 0 ? (u.prop/u.realiz*100).toFixed(1)+'%' : '—';
-            const txF = u.prop > 0 ? (u.vendas/u.prop*100).toFixed(1)+'%' : '—';
-            return `<tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:9px 10px;font-weight:600">${u.name}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b>${u.realiz}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.prop}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.verde}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.vendas>0?'#16a34a':'inherit'}">${u.vendas}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txP}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txF}</td>
+            const txP = u.realiz > 0 ? (u.prop/u.realiz*100) : 0;
+            const txF = u.prop > 0 ? (u.vendas/u.prop*100) : 0;
+            const txPCls = u.realiz > 0 ? _effTxClass(txP, 60, 30) : 'tx-neutral';
+            const txFCls = u.prop > 0 ? _effTxClass(txF, 30, 10) : 'tx-neutral';
+            return `<tr>
+              <td class="col-name">${_effAvatar(u.name)}</td>
+              ${_effCell(u.realiz, topRealiz, u.realiz === topRealiz && u.realiz > 0)}
+              ${_effCell(u.prop,   topProp,   u.prop   === topProp   && u.prop   > 0)}
+              ${_effCell(u.verde,  topVerde,  u.verde  === topVerde  && u.verde  > 0)}
+              ${_effCell(u.vendas, topVendas, u.vendas === topVendas && u.vendas > 0)}
+              <td class="${txPCls}">${u.realiz > 0 ? txP.toFixed(1)+'%' : '—'}</td>
+              <td class="${txFCls}">${u.prop > 0 ? txF.toFixed(1)+'%' : '—'}</td>
             </tr>`;
           }).join('')}
         </tbody>
+        <tfoot>
+          <tr>
+            <td class="col-name">Total</td>
+            <td>${totRealizF}</td>
+            <td>${totPropF}</td>
+            <td>${totVerdeF}</td>
+            <td>${totVendasF}</td>
+            <td>${totRealizF > 0 ? (totPropF/totRealizF*100).toFixed(1)+'%' : '—'}</td>
+            <td>${totPropF > 0 ? (totVendasF/totPropF*100).toFixed(1)+'%' : '—'}</td>
+          </tr>
+        </tfoot>
       </table>`;
   })();
 
