@@ -4527,16 +4527,19 @@ function renderDiagnostico() {
     });
   })();
 
-  // ── Funil por consultor (SDR / Usuário responsável) ────
+  // ── Eficiência SDR (por consultor) ────
+  // Users que aparecem no Kommo mas NÃO são SDRs — não devem constar no funil por consultor.
+  const SDR_EXCLUDE = new Set([14445895 /* MME Vacation (integração/conta cliente) */]);
   (function renderFunilSDR() {
     const el = document.getElementById('diag-funil-sdr');
     const subEl = document.getElementById('diag-funil-sdr-sub');
     if (!el) return;
     const usersMap = (KOMMO_RAW && KOMMO_RAW.users_map) || {};
-    // Agrega por responsible_user_id
+    // Agrega por responsible_user_id (excluindo users que não são SDR)
     const byUser = {};
     for (const l of sdr) {
       const uid = l.responsible_user_id || 0;
+      if (SDR_EXCLUDE.has(uid)) continue;
       if (!byUser[uid]) byUser[uid] = {leads:[], name: (usersMap[uid] && usersMap[uid].name) || `Usuário ${uid || 'sem atribuição'}`};
       byUser[uid].leads.push(l);
     }
@@ -4632,10 +4635,11 @@ function renderDiagnostico() {
     // Status IDs — Closer
     const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563;
     const C_WON = 142, C_LOST = 143;
-    // Agrupa leads Closer do período por responsible_user_id
+    // Agrupa leads Closer do período por responsible_user_id (exclui não-consultores)
     const byUser = {};
     for (const l of closerC) {
       const uid = l.responsible_user_id || 0;
+      if (SDR_EXCLUDE.has(uid)) continue;
       if (!byUser[uid]) byUser[uid] = {leads:[], name:(usersMap[uid] && usersMap[uid].name) || `Usuário ${uid || 'sem atribuição'}`};
       byUser[uid].leads.push(l);
     }
