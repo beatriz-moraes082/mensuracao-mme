@@ -852,6 +852,7 @@
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
+  <button onclick="switchTab('atividades',this)">Atividades</button>
   <button onclick="switchTab('disparos',this)">Disparos &amp; Nutrição</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
   <button onclick="switchTab('score',this)">Calculadora de Score</button>
@@ -1245,6 +1246,52 @@
 
 </div>
 </div><!-- /tab-outbound -->
+
+
+<!-- ================================================================
+     TAB · ATIVIDADES (tarefas dos SDRs e Closers · Kommo /tasks)
+================================================================ -->
+<div id="tab-atividades" class="tab-pane">
+<div class="main">
+  <div class="hero-modern" style="grid-template-columns:1fr">
+    <div>
+      <span class="hl-eyebrow">ATIVIDADES · KOMMO CRM</span>
+      <h1 style="margin:8px 0 6px">Volume de tarefas por consultor</h1>
+      <div class="hl-desc">
+        Tarefas do Kommo atribuídas aos SDRs e Closers — total, concluídas, pendentes,
+        atrasadas, taxa de conclusão, mix por tipo e média por lead.
+      </div>
+      <div class="hl-pills">
+        <select class="period-select" id="ativ-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="mes_prev">Mês passado</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:12px">
+        Última atualização: <b id="ativ-fetched" style="color:var(--text)">—</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-section-label">Resumo do período</div>
+  <div class="kpi-grid-modern" id="ativ-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+
+  <div class="ds-sec" style="margin-top:24px"><h3>Atividades dos SDRs</h3><span class="sub" id="ativ-sdr-sub">—</span></div>
+  <div class="ds-card"><div id="ativ-sdr" style="overflow-x:auto"></div></div>
+
+  <div class="ds-sec" style="margin-top:24px"><h3>Atividades dos Closers</h3><span class="sub" id="ativ-closer-sub">—</span></div>
+  <div class="ds-card"><div id="ativ-closer" style="overflow-x:auto"></div></div>
+
+  <div class="ds-sec" style="margin-top:24px"><h3>Mix por tipo de tarefa</h3><span class="sub">Distribuição de atividades no período · todos os consultores</span></div>
+  <div class="ds-card"><div id="ativ-tipos"></div></div>
+</div>
+</div><!-- /tab-atividades -->
 
 
 <!-- ================================================================
@@ -1785,6 +1832,7 @@ function switchTab(id, btn) {
   if (id === 'evolucao') renderMensuracao();
   if (id === 'funis') renderFunis();
   if (id === 'outbound') renderOutbound();
+  if (id === 'atividades') renderAtividades();
   if (id === 'vendas') renderVendas();
   if (id === 'disparos') renderDisparos();
   if (id === 'score')   renderScore();
@@ -2354,6 +2402,7 @@ function setGlobalPeriod(key, btn) {
   if (typeof renderDiagnostico === 'function') renderDiagnostico();
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderDisparos === 'function') renderDisparos();
+  if (typeof renderAtividades === 'function') renderAtividades();
 }
 function setPeriod(key, btn) { setGlobalPeriod(key, btn); }
 
@@ -4798,6 +4847,205 @@ document.addEventListener('DOMContentLoaded', () => {
 renderFunis();
 renderOutbound();
 renderMensuracao();
+
+// ══════════════════════════════════════════════════════════════════════════
+// ATIVIDADES · tarefas do Kommo agregadas por consultor (SDR e Closer)
+// ══════════════════════════════════════════════════════════════════════════
+function renderAtividades() {
+  if (!KOMMO_RAW) return;
+  const el_kpis   = document.getElementById('ativ-kpis');
+  const el_sdr    = document.getElementById('ativ-sdr');
+  const el_closer = document.getElementById('ativ-closer');
+  const el_tipos  = document.getElementById('ativ-tipos');
+  if (!el_sdr || !el_closer) return;
+
+  const tasks = KOMMO_RAW.tasks || [];
+  if (tasks.length === 0) {
+    const msg = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6">⏳ Tarefas ainda não coletadas. Rode o workflow <code>Update dashboard data</code> ou aguarde o próximo cron.</div>';
+    el_sdr.innerHTML = msg;
+    el_closer.innerHTML = msg;
+    if (el_kpis) el_kpis.innerHTML = '';
+    if (el_tipos) el_tipos.innerHTML = '';
+    return;
+  }
+  const taskTypes = KOMMO_RAW.task_types || {};
+  const usersMap = KOMMO_RAW.users_map || {};
+
+  // Filtro por período — usa `created_at` da tarefa (unix timestamp)
+  const ref = new Date(KOMMO_RAW.fetched_at);
+  const win = periodWindow(currentPeriod, ref);
+  const fromTs = Math.floor(new Date(win.from).getTime()/1000);
+  const toTs   = Math.floor(new Date(win.to).getTime()/1000);
+  const tasksInP = tasks.filter(t => {
+    const ts = t.created_at || 0;
+    return ts >= fromTs && ts <= toTs;
+  });
+
+  // Mapping lead_id → pipeline (SDR ou Closer) pra separar responsáveis
+  const leadPipe = {};
+  for (const l of (KOMMO_RAW.sdr || [])) leadPipe[l.id] = 'sdr';
+  for (const l of (KOMMO_RAW.closer || [])) leadPipe[l.id] = 'closer';
+
+  // Data de "agora" pra classificar atrasadas (tarefas com complete_till < now e não concluídas)
+  const nowTs = Math.floor(Date.now()/1000);
+  const _SDR_EXCLUDE = new Set([14445895]); // mesmo do Diagnóstico
+
+  // Agrega por (responsible, pipeline_do_lead)
+  const byUser = {sdr: {}, closer: {}};
+  const typeCount = {}; // task_type_id → count
+  for (const t of tasksInP) {
+    if (!t.responsible || _SDR_EXCLUDE.has(t.responsible)) continue;
+    const pipe = leadPipe[t.lead_id];
+    if (!pipe) continue; // só tarefas atreladas a leads SDR/Closer
+    if (!byUser[pipe][t.responsible]) {
+      byUser[pipe][t.responsible] = {
+        name: (usersMap[t.responsible] && usersMap[t.responsible].name) || `Usuário ${t.responsible}`,
+        total: 0, done: 0, pending: 0, overdue: 0,
+        types: {},
+        leadIds: new Set(),
+      };
+    }
+    const u = byUser[pipe][t.responsible];
+    u.total++;
+    if (t.is_completed) u.done++;
+    else {
+      u.pending++;
+      if (t.complete_till && t.complete_till < nowTs) u.overdue++;
+    }
+    const tid = t.task_type_id || 0;
+    u.types[tid] = (u.types[tid] || 0) + 1;
+    typeCount[tid] = (typeCount[tid] || 0) + 1;
+    if (t.lead_id) u.leadIds.add(t.lead_id);
+  }
+
+  // ── KPIs Resumo ─────────────────────────────────────────
+  const totAll = tasksInP.length;
+  const totDone = tasksInP.filter(t => t.is_completed).length;
+  const totPending = totAll - totDone;
+  const totOverdue = tasksInP.filter(t => !t.is_completed && t.complete_till && t.complete_till < nowTs).length;
+  const fmtN = n => (n||0).toLocaleString('pt-BR');
+  const fmtP = (n,d) => d > 0 ? (n/d*100).toFixed(1)+'%' : '—';
+  if (el_kpis) {
+    el_kpis.innerHTML = [
+      {lbl:'Total no período', val: fmtN(totAll), sub:'atividades criadas', color:'#3b82f6'},
+      {lbl:'Concluídas',       val: fmtN(totDone), sub: fmtP(totDone, totAll)+' do total', color:'#16a34a'},
+      {lbl:'Pendentes',        val: fmtN(totPending), sub: fmtP(totPending, totAll)+' aguardando', color:'#f59e0b'},
+      {lbl:'Atrasadas',        val: fmtN(totOverdue), sub: 'prazo já venceu', color:'#dc2626'},
+    ].map(k => `
+      <div class="ds-kpi">
+        <div class="lbl">${k.lbl}</div>
+        <div class="val" style="color:${k.color}">${k.val}</div>
+        <div class="sub">${k.sub}</div>
+      </div>`).join('');
+  }
+
+  // ── Helpers visuais (mesmos da Eficiência SDR/Closer) ──
+  const _initials = n => (n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+  const _color = n => {
+    const palette = ['#ee4d20','#3b82f6','#a855f7','#16a34a','#f59e0b','#0891b2','#e11d48','#7c3aed','#059669'];
+    let h = 0; for (const c of (n||'')) h = (h*31 + c.charCodeAt(0)) >>> 0;
+    return palette[h % palette.length];
+  };
+  const _avatar = n => `<span class="eff-avatar" style="background:${_color(n)}">${_initials(n)}</span>${n}`;
+  const _txCls = (v, good, mid) => v >= good ? 'tx-good' : v >= mid ? 'tx-mid' : 'tx-bad';
+  const _top = (arr, key) => Math.max(...arr.map(x => x[key] || 0));
+  const _cell = (val, max, isTop) => {
+    const w = max > 0 ? Math.round(val/max*100) : 0;
+    const cls = isTop ? 'eff-bar eff-crown' : 'eff-bar';
+    return `<td class="${cls}" style="--bar:${w}">${val}</td>`;
+  };
+
+  // Renderiza tabela por pipeline (SDR ou Closer)
+  const renderTable = (usersDict, target, subEl, subLabel) => {
+    const users = Object.entries(usersDict).map(([uid, d]) => ({
+      uid, name: d.name, total: d.total, done: d.done,
+      pending: d.pending, overdue: d.overdue,
+      taxConcl: d.total > 0 ? (d.done/d.total*100) : 0,
+      leadsCount: d.leadIds.size,
+      taxLead: d.leadIds.size > 0 ? (d.total / d.leadIds.size) : 0,
+      types: d.types,
+    })).sort((a,b) => b.total - a.total);
+    if (users.length === 0) {
+      target.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atividades ${subLabel} no período.</div>`;
+      if (subEl) subEl.textContent = `Sem atividades ${subLabel} no período`;
+      return;
+    }
+    if (subEl) subEl.textContent = `${users.length} consultor${users.length===1?'':'es'} · ${users.reduce((s,u)=>s+u.total,0)} tarefas no período`;
+    const topTotal   = _top(users, 'total');
+    const topDone    = _top(users, 'done');
+    const topPending = _top(users, 'pending');
+    const topOverdue = _top(users, 'overdue');
+    // Rodapé Total
+    const totF = users.reduce((s,u)=>s+u.total,0);
+    const doneF = users.reduce((s,u)=>s+u.done,0);
+    const pendF = users.reduce((s,u)=>s+u.pending,0);
+    const overF = users.reduce((s,u)=>s+u.overdue,0);
+    const totalLeadsF = users.reduce((s,u)=>s+u.leadsCount,0);
+
+    target.innerHTML = `
+      <table class="eff-table">
+        <thead><tr>
+          <th class="col-name">Consultor</th>
+          <th>Total</th>
+          <th>Concluídas</th>
+          <th>Pendentes</th>
+          <th>Atrasadas</th>
+          <th>Tx. Conclusão</th>
+          <th>Tarefas/lead</th>
+        </tr></thead>
+        <tbody>
+          ${users.map(u => {
+            const txCls = _txCls(u.taxConcl, 70, 40);
+            const overdueCls = u.overdue > 0 ? 'tx-bad' : '';
+            return `<tr>
+              <td class="col-name">${_avatar(u.name)}</td>
+              ${_cell(u.total, topTotal, u.total === topTotal && u.total > 0)}
+              ${_cell(u.done, topDone, u.done === topDone && u.done > 0)}
+              ${_cell(u.pending, topPending, u.pending === topPending && u.pending > 0)}
+              <td class="eff-bar ${overdueCls}" style="--bar:${topOverdue>0?Math.round(u.overdue/topOverdue*100):0}">${u.overdue}</td>
+              <td class="${txCls}">${u.taxConcl.toFixed(1)}%</td>
+              <td>${u.taxLead > 0 ? u.taxLead.toFixed(1) : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td class="col-name">Total</td>
+            <td>${totF}</td>
+            <td>${doneF}</td>
+            <td>${pendF}</td>
+            <td>${overF}</td>
+            <td>${totF > 0 ? (doneF/totF*100).toFixed(1)+'%' : '—'}</td>
+            <td>${totalLeadsF > 0 ? (totF/totalLeadsF).toFixed(1) : '—'}</td>
+          </tr>
+        </tfoot>
+      </table>`;
+  };
+  renderTable(byUser.sdr, el_sdr, document.getElementById('ativ-sdr-sub'), 'SDR');
+  renderTable(byUser.closer, el_closer, document.getElementById('ativ-closer-sub'), 'Closer');
+
+  // ── Mix por tipo de tarefa (barras horizontais) ────────
+  if (el_tipos) {
+    const entries = Object.entries(typeCount).sort((a,b) => b[1] - a[1]);
+    const max = entries.length ? entries[0][1] : 1;
+    el_tipos.innerHTML = entries.length ? entries.map(([tid, n]) => {
+      const name = taskTypes[tid] || `Tipo ${tid}`;
+      const w = Math.round(n/max*100);
+      const pct = totAll > 0 ? (n/totAll*100).toFixed(1) : '0';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:0 0 180px;font-size:12.5px;font-weight:600">${name}</div>
+        <div style="flex:1;position:relative;height:22px;background:var(--surface2,#fafafa);border-radius:4px;overflow:hidden">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:${w}%;background:linear-gradient(90deg,#ee4d20,#f59e0b);border-radius:4px"></div>
+        </div>
+        <div style="flex:0 0 90px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px"><b>${n}</b> <span style="color:var(--muted)">(${pct}%)</span></div>
+      </div>`;
+    }).join('') : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atividades no período.</div>';
+  }
+
+  // Data de fetch
+  const f = document.getElementById('ativ-fetched');
+  if (f && KOMMO_RAW.fetched_at) f.textContent = _fmtFetchedDate(KOMMO_RAW.fetched_at);
+}
 </script>
 
 
