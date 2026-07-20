@@ -362,6 +362,41 @@ def get_users_map():
         page += 1
     return users
 
+def get_task_types():
+    """Fetch mapping task_type_id → nome. Kommo tem tipos built-in (1=Call, 2=Meeting, 3=Letter)
+    + tipos customizados. Chamada única, cacheada em memória."""
+    data = kommo_get("/api/v4/account", params={"with": "task_types"})
+    if not data: return {}
+    types = data.get("_embedded", {}).get("task_types", []) or []
+    return {t["id"]: t.get("name", f"Tipo {t['id']}") for t in types}
+
+def fetch_tasks():
+    """Puxa TODAS as tarefas do Kommo (paginação). Retorna lista de dicts leves
+    contendo só o necessário pro dashboard: quem é responsável, tipo, prazo, se está concluída."""
+    tasks, page = [], 1
+    while True:
+        data = kommo_get("/api/v4/tasks", params={"limit": 250, "page": page})
+        batch = data.get("_embedded", {}).get("tasks", []) if data else []
+        if not batch: break
+        for t in batch:
+            # Só tarefas atreladas a lead (ignora contatos/companies)
+            if t.get("entity_type") != "leads": continue
+            tasks.append({
+                "id":             t.get("id"),
+                "responsible":    t.get("responsible_user_id"),
+                "created_by":     t.get("created_by"),
+                "lead_id":        t.get("entity_id"),
+                "task_type_id":   t.get("task_type_id"),
+                "created_at":     t.get("created_at"),
+                "updated_at":     t.get("updated_at"),
+                "complete_till":  t.get("complete_till"),
+                "is_completed":   bool(t.get("is_completed")),
+            })
+        print(f"  tasks page {page}: +{len(batch)} (total {len(tasks)})")
+        if len(batch) < 250: break
+        page += 1
+    return tasks
+
 def get_loss_reasons():
     """Busca mapeamento de loss_reason_id → nome."""
     reasons = {}
@@ -390,6 +425,12 @@ def main():
     print("👥 Buscando usuários do Kommo (SDRs/Closers)...")
     users_map = get_users_map()
     print(f"  {len(users_map)} usuários coletados")
+
+    print("\n📋 Buscando tipos de tarefa e tarefas...")
+    task_types = get_task_types()
+    print(f"  {len(task_types)} tipos de tarefa: {task_types}")
+    tasks = fetch_tasks()
+    print(f"  {len(tasks)} tarefas coletadas")
 
     print("\n📋 Buscando motivos de perda...")
     loss_reasons_map = get_loss_reasons()
@@ -539,6 +580,8 @@ def main():
         "status_map": {str(k): v for k, v in status_map.items()},
         "users_map":  {str(k): v for k, v in users_map.items()},
         "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},
+        "task_types": {str(k): v for k, v in task_types.items()},
+        "tasks":      tasks,
         "metrics":    metrics,
         "sdr":      deduped_sdr,
         "closer":   processed_closer,
