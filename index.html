@@ -4543,32 +4543,14 @@ function renderDiagnostico() {
       if (!byUser[uid]) byUser[uid] = {leads:[], name: (usersMap[uid] && usersMap[uid].name) || `Usuário ${uid || 'sem atribuição'}`};
       byUser[uid].leads.push(l);
     }
-    const _sdrByCid = {};
-    for (const l of sdr) if (l.contact_id) _sdrByCid[l.contact_id] = l.responsible_user_id || 0;
-    // Agrega Closer (Proposta / Sinal Verde) por SDR responsável, via contact_id
-    const CLO_VERDE = 98334563;
-    const propByUser = {}, verdeByUser = {}, vendasByUser = {};
-    for (const l of closerC) {
-      const uid = l.contact_id ? _sdrByCid[l.contact_id] : null;
-      if (uid == null) continue;
-      if (l.proposta || l.status === 142 || l.status === CLO_VERDE) propByUser[uid] = (propByUser[uid] || 0) + 1;
-      if (l.status === CLO_VERDE || l.status === 142) verdeByUser[uid] = (verdeByUser[uid] || 0) + 1;
-    }
-    for (const v of closerVendas) {
-      const uid = v.contact_id ? _sdrByCid[v.contact_id] : null;
-      if (uid != null) vendasByUser[uid] = (vendasByUser[uid] || 0) + 1;
-    }
-    // Ordena por leads (maior → menor)
+    // SDR: responsabilidade termina no AGENDAMENTO da reunião.
+    // Reunião realizada / Proposta / Sinal Verde / Venda são do Closer (ver bloco abaixo).
     const users = Object.entries(byUser)
       .map(([uid, d]) => ({
         uid, name: d.name,
         leads: d.leads.length,
         qualif: d.leads.filter(l => l.qualified).length,
         agend:  d.leads.filter(l => l.reuniao_agendada).length,
-        realiz: d.leads.filter(l => l.reuniao_realizada).length,
-        prop:   propByUser[uid] || 0,
-        verde:  verdeByUser[uid] || 0,
-        vendas: vendasByUser[uid] || 0,
       }))
       .sort((a,b) => b.leads - a.leads);
     if (users.length === 0) {
@@ -4589,37 +4571,26 @@ function renderDiagnostico() {
     }
 
     el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:800px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
         <thead><tr style="border-bottom:2px solid var(--border)">
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Consultor</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Leads</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Qualif</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Agend</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Realiz</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Proposta</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">S. Verde</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Vendas</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Reuniões agendadas</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Qualif</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Reunião</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Conv</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Agendamento</th>
         </tr></thead>
         <tbody>
           ${users.map(u => {
             const txQ = u.leads > 0 ? (u.qualif/u.leads*100).toFixed(1)+'%' : '—';
-            const txR = u.leads > 0 ? (u.realiz/u.leads*100).toFixed(1)+'%' : '—';
-            const txC = u.leads > 0 ? (u.vendas/u.leads*100).toFixed(1)+'%' : '—';
+            const txA = u.leads > 0 ? (u.agend/u.leads*100).toFixed(1)+'%' : '—';
             return `<tr style="border-bottom:1px solid var(--border)">
               <td style="padding:9px 10px;font-weight:600">${u.name}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b>${u.leads}</b></td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.qualif}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.agend}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.realiz}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.prop}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.verde}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.vendas>0?'#16a34a':'inherit'}">${u.vendas}</b></td>
+              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.agend>0?'#e85d28':'inherit'}">${u.agend}</b></td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txQ}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txR}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txC}</td>
+              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txA}</td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -4650,25 +4621,23 @@ function renderDiagnostico() {
       const uid = v.responsible_user_id || 0;
       vendasByUser[uid] = (vendasByUser[uid] || 0) + 1;
     }
+    // Closer: 4 etapas do funil dele (reunião realizada → proposta → sinal verde → venda)
     const users = Object.entries(byUser)
       .map(([uid, d]) => ({
         uid, name: d.name,
-        leads:  d.leads.length,
         realiz: d.leads.filter(l => l.status === C_RR || l.proposta || l.status === C_VERDE || l.status === C_WON).length,
         prop:   d.leads.filter(l => l.status === C_PROP || l.status === C_FU || l.status === C_VERDE || l.status === C_WON).length,
-        follow: d.leads.filter(l => l.status === C_FU).length,
         verde:  d.leads.filter(l => l.status === C_VERDE || l.status === C_WON).length,
         vendas: vendasByUser[uid] || 0,
-        perdidos: d.leads.filter(l => l.status === C_LOST).length,
       }))
-      .sort((a,b) => b.leads - a.leads);
+      .sort((a,b) => b.realiz - a.realiz);
     if (users.length === 0) {
       el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem leads no Closer no período.</div>';
       return;
     }
-    const totLeads = users.reduce((s,u) => s+u.leads, 0);
+    const totRealiz = users.reduce((s,u) => s+u.realiz, 0);
     const totVendas = users.reduce((s,u) => s+u.vendas, 0);
-    if (subEl) subEl.textContent = `Performance individual dos Closers · ${users.length} consultor${users.length===1?'':'es'} · ${totLeads} leads · ${totVendas} venda${totVendas===1?'':'s'} no período`;
+    if (subEl) subEl.textContent = `Performance individual dos Closers · ${users.length} consultor${users.length===1?'':'es'} · ${totRealiz} reuniões · ${totVendas} venda${totVendas===1?'':'s'} no período`;
     const semDados = users.length === 1 && users[0].uid === '0';
     if (semDados) {
       el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.6">
@@ -4678,37 +4647,28 @@ function renderDiagnostico() {
       return;
     }
     el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:800px">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
         <thead><tr style="border-bottom:2px solid var(--border)">
           <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Consultor</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Leads</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Reu. Realiz</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Reunião realizada</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Proposta</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Follow-up</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">S. Verde</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Sinal Verde</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Vendas</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Perdidos</th>
           <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Proposta</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Fecham.</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Conv</th>
+          <th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Tx. Fechamento</th>
         </tr></thead>
         <tbody>
           ${users.map(u => {
-            const txP = u.leads > 0 ? (u.prop/u.leads*100).toFixed(1)+'%' : '—';
+            const txP = u.realiz > 0 ? (u.prop/u.realiz*100).toFixed(1)+'%' : '—';
             const txF = u.prop > 0 ? (u.vendas/u.prop*100).toFixed(1)+'%' : '—';
-            const txC = u.leads > 0 ? (u.vendas/u.leads*100).toFixed(1)+'%' : '—';
             return `<tr style="border-bottom:1px solid var(--border)">
               <td style="padding:9px 10px;font-weight:600">${u.name}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b>${u.leads}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.realiz}</td>
+              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b>${u.realiz}</b></td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.prop}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.follow}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${u.verde}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums"><b style="color:${u.vendas>0?'#16a34a':'inherit'}">${u.vendas}</b></td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:${u.perdidos>0?'#dc2626':'inherit'}">${u.perdidos}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txP}</td>
               <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txF}</td>
-              <td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums;color:var(--muted)">${txC}</td>
             </tr>`;
           }).join('')}
         </tbody>
