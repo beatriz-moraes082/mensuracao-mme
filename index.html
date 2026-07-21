@@ -1325,8 +1325,8 @@
   <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
     <div>
       <div class="hl-eyebrow">Disparos &amp; Nutrição</div>
-      <h2>Fluxos de mensagens automatizadas</h2>
-      <div class="hl-sub">Acompanhe quantos leads passaram por cada etapa dos fluxos do Kommo: Follow-up, Reagendamento, Proposta Enviada, Nutrição, Pré-atendimento e Fluxo Duque.</div>
+      <h2>Régua de e-mail marketing</h2>
+      <div class="hl-sub">Performance da audiência MME Vacation Club no Mailchimp — aberturas, cliques, CTA do WhatsApp e leads reativados.</div>
       <div class="hl-pills">
         <select class="period-select" id="disp-period-sel" onchange="setGlobalPeriod(this.value, this)">
           <option value="w3">Esta semana</option>
@@ -1341,74 +1341,6 @@
       </div>
     </div>
     <div></div>
-  </div>
-
-  <!-- Como ler esta aba (expandível) -->
-  <details class="ds-card" style="margin-bottom:18px;padding:0">
-    <summary style="cursor:pointer;padding:14px 18px;font-size:13px;font-weight:700;color:var(--accent);list-style:none;display:flex;align-items:center;gap:8px">
-      <span style="font-size:16px">📖</span> Como ler esta aba <span style="color:var(--muted);font-weight:400;font-size:11px;margin-left:auto">(clique pra expandir)</span>
-    </summary>
-    <div style="padding:0 18px 18px;border-top:1px solid var(--border);font-size:12.5px;line-height:1.65;color:var(--text)">
-      <p style="margin-top:14px"><b>O que é esta aba:</b> mostra a performance dos <b>6 fluxos automatizados</b> que vocês têm no Kommo (mensagens disparadas pra leads em momentos específicos).</p>
-      <div style="margin-top:16px">
-        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📊 Topo · 4 KPIs grandes</div>
-        <ul style="margin:0 0 0 18px;padding:0">
-          <li><b>Leads em algum fluxo</b> — quantos leads do período entraram em pelo menos 1 fluxo</li>
-          <li><b>Fluxo com mais leads</b> — qual fluxo está recebendo mais volume</li>
-          <li><b>Fluxos ativos</b> — quantos dos 6 fluxos têm ≥5 leads (volume relevante)</li>
-          <li><b>Total de leads (período)</b> — base de comparação</li>
-        </ul>
-      </div>
-      <div style="margin-top:16px">
-        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🎯 Performance por fluxo · 6 cards</div>
-        <p style="margin:0 0 8px">Cada card mostra <b>um fluxo do Kommo</b>:</p>
-        <ul style="margin:0 0 0 18px;padding:0">
-          <li><b>Follow-up SDR</b> — 3 mensagens pra reativar lead inativo</li>
-          <li><b>Reagendamento</b> — 3 mensagens pra lead que qualificou mas não confirmou reunião</li>
-          <li><b>Proposta Enviada</b> — 3 nutrições do Closer pós envio de proposta</li>
-          <li><b>Nutrição · LQ + bot incompleto</b> — 8 disparos (D01 a D08) pra lead qualificado que não terminou o bot</li>
-          <li><b>Nutrição Closer</b> — sequência de 5 dias (D1 a D5)</li>
-          <li><b>Fluxo Duque</b> — outbound do Duque · 4 dias (D1 a D4)</li>
-        </ul>
-        <p style="margin:12px 0 8px"><b>Dentro de cada card você vê:</b></p>
-        <ul style="margin:0 0 0 18px;padding:0">
-          <li><b>Badge de status:</b> 🟢 <b>ATIVO</b> (≥5 leads) · 🟡 <b>EM TESTE</b> (1-4 leads) · ⚪ <b>SEM USO RECENTE</b> (0 leads)</li>
-          <li><b>Barras coloridas</b> — uma por etapa, tamanho proporcional ao volume. Direita mostra <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">X · Y%</code> (X = leads, Y = % de quem entrou). Se aparecer <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">−N</code>, é o número de leads que não avançou.</li>
-          <li><b>Rodapé:</b> total de entradas + % chegando na última etapa</li>
-          <li><b>Insight automático:</b> ⚠️ amarelo aponta o maior gargalo · ✅ verde confirma que não tem gargalo significativo</li>
-        </ul>
-      </div>
-      <div style="margin-top:16px">
-        <div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">📈 Impacto dos disparos</div>
-        <p style="margin:0">Pra cada fluxo, compara <b style="color:var(--up)">quem concluiu o fluxo</b> (chegou na última etapa) vs <b style="color:#d97706">quem entrou mas parou no meio</b>. Mostra <b>taxa de qualificação</b> e <b>taxa de venda</b> dos dois grupos. Se quem concluiu performa <b>melhor</b>, o fluxo está agregando valor. Se performam parecido, vale revisar o conteúdo das mensagens.</p>
-      </div>
-    </div>
-  </details>
-
-  <!-- 4 KPIs hero -->
-  <div class="ds-grid-4" id="disp-hero-kpis"></div>
-
-  <!-- Funil de Nutrição (pipeline Kommo) -->
-  <div class="ds-sec" style="margin-top:24px">
-    <h3>Funil de Nutrição (pipeline)</h3>
-    <span class="sub">Leads de campanha movidos pra Nutrição quando o SDR não consegue contato</span>
-  </div>
-  <div class="ds-chips" id="disp-nutricao-grid"></div>
-
-  <!-- Cards de cada fluxo -->
-  <div class="ds-sec">
-    <h3>Performance por fluxo</h3>
-    <span class="sub">Quantos leads em cada etapa · taxa de conclusão</span>
-  </div>
-  <div class="ds-grid-2" id="disp-flows-grid"></div>
-
-  <!-- Conversão (qualif/venda) por fluxo -->
-  <div class="ds-sec" style="margin-top:24px">
-    <h3>Impacto dos disparos</h3>
-    <span class="sub">Leads que passaram pelo fluxo vs. base completa</span>
-  </div>
-  <div class="ds-card">
-    <div id="disp-impact-content"></div>
   </div>
 
   <!-- ── Régua de Email · Mailchimp ─────────────────────────── -->
@@ -7347,7 +7279,8 @@ function renderDisparos() {
     {lbl:'Fluxos ativos',         val:fmtN(activeFlows)+'/'+DISP_FLOWS.length, sub:'≥ 5 leads no período', variant:''},
     {lbl:'Total de leads (período)', val:fmtN(total), sub:'base de comparação', variant:''},
   ];
-  document.getElementById('disp-hero-kpis').innerHTML = kpis.map(k => `
+  const _dispKpisEl = document.getElementById('disp-hero-kpis');
+  if (_dispKpisEl) _dispKpisEl.innerHTML = kpis.map(k => `
     <div class="ds-kpi ${k.variant}">
       <div class="lbl">${k.lbl}</div>
       <div class="val" style="${k.val.length > 14 ? 'font-size:16px;line-height:1.25':''}">${k.val}</div>
@@ -7434,7 +7367,8 @@ function renderDisparos() {
         </div>
       </div>`;
   }).join('');
-  document.getElementById('disp-flows-grid').innerHTML = cards;
+  const _dispFlowsEl = document.getElementById('disp-flows-grid');
+  if (_dispFlowsEl) _dispFlowsEl.innerHTML = cards;
 
   // ── Impacto · versão narrativa: passou pelo fluxo vs NÃO passou (base geral) ──
   // Esconde fluxos com N < 10 (amostra ruidosa) e usa linguagem clara.
@@ -7495,25 +7429,28 @@ function renderDisparos() {
       </div>`;
   };
 
-  if (impactNarratives.length === 0) {
-    document.getElementById('disp-impact-content').innerHTML = `
-      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem leads em fluxos no período selecionado.</div>`;
-  } else {
-    const tooSmallList = tooSmall.length > 0
-      ? `<div style="margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--surface2);font-size:11.5px;color:var(--muted);line-height:1.6">
-          <b>Amostra ainda pequena (&lt; ${N_MIN} leads no período) — voltar quando acumular mais:</b><br>
-          ${tooSmall.map(r => `${r.flow.lbl} (${r.inN})`).join(' · ')}
-        </div>`
-      : '';
-    document.getElementById('disp-impact-content').innerHTML = `
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.55">
-        Compara <b style="color:var(--text)">leads que passaram pelo fluxo</b> com <b style="color:var(--text)">leads que NÃO passaram</b> (média geral).
-        Se quem passou converte mais, o fluxo está agregando valor. <span style="font-size:11px">Fluxos com menos de ${N_MIN} leads ficam ocultos pra evitar leitura ruidosa.</span>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        ${withSample.length > 0 ? withSample.map(renderNarrative).join('') : `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12px">Nenhum fluxo com ≥ ${N_MIN} leads no período.</div>`}
-      </div>
-      ${tooSmallList}`;
+  const _dispImpactEl = document.getElementById('disp-impact-content');
+  if (_dispImpactEl) {
+    if (impactNarratives.length === 0) {
+      _dispImpactEl.innerHTML = `
+        <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem leads em fluxos no período selecionado.</div>`;
+    } else {
+      const tooSmallList = tooSmall.length > 0
+        ? `<div style="margin-top:14px;padding:12px 14px;border-radius:8px;background:var(--surface2);font-size:11.5px;color:var(--muted);line-height:1.6">
+            <b>Amostra ainda pequena (&lt; ${N_MIN} leads no período) — voltar quando acumular mais:</b><br>
+            ${tooSmall.map(r => `${r.flow.lbl} (${r.inN})`).join(' · ')}
+          </div>`
+        : '';
+      _dispImpactEl.innerHTML = `
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.55">
+          Compara <b style="color:var(--text)">leads que passaram pelo fluxo</b> com <b style="color:var(--text)">leads que NÃO passaram</b> (média geral).
+          Se quem passou converte mais, o fluxo está agregando valor. <span style="font-size:11px">Fluxos com menos de ${N_MIN} leads ficam ocultos pra evitar leitura ruidosa.</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${withSample.length > 0 ? withSample.map(renderNarrative).join('') : `<div style="padding:14px;text-align:center;color:var(--muted);font-size:12px">Nenhum fluxo com ≥ ${N_MIN} leads no período.</div>`}
+        </div>
+        ${tooSmallList}`;
+    }
   }
 }
 
