@@ -720,6 +720,27 @@
     .tx-mid {color:#d97706;font-weight:600}
     .tx-bad {color:#dc2626;font-weight:600}
     .tx-neutral{color:var(--muted)}
+    /* Ícone ? de ajuda em headers de tabela · tooltip on hover */
+    .eff-info{display:inline-flex;align-items:center;justify-content:center;
+      width:14px;height:14px;border-radius:50%;
+      background:rgba(0,0,0,.10);color:var(--muted);
+      font-size:9px;font-weight:800;font-family:'Inter',sans-serif;
+      margin-left:5px;cursor:help;vertical-align:middle;
+      position:relative;transition:background .15s}
+    .eff-info:hover{background:rgba(238,77,32,.20);color:var(--accent)}
+    .eff-info .eff-tip{position:absolute;top:calc(100% + 8px);right:0;
+      width:280px;max-width:calc(100vw - 40px);
+      background:#1a1a1a;color:#fff;padding:12px 14px;border-radius:8px;
+      box-shadow:0 8px 28px rgba(0,0,0,.28);
+      font-size:11.5px;font-weight:400;line-height:1.5;letter-spacing:0;
+      text-transform:none;text-align:left;
+      opacity:0;pointer-events:none;transform:translateY(-4px);
+      transition:opacity .15s,transform .15s;z-index:100}
+    .eff-info:hover .eff-tip,.eff-info:focus .eff-tip{
+      opacity:1;transform:translateY(0);pointer-events:auto}
+    .eff-info .eff-tip b{color:#fbbf24}
+    .eff-info .eff-tip code{background:rgba(251,191,36,.15);color:#fbbf24;
+      padding:1px 4px;border-radius:3px;font-size:10.5px}
 
     /* Grids */
     .ds-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
@@ -4991,7 +5012,18 @@ function renderAtividades() {
           <th>Pendentes</th>
           <th>Atrasadas</th>
           <th>Tx. Conclusão</th>
-          <th>Tarefas/lead</th>
+          <th>Tarefas/lead <span class="eff-info" tabindex="0">?<span class="eff-tip">
+            <b>Tarefas por lead único</b><br>
+            <code>Total tarefas ÷ Leads distintos atendidos</code>
+            <br><br>
+            Mede <b>intensidade</b> vs volume: se o consultor <b>foca em poucos leads</b>
+            (muitas tarefas em cada) ou <b>espalha</b> o trabalho (1 tarefa por lead).
+            <br><br>
+            <b>Referência:</b><br>
+            • ~1 = direto, pouco follow-up<br>
+            • 3–5 = padrão saudável<br>
+            • &gt;7 = alta persistência ou leads difíceis
+          </span></span></th>
         </tr></thead>
         <tbody>
           ${users.map(u => {
