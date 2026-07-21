@@ -1324,6 +1324,30 @@
 
   <div class="ds-sec" style="margin-top:24px"><h3>Mix por tipo de tarefa</h3><span class="sub">Distribuição de atividades no período · todos os consultores</span></div>
   <div class="ds-card"><div id="ativ-tipos"></div></div>
+
+  <!-- Perfil comportamental dos SDRs (radar com proxies do Kommo) -->
+  <div class="ds-sec" style="margin-top:32px"><h3>Perfil comportamental dos SDRs</h3><span class="sub">6 dimensões calculadas a partir das tarefas do Kommo · normalizado 0–100 vs melhor do time</span></div>
+  <div class="ds-grid-3" id="ativ-radar-sdr" style="gap:16px"></div>
+
+  <!-- Perfil comportamental dos Closers -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Perfil comportamental dos Closers</h3><span class="sub">6 dimensões · normalizado 0–100 vs melhor do time</span></div>
+  <div class="ds-grid-3" id="ativ-radar-closer" style="gap:16px"></div>
+
+  <!-- Legenda das dimensões -->
+  <div style="margin-top:14px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,.06);border-left:3px solid #3b82f6;font-size:12px;line-height:1.7;color:var(--text)">
+    <b style="color:#3b82f6">📖 Como ler o radar</b>
+    <div style="margin-top:6px;color:var(--muted);display:grid;grid-template-columns:repeat(2,1fr);gap:6px 24px">
+      <div>• <b>Volume:</b> total de tarefas do período</div>
+      <div>• <b>Ritmo:</b> rapidez pra concluir (curto = melhor)</div>
+      <div>• <b>Consistência:</b> dias com atividade ÷ dias do período</div>
+      <div>• <b>Prazo:</b> % concluídas antes do complete_till</div>
+      <div>• <b>Follow-up:</b> % das tarefas concluídas que são follow-up</div>
+      <div>• <b>Conversão:</b> SDR = reuniões/leads · Closer = vendas/proposta</div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);font-style:italic">
+      ⚠️ Estas são <b>proxies quantitativos</b> dos dados do CRM — não medem qualidade da conversa (escuta, rapport, objeção). Pra isso precisaria de IA analisando chats ou avaliação manual.
+    </div>
+  </div>
 </div>
 </div><!-- /tab-atividades -->
 
@@ -4869,12 +4893,24 @@ function renderAtividades() {
         total: 0, done: 0, pending: 0, overdue: 0,
         types: {},
         leadIds: new Set(),
+        // Métricas pro radar comportamental
+        rhythmSum: 0, rhythmCount: 0,   // média de tempo (updated_at - created_at) em segundos, concluídas
+        onTime: 0,                        // concluídas dentro do complete_till
+        followupDone: 0,                  // concluídas do tipo follow-up (task_type_id 1)
+        daysActive: new Set(),            // dias únicos com pelo menos 1 tarefa criada
       };
     }
     const u = byUser[pipe][t.responsible];
     u.total++;
-    if (t.is_completed) u.done++;
-    else {
+    if (t.is_completed) {
+      u.done++;
+      if (t.updated_at && t.created_at && t.updated_at > t.created_at) {
+        u.rhythmSum += (t.updated_at - t.created_at);
+        u.rhythmCount++;
+      }
+      if (t.complete_till && t.updated_at && t.updated_at <= t.complete_till) u.onTime++;
+      if (t.task_type_id === 1) u.followupDone++;
+    } else {
       u.pending++;
       if (t.complete_till && t.complete_till < nowTs) u.overdue++;
     }
@@ -4882,7 +4918,40 @@ function renderAtividades() {
     u.types[tid] = (u.types[tid] || 0) + 1;
     typeCount[tid] = (typeCount[tid] || 0) + 1;
     if (t.lead_id) u.leadIds.add(t.lead_id);
+    if (t.created_at) u.daysActive.add(new Date(t.created_at*1000).toISOString().slice(0,10));
   }
+
+  // Conversão por consultor:
+  //  - SDR: reuniões_agendadas ÷ leads SDR responsáveis
+  //  - Closer: vendas ÷ propostas do Closer
+  const sdrConv = {}; // uid → {leads, agend}
+  for (const l of (KOMMO_RAW.sdr || [])) {
+    if (!_inWindow(l.created_at, win)) continue;
+    const uid = l.responsible_user_id;
+    if (!uid || _SDR_EXCLUDE.has(uid)) continue;
+    if (!sdrConv[uid]) sdrConv[uid] = {leads:0, agend:0};
+    sdrConv[uid].leads++;
+    if (l.reuniao_agendada) sdrConv[uid].agend++;
+  }
+  const closerConv = {}; // uid → {prop, vendas}
+  const CLO_VERDE = 98334563;
+  for (const l of (KOMMO_RAW.closer || [])) {
+    if (!_inWindow(l.created_at, win)) continue;
+    const uid = l.responsible_user_id;
+    if (!uid || _SDR_EXCLUDE.has(uid)) continue;
+    if (!closerConv[uid]) closerConv[uid] = {prop:0, vendas:0};
+    if (l.proposta || l.status === 142 || l.status === CLO_VERDE) closerConv[uid].prop++;
+  }
+  for (const v of (KOMMO_RAW.closer || [])) {
+    if (!isValidVenda(v) || !_inWindow(v.closed_at, win)) continue;
+    const uid = v.responsible_user_id;
+    if (!uid || _SDR_EXCLUDE.has(uid)) continue;
+    if (!closerConv[uid]) closerConv[uid] = {prop:0, vendas:0};
+    closerConv[uid].vendas++;
+  }
+
+  // Dias totais do período (pra normalizar consistência)
+  const periodDays = Math.max(1, Math.round((new Date(win.to) - new Date(win.from)) / 86400000));
 
   // ── KPIs Resumo ─────────────────────────────────────────
   const totAll = tasksInP.length;
@@ -5018,6 +5087,130 @@ function renderAtividades() {
       </div>`;
     }).join('') : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atividades no período.</div>';
   }
+
+  // ── Perfil comportamental (radar) · SDR e Closer ────────
+  window._ativRadarCharts = window._ativRadarCharts || {};
+  const renderRadar = (usersDict, targetId, convDict, isCloser) => {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    // Destroi charts anteriores pra evitar leak
+    Object.keys(window._ativRadarCharts).filter(k => k.startsWith(targetId+'-')).forEach(k => {
+      try { window._ativRadarCharts[k].destroy(); } catch(e) {}
+      delete window._ativRadarCharts[k];
+    });
+    const usersArr = Object.entries(usersDict).map(([uid, d]) => {
+      const ritmoAvgH = d.rhythmCount > 0 ? d.rhythmSum/d.rhythmCount/3600 : null; // horas média
+      const conv = convDict[uid] || {};
+      const convVal = isCloser
+        ? (conv.prop > 0 ? conv.vendas/conv.prop*100 : 0)
+        : (conv.leads > 0 ? conv.agend/conv.leads*100 : 0);
+      return {
+        uid, name: d.name, total: d.total, done: d.done,
+        ritmoAvgH,
+        prazoP: d.done > 0 ? d.onTime/d.done*100 : 0,
+        followupP: d.done > 0 ? d.followupDone/d.done*100 : 0,
+        consistP: Math.min(100, d.daysActive.size/periodDays*100),
+        conv: convVal,
+      };
+    }).filter(u => u.total >= 1);
+    if (usersArr.length === 0) {
+      target.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem atividades ${isCloser?'de Closers':'de SDRs'} no período.</div>`;
+      return;
+    }
+    // Normalização vs melhor do time (0-100)
+    const maxTotal = Math.max(...usersArr.map(u => u.total), 1);
+    // Ritmo: menor tempo = melhor. Invertemos: quem tem MENOR ritmoAvgH ganha 100.
+    const minRitmo = Math.min(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), Infinity);
+    const maxRitmo = Math.max(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), 1);
+    const norm = (v, max) => max > 0 ? Math.round(v/max*100) : 0;
+    const dimLbls = ['Volume','Ritmo','Consistência','Prazo','Follow-up', isCloser ? 'Fechamento' : 'Conversão'];
+    const cards = usersArr.map((u, idx) => {
+      const scores = [
+        norm(u.total, maxTotal),
+        u.ritmoAvgH == null ? 0 : (maxRitmo === minRitmo ? 100 : Math.round((maxRitmo - u.ritmoAvgH) / (maxRitmo - minRitmo) * 100)),
+        Math.round(u.consistP),
+        Math.round(u.prazoP),
+        Math.round(u.followupP),
+        Math.round(u.conv),
+      ];
+      const overall = Math.round(scores.reduce((s,v)=>s+v,0)/scores.length);
+      // Top 2 e bottom 2 dimensões
+      const withLbl = scores.map((v,i) => ({v, l: dimLbls[i]}));
+      const sortedDesc = [...withLbl].sort((a,b) => b.v - a.v);
+      const fortes = sortedDesc.slice(0,2).filter(x => x.v > 0);
+      const melhorar = [...withLbl].sort((a,b) => a.v - b.v).slice(0,2).filter(x => x.v < 100);
+      const color = _color(u.name); // reusa helper de cor por nome
+      const canvasId = `${targetId}-c${idx}`;
+      // score badge color (verde/amarelo/vermelho conforme faixa)
+      const badgeColor = overall >= 70 ? '#16a34a' : overall >= 40 ? '#d97706' : '#dc2626';
+      return `<div class="ds-card" style="padding:16px 18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="eff-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:0">${_initials(u.name)}</span>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2">${u.name}</div>
+              <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : u.ritmoAvgH.toFixed(1)+'h'}</div>
+            </div>
+          </div>
+          <span style="font-size:12px;font-weight:800;padding:4px 10px;border-radius:20px;background:${badgeColor}22;color:${badgeColor}">${overall}%</span>
+        </div>
+        <div style="height:200px;position:relative"><canvas id="${canvasId}"></canvas></div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10.5px;line-height:1.5">
+          <div>
+            <div style="font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#16a34a;margin-bottom:3px">FORTES</div>
+            ${fortes.length ? fortes.map(f => `<div style="color:var(--text)">+ ${f.l} <span style="color:var(--muted)">(${f.v})</span></div>`).join('') : '<div style="color:var(--muted)">—</div>'}
+          </div>
+          <div>
+            <div style="font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#dc2626;margin-bottom:3px">A MELHORAR</div>
+            ${melhorar.length ? melhorar.map(f => `<div style="color:var(--text)">− ${f.l} <span style="color:var(--muted)">(${f.v})</span></div>`).join('') : '<div style="color:var(--muted)">—</div>'}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    target.innerHTML = cards;
+    // Instancia Chart.js radar depois que o innerHTML foi aplicado
+    usersArr.forEach((u, idx) => {
+      const scores = [
+        norm(u.total, maxTotal),
+        u.ritmoAvgH == null ? 0 : (maxRitmo === minRitmo ? 100 : Math.round((maxRitmo - u.ritmoAvgH) / (maxRitmo - minRitmo) * 100)),
+        Math.round(u.consistP),
+        Math.round(u.prazoP),
+        Math.round(u.followupP),
+        Math.round(u.conv),
+      ];
+      const canvasId = `${targetId}-c${idx}`;
+      const canvas = document.getElementById(canvasId);
+      if (!canvas || typeof Chart === 'undefined') return;
+      const color = _color(u.name);
+      window._ativRadarCharts[canvasId] = new Chart(canvas, {
+        type: 'radar',
+        data: {
+          labels: dimLbls,
+          datasets: [{
+            data: scores,
+            backgroundColor: color + '22',
+            borderColor: color,
+            borderWidth: 2,
+            pointBackgroundColor: color,
+            pointRadius: 3,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {legend: {display: false}, tooltip: {enabled: true}},
+          scales: {r: {
+            min: 0, max: 100,
+            ticks: {display: false, stepSize: 25},
+            grid: {color: 'rgba(0,0,0,.06)'},
+            angleLines: {color: 'rgba(0,0,0,.06)'},
+            pointLabels: {font: {size: 10}, color: 'var(--muted)'}
+          }}
+        }
+      });
+    });
+  };
+  renderRadar(byUser.sdr,    'ativ-radar-sdr',    sdrConv,    false);
+  renderRadar(byUser.closer, 'ativ-radar-closer', closerConv, true);
 
   // Data de fetch
   const f = document.getElementById('ativ-fetched');
