@@ -1178,6 +1178,19 @@
     </div>
   </div>
 
+  <!-- Nota explicativa: por que 'Reunião Realizada SDR' pode divergir de 'Entradas Closer' -->
+  <div style="margin-top:14px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,.06);border-left:3px solid #3b82f6;font-size:12px;line-height:1.6;color:var(--text)">
+    <b style="color:#3b82f6">📖 Por que "Reunião Realizada" (SDR) não é igual a "Entradas" (Closer)?</b>
+    <div style="margin-top:6px;color:var(--muted)">
+      Cada funil filtra pelo <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">created_at</code> do seu próprio pipeline: o SDR olha leads <b>criados no SDR</b> no período, o Closer olha cards <b>criados no Closer</b> no período. Divergem porque:
+      <ul style="margin:6px 0 0 18px;padding:0">
+        <li>Um lead do SDR de meses anteriores pode ter subido pro Closer <b>hoje</b> — conta em "Entradas Closer" mas não em "Reunião Realizada SDR" do período.</li>
+        <li>Leads que caem direto no Closer (<b>indicação</b>, <b>Duque</b>, <b>IBR</b>, importação manual) somam nas Entradas sem passar pelo SDR.</li>
+        <li>Reuniões realizadas no SDR podem ainda não ter virado card no Closer (delay de promoção).</li>
+      </ul>
+    </div>
+  </div>
+
   <!-- Funil completo combinado -->
   <div class="ds-sec"><h3>Funil completo · SDR → Closer</h3><span class="sub">Da entrada do lead até a venda</span></div>
   <div class="ds-card">
