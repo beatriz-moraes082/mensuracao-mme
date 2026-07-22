@@ -5098,7 +5098,7 @@ function renderAtividades() {
             <span class="eff-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:0">${_initials(u.name)}</span>
             <div>
               <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2">${u.name}</div>
-              <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : u.ritmoAvgH.toFixed(1)+'h'}</div>
+              <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : (u.ritmoAvgH < 24 ? u.ritmoAvgH.toFixed(1)+'h' : (u.ritmoAvgH/24).toFixed(1)+'d')}</div>
             </div>
           </div>
           <span style="font-size:12px;font-weight:800;padding:4px 10px;border-radius:20px;background:${badgeColor}22;color:${badgeColor}">${overall}%</span>
