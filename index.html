@@ -1248,7 +1248,7 @@
       <h1 style="margin:8px 0 6px">Volume de tarefas por consultor</h1>
       <div class="hl-desc">
         Tarefas do Kommo atribuídas aos SDRs e Closers — total, concluídas, pendentes,
-        atrasadas, taxa de conclusão, mix por tipo e média por lead.
+        atrasadas, taxa de conclusão, tempo até o 1º contato, mix por tipo e média por lead.
       </div>
       <div class="hl-pills">
         <select class="period-select" id="ativ-period-sel" onchange="setGlobalPeriod(this.value, this)">
@@ -4829,6 +4829,50 @@ function renderAtividades() {
   const nowTs = Math.floor(Date.now()/1000);
   const _SDR_EXCLUDE = new Set([14445895]); // mesmo do Diagnóstico
 
+  // ── Tempo de atendimento: lead entra → 1ª mensagem de um HUMANO ────────
+  // O expediente (seg-sáb, 8h-18h) sai dos próprios dados: 96% das mensagens
+  // humanas caem nessa janela e domingo não tem nenhuma. Sem descontar a noite,
+  // um lead que chega 22h já nasce com 10h de atraso que ninguém podia evitar.
+  const EXP_INI = 8, EXP_FIM = 18;
+  const horasUteis = (de, ate) => {
+    if (!(ate > de)) return 0;
+    const A = new Date(de*1000), B = new Date(ate*1000);
+    let tot = 0;
+    const dia = new Date(A); dia.setHours(0,0,0,0);
+    while (dia <= B) {
+      if (dia.getDay() !== 0) { // 0 = domingo
+        const ini = new Date(dia); ini.setHours(EXP_INI,0,0,0);
+        const fim = new Date(dia); fim.setHours(EXP_FIM,0,0,0);
+        const a = Math.max(A, ini), b = Math.min(B, fim);
+        if (b > a) tot += (b - a) / 1000;
+      }
+      dia.setDate(dia.getDate() + 1);
+    }
+    return tot;
+  };
+  const firstTouch = KOMMO_RAW.first_touch || {};
+  // Por responsável do lead: tempos até o 1º contato + leads que nunca receberam nenhum
+  const atendimento = {};
+  for (const l of (KOMMO_RAW.sdr || [])) {
+    if (!_inWindow(l.created_at, win)) continue;
+    const uid = l.responsible_user_id;
+    if (!uid || _SDR_EXCLUDE.has(uid)) continue;
+    if (!atendimento[uid]) atendimento[uid] = {uteis: [], corridos: [], semContato: 0};
+    const ft = firstTouch[l.id];
+    if (!ft) { atendimento[uid].semContato++; continue; }
+    atendimento[uid].uteis.push(horasUteis(l.created_at, ft[0]));
+    atendimento[uid].corridos.push(ft[0] - l.created_at);
+  }
+  const _mediana = arr => {
+    if (!arr.length) return null;
+    const s = [...arr].sort((a,b) => a-b), m = s.length >> 1;
+    return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2;
+  };
+  const _dur = s => s == null ? '—'
+    : s < 3600 ? `${Math.round(s/60)}min`
+    : s < 86400*2 ? `${(s/3600).toFixed(1)}h`
+    : `${(s/86400).toFixed(1)}d`;
+
   // Papel do consultor = funil onde está a MAIORIA das tarefas dele no período.
   // Sem isso, closer cai na tabela de SDR só por ter tarefa em lead ainda parado
   // no funil SDR (ex.: a reunião que o closer conduz antes do lead ser movido),
@@ -4954,15 +4998,24 @@ function renderAtividades() {
   };
 
   // Renderiza tabela por pipeline (SDR ou Closer)
-  const renderTable = (usersDict, target, subEl, subLabel) => {
-    const users = Object.entries(usersDict).map(([uid, d]) => ({
-      uid, name: d.name, total: d.total, done: d.done,
-      pending: d.pending, overdue: d.overdue,
-      taxConcl: d.total > 0 ? (d.done/d.total*100) : 0,
-      leadsCount: d.leadIds.size,
-      taxLead: d.leadIds.size > 0 ? (d.total / d.leadIds.size) : 0,
-      types: d.types,
-    })).sort((a,b) => b.total - a.total);
+  // `atend` só é passado pra tabela de SDR — o 1º contato é medido sobre os leads
+  // que entram no funil SDR, então não faz sentido na tabela de Closer.
+  const renderTable = (usersDict, target, subEl, subLabel, atend) => {
+    const users = Object.entries(usersDict).map(([uid, d]) => {
+      const a = atend && atend[uid];
+      return {
+        uid, name: d.name, total: d.total, done: d.done,
+        pending: d.pending, overdue: d.overdue,
+        taxConcl: d.total > 0 ? (d.done/d.total*100) : 0,
+        leadsCount: d.leadIds.size,
+        taxLead: d.leadIds.size > 0 ? (d.total / d.leadIds.size) : 0,
+        types: d.types,
+        atendUtil: a ? _mediana(a.uteis) : null,
+        atendCorrido: a ? _mediana(a.corridos) : null,
+        atendN: a ? a.uteis.length : 0,
+        semContato: a ? a.semContato : 0,
+      };
+    }).sort((a,b) => b.total - a.total);
     if (users.length === 0) {
       target.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem atividades ${subLabel} no período.</div>`;
       if (subEl) subEl.textContent = `Sem atividades ${subLabel} no período`;
@@ -5001,6 +5054,21 @@ function renderAtividades() {
             • 3–5 = padrão saudável<br>
             • &gt;7 = alta persistência ou leads difíceis
           </span></span></th>
+          ${atend ? `<th>1º contato <span class="eff-info" tabindex="0">?<span class="eff-tip">
+            <b>Tempo até o primeiro contato humano</b><br>
+            <code>Entrada do lead → 1ª mensagem enviada por uma pessoa</code>
+            <br><br>
+            Conta só <b>horário útil</b> (seg–sáb, 8h–18h), a janela em que 96% das
+            mensagens do time acontecem — lead que chega de madrugada não penaliza ninguém.
+            <br><br>
+            <b>Mensagem do bot de pré-atendimento não conta.</b> Ele responde na hora
+            e representa 2 de cada 3 envios; incluir o bot zeraria a métrica.
+            <br><br>
+            <b>Referência:</b><br>
+            • &lt;1h = resposta quente<br>
+            • 1–4h = aceitável<br>
+            • &gt;8h = lead provavelmente já esfriou
+          </span></span></th>` : ''}
         </tr></thead>
         <tbody>
           ${users.map(u => {
@@ -5014,6 +5082,10 @@ function renderAtividades() {
               <td class="eff-bar ${overdueCls}" style="--bar:${topOverdue>0?Math.round(u.overdue/topOverdue*100):0}">${u.overdue}</td>
               <td class="${txCls}">${u.taxConcl.toFixed(1)}%</td>
               <td>${u.taxLead > 0 ? u.taxLead.toFixed(1) : '—'}</td>
+              ${atend ? `<td class="${u.atendUtil == null ? '' : _txCls(-u.atendUtil/3600, -4, -8)}" title="${
+                u.atendN} leads medidos · ${_dur(u.atendCorrido)} em tempo corrido${
+                u.semContato ? ` · ${u.semContato} sem contato humano` : ''}">${_dur(u.atendUtil)}${
+                u.semContato ? `<span style="color:var(--muted);font-size:11px"> · ${u.semContato} s/ contato</span>` : ''}</td>` : ''}
             </tr>`;
           }).join('')}
         </tbody>
@@ -5026,11 +5098,17 @@ function renderAtividades() {
             <td>${overF}</td>
             <td>${totF > 0 ? (doneF/totF*100).toFixed(1)+'%' : '—'}</td>
             <td>${totalLeadsF > 0 ? (totF/totalLeadsF).toFixed(1) : '—'}</td>
+            ${atend ? (() => {
+              // Mediana do time = mediana de TODOS os leads juntos, não média das medianas
+              const todos = users.flatMap(u => (atend[u.uid] || {}).uteis || []);
+              const semC = users.reduce((s,u) => s + u.semContato, 0);
+              return `<td>${_dur(_mediana(todos))}${semC ? `<span style="color:var(--muted);font-size:11px"> · ${semC} s/ contato</span>` : ''}</td>`;
+            })() : ''}
           </tr>
         </tfoot>
       </table>`;
   };
-  renderTable(byUser.sdr, el_sdr, document.getElementById('ativ-sdr-sub'), 'SDR');
+  renderTable(byUser.sdr, el_sdr, document.getElementById('ativ-sdr-sub'), 'SDR', atendimento);
   renderTable(byUser.closer, el_closer, document.getElementById('ativ-closer-sub'), 'Closer');
 
   // ── Mix por tipo de tarefa (barras horizontais) ────────

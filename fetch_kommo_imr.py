@@ -397,6 +397,46 @@ def fetch_tasks():
         page += 1
     return tasks
 
+# Canais de saída que contam como "contato humano" com o lead.
+# Ligação não entra porque a conta não registra nenhum evento de call.
+_CANAIS_SAIDA = ["outgoing_chat_message", "entity_direct_message", "outgoing_mail"]
+
+def fetch_first_human_touch():
+    """Primeiro contato HUMANO por lead — base do 'tempo de atendimento' do SDR.
+
+    Puxa os eventos de saída do período e guarda só o mais antigo de cada lead.
+    O filtro `created_by != 0` é o ponto central: 2 de cada 3 mensagens enviadas
+    são do bot de pré-atendimento, que responde na hora. Sem esse corte a métrica
+    mediria o bot, não o consultor.
+    """
+    ts_from, ts_to = _period_ts()
+    touch = {}   # lead_id → (timestamp, user_id)
+    for tipo in _CANAIS_SAIDA:
+        page, vistos = 1, 0
+        while True:
+            data = kommo_get("/api/v4/events", params={
+                "limit": 250, "page": page,
+                "filter[created_at][from]": ts_from,
+                "filter[created_at][to]":   ts_to,
+                "filter[type][0]":          tipo,
+            })
+            batch = data.get("_embedded", {}).get("events", []) if data else []
+            if not batch: break
+            vistos += len(batch)
+            for e in batch:
+                if e.get("entity_type") != "lead": continue
+                autor = e.get("created_by") or 0
+                if autor == 0: continue          # bot / automação
+                lid, ts = e.get("entity_id"), e.get("created_at")
+                if not lid or not ts: continue
+                if lid not in touch or ts < touch[lid][0]:
+                    touch[lid] = (ts, autor)
+            if len(batch) < 250: break
+            page += 1
+        print(f"  {tipo}: {vistos} eventos varridos ({page} págs)")
+    print(f"  → {len(touch)} leads com contato humano identificado")
+    return {str(lid): [ts, uid] for lid, (ts, uid) in touch.items()}
+
 def get_loss_reasons():
     """Busca mapeamento de loss_reason_id → nome."""
     reasons = {}
@@ -431,6 +471,9 @@ def main():
     print(f"  {len(task_types)} tipos de tarefa: {task_types}")
     tasks = fetch_tasks()
     print(f"  {len(tasks)} tarefas coletadas")
+
+    print("\n💬 Buscando 1º contato humano por lead (eventos de saída)...")
+    first_touch = fetch_first_human_touch()
 
     print("\n📋 Buscando motivos de perda...")
     loss_reasons_map = get_loss_reasons()
@@ -582,6 +625,7 @@ def main():
         "loss_reasons": {str(k): v for k, v in loss_reasons_map.items()},
         "task_types": {str(k): v for k, v in task_types.items()},
         "tasks":      tasks,
+        "first_touch": first_touch,   # lead_id → [timestamp, user_id] do 1º contato humano
         "metrics":    metrics,
         "sdr":      deduped_sdr,
         "closer":   processed_closer,
