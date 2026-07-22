@@ -2531,9 +2531,16 @@ function renderAnalises() {
   const win = periodWindow(currentPeriod, ref);
   const {ws} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
 
-  // Filter leads by date window (created_at)
-  const sdr    = KOMMO_DATA.sdr.filter(l => _inWindow(l.created_at, win));
-  const closer = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
+  // Filter leads by date window
+  //  - SDR: criados no período
+  //  - Closer: união de (criados no período) + (fechados no período)
+  //    Sem essa união perdíamos vendas de leads Closer criados ANTES do período
+  //    mas que fecharam DENTRO — contamina receita/ROAS/CAC do Perfil.
+  const sdr           = KOMMO_DATA.sdr.filter(l => _inWindow(l.created_at, win));
+  const closerCreated = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
+  const closerVendas  = KOMMO_DATA.closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
+  const _closerIds = new Set(closerCreated.map(l => l.id));
+  const closer = [...closerCreated, ...closerVendas.filter(l => !_closerIds.has(l.id))];
 
   // Leads with Meta audience (UTM attribution)
   const metaLeads = sdr.filter(l => l.audience && l.audience.trim());
@@ -2992,7 +2999,7 @@ function renderAnalises() {
   const totalSdr   = sdr.length;
   const metaCnt    = metaLeads.length;
   const metaPct    = fp(pct(metaCnt, totalSdr));
-  const closerVendas = closer.filter(l => isValidVenda(l));
+  // closerVendas já declarado acima (filtrado por closed_at, não created_at)
   const fat        = closerVendas.reduce((s, l) => s + (l.price || 0), 0);
 
   // ── Analysis 4: Funnel progress by public (qualified or beyond) ──────────
@@ -3089,8 +3096,8 @@ function renderAnalises() {
   // ── Analysis 9, 10, 11: Revenue ──────────────────────────────────────────
   const closerReu   = closer.filter(l => l.status === 98168239 || l.proposta || isValidVenda(l)).length;
   const closerProp  = closer.filter(l => l.proposta || isValidVenda(l)).length;
-  const closerVend  = closer.filter(l => isValidVenda(l)).length;
-  const receita     = closer.filter(l => isValidVenda(l)).reduce((s,l) => s + (l.price||0), 0);
+  const closerVend  = closerVendas.length;
+  const receita     = closerVendas.reduce((s,l) => s + (l.price||0), 0);
   const ticket      = closerVend > 0 ? receita / closerVend : 0;
   const invest      = (() => {
     const D = MENS_DATA;
@@ -4738,19 +4745,23 @@ function renderDiagnostico() {
     // Status IDs — Closer
     const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563;
     const C_WON = 142, C_LOST = 143;
-    // Agrupa leads Closer do período por responsible_user_id (exclui não-Closers)
+    // Agrupa leads Closer relevantes no período por responsible_user_id.
+    // Base = união de (criados no período) + (vendas fechadas no período),
+    // dedup por id. Sem essa união, vendas de leads criados ANTES do período
+    // mas fechados DENTRO quebravam o funil (vendas > reuniões p/ o consultor).
+    const _closerFunilIds = new Set(closerC.map(l => l.id));
+    const closerFunil = [...closerC, ...closerVendas.filter(l => !_closerFunilIds.has(l.id))];
     const byUser = {};
-    for (const l of closerC) {
+    for (const l of closerFunil) {
       const uid = l.responsible_user_id || 0;
       if (CLOSER_EXCLUDE.has(uid)) continue;
       if (!byUser[uid]) byUser[uid] = {leads:[], name:(usersMap[uid] && usersMap[uid].name) || `Usuário ${uid || 'sem atribuição'}`};
       byUser[uid].leads.push(l);
     }
-    // Vendas fechadas no período (closed_at) — pode ter Closer criado FORA do período
-    // então atribui ao Closer atual do lead vendido.
     const vendasByUser = {};
     for (const v of closerVendas) {
       const uid = v.responsible_user_id || 0;
+      if (CLOSER_EXCLUDE.has(uid)) continue;
       vendasByUser[uid] = (vendasByUser[uid] || 0) + 1;
     }
     // Closer: 4 etapas do funil dele (reunião realizada → proposta → sinal verde → venda)
