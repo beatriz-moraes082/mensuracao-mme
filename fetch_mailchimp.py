@@ -255,7 +255,14 @@ def main():
     for d in by_step.values():
         d.pop("_last_st", None)
 
-    # Agrega por mês
+    # Agrega por mês — cada campanha aparece SÓ no mês do seu send_time.
+    #
+    # Histórico: uma tentativa anterior (commit 424c0a9 · jun/26) duplicava
+    # campanhas com status='sending' também no MÊS ATUAL, pra que a Evolução
+    # Mensal "não ficasse vazia no mês corrente". Efeito colateral: em jul/26
+    # apareciam 3.112 envios fantasma (soma das automações ativas), mesmo
+    # sem nenhuma campanha nova ter sido enviada em julho. Removido pra
+    # bater com a realidade — se não teve envio no mês, o mês não aparece.
     by_month = defaultdict(lambda: {
         "sent": 0, "unique_opens": 0, "clicks_total": 0, "unsubscribed": 0
     })
