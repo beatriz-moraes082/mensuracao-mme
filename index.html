@@ -4829,15 +4829,29 @@ function renderAtividades() {
   const nowTs = Math.floor(Date.now()/1000);
   const _SDR_EXCLUDE = new Set([14445895]); // mesmo do Diagnóstico
 
-  // Agrega por (responsible, pipeline_do_lead)
+  // Papel do consultor = funil onde está a MAIORIA das tarefas dele no período.
+  // Sem isso, closer cai na tabela de SDR só por ter tarefa em lead ainda parado
+  // no funil SDR (ex.: a reunião que o closer conduz antes do lead ser movido),
+  // aparecendo duas vezes e com produtividade artificialmente baixa.
+  const roleMix = {};
+  for (const t of tasksInP) {
+    const pipe = leadPipe[t.lead_id];
+    if (!t.responsible || _SDR_EXCLUDE.has(t.responsible) || !pipe) continue;
+    if (!roleMix[t.responsible]) roleMix[t.responsible] = {sdr: 0, closer: 0};
+    roleMix[t.responsible][pipe]++;
+  }
+  const roleOf = uid => (roleMix[uid] && roleMix[uid].closer > roleMix[uid].sdr) ? 'closer' : 'sdr';
+
+  // Agrega por (responsible, papel do consultor)
   const byUser = {sdr: {}, closer: {}};
   const typeCount = {}; // task_type_id → count
   for (const t of tasksInP) {
     if (!t.responsible || _SDR_EXCLUDE.has(t.responsible)) continue;
     const pipe = leadPipe[t.lead_id];
     if (!pipe) continue; // só tarefas atreladas a leads SDR/Closer
-    if (!byUser[pipe][t.responsible]) {
-      byUser[pipe][t.responsible] = {
+    const role = roleOf(t.responsible);
+    if (!byUser[role][t.responsible]) {
+      byUser[role][t.responsible] = {
         name: (usersMap[t.responsible] && usersMap[t.responsible].name) || `Usuário ${t.responsible}`,
         total: 0, done: 0, pending: 0, overdue: 0,
         types: {},
@@ -4849,7 +4863,7 @@ function renderAtividades() {
         daysActive: new Set(),            // dias únicos com pelo menos 1 tarefa criada
       };
     }
-    const u = byUser[pipe][t.responsible];
+    const u = byUser[role][t.responsible];
     u.total++;
     if (t.is_completed) {
       u.done++;
