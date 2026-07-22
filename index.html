@@ -1458,43 +1458,9 @@
     </div>
   </div>
 
-  <!-- Gráficos · respostas do bot (v1 + v2 + perfil demográfico) -->
-  <div class="ds-sec"><h3>Perfil das vendas</h3><span class="sub">Respostas do bot de pré-atendimento (v1 + v2)</span></div>
-  <div class="vd-grid4">
-    <div class="vd-card"><h4>Conhece Timeshare</h4><div class="csub">"Você conhece o modelo Timeshare?"</div><div class="vd-chart"><canvas id="vd-ch-timeshare"></canvas></div></div>
-    <div class="vd-card"><h4>Maior desafio</h4><div class="csub">"Qual é seu maior desafio em viajar?"</div><div class="vd-chart"><canvas id="vd-ch-desafio"></canvas></div></div>
-    <div class="vd-card"><h4>Viagem programada?</h4><div class="csub">"Tem viagem programada nos próximos meses?"</div><div class="vd-chart"><canvas id="vd-ch-viagem"></canvas></div></div>
-    <div class="vd-card"><h4>Como se hospeda</h4><div class="csub">"Onde se hospeda nas viagens?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospedagem"></canvas></div></div>
-    <div class="vd-card"><h4>Com quem viaja</h4><div class="csub">"Você costuma viajar mais...?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-viajamais"></canvas></div></div>
-    <div class="vd-card"><h4>Investimento/ano em viagens</h4><div class="csub">"Hoje, quanto vocês costumam investir por ano em viagens?" (bot v1 + v2)</div><div class="vd-chart"><canvas id="vd-ch-investimento"></canvas></div></div>
-    <div class="vd-card"><h4>Faixa etária</h4><div class="csub">"Qual sua idade?"</div><div class="vd-chart"><canvas id="vd-ch-idade"></canvas></div></div>
-    <div class="vd-card"><h4>Profissão</h4><div class="csub">"Qual sua profissão?"</div><div class="vd-chart"><canvas id="vd-ch-profissao"></canvas></div></div>
-    <div class="vd-card"><h4>Já hospedou em All-inc?</h4><div class="csub">"Hospedou em All-inclusive?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-hospallinc"></canvas></div></div>
-    <div class="vd-card"><h4>Próximas férias</h4><div class="csub">"Qual o plano pras próximas férias?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-proxferias"></canvas></div></div>
-    <div class="vd-card"><h4>Frequência de viagem</h4><div class="csub">"Com que frequência viaja?" (bot v2)</div><div class="vd-chart"><canvas id="vd-ch-freqviagem"></canvas></div></div>
-  </div>
-
-  <!-- Ciclo médio de vendas -->
-  <div class="ds-sec"><h3>Ciclo médio de vendas</h3><span class="sub">Tempo entre entrada do lead e fechamento da venda</span></div>
-  <div class="vd-grid4" style="margin-bottom:14px">
-    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Ciclo médio</h4><div id="vd-cycle-avg" style="font-size:28px;font-weight:800;color:var(--accent);line-height:1">—</div><div id="vd-cycle-avg-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
-    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mediana</h4><div id="vd-cycle-med" style="font-size:28px;font-weight:800;color:var(--text);line-height:1">—</div><div style="font-size:11px;color:var(--muted);margin-top:6px">metade fecha antes, metade depois</div></div>
-    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mais rápido</h4><div id="vd-cycle-min" style="font-size:28px;font-weight:800;color:var(--up);line-height:1">—</div><div id="vd-cycle-min-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
-    <div class="vd-card" style="text-align:center"><h4 style="margin-bottom:8px">Mais demorado</h4><div id="vd-cycle-max" style="font-size:28px;font-weight:800;color:#d97706;line-height:1">—</div><div id="vd-cycle-max-sub" style="font-size:11px;color:var(--muted);margin-top:6px">—</div></div>
-  </div>
-  <div class="vd-card" style="margin-bottom:14px">
-    <h4 style="font-size:13px;font-weight:700;margin-bottom:6px">Ciclo por venda</h4>
-    <div class="csub" style="font-size:11px;color:var(--muted);margin-bottom:14px">Cada barra = uma venda. Cor = origem. Tamanho = dias do ciclo.</div>
-    <div id="vd-cycle-bars"></div>
-  </div>
-
-  <!-- Vendas por canal de origem (movido da aba Funis) -->
-  <div class="ds-sec"><h3>Vendas por canal de origem</h3><span class="sub" id="vendas-canal-sub">—</span></div>
-  <div class="ds-card" style="margin-bottom:14px">
-    <div id="vendas-canal-content"></div>
-  </div>
-
-  <!-- Tabela -->
+  <!-- Tabela — consolida todas as análises numa vista única -->
+  <!-- (Removido: Perfil das vendas / Ciclo médio / Vendas por canal — dados já
+       aparecem como colunas na tabela abaixo · Origem, Ciclo, respostas do bot) -->
   <div class="ds-sec"><h3>Detalhe por venda</h3><span class="sub">Lista completa</span></div>
   <div class="vd-tablecard">
     <div class="vd-tablehead">
@@ -1517,7 +1483,7 @@
     <div class="vd-tablescroll">
       <table class="vd-table">
         <thead><tr>
-          <th>Nome</th><th>Data fech.</th><th>Origem</th><th>Preço</th><th>Bot</th>
+          <th>Nome</th><th>Data fech.</th><th>Ciclo (dias)</th><th>Origem</th><th>Preço</th><th>Bot</th>
           <th>Idade</th><th>Investimento/ano</th><th>Profissão</th><th>Maior desafio</th>
           <th>Timeshare</th><th>Viagem prog.</th><th>Hospedou All-inc</th><th>Próx. férias</th><th>Frequência</th><th>Produto</th><th>Audience</th><th>Criativo</th>
         </tr></thead>
@@ -6612,7 +6578,7 @@ function vdRenderTable(vendas){
 
   const tbody = document.getElementById('vd-tbody');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="17" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(v => {
@@ -6626,9 +6592,14 @@ function vdRenderTable(vendas){
       : '';
     const origemLabel = v.origem || 'sem origem';
     const origemTag = `<span class="vd-tag ${v.bucket}">${origemLabel}</span>`;
+    // Ciclo de venda (dias entre entrada do lead e fechamento — v.cycle_days do vdBuildVendas)
+    const cicloCell = (typeof v.cycle_days === 'number' && v.cycle_days >= 0)
+      ? `<b>${v.cycle_days}</b>`
+      : '<span class="vd-empty">—</span>';
     return `<tr>
       <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
       <td>${vdFmtDate(v.closed_at)}</td>
+      <td style="text-align:center">${cicloCell}</td>
       <td>${origemTag}</td>
       <td>${v.price > 0 ? vdFmtBRL(v.price) : '<span class="vd-empty">—</span>'}</td>
       <td>${bot}</td>
