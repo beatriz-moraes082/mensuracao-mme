@@ -892,7 +892,7 @@
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
   <button onclick="switchTab('atividades',this)">Atividades</button>
-  <button onclick="switchTab('disparos',this)">Disparos &amp; Nutrição</button>
+  <button onclick="switchTab('disparos',this)">E-mail Marketing</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
   <button onclick="switchTab('score',this)">Calculadora de Score</button>
 </nav>
@@ -1316,7 +1316,7 @@
   <!-- Hero -->
   <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
     <div>
-      <div class="hl-eyebrow">Disparos &amp; Nutrição</div>
+      <div class="hl-eyebrow">E-mail Marketing</div>
       <h2>Régua de e-mail marketing</h2>
       <div class="hl-sub">Performance da audiência MME Vacation Club no Mailchimp — aberturas, cliques, CTA do WhatsApp e leads reativados.</div>
       <div class="hl-pills">
@@ -7173,7 +7173,7 @@ function renderScore() {
 
 /* ════════════════════════════════════════════════════════════════
    MAILCHIMP · Régua de email da audiência MME Vacation Club
-   Renderizada dentro da aba Disparos & Nutrição.
+   Renderizada dentro da aba E-mail Marketing.
    ═══════════════════════════════════════════════════════════════ */
 function renderMailchimp() {
   const mc = MAILCHIMP_RAW;
@@ -7195,14 +7195,54 @@ function renderMailchimp() {
   const fmtP = (n,d) => d > 0 ? (n/d*100).toFixed(1)+'%' : '—';
 
   const a = mc.audience;
-  // Usa by_step (agregado por título interno = posição na cadência) quando
-  // disponível; cai pra by_subject (legado) se JSON antigo.
-  // Filtra etapas com menos de 5 envios — são testes/cópias internas (ex:
-  // 'Cadência → Dia 01 (copy 01)' com 1 envio) que poluem a tabela.
-  const stepsMap = mc.by_step || mc.by_subject || {};
-  const steps = Object.entries(stepsMap)
-    .map(([title,d]) => ({title, ...d}))
-    .filter(s => (s.sent || 0) >= 5);
+
+  // Filtra campanhas por PERÍODO SELECIONADO (send_time dentro da janela).
+  // Antes o dashboard mostrava agregado histórico do Mailchimp — não respeitava
+  // o dropdown de período no topo da aba.
+  const ref = KOMMO_RAW && KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const winFrom = win.from.getTime(), winTo = win.to.getTime();
+  const campaignsInP = (mc.campaigns || []).filter(c => {
+    if (!c.send_time) return false;
+    const t = new Date(c.send_time).getTime();
+    return t >= winFrom && t <= winTo;
+  });
+
+  // Reagrega por título interno (posição na cadência) — mesma lógica do fetcher,
+  // mas restrita às campanhas do período.
+  const stepsAgg = {};
+  for (const c of campaignsInP) {
+    const key = c.title || c.subject || '—';
+    if (!stepsAgg[key]) stepsAgg[key] = {
+      title: key, subject: c.subject, type: c.type,
+      cta_msg: c.cta_msg || '', cta_url: c.cta_url || '', cta_clickers: [],
+      n: 0, sent: 0, opens_total: 0, unique_opens: 0,
+      clicks_total: 0, unique_clicks: 0, unsubscribed: 0,
+      first_send: '', last_send: '', _seen_clickers: new Set(),
+    };
+    const d = stepsAgg[key];
+    d.n++;
+    d.sent         += c.sent || 0;
+    d.opens_total  += c.opens_total || 0;
+    d.unique_opens += c.unique_opens || 0;
+    d.clicks_total += c.clicks_total || 0;
+    d.unique_clicks+= c.unique_clicks || 0;
+    d.unsubscribed += c.unsubscribed || 0;
+    const st = (c.send_time || '').slice(0,10);
+    if (st) {
+      if (!d.first_send || st < d.first_send) d.first_send = st;
+      if (!d.last_send  || st > d.last_send)  d.last_send  = st;
+    }
+    // Clickers dedup por ekey (hash email) ou email mascarado
+    (c.cta_clickers || []).forEach(ck => {
+      const k = ck.ekey || ck.email_masked;
+      if (!d._seen_clickers.has(k)) {
+        d.cta_clickers.push(ck);
+        d._seen_clickers.add(k);
+      }
+    });
+  }
+  const steps = Object.values(stepsAgg).filter(s => s.sent >= 5);
   const totals = steps.reduce((s,m) => ({
     sent:     s.sent     + m.sent,
     uo:       s.uo       + m.unique_opens,
@@ -7211,21 +7251,26 @@ function renderMailchimp() {
   }), {sent:0,uo:0,clicks:0,unsub:0});
   const regua = steps.filter(s => s.type === 'automation-email');
 
-  // ── Sub do header
+  // ── Sub do header (mostra janela)
+  const _fmtDate = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   if (sub) {
-    sub.textContent = `Audiência ${a.name} · ${fmt(a.member_count)} membros ativos · ${regua.length} etapas na cadência da régua`;
+    if (campaignsInP.length === 0) {
+      sub.textContent = `Audiência ${a.name} · ${fmt(a.member_count)} membros ativos · nenhum envio no período (${_fmtDate(win.from)} → ${_fmtDate(win.to)})`;
+    } else {
+      sub.textContent = `Audiência ${a.name} · ${fmt(a.member_count)} membros ativos · ${campaignsInP.length} campanha${campaignsInP.length===1?'':'s'} no período · ${regua.length} etapa${regua.length===1?'':'s'} da régua`;
+    }
   }
 
-  // ── KPIs hero (4 cards)
+  // ── KPIs hero (4 cards) — sempre-atual pro card de audiência, período pros demais
   const kpis = [
     {lbl:'Membros ativos', val:fmt(a.member_count),
-     sub:`${fmt(a.unsubscribe_count)} descadastros históricos`, iconColor:'#3b82f6'},
-    {lbl:'Envios totais',  val:fmt(totals.sent),
-     sub:`${regua.length} etapas na régua · ${steps.length-regua.length} broadcast`, iconColor:'#8b5cf6'},
+     sub:`${fmt(a.unsubscribe_count)} descadastros históricos · atual`, iconColor:'#3b82f6'},
+    {lbl:'Envios no período', val:fmt(totals.sent),
+     sub:`${campaignsInP.length} campanha${campaignsInP.length===1?'':'s'} · ${regua.length} régua + ${steps.length-regua.length} broadcast`, iconColor:'#8b5cf6'},
     {lbl:'Taxa de abertura', val:fmtP(totals.uo, totals.sent),
-     sub:`${fmt(totals.uo)} aberturas únicas`, iconColor:'#16a34a'},
+     sub:`${fmt(totals.uo)} aberturas únicas no período`, iconColor:'#16a34a'},
     {lbl:'Taxa de clique',   val:fmtP(totals.clicks, totals.sent),
-     sub:`${fmt(totals.clicks)} cliques · ${fmt(totals.unsub)} unsub`, iconColor:'#EE4D20'},
+     sub:`${fmt(totals.clicks)} cliques · ${fmt(totals.unsub)} unsub no período`, iconColor:'#EE4D20'},
   ];
   hero.innerHTML = kpis.map(k => `
     <div class="ds-kpi">
