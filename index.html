@@ -1340,18 +1340,22 @@
     <h3>Régua de Email · Mailchimp</h3>
     <span class="sub" id="mc-sub">Audiência MME Vacation Club · automação ativa</span>
   </div>
+  <!-- Aviso quando período não tem envios (renderMailchimp popula) -->
+  <div id="mc-empty-notice" style="display:none;margin-bottom:14px;padding:14px 18px;border-radius:10px;background:rgba(245,158,11,.08);border-left:3px solid #f59e0b;font-size:13px;color:var(--text);line-height:1.55"></div>
   <div id="mc-hero" class="kpi-grid-modern kpi-grid-fin" style="margin-bottom:18px"></div>
   <div class="ds-card">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Performance por mensagem</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Performance por mensagem</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Campanhas com envios no período selecionado.</div>
     <div id="mc-msgs-content"></div>
   </div>
   <div class="ds-card" style="margin-top:14px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Quem clicou no CTA do WhatsApp <span style="color:var(--muted);font-weight:500;font-size:10px;letter-spacing:0;text-transform:none">· histórico completo (não filtra por período)</span></div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">Lista pra reativação — quem clicou no link de WhatsApp em qualquer email da régua.</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Quem clicou no CTA do WhatsApp</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">Cliques em campanhas enviadas dentro do período selecionado. Pra ver histórico completo, escolha "Período máximo".</div>
     <div id="mc-clickers-content"></div>
   </div>
   <div class="ds-card" style="margin-top:14px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Evolução mensal</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Evolução mensal</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Meses com envios dentro do período selecionado.</div>
     <div id="mc-monthly-content"></div>
   </div>
 
@@ -7261,6 +7265,27 @@ function renderMailchimp() {
     }
   }
 
+  // ── Aviso "sem envios no período" — orienta o usuário a ampliar janela
+  const noticeEl = document.getElementById('mc-empty-notice');
+  if (noticeEl) {
+    if (campaignsInP.length === 0) {
+      // Encontra a data do envio mais recente pra sugerir período que capture ele
+      const allSt = (mc.campaigns || [])
+        .map(c => c.send_time ? new Date(c.send_time).getTime() : 0)
+        .filter(t => t > 0)
+        .sort((a,b) => b-a);
+      const lastSend = allSt.length ? new Date(allSt[0]) : null;
+      noticeEl.style.display = '';
+      noticeEl.innerHTML = `<b>⚠️ Nenhum email foi enviado no período selecionado</b> (${_fmtDate(win.from)} → ${_fmtDate(win.to)}).<br>
+        <span style="font-size:12px;color:var(--muted)">
+          ${lastSend ? `Último envio catalogado foi em <b>${_fmtDate(lastSend)}</b>. ` : ''}
+          Pra ver dados históricos, escolha <b>Período máximo</b> no seletor acima.
+        </span>`;
+    } else {
+      noticeEl.style.display = 'none';
+    }
+  }
+
   // ── KPIs hero (4 cards) — sempre-atual pro card de audiência, período pros demais
   const kpis = [
     {lbl:'Membros ativos', val:fmt(a.member_count),
@@ -7338,19 +7363,16 @@ function renderMailchimp() {
     }
   }
 
-  // ── Clickers do CTA WhatsApp (cruzamento manual com Kommo pra reativação)
+  // ── Clickers do CTA WhatsApp (respeita o período selecionado)
   //
-  // Diferente dos KPIs acima: esta lista é HISTÓRICA (não filtra por período).
-  // Motivo: quem clicou é contato aquecido pra Ana usar em reativação, independente
-  // de quando o clique aconteceu. Filtrar por período apagaria essa lista sempre que
-  // não houvesse envio recente — o que é justamente quando ela mais precisa da lista.
+  // Puxa clickers apenas das campanhas enviadas no período. Se o período não
+  // tem envios, a lista fica vazia — coerente com o resto da aba. Pra ver
+  // histórico completo o usuário escolhe "Período máximo".
   const clickEl = document.getElementById('mc-clickers-content');
   if (clickEl) {
-    // Coleta clickers de TODAS as etapas históricas (by_step tem o agregado global)
-    const histStepsMap = mc.by_step || mc.by_subject || {};
-    const histSteps = Object.entries(histStepsMap).map(([title, d]) => ({title, ...d}));
+    // `steps` já foi filtrado por período mais acima (reagregado de campaignsInP)
     const allClickers = [];
-    histSteps.filter(s => s.cta_clickers && s.cta_clickers.length).forEach(s => {
+    steps.filter(s => s.cta_clickers && s.cta_clickers.length).forEach(s => {
       const dia = (s.title||'').match(/Dia\s*0*\d+/i)?.[0] || (s.title||'').substring(0,30);
       s.cta_clickers.forEach(c => {
         allClickers.push({...c, etapa: dia, subject: s.subject, type: s.type});
@@ -7444,11 +7466,23 @@ function renderMailchimp() {
     }
   }
 
-  // ── Evolução mensal (timeline simples)
+  // ── Evolução mensal (respeita o período — só meses com envio dentro da janela)
   if (monEl) {
-    const months = Object.entries(mc.by_month || {}).sort((a,b) => a[0].localeCompare(b[0]));
+    // Reagrega by_month a partir das campanhas do período (mesma lógica do fetcher).
+    // Antes puxava mc.by_month direto (histórico global) e não trocava com o filtro.
+    const monthAgg = {};
+    for (const c of campaignsInP) {
+      const m = (c.send_time || '').slice(0, 7);
+      if (!m) continue;
+      if (!monthAgg[m]) monthAgg[m] = {sent:0, unique_opens:0, clicks_total:0, unsubscribed:0};
+      monthAgg[m].sent          += c.sent || 0;
+      monthAgg[m].unique_opens  += c.unique_opens || 0;
+      monthAgg[m].clicks_total  += c.clicks_total || 0;
+      monthAgg[m].unsubscribed  += c.unsubscribed || 0;
+    }
+    const months = Object.entries(monthAgg).sort((a,b) => a[0].localeCompare(b[0]));
     if (months.length === 0) {
-      monEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem dados mensais.</div>';
+      monEl.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">Nenhum mês com envio dentro do período selecionado.</div>`;
     } else {
       const maxSent = Math.max(...months.map(([_,d]) => d.sent), 1);
       monEl.innerHTML = months.map(([m, d]) => {
