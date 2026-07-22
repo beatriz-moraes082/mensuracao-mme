@@ -675,6 +675,25 @@
     .ds-accordion .acc-body{padding:0 22px 22px;border-top:1px solid var(--border)}
     .ds-accordion .acc-body > *:first-child{margin-top:18px}
 
+    /* ── Tabela de metodologia (como cada KPI é calculado) ── */
+    .metod-wrap{overflow-x:auto}
+    .metod-tbl{width:100%;min-width:620px;border-collapse:collapse;font-size:12px;line-height:1.6}
+    .metod-tbl th{text-align:left;padding:8px 12px;font-size:9.5px;font-weight:700;
+      letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+      border-bottom:1px solid var(--border);white-space:nowrap}
+    .metod-tbl td{padding:11px 12px;vertical-align:top;color:var(--text);
+      border-bottom:1px solid var(--border)}
+    .metod-tbl td:first-child{width:18%;white-space:nowrap}
+    .metod-tbl td:last-child{width:38%;color:var(--muted)}
+    .metod-tbl tr:last-child td{border-bottom:none}
+    .metod-tbl .metod-grupo{background:var(--surface2);font-size:9.5px;font-weight:700;
+      letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+      padding:7px 12px;width:auto;white-space:normal}
+    .metod-tbl .metod-nota{display:inline-block;margin-top:2px;font-size:9.5px;font-weight:600;
+      letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+    .metod-tbl code{font-size:11px;padding:1px 5px;border-radius:4px;
+      background:var(--surface2);color:var(--text)}
+
     /* ── Card genérico unificado ── */
     .ds-card{background:var(--surface);border-radius:var(--r);padding:22px 24px;
       box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.03);
@@ -1289,8 +1308,8 @@
   <div style="margin-top:14px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,.06);border-left:3px solid #3b82f6;font-size:12px;line-height:1.7;color:var(--text)">
     <b style="color:#3b82f6">📖 Como ler o radar</b>
     <div style="margin-top:6px;color:var(--muted);display:grid;grid-template-columns:repeat(2,1fr);gap:6px 24px">
-      <div>• <b>Volume:</b> total de tarefas do período</div>
-      <div>• <b>Ritmo:</b> rapidez pra concluir (curto = melhor)</div>
+      <div>• <b>Volume:</b> total de tarefas ÷ maior do time</div>
+      <div>• <b>Ritmo:</b> dias médios pra concluir — 1d = 100, 4d = 30, 7d+ = 0</div>
       <div>• <b>Consistência:</b> dias com atividade ÷ dias do período</div>
       <div>• <b>Prazo:</b> % concluídas antes do complete_till</div>
       <div>• <b>Follow-up:</b> % das tarefas concluídas que são follow-up</div>
@@ -1304,6 +1323,107 @@
 
   <div class="ds-sec" style="margin-top:32px"><h3>Mix por tipo de tarefa</h3><span class="sub">Distribuição de atividades no período · todos os consultores</span></div>
   <div class="ds-card"><div id="ativ-tipos"></div></div>
+
+  <details class="ds-accordion" style="margin-top:24px">
+    <summary><span>📐 Como cada número desta aba é calculado</span></summary>
+    <div class="acc-body">
+      <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px">
+        Tudo vem do Kommo CRM. O período do seletor filtra pela <b>data de criação</b> da tarefa
+        (ou do lead, nas métricas de lead). Nada aqui é digitado à mão.
+      </p>
+
+      <div class="metod-wrap">
+      <table class="metod-tbl">
+        <thead><tr><th>Métrica</th><th>Cálculo</th><th>O que fica de fora</th></tr></thead>
+        <tbody>
+          <tr><td colspan="3" class="metod-grupo">Resumo do período e tabelas</td></tr>
+          <tr>
+            <td><b>Total</b></td>
+            <td>Tarefas criadas no período, atreladas a um lead.</td>
+            <td>Tarefas de contato/empresa e leads fora dos funis SDR e Closer (BDR, Nutrição, Duque).</td>
+          </tr>
+          <tr>
+            <td><b>Concluídas / Pendentes</b></td>
+            <td>Flag <code>is_completed</code> da tarefa.</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><b>Atrasadas</b></td>
+            <td>Pendentes cujo <code>complete_till</code> já venceu.</td>
+            <td>Tarefas já concluídas, mesmo que fora do prazo — essas contam em Prazo.</td>
+          </tr>
+          <tr>
+            <td><b>Tx. Conclusão</b></td>
+            <td><code>Concluídas ÷ Total</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><b>1º contato</b><br><span class="metod-nota">só SDR</span></td>
+            <td>Mediana de <code>entrada do lead → 1ª mensagem enviada por uma pessoa</code>,
+                contando só <b>horário útil (seg–sáb, 8h–18h)</b>. Canais: chat, direct e e-mail.</td>
+            <td><b>Mensagem do bot de pré-atendimento</b> (2 de cada 3 envios — incluir zeraria a
+                métrica) e leads que nunca receberam contato humano, contados à parte como "s/ contato".</td>
+          </tr>
+          <tr><td colspan="3" class="metod-grupo">Quem aparece em cada tabela</td></tr>
+          <tr>
+            <td><b>SDR vs Closer</b></td>
+            <td>Pelo <b>funil onde está a maioria das tarefas da pessoa</b> no período.</td>
+            <td>Classificar pelo funil do lead punha o closer na tabela de SDR só por conduzir a
+                reunião de um lead ainda parado no funil SDR.</td>
+          </tr>
+          <tr><td colspan="3" class="metod-grupo">Radar comportamental · notas de 0 a 100</td></tr>
+          <tr>
+            <td><b>Volume</b><br><span class="metod-nota">relativa</span></td>
+            <td><code>tarefas ÷ maior total do time</code></td>
+            <td>Única dimensão comparativa — carga de trabalho só faz sentido contra o topo.</td>
+          </tr>
+          <tr>
+            <td><b>Ritmo</b><br><span class="metod-nota">absoluta</span></td>
+            <td>Média de <code>conclusão − criação</code> da tarefa.<br>
+                1d = 100 · 2d = 70 · 4d = 30 · 7d+ = 0</td>
+            <td>Tarefas nunca concluídas. Os cortes vêm da distribuição real do período
+                (mediana 2,1d).</td>
+          </tr>
+          <tr>
+            <td><b>Consistência</b></td>
+            <td><code>dias com ao menos 1 tarefa ÷ dias do período</code></td>
+            <td>Não desconta fim de semana nem férias — período longo puxa a nota pra baixo.</td>
+          </tr>
+          <tr>
+            <td><b>Prazo</b></td>
+            <td>% das concluídas finalizadas antes do <code>complete_till</code>.</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><b>Follow-up</b></td>
+            <td>% das concluídas que são do tipo follow-up.</td>
+            <td>É <b>mix</b>, não esforço: 100 significa que só faz follow-up, não que faz muito.</td>
+          </tr>
+          <tr>
+            <td><b>Conversão</b> / <b>Fechamento</b></td>
+            <td>SDR: <code>reuniões agendadas ÷ leads</code><br>Closer: <code>vendas ÷ propostas</code></td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td><b>1º contato</b><br><span class="metod-nota">absoluta · só SDR</span></td>
+            <td>Mediana em horário útil (mesma da tabela).<br>
+                1h = 100 · 4h = 60 · 8h = 30 · 16h+ = 0</td>
+            <td>Radar de Closer não tem essa dimensão — o 1º contato é medido sobre leads que
+                entram no funil SDR.</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 16px;border-radius:8px;background:rgba(245,158,11,.07);border-left:3px solid #f59e0b;font-size:11.5px;line-height:1.7;color:var(--muted)">
+        <b style="color:var(--text)">Duas limitações que valem saber</b><br>
+        • O funil do lead é o <b>atual</b>, não o de quando a tarefa foi criada. Se um lead muda de
+        funil, o histórico dele migra junto na leitura.<br>
+        • Todas as dimensões são <b>proxies quantitativos</b> do CRM. Nenhuma mede qualidade da
+        conversa — escuta, rapport, condução de objeção.
+      </div>
+    </div>
+  </details>
 </div>
 </div><!-- /tab-atividades -->
 
@@ -5142,39 +5262,43 @@ function renderAtividades() {
       target.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem atividades ${isCloser?'de Closers':'de SDRs'} no período.</div>`;
       return;
     }
-    // Normalização vs melhor do time (0-100)
+    // Volume é a única dimensão relativa: comparar carga de trabalho só faz sentido
+    // contra quem mais produziu. O resto usa escala absoluta.
     const maxTotal = Math.max(...usersArr.map(u => u.total), 1);
-    // Ritmo: menor tempo = melhor. Invertemos: quem tem MENOR ritmoAvgH ganha 100.
-    const minRitmo = Math.min(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), Infinity);
-    const maxRitmo = Math.max(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), 1);
     const norm = (v, max) => max > 0 ? Math.round(v/max*100) : 0;
-    // 1º contato: escala ABSOLUTA, não relativa ao time. Com 4 SDRs, normalizar pelo
-    // melhor faria o último sempre tirar 0 mesmo respondendo bem. Os pontos são as
-    // referências do tooltip da tabela: 1h resposta quente, 4h aceitável, 8h esfriando.
-    const _scoreContato = seg => {
-      if (seg == null) return 0;
-      const h = seg/3600, pts = [[1,100],[4,60],[8,30],[16,0]];
-      if (h <= 1) return 100;
+
+    // Escala absoluta: interpola linearmente entre pontos de referência (x maior = pior).
+    // Com 3-4 pessoas por time, normalizar pelo melhor faz o último tirar 0 mesmo indo
+    // bem — a nota vira posição no ranking, não desempenho.
+    const _escala = (v, pts) => {
+      if (v == null) return 0;
+      if (v <= pts[0][0]) return pts[0][1];
       for (let i = 1; i < pts.length; i++) {
-        if (h <= pts[i][0]) {
+        if (v <= pts[i][0]) {
           const [x0,y0] = pts[i-1], [x1,y1] = pts[i];
-          return Math.round(y0 + (y1-y0) * (h-x0)/(x1-x0));
+          return Math.round(y0 + (y1-y0) * (v-x0)/(x1-x0));
         }
       }
-      return 0;
+      return pts[pts.length-1][1];
     };
+    // Ritmo (dias médios até concluir): ancorado na distribuição real do período —
+    // mediana da tarefa é 2.1d, p25 1.7d, p75 3.8d. Daí 2d=70 e 4d=30.
+    const RITMO_PTS   = [[1,100],[2,70],[4,30],[7,0]];
+    // 1º contato (horas úteis): referências de mercado, as mesmas do tooltip da tabela.
+    const CONTATO_PTS = [[1,100],[4,60],[8,30],[16,0]];
+
     const dimLbls = ['Volume','Ritmo','Consistência','Prazo','Follow-up', isCloser ? 'Fechamento' : 'Conversão'];
     if (atend) dimLbls.push('1º contato');
     const scoresOf = u => {
       const s = [
         norm(u.total, maxTotal),
-        u.ritmoAvgH == null ? 0 : (maxRitmo === minRitmo ? 100 : Math.round((maxRitmo - u.ritmoAvgH) / (maxRitmo - minRitmo) * 100)),
+        _escala(u.ritmoAvgH == null ? null : u.ritmoAvgH/24, RITMO_PTS),
         Math.round(u.consistP),
         Math.round(u.prazoP),
         Math.round(u.followupP),
         Math.round(u.conv),
       ];
-      if (atend) s.push(_scoreContato(u.atendUtil));
+      if (atend) s.push(_escala(u.atendUtil == null ? null : u.atendUtil/3600, CONTATO_PTS));
       return s;
     };
     const cards = usersArr.map((u, idx) => {
