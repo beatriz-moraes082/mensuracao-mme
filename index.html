@@ -3684,23 +3684,8 @@ function renderAnalises() {
     }).join('');
     el.innerHTML = cards;
 
-    // Insight automático
-    if (insightEl) {
-      const withData = classes
-        .map(c => ({c, total: byClass[c].length, venda: cntByClass.venda[c], tx: byClass[c].length > 0 ? cntByClass.venda[c]/byClass[c].length*100 : 0}))
-        .filter(x => x.total >= 5);
-      if (withData.length >= 2) {
-        const best = withData.reduce((a,b) => b.tx > a.tx ? b : a);
-        const worst = withData.reduce((a,b) => b.tx < a.tx ? b : a);
-        const mult = worst.tx > 0 ? (best.tx/worst.tx).toFixed(1) : '∞';
-        insightEl.innerHTML = `<div style="padding:14px 18px;border-radius:10px;background:rgba(238,77,32,.06);border-left:3px solid var(--accent);font-size:12.5px;line-height:1.55">
-          🏆 <b>Score ${best.c}</b> converte <b>${best.tx.toFixed(1)}%</b> (${best.venda}/${best.total}) —
-          ${mult === '∞' ? 'sem venda comparável em' : `<b>${mult}×</b> melhor que`} <b>Score ${worst.c}</b> (${worst.tx.toFixed(1)}%). ${best.c === 'A' ? 'A régua está capturando bem o perfil de alta conversão.' : 'Vale revisar por que o Score A não domina — pode ter viés na régua.'}
-        </div>`;
-      } else {
-        insightEl.innerHTML = `<div style="padding:12px 16px;border-radius:8px;background:var(--surface2);font-size:12px;color:var(--muted)">Amostra pequena por score no período — voltar quando acumular mais leads.</div>`;
-      }
-    }
+    // Insight automático removido a pedido da Bia (14/07/2026)
+    if (insightEl) insightEl.innerHTML = '';
   })();
 }
 
