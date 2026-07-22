@@ -872,7 +872,6 @@
   <button onclick="switchTab('evolucao',this)">Evolução Semanal</button>
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
-  <button onclick="switchTab('outbound',this)">Outbound (Duque/BDR)</button>
   <button onclick="switchTab('atividades',this)">Atividades</button>
   <button onclick="switchTab('disparos',this)">Disparos &amp; Nutrição</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
@@ -1215,65 +1214,6 @@
 
 </div>
 </div><!-- /tab-funis -->
-
-
-<!-- ================================================================
-     TAB 3 — DUQUE & BDR
-================================================================ -->
-<div id="tab-outbound" class="tab-pane">
-<div class="main">
-
-  <!-- Hero -->
-  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
-    <div>
-      <div class="hl-eyebrow">Outbound · Duque/BDR</div>
-      <h2>Canais outbound · operação independente do SDR</h2>
-      <div class="hl-sub">Taxas de conversão de Duque e BDR são naturalmente diferentes do SDR digital. Comparar entre si, não com Meta Ads.</div>
-      <div class="hl-pills">
-        <select class="period-select" id="outbound-period-sel" onchange="setGlobalPeriod(this.value, this)">
-          <option value="w3">Esta semana</option>
-          <option value="7d">Últimos 7 dias</option>
-          <option value="14d">Últimos 14 dias</option>
-          <option value="mes">Este mês</option>
-          <option value="mes_prev">Mês passado</option>
-          <option value="30d" selected>Últimos 30 dias</option>
-          <option value="max">Período máximo</option>
-          <option value="custom">Período personalizado…</option>
-        </select>
-      </div>
-    </div>
-    <div></div>
-  </div>
-
-  <!-- Comparativo de eficiência por canal (4 ChannelChips) -->
-  <div class="ds-sec"><h3>Comparativo de eficiência por canal</h3><span class="sub">SDR · Closer · Duque · BDR</span></div>
-  <div class="ds-chips" id="cmp-grid"><!-- preenchido por JS --></div>
-
-  <!-- Pirâmides Duque + BDR -->
-  <div class="ds-sec"><h3>Pirâmides por canal outbound</h3></div>
-  <div class="ds-grid-2" style="align-items:start">
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Funil Duque</h4><span class="sub" id="duque-sub">Outbound → Contato → Reunião</span></div>
-      <div class="ds-card-b">
-        <div class="pyramid-wrap" id="pyr-duque"></div>
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <div id="duque-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
-        </div>
-      </div>
-    </div>
-    <div class="ds-card">
-      <div class="ds-card-h"><h4>Funil BDR</h4><span class="sub" id="bdr-sub">Base de contatos → Qualificação → Reunião</span></div>
-      <div class="ds-card-b">
-        <div class="pyramid-wrap" id="pyr-bdr"></div>
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-          <div id="bdr-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-</div><!-- /tab-outbound -->
 
 
 <!-- ================================================================
@@ -2451,6 +2391,8 @@ function applyCustom() {
 
 /* ── Render outbound ─────────────────────────────────── */
 function renderOutbound() {
+  // Aba Outbound removida — mantém função como no-op pra não quebrar chamadas antigas.
+  if (!document.getElementById('pyr-duque')) return;
   const d = FUNNEL[currentOutPeriod];
   renderPyramid('pyr-duque', duqueSteps(d));
   renderPyramid('pyr-bdr',   bdrSteps(d));
