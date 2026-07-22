@@ -1629,11 +1629,13 @@
     <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <select id="score-filter" class="period-select" style="font-size:11.5px;padding:6px 12px" onchange="renderScore()">
         <option value="all" selected>Todas as classes</option>
-        <option value="A">Só A · Perfil Ideal</option>
-        <option value="B">Só B · Aspiracional Premium</option>
-        <option value="C">Só C · Aspiracional Médio</option>
-        <option value="D">Só D · Baixa aderência</option>
-        <option value="Incompleto">Só Incompletos</option>
+        <option value="A">Score A</option>
+        <option value="B">Score B</option>
+        <option value="C">Score C</option>
+        <option value="D">Score D</option>
+        <option value="E">Score E</option>
+        <option value="F">Score F</option>
+        <option value="sem">Sem score no Kommo</option>
       </select>
     </div>
     <div id="score-table" style="overflow-x:auto"></div>
@@ -7133,7 +7135,15 @@ function renderScore() {
     const filtroEl = document.getElementById('score-filter');
     const f = filtroEl ? filtroEl.value : 'all';
     const sorted = scored.slice().sort((a,b) => (b.created_at||0) - (a.created_at||0));
-    const filtered = f === 'all' ? sorted : sorted.filter(s => s._scored.score === f);
+    // Filtro usa Score do KOMMO (l.score — A/B/C/D/E/F) — não a régua calculada.
+    // A régua nunca retorna A porque exige 'Resorts All Inclusive' (bot antigo).
+    // Bia confirmou: score oficial é sempre o do Kommo (memória: dash-imr-score-oficial).
+    const _kommoScoreOf = s => (s.score && String(s.score).trim().toUpperCase()) || '';
+    const filtered = f === 'all'
+      ? sorted
+      : f === 'sem'
+        ? sorted.filter(s => !_kommoScoreOf(s))
+        : sorted.filter(s => _kommoScoreOf(s) === f);
     const limit = 50;
     const rows = filtered.slice(0, limit).map(s => {
       const c = SCORE_COLOR[s._scored.score];
@@ -7150,7 +7160,7 @@ function renderScore() {
     }).join('');
     tblEl.innerHTML = `
       <div style="margin-bottom:10px;font-size:11.5px;color:var(--muted)">
-        Mostrando <b style="color:var(--text)">${Math.min(filtered.length, limit)}</b> de <b style="color:var(--text)">${filtered.length}</b> leads ${f === 'all' ? '' : `da classe ${f}`}
+        Mostrando <b style="color:var(--text)">${Math.min(filtered.length, limit)}</b> de <b style="color:var(--text)">${filtered.length}</b> leads ${f === 'all' ? '' : f === 'sem' ? '<b>sem score no Kommo</b>' : `com <b>Score ${f}</b> no Kommo`}
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px">
         <thead><tr style="border-bottom:2px solid var(--border)">
