@@ -4604,6 +4604,12 @@ function renderDiagnostico() {
   // ── Eficiência SDR (por consultor) ────
   // Users que aparecem no Kommo mas NÃO são SDRs — não devem constar no funil por consultor.
   const SDR_EXCLUDE = new Set([14445895 /* MME Vacation (integração/conta cliente) */]);
+  // Users que não são Closer — aparecem no funil Closer com dados zerados. Ex: SDRs
+  // que foram atribuídos por engano a algum lead Closer. Ficam de fora só da tabela Closer.
+  const CLOSER_EXCLUDE = new Set([
+    14445895,   // MME Vacation
+    14915828,   // Renan Santos (SDR, não Closer)
+  ]);
   (function renderFunilSDR() {
     const el = document.getElementById('diag-funil-sdr');
     const subEl = document.getElementById('diag-funil-sdr-sub');
@@ -4716,11 +4722,11 @@ function renderDiagnostico() {
     // Status IDs — Closer
     const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563;
     const C_WON = 142, C_LOST = 143;
-    // Agrupa leads Closer do período por responsible_user_id (exclui não-consultores)
+    // Agrupa leads Closer do período por responsible_user_id (exclui não-Closers)
     const byUser = {};
     for (const l of closerC) {
       const uid = l.responsible_user_id || 0;
-      if (SDR_EXCLUDE.has(uid)) continue;
+      if (CLOSER_EXCLUDE.has(uid)) continue;
       if (!byUser[uid]) byUser[uid] = {leads:[], name:(usersMap[uid] && usersMap[uid].name) || `Usuário ${uid || 'sem atribuição'}`};
       byUser[uid].leads.push(l);
     }
