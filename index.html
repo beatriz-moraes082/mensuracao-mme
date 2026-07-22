@@ -1200,12 +1200,6 @@
     </div>
   </div>
 
-  <!-- Vendas por canal (ChannelChips) -->
-  <div class="ds-sec"><h3>Vendas por canal de origem</h3><span class="sub" id="vendas-canal-sub">—</span></div>
-  <div class="ds-card">
-    <div id="vendas-canal-content"></div>
-  </div>
-
   <!-- Motivos de Perda · ranking horizontal -->
   <div class="ds-sec"><h3>Motivos de perda</h3><span class="sub">Onde os leads param de avançar</span></div>
   <div class="ds-grid-2" style="align-items:start">
@@ -1536,6 +1530,12 @@
     <h4 style="font-size:13px;font-weight:700;margin-bottom:6px">Ciclo por venda</h4>
     <div class="csub" style="font-size:11px;color:var(--muted);margin-bottom:14px">Cada barra = uma venda. Cor = origem. Tamanho = dias do ciclo.</div>
     <div id="vd-cycle-bars"></div>
+  </div>
+
+  <!-- Vendas por canal de origem (movido da aba Funis) -->
+  <div class="ds-sec"><h3>Vendas por canal de origem</h3><span class="sub" id="vendas-canal-sub">—</span></div>
+  <div class="ds-card" style="margin-bottom:14px">
+    <div id="vendas-canal-content"></div>
   </div>
 
   <!-- Tabela -->
@@ -2747,6 +2747,10 @@ function renderAnalises() {
     if (frame) frame.src = 'about:blank';  // para vídeo/áudio ao fechar
     if (dlg) dlg.close();
   }
+  // Expõe no window pra os onclick="openCreativePreview(...)" do HTML acharem
+  // (as funções estão dentro de renderAnalises, então não são globais por padrão).
+  window.openCreativePreview  = openCreativePreview;
+  window.closeCreativePreview = closeCreativePreview;
 
   function statusBadge(status) {
     if (!status) return '';
@@ -3139,38 +3143,50 @@ function renderAnalises() {
   // Hero KPIs e Top 3 do Perfil do Qualificado (sistema novo)
   // ════════════════════════════════════════════════════════
   (function renderPerfilHero() {
-    const OFF = new Set(['D','E','F']);
     const validAud = sdr.filter(l => !isInvalidAud(l.audience));
     const valid = sdr.filter(l => l.score);
-    const scoreA = valid.filter(l => l.score === 'A').length;
-    const scoreB = valid.filter(l => l.score === 'B').length;
-    const offN   = valid.filter(l => OFF.has(l.score)).length;
-    const totalQualif = sdr.filter(l => l.qualified).length;
 
     const kpisEl = document.getElementById('perfil-score-kpis');
     if (kpisEl) {
-      const semScore = sdr.length - valid.length;
-      // 3 primeiros cards usam BASE = leads COM score atribuído pelo bot.
-      // 4º card usa BASE = TODOS os leads (mede progressão no funil, não qualidade do bot).
-      const kpis = [
-        {lbl:'Score A · alta qualidade',  val:scoreA,
-         sub: valid.length > 0 ? `${(scoreA/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:'accent'},
-        {lbl:'Score B · decente',         val:scoreB,
-         sub: valid.length > 0 ? `${(scoreB/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:''},
-        {lbl:'Fora do perfil · D/E/F',    val:offN,
-         sub: valid.length > 0 ? `${(offN/valid.length*100).toFixed(1)}% dos ${valid.length} leads com score` : '—', variant:''},
-        {lbl:'Avançaram no funil',        val:totalQualif,
-         sub: sdr.length > 0 ? `${(totalQualif/sdr.length*100).toFixed(1)}% dos ${sdr.length} leads totais · qualificou no SDR` : '—', variant:''},
-      ];
+      // 1 card por score: A/B/C/D/E/F + Sem score. Cada card mostra
+      // quantos leads têm aquele score E % desses que AVANÇARAM no funil.
+      const SCORE_ORDER = ['A','B','C','D','E','F'];
+      const scoreColor = {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', E:'#b91c1c', F:'#7f1d1d', 'Sem score':'#94a3b8'};
+      const kpis = SCORE_ORDER.map(sc => {
+        const leadsSc = sdr.filter(l => (l.score||'').toUpperCase() === sc);
+        const avanc = leadsSc.filter(l => l.qualified).length;
+        const advPct = leadsSc.length > 0 ? (avanc/leadsSc.length*100).toFixed(1)+'%' : '—';
+        return {
+          lbl: `Score ${sc}`,
+          val: leadsSc.length,
+          sub: leadsSc.length > 0
+            ? `${advPct} avançaram (${avanc}/${leadsSc.length})`
+            : '<span style="color:var(--muted)">sem leads no período</span>',
+          color: scoreColor[sc],
+          isTop: sc === 'A',
+        };
+      });
+      const semScoreLeads = sdr.filter(l => !l.score);
+      const avancSemScore = semScoreLeads.filter(l => l.qualified).length;
+      kpis.push({
+        lbl: 'Sem score',
+        val: semScoreLeads.length,
+        sub: semScoreLeads.length > 0
+          ? `${(avancSemScore/semScoreLeads.length*100).toFixed(1)}% avançaram (bot em curso)`
+          : '<span style="color:var(--muted)">todos com score</span>',
+        color: '#94a3b8',
+        isTop: false,
+      });
+      kpisEl.style.gridTemplateColumns = 'repeat(7, 1fr)';
       kpisEl.innerHTML = kpis.map(k => `
-        <div class="ds-kpi ${k.variant}">
-          <div class="lbl">${k.lbl}</div>
+        <div class="ds-kpi" style="border-top:3px solid ${k.color}">
+          <div class="lbl" style="color:${k.color}">● ${k.lbl}</div>
           <div class="val">${k.val}</div>
           <div class="sub">${k.sub}</div>
         </div>
       `).join('') + `
         <div style="grid-column:1/-1;font-size:11.5px;color:var(--muted);line-height:1.55;padding:10px 14px;background:var(--surface2);border-radius:8px;margin-top:-4px">
-          <b>📖 Leia assim:</b> os 3 primeiros cards usam como base os leads <b>que receberam score do bot</b> (${valid.length} de ${sdr.length}). O 4º card "Avançaram no funil" mostra leads que <b>avançaram no SDR</b> (status Lead qualificado, Reunião agendada ou Venda ganha) — pode ser maior que Score A+B porque inclui leads que avançaram mesmo sem o bot ter pontuado. ${semScore > 0 ? `<b>${semScore} leads</b> ainda estão sem score (bot em curso).` : ''}
+          <b>📖 Leia assim:</b> cada card mostra a <b>quantidade</b> de leads com aquele score no período, e o <b>%  que avançou no funil</b> (chegou a "Lead qualificado" no SDR — inclui Reunião agendada/realizada e vendas). Ideal é <b>Score A</b> ter a <b>maior taxa de avanço</b>.
         </div>
       `;
     }
@@ -6750,6 +6766,8 @@ function renderVendas(){
   vdRenderCharts(v);
   vdRenderCycle(v);
   vdRenderTable(v);
+  // Vendas por canal de origem (movido de Funis Comerciais)
+  if (typeof renderVendasCanal === 'function') renderVendasCanal();
 }
 
 /* ────────────────────────────────────────────────────────────────
