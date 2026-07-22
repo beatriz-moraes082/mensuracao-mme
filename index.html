@@ -1248,7 +1248,7 @@
       <h1 style="margin:8px 0 6px">Volume de tarefas por consultor</h1>
       <div class="hl-desc">
         Tarefas do Kommo atribuídas aos SDRs e Closers — total, concluídas, pendentes,
-        atrasadas, taxa de conclusão, tempo até o 1º contato, mix por tipo e média por lead.
+        atrasadas, taxa de conclusão, tempo até o 1º contato e mix por tipo.
       </div>
       <div class="hl-pills">
         <select class="period-select" id="ativ-period-sel" onchange="setGlobalPeriod(this.value, this)">
@@ -1278,7 +1278,7 @@
   <div class="ds-card"><div id="ativ-closer" style="overflow-x:auto"></div></div>
 
   <!-- Perfil comportamental dos SDRs (radar com proxies do Kommo) -->
-  <div class="ds-sec" style="margin-top:32px"><h3>Perfil comportamental dos SDRs</h3><span class="sub">6 dimensões calculadas a partir das tarefas do Kommo</span></div>
+  <div class="ds-sec" style="margin-top:32px"><h3>Perfil comportamental dos SDRs</h3><span class="sub">7 dimensões calculadas a partir das tarefas e mensagens do Kommo</span></div>
   <div class="ds-grid-3" id="ativ-radar-sdr" style="gap:16px"></div>
 
   <!-- Perfil comportamental dos Closers -->
@@ -1295,6 +1295,7 @@
       <div>• <b>Prazo:</b> % concluídas antes do complete_till</div>
       <div>• <b>Follow-up:</b> % das tarefas concluídas que são follow-up</div>
       <div>• <b>Conversão:</b> SDR = reuniões/leads · Closer = vendas/proposta</div>
+      <div>• <b>1º contato</b> (só SDR)<b>:</b> rapidez da 1ª mensagem humana — 1h = 100, 8h = 30, 16h+ = 0</div>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);font-style:italic">
       ⚠️ Estas são <b>proxies quantitativos</b> dos dados do CRM — não medem qualidade da conversa (escuta, rapport, objeção).
@@ -4899,7 +4900,6 @@ function renderAtividades() {
         name: (usersMap[t.responsible] && usersMap[t.responsible].name) || `Usuário ${t.responsible}`,
         total: 0, done: 0, pending: 0, overdue: 0,
         types: {},
-        leadIds: new Set(),
         // Métricas pro radar comportamental
         rhythmSum: 0, rhythmCount: 0,   // média de tempo (updated_at - created_at) em segundos, concluídas
         onTime: 0,                        // concluídas dentro do complete_till
@@ -4924,7 +4924,6 @@ function renderAtividades() {
     const tid = t.task_type_id || 0;
     u.types[tid] = (u.types[tid] || 0) + 1;
     typeCount[tid] = (typeCount[tid] || 0) + 1;
-    if (t.lead_id) u.leadIds.add(t.lead_id);
     if (t.created_at) u.daysActive.add(new Date(t.created_at*1000).toISOString().slice(0,10));
   }
 
@@ -5007,8 +5006,6 @@ function renderAtividades() {
         uid, name: d.name, total: d.total, done: d.done,
         pending: d.pending, overdue: d.overdue,
         taxConcl: d.total > 0 ? (d.done/d.total*100) : 0,
-        leadsCount: d.leadIds.size,
-        taxLead: d.leadIds.size > 0 ? (d.total / d.leadIds.size) : 0,
         types: d.types,
         atendUtil: a ? _mediana(a.uteis) : null,
         atendCorrido: a ? _mediana(a.corridos) : null,
@@ -5031,7 +5028,6 @@ function renderAtividades() {
     const doneF = users.reduce((s,u)=>s+u.done,0);
     const pendF = users.reduce((s,u)=>s+u.pending,0);
     const overF = users.reduce((s,u)=>s+u.overdue,0);
-    const totalLeadsF = users.reduce((s,u)=>s+u.leadsCount,0);
 
     target.innerHTML = `
       <table class="eff-table">
@@ -5042,18 +5038,6 @@ function renderAtividades() {
           <th>Pendentes</th>
           <th>Atrasadas</th>
           <th>Tx. Conclusão</th>
-          <th>Tarefas/lead <span class="eff-info" tabindex="0">?<span class="eff-tip">
-            <b>Tarefas por lead único</b><br>
-            <code>Total tarefas ÷ Leads distintos atendidos</code>
-            <br><br>
-            Mede <b>intensidade</b> vs volume: se o consultor <b>foca em poucos leads</b>
-            (muitas tarefas em cada) ou <b>espalha</b> o trabalho (1 tarefa por lead).
-            <br><br>
-            <b>Referência:</b><br>
-            • ~1 = direto, pouco follow-up<br>
-            • 3–5 = padrão saudável<br>
-            • &gt;7 = alta persistência ou leads difíceis
-          </span></span></th>
           ${atend ? `<th>1º contato <span class="eff-info" tabindex="0">?<span class="eff-tip">
             <b>Tempo até o primeiro contato humano</b><br>
             <code>Entrada do lead → 1ª mensagem enviada por uma pessoa</code>
@@ -5081,7 +5065,6 @@ function renderAtividades() {
               ${_cell(u.pending, topPending, u.pending === topPending && u.pending > 0)}
               <td class="eff-bar ${overdueCls}" style="--bar:${topOverdue>0?Math.round(u.overdue/topOverdue*100):0}">${u.overdue}</td>
               <td class="${txCls}">${u.taxConcl.toFixed(1)}%</td>
-              <td>${u.taxLead > 0 ? u.taxLead.toFixed(1) : '—'}</td>
               ${atend ? `<td class="${u.atendUtil == null ? '' : _txCls(-u.atendUtil/3600, -4, -8)}" title="${
                 u.atendN} leads medidos · ${_dur(u.atendCorrido)} em tempo corrido${
                 u.semContato ? ` · ${u.semContato} sem contato humano` : ''}">${_dur(u.atendUtil)}${
@@ -5097,7 +5080,6 @@ function renderAtividades() {
             <td>${pendF}</td>
             <td>${overF}</td>
             <td>${totF > 0 ? (doneF/totF*100).toFixed(1)+'%' : '—'}</td>
-            <td>${totalLeadsF > 0 ? (totF/totalLeadsF).toFixed(1) : '—'}</td>
             ${atend ? (() => {
               // Mediana do time = mediana de TODOS os leads juntos, não média das medianas
               const todos = users.flatMap(u => (atend[u.uid] || {}).uteis || []);
@@ -5131,7 +5113,8 @@ function renderAtividades() {
 
   // ── Perfil comportamental (radar) · SDR e Closer ────────
   window._ativRadarCharts = window._ativRadarCharts || {};
-  const renderRadar = (usersDict, targetId, convDict, isCloser) => {
+  // `atend` só vem pro radar de SDR — o 1º contato é medido sobre leads do funil SDR.
+  const renderRadar = (usersDict, targetId, convDict, isCloser, atend) => {
     const target = document.getElementById(targetId);
     if (!target) return;
     // Destroi charts anteriores pra evitar leak
@@ -5152,6 +5135,7 @@ function renderAtividades() {
         followupP: d.done > 0 ? d.followupDone/d.done*100 : 0,
         consistP: Math.min(100, d.daysActive.size/periodDays*100),
         conv: convVal,
+        atendUtil: atend && atend[uid] ? _mediana(atend[uid].uteis) : null,
       };
     }).filter(u => u.total >= 1);
     if (usersArr.length === 0) {
@@ -5164,9 +5148,25 @@ function renderAtividades() {
     const minRitmo = Math.min(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), Infinity);
     const maxRitmo = Math.max(...usersArr.filter(u => u.ritmoAvgH != null).map(u => u.ritmoAvgH), 1);
     const norm = (v, max) => max > 0 ? Math.round(v/max*100) : 0;
+    // 1º contato: escala ABSOLUTA, não relativa ao time. Com 4 SDRs, normalizar pelo
+    // melhor faria o último sempre tirar 0 mesmo respondendo bem. Os pontos são as
+    // referências do tooltip da tabela: 1h resposta quente, 4h aceitável, 8h esfriando.
+    const _scoreContato = seg => {
+      if (seg == null) return 0;
+      const h = seg/3600, pts = [[1,100],[4,60],[8,30],[16,0]];
+      if (h <= 1) return 100;
+      for (let i = 1; i < pts.length; i++) {
+        if (h <= pts[i][0]) {
+          const [x0,y0] = pts[i-1], [x1,y1] = pts[i];
+          return Math.round(y0 + (y1-y0) * (h-x0)/(x1-x0));
+        }
+      }
+      return 0;
+    };
     const dimLbls = ['Volume','Ritmo','Consistência','Prazo','Follow-up', isCloser ? 'Fechamento' : 'Conversão'];
-    const cards = usersArr.map((u, idx) => {
-      const scores = [
+    if (atend) dimLbls.push('1º contato');
+    const scoresOf = u => {
+      const s = [
         norm(u.total, maxTotal),
         u.ritmoAvgH == null ? 0 : (maxRitmo === minRitmo ? 100 : Math.round((maxRitmo - u.ritmoAvgH) / (maxRitmo - minRitmo) * 100)),
         Math.round(u.consistP),
@@ -5174,7 +5174,11 @@ function renderAtividades() {
         Math.round(u.followupP),
         Math.round(u.conv),
       ];
-      const overall = Math.round(scores.reduce((s,v)=>s+v,0)/scores.length);
+      if (atend) s.push(_scoreContato(u.atendUtil));
+      return s;
+    };
+    const cards = usersArr.map((u, idx) => {
+      const scores = scoresOf(u);
       // Top 2 e bottom 2 dimensões
       const withLbl = scores.map((v,i) => ({v, l: dimLbls[i]}));
       const sortedDesc = [...withLbl].sort((a,b) => b.v - a.v);
@@ -5187,7 +5191,7 @@ function renderAtividades() {
           <span class="eff-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:0">${_initials(u.name)}</span>
           <div>
             <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2">${u.name}</div>
-            <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : (u.ritmoAvgH < 24 ? u.ritmoAvgH.toFixed(1)+'h' : (u.ritmoAvgH/24).toFixed(1)+'d')}</div>
+            <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : (u.ritmoAvgH < 24 ? u.ritmoAvgH.toFixed(1)+'h' : (u.ritmoAvgH/24).toFixed(1)+'d')}${atend ? ` · 1º contato ${_dur(u.atendUtil)}` : ''}</div>
           </div>
         </div>
         <div style="height:200px;position:relative"><canvas id="${canvasId}"></canvas></div>
@@ -5206,14 +5210,7 @@ function renderAtividades() {
     target.innerHTML = cards;
     // Instancia Chart.js radar depois que o innerHTML foi aplicado
     usersArr.forEach((u, idx) => {
-      const scores = [
-        norm(u.total, maxTotal),
-        u.ritmoAvgH == null ? 0 : (maxRitmo === minRitmo ? 100 : Math.round((maxRitmo - u.ritmoAvgH) / (maxRitmo - minRitmo) * 100)),
-        Math.round(u.consistP),
-        Math.round(u.prazoP),
-        Math.round(u.followupP),
-        Math.round(u.conv),
-      ];
+      const scores = scoresOf(u);
       const canvasId = `${targetId}-c${idx}`;
       const canvas = document.getElementById(canvasId);
       if (!canvas || typeof Chart === 'undefined') return;
@@ -5245,7 +5242,7 @@ function renderAtividades() {
       });
     });
   };
-  renderRadar(byUser.sdr,    'ativ-radar-sdr',    sdrConv,    false);
+  renderRadar(byUser.sdr,    'ativ-radar-sdr',    sdrConv,    false, atendimento);
   renderRadar(byUser.closer, 'ativ-radar-closer', closerConv, true);
 
   // Data de fetch
