@@ -3618,10 +3618,17 @@ function renderAnalises() {
     }
     const classOfCid = cid => _cloScoreByCid[cid] || _sdrByCid[cid] || null;
 
-    // 5 etapas do funil comercial (união closerCreated + closerVendas via 'closer')
+    // 6 etapas do funil comercial (união closerCreated + closerVendas via 'closer')
+    const S_PRE = 98618883, S_NOVO = 98147479, S_QUAL_ANL = 98147487;
     const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563, C_WON = 142;
-    const cntByClass = { qualif:{}, realiz:{}, prop:{}, verde:{}, venda:{} };
-    classes.forEach(c => { cntByClass.qualif[c]=0; cntByClass.realiz[c]=0; cntByClass.prop[c]=0; cntByClass.verde[c]=0; cntByClass.venda[c]=0; });
+    const cntByClass = { prefunil:{}, qualif:{}, realiz:{}, prop:{}, verde:{}, venda:{} };
+    classes.forEach(c => { cntByClass.prefunil[c]=0; cntByClass.qualif[c]=0; cntByClass.realiz[c]=0; cntByClass.prop[c]=0; cntByClass.verde[c]=0; cntByClass.venda[c]=0; });
+    // Pré-funil: leads AINDA no SDR em Pré-atendimento / Lead novo / Qualif. em análise
+    //   (não qualificaram, nem perdidos, nem em follow-up — estão aguardando triagem/resposta)
+    const PRE_STATUS = new Set([S_PRE, S_NOVO, S_QUAL_ANL]);
+    for (const s of scored) {
+      if (PRE_STATUS.has(s.status) && cntByClass.prefunil[s._score] !== undefined) cntByClass.prefunil[s._score]++;
+    }
     // Qualificação vem do SDR: leads com flag l.qualified (Lead Qualif + Reu Agend + Reu Realiz + WON no SDR)
     for (const s of scored) {
       if (s.qualified && cntByClass.qualif[s._score] !== undefined) cntByClass.qualif[s._score]++;
@@ -3644,13 +3651,14 @@ function renderAnalises() {
       if (cls && cntByClass.venda[cls] !== undefined) cntByClass.venda[cls]++;
     }
 
-    // Renderiza um card por score — 5 etapas (Qualificação → Reunião → Proposta → Sinal Verde → Venda)
+    // Renderiza um card por score — 6 etapas (Pré-funil → Qualificação → Reunião → Proposta → Sinal Verde → Venda)
     const steps = [
-      {key:'qualif', lbl:'Qualificação'},
-      {key:'realiz', lbl:'Reunião realizada'},
-      {key:'prop',   lbl:'Proposta'},
-      {key:'verde',  lbl:'Sinal Verde'},
-      {key:'venda',  lbl:'Venda'},
+      {key:'prefunil', lbl:'Pré-funil'},
+      {key:'qualif',   lbl:'Qualificação'},
+      {key:'realiz',   lbl:'Reunião realizada'},
+      {key:'prop',     lbl:'Proposta'},
+      {key:'verde',    lbl:'Sinal Verde'},
+      {key:'venda',    lbl:'Venda'},
     ];
     const cards = classes.map(c => {
       const total  = byClass[c].length;
