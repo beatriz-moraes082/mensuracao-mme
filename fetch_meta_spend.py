@@ -77,36 +77,60 @@ def fetch_status(endpoint, name_field, extra_fields=''):
         params = {}
     return rows
 
-def fetch_insights(level):
+def _month_chunks(since_str, until_str):
+    """Divide o período em janelas mensais (início→fim de cada mês, cortando pelo período total).
+    Contorna bug do Meta API (#2642 Invalid cursors) que aparece em paginação de períodos longos."""
+    from datetime import datetime, timedelta
+    start = datetime.fromisoformat(since_str).date()
+    end   = datetime.fromisoformat(until_str).date()
+    chunks = []
+    cur = start
+    while cur <= end:
+        # Último dia do mês corrente
+        if cur.month == 12:
+            next_month = date(cur.year + 1, 1, 1)
+        else:
+            next_month = date(cur.year, cur.month + 1, 1)
+        month_end = next_month - timedelta(days=1)
+        chunk_end = min(month_end, end)
+        chunks.append((cur.isoformat(), chunk_end.isoformat()))
+        cur = chunk_end + timedelta(days=1)
+    return chunks
+
+def _fetch_insights_window(level, since, until):
+    """Fetch insights de uma janela específica (usado como chunk mensal pra evitar erro de paginação)."""
     rows, url = [], f'https://graph.facebook.com/v21.0/{ACCOUNT}/insights'
     params = {
         'access_token': TOKEN,
         'level':         level,
         'fields':        f'{level}_name,spend,impressions,clicks',
-        'time_range':    f'{{"since":"{SINCE}","until":"{UNTIL}"}}',
-        # Daily: buckets de 7 dias da API desalinham com o calendário; o
-        # bucketing manual via month_of()/week_of() exige date_start diário.
+        'time_range':    f'{{"since":"{since}","until":"{until}"}}',
         'time_increment': 1,
         'limit':         500,
     }
-    print(f'  GET {url}')
-    print(f'  account={ACCOUNT} token=***{TOKEN[-6:]} level={level} since={SINCE} until={UNTIL}')
     while url:
         r = requests.get(url, params=params)
-        print(f'  HTTP {r.status_code}')
         data = r.json()
         if 'error' in data:
             err = data['error']
-            print(f'  ❌ ERROR: code={err.get("code")} type={err.get("type")} subcode={err.get("error_subcode")}')
-            print(f'     message: {err.get("message")}')
-            print(f'     fbtrace_id: {err.get("fbtrace_id")}')
+            print(f'  ❌ ERROR window {since}→{until}: code={err.get("code")} · {err.get("message")}')
             break
         batch = data.get('data', [])
         rows.extend(batch)
-        print(f'  batch: {len(batch)} rows (total {len(rows)})')
         url    = data.get('paging', {}).get('next')
-        params = {}   # next page URL already has all params
+        params = {}
     return rows
+
+def fetch_insights(level):
+    """Puxa insights dividindo o período em janelas mensais.
+    Contorna bug #2642 (Invalid cursors) que aparece em paginação de períodos longos."""
+    print(f'  account={ACCOUNT} token=***{TOKEN[-6:]} level={level} since={SINCE} until={UNTIL}')
+    all_rows = []
+    for since, until in _month_chunks(SINCE, UNTIL):
+        chunk_rows = _fetch_insights_window(level, since, until)
+        all_rows.extend(chunk_rows)
+        print(f'  window {since}→{until}: {len(chunk_rows)} rows (acumulado {len(all_rows)})')
+    return all_rows
 
 def main():
     print('=== Meta Ads Spend Fetch ===')
