@@ -720,6 +720,25 @@
     .tx-mid {color:#d97706;font-weight:600}
     .tx-bad {color:#dc2626;font-weight:600}
     .tx-neutral{color:var(--muted)}
+    /* Mini-funil por perfil de lead (score) */
+    .pf-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.03),0 6px 20px rgba(0,0,0,.04);
+      display:flex;flex-direction:column;gap:10px;transition:transform .18s,box-shadow .2s}
+    .pf-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.06),0 12px 28px rgba(0,0,0,.06)}
+    .pf-card.pf-highlight{border-color:var(--accent);box-shadow:0 4px 14px rgba(238,77,32,.14),0 12px 30px rgba(238,77,32,.08)}
+    .pf-card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;
+      padding-bottom:10px;border-bottom:1px solid var(--border)}
+    .pf-score{display:inline-flex;align-items:center;justify-content:center;
+      width:34px;height:34px;border-radius:50%;color:#fff;font-size:14px;font-weight:800;letter-spacing:-.02em}
+    .pf-lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.1}
+    .pf-total{font-size:20px;font-weight:800;color:var(--text);line-height:1;margin-top:3px;font-variant-numeric:tabular-nums}
+    .pf-final{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .pf-step{display:flex;align-items:center;gap:10px;font-size:11.5px;line-height:1.2}
+    .pf-step-lbl{flex:0 0 100px;color:var(--muted);font-weight:500}
+    .pf-step-bar{flex:1;position:relative;height:16px;background:var(--surface2,#fafafa);border-radius:4px;overflow:hidden}
+    .pf-step-fill{position:absolute;top:0;left:0;bottom:0;border-radius:4px;transition:width .3s cubic-bezier(.4,0,.2,1)}
+    .pf-step-val{flex:0 0 68px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+    .pf-step-val .muted{color:var(--muted);font-weight:400;font-size:10.5px}
     /* Ícone ? de ajuda em headers de tabela · tooltip on hover */
     .eff-info{display:inline-flex;align-items:center;justify-content:center;
       width:14px;height:14px;border-radius:50%;
@@ -930,9 +949,6 @@
   <div class="ds-sec" style="margin-top:24px"><h3>Evolução diária</h3><span class="sub" id="diag-daily-sub">Leads, reuniões e vendas por dia — respeitando o filtro de período</span></div>
   <div class="ds-card"><div id="diag-daily-charts" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div></div>
 
-  <!-- Funil por perfil de lead (A/B/C/D/E/F — score do Kommo) -->
-  <div class="ds-sec" style="margin-top:24px"><h3>Funil por perfil de lead</h3><span class="sub">Segmentado pelo score do Kommo (A/B/C/D/E/F) — filtra pelo período selecionado</span></div>
-  <div class="ds-card"><div id="diag-funil-perfil" style="overflow-x:auto"></div></div>
 
   <!-- Eficiência SDR (por consultor) -->
   <div class="ds-sec" style="margin-top:24px"><h3>Eficiência SDR</h3><span class="sub" id="diag-funil-sdr-sub">Performance individual dos SDRs — filtra pelo período selecionado</span></div>
@@ -1083,6 +1099,11 @@
     <span class="sub" id="perfil-preatend-sub">Distribuição de respostas no bot · todos os leads SDR</span>
   </div>
   <div class="ds-grid-2" id="perfil-preatend-grid"></div>
+
+  <!-- Funil por perfil de lead · mini-funis por score (movido do Diagnóstico) -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Funil por perfil de lead</h3><span class="sub">Mini-funil por score do Kommo · comparação de conversão A vs F</span></div>
+  <div id="perfil-funil-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div>
+  <div id="perfil-funil-insight" style="margin-top:14px"></div>
 
   <!-- Detalhamento das 15 análises em accordion -->
   <details class="ds-accordion" style="margin-top:18px">
@@ -3575,6 +3596,107 @@ function renderAnalises() {
     renderStackChart('cStackPub', metaLeads, l => l.audience);
     renderStackChart('cStackCri', metaLeads.filter(l => l.creative), l => l.creative);
   }, 50);
+
+  // ── Funil por perfil de lead · mini-funil por score (movido do Diagnóstico) ──
+  // Score vem de l.score do Kommo (Closer prevalece sobre SDR quando reavaliado).
+  (function renderFunilPorPerfilLead() {
+    const el = document.getElementById('perfil-funil-cards');
+    const insightEl = document.getElementById('perfil-funil-insight');
+    if (!el) return;
+    const scoreOf = l => (l.score && String(l.score).trim()) || 'Sem score';
+    const scored = sdr.map(l => ({...l, _score: scoreOf(l)}));
+    const classes = ['A','B','C','D','E','F','Sem score'];
+    const clsColor = {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', E:'#b91c1c', F:'#7f1d1d', 'Sem score':'#94a3b8'};
+    const byClass = {}; classes.forEach(c => byClass[c] = scored.filter(s => s._score === c));
+
+    // Mapping contact_id → score (Closer prevalece)
+    const _sdrByCid = {};
+    for (const s of scored) if (s.contact_id) _sdrByCid[s.contact_id] = s._score;
+    const _cloScoreByCid = {};
+    for (const l of closerCreated) {
+      if (l.contact_id && l.score && String(l.score).trim()) _cloScoreByCid[l.contact_id] = String(l.score).trim();
+    }
+    const classOfCid = cid => _cloScoreByCid[cid] || _sdrByCid[cid] || null;
+
+    // 4 etapas do funil comercial (união closerCreated + closerVendas via 'closer')
+    const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563, C_WON = 142;
+    const cntByClass = { realiz:{}, prop:{}, verde:{}, venda:{} };
+    classes.forEach(c => { cntByClass.realiz[c]=0; cntByClass.prop[c]=0; cntByClass.verde[c]=0; cntByClass.venda[c]=0; });
+    for (const l of closer) {
+      const cls = (l.score && String(l.score).trim()) || (l.contact_id ? classOfCid(l.contact_id) : null);
+      if (!cls || cntByClass.realiz[cls] === undefined) continue;
+      // Cumulativo: quem está em etapa mais avançada TAMBÉM passou pelas anteriores
+      const st = l.status;
+      const passRealiz = st === C_RR || l.proposta || st === C_VERDE || st === C_WON;
+      const passProp   = st === C_PROP || st === C_FU || st === C_VERDE || st === C_WON;
+      const passVerde  = st === C_VERDE || st === C_WON;
+      if (passRealiz) cntByClass.realiz[cls]++;
+      if (passProp)   cntByClass.prop[cls]++;
+      if (passVerde)  cntByClass.verde[cls]++;
+    }
+    // Vendas por closed_at (via closerVendas — sem duplicar do loop acima)
+    for (const v of closerVendas) {
+      const cls = (v.score && String(v.score).trim()) || (v.contact_id ? classOfCid(v.contact_id) : null);
+      if (cls && cntByClass.venda[cls] !== undefined) cntByClass.venda[cls]++;
+    }
+
+    // Renderiza um card por score
+    const steps = [
+      {key:'realiz', lbl:'Reunião realizada'},
+      {key:'prop',   lbl:'Proposta'},
+      {key:'verde',  lbl:'Sinal Verde'},
+      {key:'venda',  lbl:'Venda'},
+    ];
+    const cards = classes.map(c => {
+      const total  = byClass[c].length;
+      const venda  = cntByClass.venda[c];
+      const txConv = total > 0 ? (venda/total*100) : 0;
+      const color  = clsColor[c];
+      const isTop  = c === 'A' && venda > 0;
+      const badgeColor = txConv >= 5 ? '#16a34a' : txConv >= 2 ? '#d97706' : (venda > 0 ? '#dc2626' : '#94a3b8');
+      const stepsHtml = steps.map(s => {
+        const val = cntByClass[s.key][c];
+        const pct = total > 0 ? val/total*100 : 0;
+        return `<div class="pf-step">
+          <div class="pf-step-lbl">${s.lbl}</div>
+          <div class="pf-step-bar"><div class="pf-step-fill" style="width:${pct.toFixed(1)}%;background:${color}${pct>50?'':(pct>25?'CC':'99')}"></div></div>
+          <div class="pf-step-val">${val} <span class="muted">· ${pct.toFixed(0)}%</span></div>
+        </div>`;
+      }).join('');
+      return `<div class="pf-card ${isTop?'pf-highlight':''}">
+        <div class="pf-card-h">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="pf-score" style="background:${color}">${c === 'Sem score' ? '?' : c}</span>
+            <div>
+              <div class="pf-lbl" style="color:${color}">Score ${c === 'Sem score' ? 'sem score' : c}</div>
+              <div class="pf-total">${total} <span style="font-size:11px;font-weight:500;color:var(--muted)">leads</span></div>
+            </div>
+          </div>
+          <span class="pf-final" style="background:${badgeColor}22;color:${badgeColor}">${total>0?txConv.toFixed(1)+'%':'—'} conv.</span>
+        </div>
+        ${total > 0 ? stepsHtml : '<div style="padding:20px 0;text-align:center;color:var(--muted);font-size:11px">Sem leads no período</div>'}
+      </div>`;
+    }).join('');
+    el.innerHTML = cards;
+
+    // Insight automático
+    if (insightEl) {
+      const withData = classes
+        .map(c => ({c, total: byClass[c].length, venda: cntByClass.venda[c], tx: byClass[c].length > 0 ? cntByClass.venda[c]/byClass[c].length*100 : 0}))
+        .filter(x => x.total >= 5);
+      if (withData.length >= 2) {
+        const best = withData.reduce((a,b) => b.tx > a.tx ? b : a);
+        const worst = withData.reduce((a,b) => b.tx < a.tx ? b : a);
+        const mult = worst.tx > 0 ? (best.tx/worst.tx).toFixed(1) : '∞';
+        insightEl.innerHTML = `<div style="padding:14px 18px;border-radius:10px;background:rgba(238,77,32,.06);border-left:3px solid var(--accent);font-size:12.5px;line-height:1.55">
+          🏆 <b>Score ${best.c}</b> converte <b>${best.tx.toFixed(1)}%</b> (${best.venda}/${best.total}) —
+          ${mult === '∞' ? 'sem venda comparável em' : `<b>${mult}×</b> melhor que`} <b>Score ${worst.c}</b> (${worst.tx.toFixed(1)}%). ${best.c === 'A' ? 'A régua está capturando bem o perfil de alta conversão.' : 'Vale revisar por que o Score A não domina — pode ter viés na régua.'}
+        </div>`;
+      } else {
+        insightEl.innerHTML = `<div style="padding:12px 16px;border-radius:8px;background:var(--surface2);font-size:12px;color:var(--muted)">Amostra pequena por score no período — voltar quando acumular mais leads.</div>`;
+      }
+    }
+  })();
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -4445,126 +4567,6 @@ function renderDiagnostico() {
     }, 50);
   })();
 
-  // ── Funil por perfil de lead (A/B/C/D/E/F) ─────────────────
-  // Usa o campo 'score' do Kommo (custom field populado pelo bot/CRM),
-  // NÃO a régua calculada em JS. Alinha com a aba Perfil do qualificado.
-  (function renderFunilPerfil() {
-    const el = document.getElementById('diag-funil-perfil');
-    if (!el) return;
-    // Classifica pelo campo score do Kommo (fallback 'Sem score' quando vazio)
-    const scoreOf = l => (l.score && String(l.score).trim()) || 'Sem score';
-    const scored = sdr.map(l => ({...l, _score: scoreOf(l)}));
-    const classes = ['A','B','C','D','E','F','Sem score'];
-    const byClass = {}; classes.forEach(c => byClass[c] = scored.filter(s => s._score === c));
-    // Mapeia contact_id → classe. Para leads que passaram pro Closer, o score
-    // pode ter sido REAVALIADO pela Ana depois da conversa — quando existir
-    // score no lead Closer, ele PREVALECE sobre o score do SDR.
-    const _sdrByCid = {};
-    for (const l of scored) if (l.contact_id) _sdrByCid[l.contact_id] = l._score;
-    // Cria mapping override do Closer (só se tiver score preenchido)
-    const _cloScoreByCid = {};
-    for (const l of closerC) {
-      if (l.contact_id && l.score && String(l.score).trim()) {
-        _cloScoreByCid[l.contact_id] = String(l.score).trim();
-      }
-    }
-    // Resolver final: Closer > SDR
-    const classOfCid = cid => _cloScoreByCid[cid] || _sdrByCid[cid] || null;
-    // Status IDs — SDR
-    const S_PRE = 98618883, S_NOVO = 98147479, S_QUAL_ANL = 98147487,
-          S_LQ = 98147491,  S_RA = 98162603,  S_FU = 98147483,
-          S_WON = 142,      S_LOST = 143;
-    // Status IDs — Closer
-    const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563;
-    // Helper: conta leads SDR na classe c com status st AGORA
-    const sdrAt = (c, st) => byClass[c].filter(l => l.status === st).length;
-    // Helper: conta leads Closer na classe c com status st AGORA (via contact_id)
-    const cloByClassStatus = {}; classes.forEach(c => cloByClassStatus[c] = {});
-    for (const l of closerC) {
-      const cls = l.contact_id ? classOfCid(l.contact_id) : null;
-      if (!cls || cloByClassStatus[cls] === undefined) continue;
-      const st = l.status;
-      cloByClassStatus[cls][st] = (cloByClassStatus[cls][st] || 0) + 1;
-    }
-    const cloAt = (c, st) => cloByClassStatus[c][st] || 0;
-    // Vendas fechadas no período (usa closerVendas — filtro por closed_at)
-    const vendasByClass = {}; classes.forEach(c => vendasByClass[c] = 0);
-    for (const v of closerVendas) {
-      // Score do próprio lead Closer prevalece (pode ter sido reavaliado)
-      const cls = (v.score && String(v.score).trim())
-        || (v.contact_id ? classOfCid(v.contact_id) : null);
-      if (cls && vendasByClass[cls] !== undefined) vendasByClass[cls]++;
-    }
-    // Cores por score (bate com o SCORE_COLOR global; E/F/Sem score adicionados)
-    const clsColor = {
-      A: '#16a34a', B: '#84cc16', C: '#f59e0b',
-      D: '#ef4444', E: '#b91c1c', F: '#7f1d1d',
-      'Sem score': '#94a3b8',
-    };
-    // Etapas EXATAMENTE como no Kommo — snapshot (onde os leads estão AGORA)
-    const rows = [
-      // ── SDR ────────────────────────────────
-      {lbl:'Pré-atendimento',          fn: c => sdrAt(c, S_PRE),      group:'SDR'},
-      {lbl:'Lead novo',                fn: c => sdrAt(c, S_NOVO),     group:'SDR'},
-      {lbl:'Qualificação em análise',  fn: c => sdrAt(c, S_QUAL_ANL), group:'SDR'},
-      {lbl:'Lead qualificado',         fn: c => sdrAt(c, S_LQ),       group:'SDR'},
-      {lbl:'Reunião agendada',         fn: c => sdrAt(c, S_RA),       group:'SDR'},
-      {lbl:'Reunião realizada (SDR)',  fn: c => sdrAt(c, S_WON),      group:'SDR'},
-      {lbl:'Follow-up (SDR)',          fn: c => sdrAt(c, S_FU),       group:'SDR'},
-      {lbl:'Perdidos (SDR)',           fn: c => sdrAt(c, S_LOST),     group:'SDR'},
-      // ── Closer ─────────────────────────────
-      {lbl:'Reunião Realizada (Closer)', fn: c => cloAt(c, C_RR),    group:'Closer'},
-      {lbl:'Proposta Enviada',           fn: c => cloAt(c, C_PROP),  group:'Closer'},
-      {lbl:'Follow-up (Closer)',         fn: c => cloAt(c, C_FU),    group:'Closer'},
-      {lbl:'Sinal Verde',                fn: c => cloAt(c, C_VERDE), group:'Closer'},
-      {lbl:'Venda',                      fn: c => vendasByClass[c],  group:'Closer'},
-      {lbl:'Perdidos (Closer)',          fn: c => cloAt(c, S_LOST),  group:'Closer'},
-      // ── Total ──────────────────────────────
-      {lbl:'Tx. Conv. Geral',            fn: c => { const n = byClass[c].length; return n>0 ? (vendasByClass[c]/n*100).toFixed(1)+'%' : '—'; }, group:'Total'},
-    ];
-    // Renderiza com labels de grupo (SDR / Closer)
-    // Slugify pra usar como classe CSS por grupo
-    const slug = g => g.toLowerCase().replace(/[^a-z0-9]+/g,'-');
-    let lastGroup = '';
-    const rowsHtml = rows.map(r => {
-      const showGroup = r.group !== lastGroup;
-      lastGroup = r.group;
-      const gSlug = slug(r.group);
-      const groupHeader = showGroup ? `
-        <tr class="funil-group-header" data-group="${gSlug}" style="cursor:pointer;user-select:none">
-          <td colspan="${classes.length+1}" style="padding:12px 10px 6px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-alt,#fafafa)">
-            <span class="chev" style="display:inline-block;width:12px;transition:transform .18s;margin-right:6px">▾</span>Pipeline ${r.group}
-          </td>
-        </tr>` : '';
-      return groupHeader + `<tr class="funil-row" data-group="${gSlug}" style="border-bottom:1px solid var(--border)">
-        <td style="padding:9px 10px 9px 28px;font-weight:500">${r.lbl}</td>
-        ${classes.map(c => `<td style="text-align:right;padding:9px 10px;font-variant-numeric:tabular-nums">${r.fn(c)}</td>`).join('')}
-      </tr>`;
-    }).join('');
-    el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:640px">
-        <thead><tr style="border-bottom:2px solid var(--border)">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Etapa</th>
-          ${classes.map(c => `<th style="text-align:right;padding:8px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${clsColor[c]}">${c === 'Sem score' ? 'S/ score' : c}</th>`).join('')}
-        </tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:10px;line-height:1.5">
-        📌 Score vem do campo <code>score</code> do Kommo (A/B/C/D/E/F). Snapshot: cada célula mostra <b>quantos leads estão AGORA</b> naquele status (não é cumulativo).
-        Leads Closer atribuídos ao score via <code>contact_id</code> do SDR original.
-      </div>`;
-    // Click nos headers de grupo → expande/retrai as linhas do grupo
-    el.querySelectorAll('.funil-group-header').forEach(h => {
-      h.addEventListener('click', () => {
-        const g = h.dataset.group;
-        const collapsed = h.classList.toggle('collapsed');
-        h.querySelector('.chev').style.transform = collapsed ? 'rotate(-90deg)' : '';
-        el.querySelectorAll(`.funil-row[data-group="${g}"]`).forEach(r => {
-          r.style.display = collapsed ? 'none' : '';
-        });
-      });
-    });
-  })();
 
   // ── Eficiência SDR (por consultor) ────
   // Users que aparecem no Kommo mas NÃO são SDRs — não devem constar no funil por consultor.
