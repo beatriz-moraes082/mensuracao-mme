@@ -1346,7 +1346,8 @@
     <div id="mc-msgs-content"></div>
   </div>
   <div class="ds-card" style="margin-top:14px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Quem clicou no CTA do WhatsApp</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Quem clicou no CTA do WhatsApp <span style="color:var(--muted);font-weight:500;font-size:10px;letter-spacing:0;text-transform:none">· histórico completo (não filtra por período)</span></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5">Lista pra reativação — quem clicou no link de WhatsApp em qualquer email da régua.</div>
     <div id="mc-clickers-content"></div>
   </div>
   <div class="ds-card" style="margin-top:14px">
@@ -7339,11 +7340,18 @@ function renderMailchimp() {
   }
 
   // ── Clickers do CTA WhatsApp (cruzamento manual com Kommo pra reativação)
+  //
+  // Diferente dos KPIs acima: esta lista é HISTÓRICA (não filtra por período).
+  // Motivo: quem clicou é contato aquecido pra Ana usar em reativação, independente
+  // de quando o clique aconteceu. Filtrar por período apagaria essa lista sempre que
+  // não houvesse envio recente — o que é justamente quando ela mais precisa da lista.
   const clickEl = document.getElementById('mc-clickers-content');
   if (clickEl) {
-    // Coleta clickers por etapa, agrega externos vs internos (Trilha)
+    // Coleta clickers de TODAS as etapas históricas (by_step tem o agregado global)
+    const histStepsMap = mc.by_step || mc.by_subject || {};
+    const histSteps = Object.entries(histStepsMap).map(([title, d]) => ({title, ...d}));
     const allClickers = [];
-    steps.filter(s => s.cta_clickers && s.cta_clickers.length).forEach(s => {
+    histSteps.filter(s => s.cta_clickers && s.cta_clickers.length).forEach(s => {
       const dia = (s.title||'').match(/Dia\s*0*\d+/i)?.[0] || (s.title||'').substring(0,30);
       s.cta_clickers.forEach(c => {
         allClickers.push({...c, etapa: dia, subject: s.subject, type: s.type});
