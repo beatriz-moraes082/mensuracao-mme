@@ -3618,10 +3618,14 @@ function renderAnalises() {
     }
     const classOfCid = cid => _cloScoreByCid[cid] || _sdrByCid[cid] || null;
 
-    // 4 etapas do funil comercial (união closerCreated + closerVendas via 'closer')
+    // 5 etapas do funil comercial (união closerCreated + closerVendas via 'closer')
     const C_RR = 98168239, C_PROP = 98169055, C_FU = 98169059, C_VERDE = 98334563, C_WON = 142;
-    const cntByClass = { realiz:{}, prop:{}, verde:{}, venda:{} };
-    classes.forEach(c => { cntByClass.realiz[c]=0; cntByClass.prop[c]=0; cntByClass.verde[c]=0; cntByClass.venda[c]=0; });
+    const cntByClass = { qualif:{}, realiz:{}, prop:{}, verde:{}, venda:{} };
+    classes.forEach(c => { cntByClass.qualif[c]=0; cntByClass.realiz[c]=0; cntByClass.prop[c]=0; cntByClass.verde[c]=0; cntByClass.venda[c]=0; });
+    // Qualificação vem do SDR: leads com flag l.qualified (Lead Qualif + Reu Agend + Reu Realiz + WON no SDR)
+    for (const s of scored) {
+      if (s.qualified && cntByClass.qualif[s._score] !== undefined) cntByClass.qualif[s._score]++;
+    }
     for (const l of closer) {
       const cls = (l.score && String(l.score).trim()) || (l.contact_id ? classOfCid(l.contact_id) : null);
       if (!cls || cntByClass.realiz[cls] === undefined) continue;
@@ -3640,8 +3644,9 @@ function renderAnalises() {
       if (cls && cntByClass.venda[cls] !== undefined) cntByClass.venda[cls]++;
     }
 
-    // Renderiza um card por score
+    // Renderiza um card por score — 5 etapas (Qualificação → Reunião → Proposta → Sinal Verde → Venda)
     const steps = [
+      {key:'qualif', lbl:'Qualificação'},
       {key:'realiz', lbl:'Reunião realizada'},
       {key:'prop',   lbl:'Proposta'},
       {key:'verde',  lbl:'Sinal Verde'},
