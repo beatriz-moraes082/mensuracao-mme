@@ -1300,7 +1300,7 @@
       <div>• <b>Conversão:</b> SDR = reuniões/leads · Closer = vendas/proposta</div>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);font-style:italic">
-      ⚠️ Estas são <b>proxies quantitativos</b> dos dados do CRM — não medem qualidade da conversa (escuta, rapport, objeção). Pra isso precisaria de IA analisando chats ou avaliação manual.
+      ⚠️ Estas são <b>proxies quantitativos</b> dos dados do CRM — não medem qualidade da conversa (escuta, rapport, objeção).
     </div>
   </div>
 </div>
@@ -5090,18 +5090,13 @@ function renderAtividades() {
       const melhorar = [...withLbl].sort((a,b) => a.v - b.v).slice(0,2).filter(x => x.v < 100);
       const color = _color(u.name); // reusa helper de cor por nome
       const canvasId = `${targetId}-c${idx}`;
-      // score badge color (verde/amarelo/vermelho conforme faixa)
-      const badgeColor = overall >= 70 ? '#16a34a' : overall >= 40 ? '#d97706' : '#dc2626';
       return `<div class="ds-card" style="padding:16px 18px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span class="eff-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:0">${_initials(u.name)}</span>
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2">${u.name}</div>
-              <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : (u.ritmoAvgH < 24 ? u.ritmoAvgH.toFixed(1)+'h' : (u.ritmoAvgH/24).toFixed(1)+'d')}</div>
-            </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span class="eff-avatar" style="background:${color};width:32px;height:32px;font-size:12px;margin:0">${_initials(u.name)}</span>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2">${u.name}</div>
+            <div style="font-size:10.5px;color:var(--muted);margin-top:2px">${u.done}/${u.total} concluídas · ritmo ${u.ritmoAvgH == null ? '—' : (u.ritmoAvgH < 24 ? u.ritmoAvgH.toFixed(1)+'h' : (u.ritmoAvgH/24).toFixed(1)+'d')}</div>
           </div>
-          <span style="font-size:12px;font-weight:800;padding:4px 10px;border-radius:20px;background:${badgeColor}22;color:${badgeColor}">${overall}%</span>
         </div>
         <div style="height:200px;position:relative"><canvas id="${canvasId}"></canvas></div>
         <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10.5px;line-height:1.5">
