@@ -4306,8 +4306,8 @@ function renderDiagnostico() {
     const hasTag = l => (l.tags || []).some(t => (t||'').toLowerCase() === TAG);
     const sdrReat    = sdr.filter(hasTag);
     const closerReat = (KOMMO_RAW.closer || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
-    const duqueReat  = (KOMMO_RAW.duque  || []).filter(l => hasTag(l) && _inWindow(l.created_at, win));
-    const totalReat  = sdrReat.length + closerReat.length + duqueReat.length;
+    // Duque removido — reativação não passa pelo Duque na operação do IMR.
+    const totalReat  = sdrReat.length + closerReat.length;
     // Vendas dentre reativados (Closer venda=True)
     const reatVendas = closerReat.filter(l => isValidVenda(l)).length;
 
@@ -4317,7 +4317,7 @@ function renderDiagnostico() {
         <div class="ds-kpi accent" style="grid-column: span 3">
           <div class="lbl">Total reativados (período)</div>
           <div class="val">${totalReat}</div>
-          <div class="sub">${sdrReat.length} SDR · ${closerReat.length} Closer · ${duqueReat.length} Duque · ${reatVendas} venda${reatVendas===1?'':'s'}</div>
+          <div class="sub">${sdrReat.length} SDR · ${closerReat.length} Closer · ${reatVendas} venda${reatVendas===1?'':'s'}</div>
         </div>
       `;
     }
@@ -4329,8 +4329,8 @@ function renderDiagnostico() {
           Nenhum lead reativado no período selecionado.
         </div>`;
       } else {
-        // Distribuição por origem (todos os reativados, somando SDR + Closer + Duque)
-        const allReat = [...sdrReat, ...closerReat, ...duqueReat];
+        // Distribuição por origem (SDR + Closer — Duque não faz parte da operação de reativação)
+        const allReat = [...sdrReat, ...closerReat];
         const reatByCh = {meta:0, google:0, ibr:0, indica:0, outros:0};
         allReat.forEach(l => {
           const o = (l.origem||'').toLowerCase();
@@ -4340,11 +4340,10 @@ function renderDiagnostico() {
           else if (o.includes('indica')) reatByCh.indica++;
           else reatByCh.outros++;
         });
-        // Distribuição por pipeline
+        // Distribuição por pipeline (só SDR e Closer)
         const pipelineItems = [
           {lbl:'SDR',    n:sdrReat.length},
           {lbl:'Closer', n:closerReat.length},
-          {lbl:'Duque',  n:duqueReat.length},
         ];
         const maxN = Math.max(...pipelineItems.map(c => c.n), 1);
 
