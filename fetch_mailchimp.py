@@ -255,26 +255,24 @@ def main():
     for d in by_step.values():
         d.pop("_last_st", None)
 
-    # Agrega por mês
-    # Automações "sending" são contínuas — usa o mês do fetch como referência
-    # para mostrar atividade no mês atual no lugar da data de criação.
-    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    # Agrega por mês — cada campanha aparece SÓ no mês do seu send_time.
+    #
+    # Histórico: uma tentativa anterior (commit 424c0a9 · jun/26) duplicava
+    # campanhas com status='sending' também no MÊS ATUAL, pra que a Evolução
+    # Mensal "não ficasse vazia no mês corrente". Efeito colateral: em jul/26
+    # apareciam 3.112 envios fantasma (soma das automações ativas), mesmo
+    # sem nenhuma campanha nova ter sido enviada em julho. Removido pra
+    # bater com a realidade — se não teve envio no mês, o mês não aparece.
     by_month = defaultdict(lambda: {
         "sent": 0, "unique_opens": 0, "clicks_total": 0, "unsubscribed": 0
     })
     for c in enriched:
-        origin_m = c.get("month", "")
-        if not origin_m: continue
-        # Campanha encerrada: contabiliza só no mês de origem
-        # Campanha ativa: contabiliza no mês de origem (histórico) e no mês atual (atividade corrente)
-        months_to_add = [origin_m]
-        if c.get("status") == "sending" and current_month != origin_m:
-            months_to_add.append(current_month)
-        for m in months_to_add:
-            by_month[m]["sent"]         += c["sent"]
-            by_month[m]["unique_opens"] += c["unique_opens"]
-            by_month[m]["clicks_total"] += c["clicks_total"]
-            by_month[m]["unsubscribed"] += c["unsubscribed"]
+        m = c.get("month", "")
+        if not m: continue
+        by_month[m]["sent"]         += c["sent"]
+        by_month[m]["unique_opens"] += c["unique_opens"]
+        by_month[m]["clicks_total"] += c["clicks_total"]
+        by_month[m]["unsubscribed"] += c["unsubscribed"]
 
     out = {
         "fetched_at": datetime.now(timezone.utc).isoformat(),
