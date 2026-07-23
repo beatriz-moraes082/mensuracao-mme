@@ -1862,6 +1862,13 @@ function _inWindow(ts, win) {
   const t = ts * 1000;
   return t >= win.from.getTime() && t <= win.to.getTime();
 }
+// Considera lead como "campanha paga" (Meta ou Google). Normaliza '+' como
+// espaço pra pegar as duas variantes de origem que o Kommo salva:
+// 'Meta Ads' (histórico) e 'Meta+Ads' (URL-encoded via UTM/formulário).
+function _isCampOrigin(origem) {
+  const s = (origem || '').replace(/\+/g,' ').toLowerCase().trim();
+  return s === 'meta ads' || s === 'google ads' || s === 'google';
+}
 function _fmtDDMM(d) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
@@ -3688,11 +3695,10 @@ function renderDiagnostico() {
   const total = sdr.length;
   // "Leads" da aba principal: campanha (Meta+Google) no SDR + os movidos pra Nutrição
   // (quando o SDR não consegue contato), deduplicados por telefone. Taxas continuam sobre o SDR.
-  const _CAMP = new Set(['Meta Ads','Google+Ads','google']);
   const nutriInWin = (KOMMO_DATA.nutricao || []).filter(l => _inWindow(l.created_at, win));
   const _seenPh = new Set(); let leadsCampanha = 0;
   for (const l of [...sdr, ...nutriInWin]) {
-    if (!_CAMP.has(l.origem || '')) continue;
+    if (!_isCampOrigin(l.origem)) continue;
     const k = l.dkey || '';
     if (k) { if (_seenPh.has(k)) continue; _seenPh.add(k); }
     leadsCampanha++;
@@ -4410,15 +4416,14 @@ function renderDiagnostico() {
     const months = [...monthsSet].filter(m => m >= '2026-01').sort();
     if (months.length === 0) { el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem dados mensais.</div>'; return; }
     // Pra cada mês, calcula os 8 KPIs
-    const _CAMP = new Set(['Meta Ads','Google+Ads','google']);
-    const rowsByKpi = { invest:{}, leads:{}, lq:{}, reu:{}, ven:{}, txReu:{}, txCC:{}, txCG:{} };
+      const rowsByKpi = { invest:{}, leads:{}, lq:{}, reu:{}, ven:{}, txReu:{}, txCC:{}, txCG:{} };
     for (const m of months) {
       // Leads campanha (SDR + Nutrição do mês, dedup por telefone)
       const sdrM   = sdrAll.filter(l => monthKey(l.created_at) === m);
       const nutriM = nutriAll.filter(l => monthKey(l.created_at) === m);
       const seen = new Set(); let leadsM = 0;
       for (const l of [...sdrM, ...nutriM]) {
-        if (!_CAMP.has(l.origem || '')) continue;
+        if (!_isCampOrigin(l.origem)) continue;
         const k = l.dkey || '';
         if (k) { if (seen.has(k)) continue; seen.add(k); }
         leadsM++;
@@ -4485,10 +4490,9 @@ function renderDiagnostico() {
     const leadsByDay = {}, reuByDay = {}, venByDay = {};
     days.forEach(d => { leadsByDay[d]=0; reuByDay[d]=0; venByDay[d]=0; });
     // leadsCampanha = SDR + Nutrição dedup por telefone
-    const _CAMP2 = new Set(['Meta Ads','Google+Ads','google']);
     const seenDay = new Set();
     for (const l of [...sdr, ...nutriInWin]) {
-      if (!_CAMP2.has(l.origem || '')) continue;
+      if (!_isCampOrigin(l.origem)) continue;
       const k = l.dkey || ('x'+l.id);
       if (seenDay.has(k)) continue; seenDay.add(k);
       const d = dayKey(l.created_at);
