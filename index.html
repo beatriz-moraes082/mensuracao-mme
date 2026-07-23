@@ -1362,7 +1362,7 @@
             <td>Mediana de <code>entrada do lead → 1ª mensagem enviada por uma pessoa</code>,
                 contando só <b>horário útil (seg–sáb, 8h–18h)</b>. Canais: chat, direct e e-mail.</td>
             <td><b>Mensagem do bot de pré-atendimento</b> (2 de cada 3 envios — incluir zeraria a
-                métrica) e leads que nunca receberam contato humano, contados à parte como "s/ contato".</td>
+                métrica) e leads que nunca receberam contato humano (contagem no tooltip da célula).</td>
           </tr>
           <tr><td colspan="3" class="metod-grupo">Quem aparece em cada tabela</td></tr>
           <tr>
@@ -5187,8 +5187,7 @@ function renderAtividades() {
               <td class="${txCls}">${u.taxConcl.toFixed(1)}%</td>
               ${atend ? `<td class="${u.atendUtil == null ? '' : _txCls(-u.atendUtil/3600, -4, -8)}" title="${
                 u.atendN} leads medidos · ${_dur(u.atendCorrido)} em tempo corrido${
-                u.semContato ? ` · ${u.semContato} sem contato humano` : ''}">${_dur(u.atendUtil)}${
-                u.semContato ? `<span style="color:var(--muted);font-size:11px"> · ${u.semContato} s/ contato</span>` : ''}</td>` : ''}
+                u.semContato ? ` · ${u.semContato} sem contato humano` : ''}">${_dur(u.atendUtil)}</td>` : ''}
             </tr>`;
           }).join('')}
         </tbody>
@@ -5204,7 +5203,7 @@ function renderAtividades() {
               // Mediana do time = mediana de TODOS os leads juntos, não média das medianas
               const todos = users.flatMap(u => (atend[u.uid] || {}).uteis || []);
               const semC = users.reduce((s,u) => s + u.semContato, 0);
-              return `<td>${_dur(_mediana(todos))}${semC ? `<span style="color:var(--muted);font-size:11px"> · ${semC} s/ contato</span>` : ''}</td>`;
+              return `<td title="${semC} leads sem contato humano no período">${_dur(_mediana(todos))}</td>`;
             })() : ''}
           </tr>
         </tfoot>
