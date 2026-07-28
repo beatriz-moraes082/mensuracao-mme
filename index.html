@@ -1990,6 +1990,11 @@ function _isCampOrigin(origem) {
   const s = (origem || '').replace(/\+/g,' ').toLowerCase().trim();
   return s === 'meta ads' || s === 'google ads' || s === 'google';
 }
+// Chave de deduplicação de lead: telefone → email → id.
+// Antes usava só dkey (telefone); leads sem telefone escapavam da dedup.
+function _leadDedupKey(l) {
+  return (l && (l.dkey || l.ekey)) || ('id:' + (l && l.id));
+}
 function _fmtDDMM(d) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
@@ -3820,7 +3825,7 @@ function renderDiagnostico() {
   const _seenPh = new Set(); let leadsCampanha = 0;
   for (const l of [...sdr, ...nutriInWin]) {
     if (!_isCampOrigin(l.origem)) continue;
-    const k = l.dkey || '';
+    const k = _leadDedupKey(l);
     if (k) { if (_seenPh.has(k)) continue; _seenPh.add(k); }
     leadsCampanha++;
   }
@@ -3838,9 +3843,13 @@ function renderDiagnostico() {
   const closerC = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
   const closerVendas = KOMMO_DATA.closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
   const vendas  = closerVendas.length;
-  const txQ     = total > 0 ? qualif/total*100 : 0;
-  const txA     = total > 0 ? agend/total*100  : 0;
-  const txR     = total > 0 ? realiz/total*100 : 0;
+  // Denominador ÚNICO das taxas do funil = leadsCampanha (SDR + Nutrição,
+  // origem Meta/Google, dedup por telefone). Antes o medidor usava total do
+  // SDR (1.639) e os cards usavam leadsCampanha (2.495) — mesma taxa com dois
+  // valores. Unificado em leadsCampanha conforme alinhado com a Bia.
+  const txQ     = leadsCampanha > 0 ? qualif/leadsCampanha*100 : 0;
+  const txA     = leadsCampanha > 0 ? agend/leadsCampanha*100  : 0;
+  const txR     = leadsCampanha > 0 ? realiz/leadsCampanha*100 : 0;
 
   // ── Bot ────────────────────────────────────────────────
   // Base = SDR + Nutrição: os leads movidos pra Nutrição também passaram
@@ -3849,7 +3858,7 @@ function renderDiagnostico() {
   const _seenBot = new Set();
   const botBase = [];
   for (const l of [...sdr, ...nutriInWin]) {
-    const k = l.dkey || '';
+    const k = _leadDedupKey(l);
     if (k) { if (_seenBot.has(k)) continue; _seenBot.add(k); }
     botBase.push(l);
   }
@@ -3959,23 +3968,23 @@ function renderDiagnostico() {
         </span></span>
       </div>
       <div class="val">${fmtP(txQ)}</div>
-      <div class="meta-line">${qualif} de ${total} leads SDR · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
+      <div class="meta-line">${qualif} de ${leadsCampanha} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
       <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
     </div>
   `;
 
   // ── Render: KPI Grid moderno com sparklines ────────────
-  // Calcula evolução semanal (W1..W4) usando MENS_DATA já agregado
-  const wkArr = ['w1','w2','w3','w4'];
-  const D = (typeof MENS_DATA === 'object' && MENS_DATA) ? MENS_DATA : null;
-  const wkTot = D ? wkArr.map(w => ({
-    leads: (D.meta[w]?.leads||0) + (D.google[w]?.leads||0) + (D.org[w]?.leads||0),
-    qualif: (D.meta[w]?.qualif||0) + (D.google[w]?.qualif||0) + (D.org[w]?.qualif||0),
-    invest: (D.meta[w]?.invest||0) + (D.google[w]?.invest||0),
-    realiz: (D.meta[w]?.realiz||0) + (D.google[w]?.realiz||0) + (D.org[w]?.realiz||0),
-    vendas: D.closer[w]?.vendas||0,
-    fat: D.closer[w]?.fat||0,
-  })) : [];
+  // Série recalculada sobre a JANELA do período selecionado (não mais presa
+  // ao seletor de mês) — assim sparkline e tendência descrevem o mesmo período
+  // do número grande. 4 fatias iguais da janela.
+  const NB = 4;
+  const wkTot = computeDiagSeries(win, NB);
+  // Rótulos das fatias = dd/mm do início de cada fatia (para tooltip).
+  const _t0 = win.from.getTime(), _step = (win.to.getTime() - _t0) / NB;
+  const sparkLabels = Array.from({length: NB}, (_, i) => {
+    const dt = new Date(_t0 + _step * i);
+    return String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0');
+  });
 
   // Deltas (W1 → W4)
   const deltaTrend = (a, b) => {
@@ -3985,9 +3994,6 @@ function renderDiagnostico() {
     return {pct:d, cls:d>1?'up':d<-1?'down':'neut', txt:(d>0?'+':'')+d.toFixed(0)+'%'};
   };
 
-  const totalRealiz = wkTot.reduce((s,w)=>s+w.realiz,0);
-  const totalVendas = wkTot.reduce((s,w)=>s+w.vendas,0);
-  const totalFat    = wkTot.reduce((s,w)=>s+w.fat,0);
   // Investimento total pelo PERÍODO selecionado (não só o mês corrente)
   // Função existente que cruza Meta+Google e respeita janela de datas.
   const totalInvest = (typeof computeInvestForPeriod === 'function' && KOMMO_RAW && META_RAW)
@@ -4009,16 +4015,10 @@ function renderDiagnostico() {
   const fmtBRL = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
   const fmtN   = v => (v||0).toLocaleString('pt-BR');
 
-  // Tx. Conversão: usa leadsCampanha (SDR + Nutrição dedup por telefone),
-  // não só total (sdr). Confirmado com Bia — denominador tem que ser o
-  // MESMO usado no card 'Leads' do hero (140), pra ser coerente.
-  const txConv = leadsCampanha > 0 ? (vendas/leadsCampanha*100) : 0;
-  const faturamento = closerVendas.reduce((s,v) => s + (v.price||0), 0);
-  // ROAS / CAC GERAL: usa todas as vendas Closer (inclui IBR, indicação)
-  const roas = totalInvest > 0 ? (faturamento / totalInvest) : 0;
-  const cac  = vendas > 0 ? (totalInvest / vendas) : 0;
-  // ROAS / CAC INBOUND: só vendas com origem Meta ou Google (atribuído ao invest pago).
-  // Match por contact_id pra puxar origem do SDR; senão usa origem do Closer.
+  // Vendas atribuídas à campanha paga (origem Meta ou Google) — base de
+  // Conversão, CAC e ROAS. Match por contact_id pra puxar origem do SDR;
+  // senão usa origem do Closer. Alinhado com a Bia: essas 3 métricas só
+  // fazem sentido sobre vendas com origem paga, contra o investimento pago.
   const _sdrByCid = {};
   for (const l of (KOMMO_DATA.sdr || [])) if (l.contact_id) _sdrByCid[l.contact_id] = l;
   const _isInbound = (cl) => {
@@ -4029,8 +4029,18 @@ function renderDiagnostico() {
   const vendasInbound = closerVendas.filter(_isInbound);
   const vendasInboundN = vendasInbound.length;
   const faturamentoInbound = vendasInbound.reduce((s,v) => s + (v.price||0), 0);
-  const roasInbound = totalInvest > 0 ? (faturamentoInbound / totalInvest) : 0;
-  const cacInbound  = vendasInboundN > 0 ? (totalInvest / vendasInboundN) : 0;
+
+  // Faturamento total (todas as origens) — usado só no card Faturamento.
+  const faturamento = closerVendas.reduce((s,v) => s + (v.price||0), 0);
+
+  // Tx. Conversão Geral = vendas de campanha ÷ leadsCampanha (base coerente:
+  // campanha ÷ campanha). Denominador = mesmo do card 'Leads'.
+  const txConv = leadsCampanha > 0 ? (vendasInboundN/leadsCampanha*100) : 0;
+  // ROAS / CAC = só vendas com origem paga, contra o investimento pago.
+  const roas = totalInvest > 0 ? (faturamentoInbound / totalInvest) : 0;
+  const cac  = vendasInboundN > 0 ? (totalInvest / vendasInboundN) : 0;
+  const roasInbound = roas;   // aliases mantidos p/ compatibilidade
+  const cacInbound  = cac;
   // ── Métricas extras pra novos KPIs ──────────────────────
   // Taxa de Reunião = realizadas / total de leads
   const txReuniao = leadsCampanha > 0 ? (realiz/leadsCampanha*100) : 0;
@@ -4065,7 +4075,7 @@ function renderDiagnostico() {
      sub:`${vendas} vendas ÷ ${realiz} reuniões realizadas`, sparkData:wkTot.map(w=>w.realiz>0 ? (w.vendas/w.realiz*100) : 0), sparkColor:'#c2410c'},
     {lbl:'Tx. Conversão Geral', val:fmtP(txConv),    iconColor:'#EE4D20',
      trend:tdTxCG,
-     sub:`${vendas} vendas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
+     sub:`${vendasInboundN} vendas de campanha ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.vendas/w.leads*100) : 0), sparkColor:'#EE4D20'},
 
     // ── Linha 3 · Financeiro (3 KPIs) ──
     {lbl:'Faturamento',      val:fmtBRL(faturamento), iconColor:'#16a34a',
@@ -4074,11 +4084,11 @@ function renderDiagnostico() {
      sparkData:wkTot.map(w=>w.fat||0), sparkColor:'#16a34a'},
     {lbl:'CAC',              val: cac > 0 ? fmtBRL(cac) : '—', iconColor:'#dc2626',
      trend:{pct:0,cls:'neut',txt:''},
-     sub: cac > 0 ? `${fmtBRL(totalInvest)} ÷ ${vendas} vendas` : 'sem vendas',
+     sub: cac > 0 ? `${fmtBRL(totalInvest)} ÷ ${vendasInboundN} vendas de campanha` : 'sem vendas de campanha',
      sparkData:wkTot.map(w => w.vendas > 0 ? (w.invest/w.vendas) : 0), sparkColor:'#dc2626'},
     {lbl:'ROAS',             val: roas > 0 ? roas.toFixed(1)+'x' : '—', iconColor:'#10b981',
      trend:{pct:0,cls:'neut',txt:''},
-     sub: roas > 0 ? `${fmtBRL(faturamento)} ÷ ${fmtBRL(totalInvest)}` : 'sem dados',
+     sub: roas > 0 ? `${fmtBRL(faturamentoInbound)} ÷ ${fmtBRL(totalInvest)} · receita de campanha` : 'sem dados',
      sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
   ];
 
@@ -4107,7 +4117,7 @@ function renderDiagnostico() {
       window._diagSparks[i] = new Chart(c, {
         type:'line',
         data:{
-          labels:['W1','W2','W3','W4'],
+          labels: sparkLabels,
           datasets:[{
             data:t.sparkData,
             borderColor:t.sparkColor,
@@ -4545,7 +4555,7 @@ function renderDiagnostico() {
       const seen = new Set(); let leadsM = 0;
       for (const l of [...sdrM, ...nutriM]) {
         if (!_isCampOrigin(l.origem)) continue;
-        const k = l.dkey || '';
+        const k = _leadDedupKey(l);
         if (k) { if (seen.has(k)) continue; seen.add(k); }
         leadsM++;
       }
@@ -4614,7 +4624,7 @@ function renderDiagnostico() {
     const seenDay = new Set();
     for (const l of [...sdr, ...nutriInWin]) {
       if (!_isCampOrigin(l.origem)) continue;
-      const k = l.dkey || ('x'+l.id);
+      const k = _leadDedupKey(l);
       if (seenDay.has(k)) continue; seenDay.add(k);
       const d = dayKey(l.created_at);
       if (leadsByDay[d] !== undefined) leadsByDay[d]++;
@@ -5828,6 +5838,62 @@ function _sumSpendInWindow(entities, win) {
 }
 
 // Investimento Meta + Google no período. google é opcional (default GOOGLE_RAW).
+// Série do Diagnóstico (sparklines + tendência) recalculada sobre a JANELA
+// do período selecionado — antes vinha de MENS_DATA (preso ao seletor de mês),
+// então o mini-gráfico não descrevia o número grande. Divide a janela em `nb`
+// fatias iguais e usa exatamente as mesmas regras dos cards:
+//   leads = campanha (SDR+Nutrição, dedup global) · qualif/realiz = SDR
+//   vendas/fat = vendas de campanha (origem Meta/Google) por closed_at
+//   invest = Meta+Google rateado na sub-janela
+function computeDiagSeries(win, nb) {
+  nb = nb || 4;
+  const K = (typeof KOMMO_RAW !== 'undefined' && KOMMO_RAW) ? KOMMO_RAW : (typeof KOMMO_DATA !== 'undefined' ? KOMMO_DATA : null);
+  const buckets = Array.from({length: nb}, () => ({leads:0, qualif:0, realiz:0, invest:0, vendas:0, fat:0}));
+  if (!K || !win || !win.from || !win.to) return buckets;
+  const t0 = win.from.getTime(), t1 = win.to.getTime();
+  const step = (t1 - t0) / nb;
+  const idxOf = ts => {
+    const ms = ts * 1000;
+    if (ms < t0 || ms > t1 || step <= 0) return -1;
+    let i = Math.floor((ms - t0) / step);
+    if (i >= nb) i = nb - 1; if (i < 0) i = 0;
+    return i;
+  };
+  const sdrW = (K.sdr || []).filter(l => _inWindow(l.created_at, win));
+  const nutW = (K.nutricao || []).filter(l => _inWindow(l.created_at, win));
+  const seen = new Set();
+  for (const l of [...sdrW, ...nutW]) {
+    if (!_isCampOrigin(l.origem)) continue;
+    const k = _leadDedupKey(l); if (seen.has(k)) continue; seen.add(k);
+    const b = idxOf(l.created_at); if (b < 0) continue;
+    buckets[b].leads++;
+  }
+  for (const l of sdrW) {
+    const b = idxOf(l.created_at); if (b < 0) continue;
+    if (l.qualified) buckets[b].qualif++;
+    if (l.reuniao_realizada) buckets[b].realiz++;
+  }
+  const sdrByCid = {};
+  for (const l of (K.sdr || [])) if (l.contact_id) sdrByCid[l.contact_id] = l;
+  const isInb = cl => {
+    const sm = cl.contact_id ? sdrByCid[cl.contact_id] : null;
+    const o = ((sm && sm.origem) || cl.origem || '').toLowerCase();
+    return o.includes('meta') || o.includes('google');
+  };
+  for (const v of (K.closer || [])) {
+    if (!isValidVenda(v) || !_inWindow(v.closed_at, win) || !isInb(v)) continue;
+    const b = idxOf(v.closed_at); if (b < 0) continue;
+    buckets[b].vendas++; buckets[b].fat += (v.price || 0);
+  }
+  const M = (typeof META_RAW !== 'undefined' && META_RAW) ? META_RAW : {};
+  const G = (typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW) ? GOOGLE_RAW : {};
+  for (let i = 0; i < nb; i++) {
+    const sub = {from: new Date(t0 + step * i), to: new Date(t0 + step * (i + 1))};
+    buckets[i].invest = Math.round(_sumSpendInWindow(M.adset || {}, sub) + _sumSpendInWindow((G && G.campaign) || {}, sub));
+  }
+  return buckets;
+}
+
 function computeInvestForPeriod(kommo, meta, periodKey, refDate, google) {
   const win = periodWindow(periodKey, refDate);
   const g = google || (typeof GOOGLE_RAW !== 'undefined' ? GOOGLE_RAW : null) || {};
@@ -6817,7 +6883,10 @@ function vdRenderTable(vendas){
     const scoreTag = score
       ? `<span class="vd-tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span> `
       : '';
-    const origemLabel = v.origem || 'sem origem';
+    // Rótulo canônico por bucket — evita mostrar "Meta Ads" e "Meta+Ads"
+    // (mesma fonte gravada de formas diferentes no Kommo) como se fossem distintas.
+    const _VD_ORIGEM_LBL = {meta:'Meta Ads', google:'Google Ads', ibr:'IBR', indicacao:'Indicação', 'sem-origem':'sem origem'};
+    const origemLabel = _VD_ORIGEM_LBL[v.bucket] || (v.origem || 'sem origem');
     const origemTag = `<span class="vd-tag ${v.bucket}">${origemLabel}</span>`;
     // Ciclo de venda (dias entre entrada do lead e fechamento — v.cycle_days do vdBuildVendas)
     const cicloCell = (typeof v.cycle_days === 'number' && v.cycle_days >= 0)
