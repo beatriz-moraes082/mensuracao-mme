@@ -959,6 +959,7 @@
   <div class="kpi-section-label" style="margin-top:18px">Taxas de conversão</div>
   <div class="kpi-grid-modern kpi-grid-tax" id="diag-kpi-tax"></div>
   <div class="kpi-section-label" style="margin-top:18px">Eficiência financeira</div>
+  <div id="diag-spend-warning"></div>
   <div class="kpi-grid-modern kpi-grid-fin" id="diag-kpi-fin"></div>
   <div class="kpi-grid-modern" id="diag-kpi-grid" style="display:none">
     <!-- preenchido por JS · 4 tiles + 1 destaque -->
@@ -4107,6 +4108,41 @@ function renderDiagnostico() {
   document.getElementById('diag-kpi-tax').innerHTML = tiles.slice(5,8).map((t,i) => tileHtml(t, i+5)).join('');
   document.getElementById('diag-kpi-fin').innerHTML = tiles.slice(8).map((t,i) => tileHtml(t, i+8)).join('');
 
+  // ── Aviso: período inclui dias sem cobertura de mídia paga ──────────────
+  // CAC, ROAS e CPL só fazem sentido no trecho com investimento. Se a janela
+  // começa antes da 1ª mídia veiculada, sinaliza o gap (leads/vendas sem custo).
+  const _warnEl = document.getElementById('diag-spend-warning');
+  if (_warnEl) {
+    const covStart = _spendCoverageStart();
+    if (covStart && win.from < covStart && win.to >= win.from) {
+      const gapEnd = covStart < win.to ? covStart : win.to;   // fim do trecho descoberto
+      const gapWin = { from: win.from, to: new Date(gapEnd.getTime() - 1) };
+      const _seenGap = new Set(); let leadsGap = 0;
+      for (const l of [...sdr, ...nutriInWin]) {
+        if (!_isCampOrigin(l.origem)) continue;
+        if (!_inWindow(l.created_at, gapWin)) continue;
+        const k = _leadDedupKey(l); if (_seenGap.has(k)) continue; _seenGap.add(k);
+        leadsGap++;
+      }
+      const vendasGap = closerVendas.filter(v => _isInbound(v) && _inWindow(v.closed_at, gapWin)).length;
+      const dias = Math.max(1, Math.round((gapEnd.getTime() - win.from.getTime()) / 86400000));
+      const dfmt = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+      _warnEl.innerHTML = `
+        <div style="display:flex;gap:10px;align-items:flex-start;background:rgba(217,119,6,.10);border:1px solid rgba(217,119,6,.35);border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12.5px;line-height:1.5">
+          <span style="font-size:15px;line-height:1">⚠️</span>
+          <div>
+            <b style="color:#b45309">Investimento pago só a partir de ${dfmt(covStart)}.</b>
+            O período selecionado inclui <b>${dias} dia${dias===1?'':'s'}</b> antes disso
+            (<b>${fmtN(leadsGap)}</b> leads de campanha e <b>${vendasGap}</b> venda${vendasGap===1?'':'s'} sem custo de mídia associado).
+            Nesse trecho, <b>CAC</b> e <b>CPL</b> ficam subestimados e o <b>ROAS</b> superestimado —
+            interprete as métricas financeiras com essa ressalva.
+          </div>
+        </div>`;
+    } else {
+      _warnEl.innerHTML = '';
+    }
+  }
+
   // Render sparklines (simple line chart sem labels)
   setTimeout(() => {
     tiles.forEach((t, i) => {
@@ -5892,6 +5928,32 @@ function computeDiagSeries(win, nb) {
     buckets[i].invest = Math.round(_sumSpendInWindow(M.adset || {}, sub) + _sumSpendInWindow((G && G.campaign) || {}, sub));
   }
   return buckets;
+}
+
+// Data de início da cobertura de investimento pago (Meta + Google) — o
+// primeiro dia do mês mais antigo com gasto > 0. Dinâmico: se a mídia começou
+// em abril, retorna 01/04; se um dia começar antes, acompanha. Usado pra
+// avisar quando o período selecionado inclui dias sem custo pago (CAC/ROAS/CPL
+// ficam distorcidos nesse trecho).
+function _spendCoverageStart() {
+  const M = (typeof META_RAW !== 'undefined' && META_RAW) ? META_RAW : {};
+  const G = (typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW) ? GOOGLE_RAW : {};
+  let earliest = null;
+  const scan = entities => {
+    for (const spendObj of Object.values(entities || {})) {
+      const monthsMap = _metaIsNewFormat(spendObj) ? spendObj : { '2026-04': spendObj };
+      for (const [month, weeks] of Object.entries(monthsMap)) {
+        const hasSpend = Object.values(weeks || {}).some(v => typeof v === 'number' && v > 0);
+        if (!hasSpend) continue;
+        const [yr, mo] = month.split('-').map(Number);
+        const d = new Date(yr, mo - 1, 1);
+        if (!earliest || d < earliest) earliest = d;
+      }
+    }
+  };
+  scan(M.adset || {});
+  scan((G && G.campaign) || {});
+  return earliest;
 }
 
 function computeInvestForPeriod(kommo, meta, periodKey, refDate, google) {
