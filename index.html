@@ -1468,6 +1468,10 @@
     </div>
   </div>
 
+  <!-- Taxa de conversão por canal -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Taxa de conversão por canal</h3><span class="sub" id="vd-conv-sub">Vendas ÷ Leads no período · por origem</span></div>
+  <div id="vd-conv-canal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px"></div>
+
   <!-- Tabela — consolida todas as análises numa vista única -->
   <!-- (Removido: Perfil das vendas / Ciclo médio / Vendas por canal — dados já
        aparecem como colunas na tabela abaixo · Origem, Ciclo, respostas do bot) -->
@@ -6714,9 +6718,91 @@ function renderVendas(){
   vdRenderKPIs(v);
   vdRenderCharts(v);
   vdRenderCycle(v);
+  vdRenderConvCanal(v);
   vdRenderTable(v);
   // Vendas por canal de origem (movido de Funis Comerciais)
   if (typeof renderVendasCanal === 'function') renderVendasCanal();
+}
+
+/* ── Taxa de conversão por canal ────────────────────────────
+   Vendas ÷ Leads (que entraram no SDR no mesmo período pelo mesmo canal).
+   Solicitado pela Ana Caroline pra complementar visão de vendas por canal. */
+function vdRenderConvCanal(vendas){
+  const el = document.getElementById('vd-conv-canal');
+  if (!el) return;
+  const sub = document.getElementById('vd-conv-sub');
+
+  // Janela do período (mesma lógica do renderVendas)
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = (typeof periodWindow === 'function') ? periodWindow(currentPeriod, ref) : null;
+  const inWin = ts => win && ts && ts*1000 >= win.from.getTime() && ts*1000 <= win.to.getTime();
+
+  // Bucket por canal (mesma função do vdBucket — mantém coerência com Origem da tabela)
+  const bucket = (o) => vdBucket(o || '');
+
+  // Denominador: leads SDR criados no período, agrupados por bucket de origem
+  const leadsCh = { meta:0, google:0, ibr:0, indicacao:0, outra:0, 'sem-origem':0 };
+  for (const l of (KOMMO_RAW.sdr || [])) {
+    if (!inWin(l.created_at)) continue;
+    const b = bucket(l.origem);
+    if (leadsCh[b] !== undefined) leadsCh[b]++;
+  }
+  // Numerador: vendas (já filtradas por período em vdBuildVendas)
+  const vendasCh = { meta:0, google:0, ibr:0, indicacao:0, outra:0, 'sem-origem':0 };
+  const receitaCh = { meta:0, google:0, ibr:0, indicacao:0, outra:0, 'sem-origem':0 };
+  for (const v of vendas) {
+    const b = v.bucket || bucket(v.origem);
+    if (vendasCh[b] !== undefined) {
+      vendasCh[b]++;
+      receitaCh[b] += v.price || 0;
+    }
+  }
+
+  // Metadados dos canais (label, cor)
+  const chMeta = [
+    {k:'meta',        lbl:'Meta Ads',        color:'#1877F2'},
+    {k:'google',      lbl:'Google Ads',      color:'#16a34a'},
+    {k:'ibr',         lbl:'Proprietário IBR',color:'#7c3aed'},
+    {k:'indicacao',   lbl:'Indicação',       color:'#d97706'},
+    {k:'outra',       lbl:'Outra origem',    color:'#94a3b8'},
+    {k:'sem-origem',  lbl:'Sem origem',      color:'#dc2626'},
+  ];
+
+  const fmtN = n => (n||0).toLocaleString('pt-BR');
+  const fmtBRL = n => 'R$ ' + (n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+  const fmtP = (n,d) => d > 0 ? (n/d*100).toFixed(1)+'%' : '—';
+
+  // Só mostra canais que têm leads OU vendas
+  const items = chMeta
+    .map(c => ({...c, leads: leadsCh[c.k], vendas: vendasCh[c.k], fat: receitaCh[c.k]}))
+    .filter(c => c.leads > 0 || c.vendas > 0)
+    .sort((a,b) => (b.vendas - a.vendas) || (b.leads - a.leads));
+
+  if (items.length === 0) {
+    el.innerHTML = '<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--muted);font-size:12px">Sem leads/vendas no período.</div>';
+    if (sub) sub.textContent = 'Vendas ÷ Leads no período · por origem';
+    return;
+  }
+
+  const totLeads = items.reduce((s,c) => s+c.leads, 0);
+  const totVendas = items.reduce((s,c) => s+c.vendas, 0);
+  if (sub) sub.textContent = `${totVendas} venda${totVendas===1?'':'s'} · ${totLeads} lead${totLeads===1?'':'s'} no período · taxa média ${fmtP(totVendas, totLeads)}`;
+
+  el.innerHTML = items.map(c => {
+    const tx = c.leads > 0 ? c.vendas/c.leads*100 : null;
+    const txColor = tx == null ? '#94a3b8' : (tx >= 3 ? '#16a34a' : tx >= 1 ? '#d97706' : '#dc2626');
+    const txStr = tx == null ? '—' : tx.toFixed(1)+'%';
+    return `<div class="ds-card" style="padding:14px 16px;border-left:3px solid ${c.color}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px">
+        <div style="font-size:12.5px;font-weight:700;color:var(--text)">${c.lbl}</div>
+        <div style="font-size:16px;font-weight:800;color:${txColor};line-height:1">${txStr}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.55">
+        <b style="color:var(--text)">${c.vendas}</b> venda${c.vendas===1?'':'s'} ÷ <b style="color:var(--text)">${fmtN(c.leads)}</b> leads
+      </div>
+      ${c.fat > 0 ? `<div style="margin-top:6px;font-size:11px;color:${c.color};font-weight:700">${fmtBRL(c.fat)}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 /* ────────────────────────────────────────────────────────────────
