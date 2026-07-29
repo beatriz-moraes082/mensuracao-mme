@@ -993,7 +993,7 @@
   </div>
 
   <!-- Canais · ranking horizontal -->
-  <div class="ds-sec"><h3>Qualificação por canal</h3><span class="sub">Meta · Google · Orgânico</span></div>
+  <div class="ds-sec"><h3>Qualificação por canal</h3><span class="sub">Meta · Google · Indicação · IBR · Duque/Outbound · Sem origem</span></div>
   <div class="ds-card">
     <div id="diag-canal-content"></div>
   </div>
@@ -3878,24 +3878,36 @@ function renderDiagnostico() {
   // Total de leads que o bot trabalhou (base honesta de eficiência)
   const botTotal = botBase.length;
 
-  // ── Por canal ──────────────────────────────────────────
-  const byCh = {meta:[], google:[], org:[]};
+  // ── Por canal (buckets reais · não usa mais 'org' como catch-all) ─────
+  // Ordem de checagem importa: 'meta' primeiro (pega Meta Ads + Meta+Ads),
+  // depois google, então buckets específicos, sem origem por último.
+  const byCh = {meta:[], google:[], indicacao:[], ibr:[], outbound:[], sem_origem:[], outros:[]};
   sdr.forEach(l => {
-    const o = (l.origem||'').toLowerCase();
-    if (o.includes('meta')) byCh.meta.push(l);
+    const o = (l.origem || '').replace(/\+/g, ' ').toLowerCase().trim();
+    if (!o) byCh.sem_origem.push(l);
+    else if (o.includes('meta')) byCh.meta.push(l);
     else if (o.includes('google')) byCh.google.push(l);
-    else byCh.org.push(l);
+    else if (o.includes('indica')) byCh.indicacao.push(l);
+    else if (o.includes('ibr') || o.includes('propriet')) byCh.ibr.push(l);
+    else if (o.includes('disparo') || o.includes('duque') || o.includes('outbound') || o.includes('bdr')) byCh.outbound.push(l);
+    else byCh.outros.push(l);
   });
   const chRows = [
-    {key:'meta',   label:'🎯 Meta Ads',   color:'#3b82f6', list:byCh.meta},
-    {key:'google', label:'📱 Google Ads', color:'#22c55e', list:byCh.google},
-    {key:'org',    label:'🌱 Orgânico',   color:'#f5a623', list:byCh.org},
+    {key:'meta',       label:'🎯 Meta Ads',        color:'#3b82f6', list:byCh.meta},
+    {key:'google',     label:'📱 Google Ads',      color:'#22c55e', list:byCh.google},
+    {key:'indicacao',  label:'🤝 Indicação',       color:'#d97706', list:byCh.indicacao},
+    {key:'ibr',        label:'🏢 IBR',             color:'#7c3aed', list:byCh.ibr},
+    {key:'outbound',   label:'📞 Duque/Outbound',  color:'#0891b2', list:byCh.outbound},
+    {key:'sem_origem', label:'❓ Sem origem',      color:'#94a3b8', list:byCh.sem_origem},
+    {key:'outros',     label:'📌 Outros',          color:'#6b7280', list:byCh.outros},
   ].map(r => ({...r,
     n: r.list.length,
     q: r.list.filter(l => l.qualified).length,
     a: r.list.filter(l => l.reuniao_agendada).length,
     txQ: r.list.length > 0 ? r.list.filter(l=>l.qualified).length/r.list.length*100 : 0,
-  })).sort((a,b) => b.txQ - a.txQ);
+  }))
+  .filter(r => r.n > 0)     // só mostra canais com pelo menos 1 lead no período
+  .sort((a,b) => b.txQ - a.txQ);
 
   // ── Sinais preditivos ──────────────────────────────────
   const qualGroup = sdr.filter(l => l.qualified);
