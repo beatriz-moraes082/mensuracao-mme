@@ -1,12 +1,12 @@
 {
-  "fetched_at": "2026-08-06T11:32:24.296111+00:00",
+  "fetched_at": "2026-08-07T21:48:30.543377+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 1611,
-    "unsubscribe_count": 9,
-    "cleaned_count": 142,
+    "member_count": 1621,
+    "unsubscribe_count": 11,
+    "cleaned_count": 173,
     "open_rate": 20.2020202020202,
     "click_rate": 3.0303030303030303,
     "campaign_count": 23,
@@ -14,6 +14,47 @@
     "date_created": "2026-03-18T19:28:49+00:00"
   },
   "campaigns": [
+    {
+      "id": "be03e56d08",
+      "type": "regular",
+      "subject": "Você vai adiar de novo esse ano?",
+      "title": "Disparo Geral | IMR Vídeo VSL",
+      "status": "sent",
+      "send_time": "2026-08-07T17:24:31+00:00",
+      "month": "2026-08",
+      "sent": 1648,
+      "opens_total": 53,
+      "unique_opens": 43,
+      "open_rate": 2.7249683143219268,
+      "clicks_total": 3,
+      "unique_clicks": 1,
+      "click_rate": 0.06337135614702154,
+      "unsubscribed": 1,
+      "hard_bounces": 30,
+      "soft_bounces": 40,
+      "cta_msg": "Olá, vim pelo e-mail e quero saber mais sobre o Ipioca Mar Resort",
+      "cta_url": "https://wa.me/558281169934?text=Ol%C3%A1,%20vim%20pelo%20e-mail%20e%20quero%20saber%20mais%20sobre%20o%20Ipioca%20Mar%20Resort",
+      "cta_clicks": 1,
+      "cta_clickers": [
+        {
+          "email_masked": "ej***@ecolab.com",
+          "email_domain": "ecolab.com",
+          "is_internal": false,
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
+        }
+      ],
+      "other_links": [
+        {
+          "url": "https://youtu.be/ZevMmRHqw24?is=oQAknr_Frq1-eQ57",
+          "clicks": 1
+        },
+        {
+          "url": "https://www.instagram.com/mmevacationclub/",
+          "clicks": 1
+        }
+      ]
+    },
     {
       "id": "c2d7e51f56",
       "type": "automation-email",
@@ -250,6 +291,32 @@
     }
   ],
   "by_step": {
+    "Disparo Geral | IMR Vídeo VSL": {
+      "n": 1,
+      "sent": 1648,
+      "opens_total": 53,
+      "unique_opens": 43,
+      "clicks_total": 3,
+      "unique_clicks": 1,
+      "unsubscribed": 1,
+      "hard_bounces": 30,
+      "soft_bounces": 40,
+      "first_send": "2026-08-07",
+      "last_send": "2026-08-07",
+      "type": "regular",
+      "subject": "Você vai adiar de novo esse ano?",
+      "cta_msg": "Olá, vim pelo e-mail e quero saber mais sobre o Ipioca Mar Resort",
+      "cta_url": "https://wa.me/558281169934?text=Ol%C3%A1,%20vim%20pelo%20e-mail%20e%20quero%20saber%20mais%20sobre%20o%20Ipioca%20Mar%20Resort",
+      "cta_clickers": [
+        {
+          "email_masked": "ej***@ecolab.com",
+          "email_domain": "ecolab.com",
+          "is_internal": false,
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
+        }
+      ]
+    },
     "Email automation | Cadência → Dia 14": {
       "n": 1,
       "sent": 595,
@@ -412,6 +479,32 @@
     }
   },
   "by_subject": {
+    "Disparo Geral | IMR Vídeo VSL": {
+      "n": 1,
+      "sent": 1648,
+      "opens_total": 53,
+      "unique_opens": 43,
+      "clicks_total": 3,
+      "unique_clicks": 1,
+      "unsubscribed": 1,
+      "hard_bounces": 30,
+      "soft_bounces": 40,
+      "first_send": "2026-08-07",
+      "last_send": "2026-08-07",
+      "type": "regular",
+      "subject": "Você vai adiar de novo esse ano?",
+      "cta_msg": "Olá, vim pelo e-mail e quero saber mais sobre o Ipioca Mar Resort",
+      "cta_url": "https://wa.me/558281169934?text=Ol%C3%A1,%20vim%20pelo%20e-mail%20e%20quero%20saber%20mais%20sobre%20o%20Ipioca%20Mar%20Resort",
+      "cta_clickers": [
+        {
+          "email_masked": "ej***@ecolab.com",
+          "email_domain": "ecolab.com",
+          "is_internal": false,
+          "clicks": 1,
+          "ekey": "7bc0ac8b7c1f"
+        }
+      ]
+    },
     "Email automation | Cadência → Dia 14": {
       "n": 1,
       "sent": 595,
@@ -574,6 +667,12 @@
     }
   },
   "by_month": {
+    "2026-08": {
+      "sent": 1648,
+      "unique_opens": 43,
+      "clicks_total": 3,
+      "unsubscribed": 1
+    },
     "2026-05": {
       "sent": 595,
       "unique_opens": 46,
