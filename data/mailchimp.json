@@ -1,10 +1,10 @@
 {
-  "fetched_at": "2026-08-08T09:46:44.561190+00:00",
+  "fetched_at": "2026-08-08T21:39:55.188660+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 1622,
+    "member_count": 1647,
     "unsubscribe_count": 12,
     "cleaned_count": 174,
     "open_rate": 20.2020202020202,
@@ -23,9 +23,9 @@
       "send_time": "2026-08-07T17:24:31+00:00",
       "month": "2026-08",
       "sent": 1648,
-      "opens_total": 83,
-      "unique_opens": 69,
-      "open_rate": 4.375396322130628,
+      "opens_total": 90,
+      "unique_opens": 75,
+      "open_rate": 4.7558655675332915,
       "clicks_total": 3,
       "unique_clicks": 1,
       "click_rate": 0.06341154090044387,
@@ -294,8 +294,8 @@
     "Disparo Geral | IMR Vídeo VSL": {
       "n": 1,
       "sent": 1648,
-      "opens_total": 83,
-      "unique_opens": 69,
+      "opens_total": 90,
+      "unique_opens": 75,
       "clicks_total": 3,
       "unique_clicks": 1,
       "unsubscribed": 2,
@@ -482,8 +482,8 @@
     "Disparo Geral | IMR Vídeo VSL": {
       "n": 1,
       "sent": 1648,
-      "opens_total": 83,
-      "unique_opens": 69,
+      "opens_total": 90,
+      "unique_opens": 75,
       "clicks_total": 3,
       "unique_clicks": 1,
       "unsubscribed": 2,
@@ -669,7 +669,7 @@
   "by_month": {
     "2026-08": {
       "sent": 1648,
-      "unique_opens": 69,
+      "unique_opens": 75,
       "clicks_total": 3,
       "unsubscribed": 2
     },
