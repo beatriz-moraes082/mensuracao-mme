@@ -1094,9 +1094,9 @@ document.querySelectorAll('[data-carousel]').forEach(function(car){
   sync();
 });
 
-// ▼▼▼ COLE AQUI A URL DO WEBHOOK (Make ou Zapier) — entre as aspas ▼▼▼
-var KOMMO_WEBHOOK_URL = '';
-// ▲▲▲ ex: 'https://hook.us2.make.com/abc123...'  ▲▲▲
+// Webhook do Make que leva o lead pro Kommo.
+// Site B (lp-b.html) — cenários separados, não trocar entre as páginas.
+var KOMMO_WEBHOOK_URL = 'https://hook.us2.make.com/m4fnxjan4ivwfoj7msp67u3nlr4ta1hl';
 /* ===== WhatsApp: máscara + validação de celular BR =====
    A LP vinha recebendo números impossíveis de campanha paga ("+55 265",
    "+55 993454254496784"). Sem validação o evento de Lead disparava do mesmo
