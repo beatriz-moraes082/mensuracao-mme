@@ -425,6 +425,9 @@ section{padding:78px 0}
 .field input{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:11px;
   font-family:inherit;font-size:14.5px;color:var(--ink);background:var(--cream)}
 .field input:focus{outline:none;border-color:var(--teal)}
+.field input.err{border-color:#c0392b;background:#fdf3f2}
+.field .msg-err{display:none;font-size:12px;font-weight:600;color:#c0392b;margin-top:6px}
+.field.invalid .msg-err{display:block}
 .consent{display:flex;gap:9px;align-items:flex-start;margin:6px 0 18px}
 .consent input{margin-top:3px;accent-color:var(--teal)}
 .consent label{font-size:12px;color:var(--muted)}
@@ -939,9 +942,11 @@ section{padding:78px 0}
         <label for="email">Seu melhor e-mail</label>
         <input id="email" name="email" type="email" required placeholder="voce@email.com"/>
       </div>
-      <div class="field">
+      <div class="field" id="field-whats">
         <label for="whats">WhatsApp</label>
-        <input id="whats" name="whatsapp" type="tel" required placeholder="(00) 00000-0000"/>
+        <input id="whats" name="whatsapp" type="tel" required inputmode="numeric"
+               autocomplete="tel-national" maxlength="15" placeholder="(00) 00000-0000"/>
+        <span class="msg-err">Informe um celular com DDD e o 9 na frente — ex.: (82) 99999-1234</span>
       </div>
       <div class="consent">
         <input id="consent" type="checkbox" required/>
@@ -1092,12 +1097,92 @@ document.querySelectorAll('[data-carousel]').forEach(function(car){
 // ▼▼▼ COLE AQUI A URL DO WEBHOOK (Make ou Zapier) — entre as aspas ▼▼▼
 var KOMMO_WEBHOOK_URL = '';
 // ▲▲▲ ex: 'https://hook.us2.make.com/abc123...'  ▲▲▲
+/* ===== WhatsApp: máscara + validação de celular BR =====
+   A LP vinha recebendo números impossíveis de campanha paga ("+55 265",
+   "+55 993454254496784"). Sem validação o evento de Lead disparava do mesmo
+   jeito, o SDR perdia tempo e o algoritmo era treinado com conversão lixo. */
+var DDD_BR=[11,12,13,14,15,16,17,18,19,21,22,24,27,28,31,32,33,34,35,37,38,
+  41,42,43,44,45,46,47,48,49,51,53,54,55,61,62,63,64,65,66,67,68,69,
+  71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99];
+
+function soDigitos(v){return String(v||'').replace(/\D/g,'');}
+
+function normalizaTel(v){
+  var d=soDigitos(v);
+  if(d.length>11&&d.slice(0,2)==='55'){d=d.slice(2);}  // colou com +55
+  return d.slice(0,11);
+}
+
+function mascaraTel(v){
+  var d=normalizaTel(v);
+  if(!d.length) return '';
+  if(d.length<=2)  return '('+d;
+  if(d.length<=6)  return '('+d.slice(0,2)+') '+d.slice(2);
+  if(d.length<=10) return '('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6);
+  return '('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7);
+}
+
+function celularValido(v){
+  var d=normalizaTel(v);
+  if(d.length!==11) return false;                    // DDD + 9 dígitos
+  if(DDD_BR.indexOf(parseInt(d.slice(0,2),10))<0) return false;
+  if(d.charAt(2)!=='9') return false;                // celular começa com 9
+  if(/^(\d)\1+$/.test(d.slice(2))) return false;     // (11) 99999-9999
+  return true;
+}
+
+function marcaErroTel(erro){
+  var campo=document.getElementById('field-whats');
+  var input=document.getElementById('whats');
+  if(campo) campo.classList.toggle('invalid',!!erro);
+  if(input) input.classList.toggle('err',!!erro);
+}
+
+/* Conta a tentativa bloqueada sem disparar Lead — sem isso o refugo
+   simplesmente some do relatório e não dá pra saber se a campanha melhorou. */
+function registraTelBloqueado(valor){
+  var det={event:'lead_invalid_phone',pagina:document.title,
+           digitos:soDigitos(valor).length,url:location.href};
+  try{window.dataLayer=window.dataLayer||[];window.dataLayer.push(det);}catch(err){}
+  try{if(typeof gtag==='function')gtag('event','lead_invalid_phone',{digitos:det.digitos});}catch(err){}
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  var input=document.getElementById('whats');
+  if(!input) return;
+  input.addEventListener('input',function(){
+    var noFim=this.selectionStart===this.value.length;
+    var novo=mascaraTel(this.value);
+    if(novo!==this.value){
+      this.value=novo;
+      if(noFim){try{this.setSelectionRange(novo.length,novo.length);}catch(err){}}
+    }
+    marcaErroTel(false);
+  });
+  input.addEventListener('blur',function(){
+    marcaErroTel(this.value.length>0&&!celularValido(this.value));
+  });
+});
+
 function lpSubmit(e){
   e.preventDefault();
+  var elWhats=document.getElementById('whats');
+  var whats=elWhats?elWhats.value:'';
+
+  // Barra antes de qualquer disparo: nada de Lead no Meta/Google nem envio ao Kommo.
+  if(!celularValido(whats)){
+    marcaErroTel(true);
+    registraTelBloqueado(whats);
+    if(elWhats){elWhats.focus();}
+    return false;
+  }
+  marcaErroTel(false);
+
   var dados={
     nome:(document.getElementById('nome')||{}).value||'',
     email:(document.getElementById('email')||{}).value||'',
-    whatsapp:(document.getElementById('whats')||{}).value||'',
+    whatsapp:mascaraTel(whats),
+    whatsapp_e164:'+55'+normalizaTel(whats),
     origem:location.href,
     pagina:document.title
   };
