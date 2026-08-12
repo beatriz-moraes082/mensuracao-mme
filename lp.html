@@ -1157,7 +1157,9 @@ document.addEventListener('DOMContentLoaded',function(){
       this.value=novo;
       if(noFim){try{this.setSelectionRange(novo.length,novo.length);}catch(err){}}
     }
-    marcaErroTel(false);
+    /* Erro em tempo real: só marca vermelho depois de 11 dígitos e ainda
+       inválido — não incomoda enquanto o número está incompleto. */
+    marcaErroTel(soDigitos(this.value).length>=11 && !celularValido(this.value));
   });
   input.addEventListener('blur',function(){
     marcaErroTel(this.value.length>0&&!celularValido(this.value));
