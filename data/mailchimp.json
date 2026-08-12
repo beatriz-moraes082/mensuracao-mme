@@ -1,15 +1,15 @@
 {
-  "fetched_at": "2026-08-10T10:25:24.117886+00:00",
+  "fetched_at": "2026-08-12T10:14:40.655285+00:00",
   "data_center": "us17",
   "audience": {
     "id": "0b8aca3dd0",
     "name": "MME Vacation Club",
-    "member_count": 1685,
-    "unsubscribe_count": 12,
-    "cleaned_count": 175,
-    "open_rate": 20.2020202020202,
-    "click_rate": 3.0303030303030303,
-    "campaign_count": 23,
+    "member_count": 1719,
+    "unsubscribe_count": 17,
+    "cleaned_count": 186,
+    "open_rate": 7.384441939120631,
+    "click_rate": 0.3945885005636978,
+    "campaign_count": 27,
     "last_send_date": "",
     "date_created": "2026-03-18T19:28:49+00:00"
   },
@@ -23,15 +23,15 @@
       "send_time": "2026-08-07T17:24:31+00:00",
       "month": "2026-08",
       "sent": 1648,
-      "opens_total": 106,
-      "unique_opens": 89,
-      "open_rate": 5.643627140139505,
-      "clicks_total": 3,
-      "unique_clicks": 1,
-      "click_rate": 0.06341154090044387,
+      "opens_total": 113,
+      "unique_opens": 95,
+      "open_rate": 6.027918781725888,
+      "clicks_total": 4,
+      "unique_clicks": 2,
+      "click_rate": 0.12690355329949238,
       "unsubscribed": 2,
       "hard_bounces": 31,
-      "soft_bounces": 40,
+      "soft_bounces": 41,
       "cta_msg": "Olá, vim pelo e-mail e quero saber mais sobre o Ipioca Mar Resort",
       "cta_url": "https://wa.me/558281169934?text=Ol%C3%A1,%20vim%20pelo%20e-mail%20e%20quero%20saber%20mais%20sobre%20o%20Ipioca%20Mar%20Resort",
       "cta_clicks": 1,
@@ -47,7 +47,7 @@
       "other_links": [
         {
           "url": "https://youtu.be/ZevMmRHqw24?is=oQAknr_Frq1-eQ57",
-          "clicks": 1
+          "clicks": 2
         },
         {
           "url": "https://www.instagram.com/mmevacationclub/",
@@ -294,13 +294,13 @@
     "Disparo Geral | IMR Vídeo VSL": {
       "n": 1,
       "sent": 1648,
-      "opens_total": 106,
-      "unique_opens": 89,
-      "clicks_total": 3,
-      "unique_clicks": 1,
+      "opens_total": 113,
+      "unique_opens": 95,
+      "clicks_total": 4,
+      "unique_clicks": 2,
       "unsubscribed": 2,
       "hard_bounces": 31,
-      "soft_bounces": 40,
+      "soft_bounces": 41,
       "first_send": "2026-08-07",
       "last_send": "2026-08-07",
       "type": "regular",
@@ -482,13 +482,13 @@
     "Disparo Geral | IMR Vídeo VSL": {
       "n": 1,
       "sent": 1648,
-      "opens_total": 106,
-      "unique_opens": 89,
-      "clicks_total": 3,
-      "unique_clicks": 1,
+      "opens_total": 113,
+      "unique_opens": 95,
+      "clicks_total": 4,
+      "unique_clicks": 2,
       "unsubscribed": 2,
       "hard_bounces": 31,
-      "soft_bounces": 40,
+      "soft_bounces": 41,
       "first_send": "2026-08-07",
       "last_send": "2026-08-07",
       "type": "regular",
@@ -669,8 +669,8 @@
   "by_month": {
     "2026-08": {
       "sent": 1648,
-      "unique_opens": 89,
-      "clicks_total": 3,
+      "unique_opens": 95,
+      "clicks_total": 4,
       "unsubscribed": 2
     },
     "2026-05": {
