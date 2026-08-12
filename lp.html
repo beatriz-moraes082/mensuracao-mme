@@ -934,13 +934,14 @@ section{padding:78px 0}
     <form class="form-card rv" action="#" method="post" onsubmit="return lpSubmit(event)">
       <h3>Quero conhecer o clube</h3>
       <p class="fsub">Preencha seus dados, entramos em contato pelo WhatsApp.</p>
-      <div class="field">
+      <div class="field" id="field-nome">
         <label for="nome">Nome e sobrenome</label>
         <input id="nome" name="nome" type="text" required placeholder="Como podemos te chamar?"/>
+        <span class="msg-err">Informe seu nome e sobrenome.</span>
       </div>
       <div class="field">
-        <label for="email">Seu melhor e-mail</label>
-        <input id="email" name="email" type="email" required placeholder="voce@email.com"/>
+        <label for="email">Seu melhor e-mail (opcional)</label>
+        <input id="email" name="email" type="email" placeholder="voce@email.com"/>
       </div>
       <div class="field" id="field-whats">
         <label for="whats">WhatsApp</label>
@@ -1138,6 +1139,14 @@ function marcaErroTel(erro){
   if(input) input.classList.toggle('err',!!erro);
 }
 
+function nomeValido(v){return String(v||'').trim().length>=2;}
+function marcaErroNome(erro){
+  var campo=document.getElementById('field-nome');
+  var input=document.getElementById('nome');
+  if(campo) campo.classList.toggle('invalid',!!erro);
+  if(input) input.classList.toggle('err',!!erro);
+}
+
 /* Conta a tentativa bloqueada sem disparar Lead — sem isso o refugo
    simplesmente some do relatório e não dá pra saber se a campanha melhorou. */
 function registraTelBloqueado(valor){
@@ -1164,12 +1173,27 @@ document.addEventListener('DOMContentLoaded',function(){
   input.addEventListener('blur',function(){
     marcaErroTel(this.value.length>0&&!celularValido(this.value));
   });
+  var elNome=document.getElementById('nome');
+  if(elNome){
+    elNome.addEventListener('input',function(){ if(this.value.trim()){marcaErroNome(false);} });
+    elNome.addEventListener('blur',function(){ marcaErroNome(this.value.length>0&&!nomeValido(this.value)); });
+  }
 });
 
 function lpSubmit(e){
   e.preventDefault();
+  var elNome=document.getElementById('nome');
+  var nome=elNome?elNome.value:'';
   var elWhats=document.getElementById('whats');
   var whats=elWhats?elWhats.value:'';
+
+  // Nome obrigatorio: sem nome valido nao dispara Lead nem envia ao Kommo.
+  if(!nomeValido(nome)){
+    marcaErroNome(true);
+    if(elNome){elNome.focus();}
+    return false;
+  }
+  marcaErroNome(false);
 
   // Barra antes de qualquer disparo: nada de Lead no Meta/Google nem envio ao Kommo.
   if(!celularValido(whats)){
