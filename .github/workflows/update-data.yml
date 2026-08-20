@@ -49,6 +49,7 @@ jobs:
 
       - name: Fetch Google Ads
         run: python3 fetch_google_ads.py
+        continue-on-error: true   # fonte quebrada não pode derrubar a atualização do dash
 
       - name: Fetch Mailchimp
         run: python3 fetch_mailchimp.py

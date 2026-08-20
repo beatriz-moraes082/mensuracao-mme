@@ -137,7 +137,7 @@ def get_access_token(refresh_token):
 
 # ── Google Ads API ──────────────────────────────────────────────────────────
 def google_ads_search(access_token, query):
-    url = f"https://googleads.googleapis.com/v21/customers/{CUSTOMER_ID}/googleAds:searchStream"
+    url = f"https://googleads.googleapis.com/v22/customers/{CUSTOMER_ID}/googleAds:searchStream"
     headers = {
         "Authorization":    f"Bearer {access_token}",
         "developer-token":  DEVELOPER_TOKEN,
