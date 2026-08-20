@@ -1125,6 +1125,59 @@
   </div>
   <div class="ds-grid-2" id="perfil-preatend-grid"></div>
 
+  <!-- Busca de leads pelas respostas do bot · alimentada pelos mesmos campos
+       da distribuição acima (vê o padrão no gráfico, acha os leads aqui) -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Buscar leads pelas respostas do fluxo</h3><span class="sub">Combine os filtros — cada resposta do bot de pré-atendimento é um filtro</span></div>
+  <div class="ds-card">
+
+    <!-- ── FILTROS ─────────────────────────────────────────────── -->
+    <div style="padding:14px;border-radius:12px;background:var(--surface2);margin-bottom:14px">
+
+      <!-- linha 1: busca livre -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="score-busca" oninput="renderLeadFinder()" placeholder="🔎 Buscar por nome, telefone, e-mail, profissão ou qualquer resposta…"
+               class="period-select"
+               style="flex:1;min-width:280px;font-size:12px;padding:8px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <button onclick="scoreLimparFiltros()" style="padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;white-space:nowrap">↺ Limpar filtros</button>
+      </div>
+
+      <!-- linha 2: selects das respostas do fluxo (opções montadas a partir dos dados reais) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px">
+        <select id="score-filter"   class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()">
+          <option value="all" selected>Score Kommo · todos</option>
+          <option value="A">Score A</option>
+          <option value="B">Score B</option>
+          <option value="C">Score C</option>
+          <option value="D">Score D</option>
+          <option value="E">Score E</option>
+          <option value="F">Score F</option>
+          <option value="sem">Sem score no Kommo</option>
+        </select>
+        <select id="sf-hosp-allinc" class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()"></select>
+        <select id="sf-prox"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()"></select>
+        <select id="sf-inv"         class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()"></select>
+        <select id="sf-freq"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()"></select>
+        <select id="sf-idade"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()"></select>
+        <select id="sf-etapa"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderLeadFinder()">
+          <option value="">Etapa · todas</option>
+          <option value="venda">💰 Virou venda</option>
+          <option value="realizada">🤝 Reunião realizada</option>
+          <option value="agendada">📅 Reunião agendada</option>
+          <option value="qualified">✅ Qualificado</option>
+          <option value="perda">❌ Perdido</option>
+          <option value="nenhum">· Sem avanço</option>
+        </select>
+      </div>
+
+      <div style="margin-top:9px;font-size:10.5px;color:var(--muted);line-height:1.45">
+        As opções saem das respostas que <b>realmente existem na base</b> — labels novos e antigos do bot aparecem juntos, e <b>“— sem resposta —”</b> acha quem não respondeu aquela pergunta.<br>
+        ⚠️ O número entre parênteses é a contagem na <b>base inteira</b> (<span id="sf-base-n">—</span> leads SDR); a tabela abaixo respeita o <b>período selecionado no topo da aba</b>, então costuma vir menor.
+      </div>
+    </div>
+
+    <div id="score-table" style="overflow-x:auto"></div>
+  </div>
+
   <!-- Detalhamento das 15 análises em accordion -->
   <details class="ds-accordion" style="margin-top:18px">
     <summary><span>🔒 Ver 15 análises detalhadas (CPL, funil, formulário, ROAS, CAC, combos) · uso interno Trilha</span></summary>
@@ -1749,57 +1802,6 @@
     </div>
   </div>
 
-  <!-- Tabela de leads classificados -->
-  <div class="ds-sec" style="margin-top:24px"><h3>Buscar leads pelas respostas do fluxo</h3><span class="sub">Combine os filtros — cada resposta do bot de pré-atendimento é um filtro</span></div>
-  <div class="ds-card">
-
-    <!-- ── FILTROS ─────────────────────────────────────────────── -->
-    <div style="padding:14px;border-radius:12px;background:var(--surface2);margin-bottom:14px">
-
-      <!-- linha 1: busca livre -->
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-        <input type="text" id="score-busca" oninput="renderScore()" placeholder="🔎 Buscar por nome, telefone, e-mail, profissão ou qualquer resposta…"
-               class="period-select"
-               style="flex:1;min-width:280px;font-size:12px;padding:8px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
-        <button onclick="scoreLimparFiltros()" style="padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;white-space:nowrap">↺ Limpar filtros</button>
-      </div>
-
-      <!-- linha 2: selects das respostas do fluxo (opções montadas a partir dos dados reais) -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px">
-        <select id="score-filter"   class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()">
-          <option value="all" selected>Score Kommo · todos</option>
-          <option value="A">Score A</option>
-          <option value="B">Score B</option>
-          <option value="C">Score C</option>
-          <option value="D">Score D</option>
-          <option value="E">Score E</option>
-          <option value="F">Score F</option>
-          <option value="sem">Sem score no Kommo</option>
-        </select>
-        <select id="sf-hosp-allinc" class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
-        <select id="sf-prox"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
-        <select id="sf-inv"         class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
-        <select id="sf-freq"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
-        <select id="sf-idade"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
-        <select id="sf-etapa"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()">
-          <option value="">Etapa · todas</option>
-          <option value="venda">💰 Virou venda</option>
-          <option value="realizada">🤝 Reunião realizada</option>
-          <option value="agendada">📅 Reunião agendada</option>
-          <option value="qualified">✅ Qualificado</option>
-          <option value="perda">❌ Perdido</option>
-          <option value="nenhum">· Sem avanço</option>
-        </select>
-      </div>
-
-      <div style="margin-top:9px;font-size:10.5px;color:var(--muted);line-height:1.45">
-        As opções saem das respostas que <b>realmente existem na base</b> — labels novos e antigos do bot aparecem juntos, e <b>“— sem resposta —”</b> acha quem não respondeu aquela pergunta.<br>
-        ⚠️ O número entre parênteses é a contagem na <b>base inteira</b> (<span id="sf-base-n">—</span> leads SDR); a tabela abaixo respeita o <b>período selecionado no topo da aba</b>, então costuma vir menor.
-      </div>
-    </div>
-
-    <div id="score-table" style="overflow-x:auto"></div>
-  </div>
 
   <!-- Explicação da régua -->
   <div class="ds-sec" style="margin-top:24px"><h3>Como a régua funciona</h3><span class="sub">4 classes — regras avaliadas em ordem; a primeira que casar define o perfil</span></div>
@@ -3842,6 +3844,9 @@ function renderAnalises() {
     // Insight automático removido a pedido da Bia (14/07/2026)
     if (insightEl) insightEl.innerHTML = '';
   })();
+
+  // Busca de leads por resposta do fluxo (logo abaixo da distribuição)
+  if (typeof renderLeadFinder === 'function') renderLeadFinder();
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -7588,10 +7593,27 @@ function renderScore() {
       </div>`;
   }
 
-  // ── Tabela de leads classificados (com filtros por resposta do fluxo)
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BUSCA DE LEADS POR RESPOSTA DO FLUXO
+   Vive na aba "Perfil do Qualificado", logo abaixo da distribuição de
+   respostas do pré-atendimento: o gráfico mostra o padrão, esta tabela
+   acha os leads por trás dele. Recalcula a própria base (não depende da
+   aba Calculadora) pra poder ser chamada de renderAnalises().
+   ═══════════════════════════════════════════════════════════════ */
+function renderLeadFinder() {
   const tblEl = document.getElementById('score-table');
-  if (tblEl) {
+  if (!tblEl || !KOMMO_RAW) return;
+  {
     scoreFillFlowFilters();   // monta as opções dos selects a partir dos dados reais (1x)
+
+    const fmtN = n => (n||0).toLocaleString('pt-BR');
+    const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+    const win = periodWindow(currentPeriod, ref);
+    const scored = (KOMMO_RAW.sdr || [])
+      .filter(l => _inWindow(l.created_at, win))
+      .map(l => ({...l, _scored: calcLeadScore(l)}));
 
     const _val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
     const f = _val('score-filter') || 'all';
@@ -7694,7 +7716,7 @@ function renderScore() {
         <tbody>${rows || '<tr><td colspan=10 style="padding:24px;text-align:center;color:var(--muted)">Nenhum lead bate com esses filtros. Tente afrouxar um deles ou usar “↺ Limpar filtros”.</td></tr>'}</tbody>
       </table>
       <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11px;line-height:1.5;color:var(--muted)">
-        📖 Clique no <b>nome do lead</b> pra abrir a ficha no Kommo. <b>Kommo</b> = score atribuído no CRM (oficial); <b>Calc</b> = o que a régua desta página calculou (passe o mouse pra ver o motivo). Respostas cortadas aparecem inteiras no tooltip.
+        📖 Clique no <b>nome do lead</b> pra abrir a ficha no Kommo. <b>Kommo</b> = score atribuído no CRM (oficial); <b>Calc</b> = o que a régua da aba Calculadora de Score calculou (passe o mouse pra ver o motivo). Respostas cortadas aparecem inteiras no tooltip.
       </div>`;
   }
 }
@@ -7772,14 +7794,14 @@ function scoreFillFlowFilters() {
   _scoreFiltersReady = true;
 }
 
-function scoreToggleShowAll() { SCORE_SHOW_ALL = !SCORE_SHOW_ALL; renderScore(); }
+function scoreToggleShowAll() { SCORE_SHOW_ALL = !SCORE_SHOW_ALL; renderLeadFinder(); }
 
 function scoreLimparFiltros() {
   const sf = document.getElementById('score-filter'); if (sf) sf.value = 'all';
   ['sf-idade','sf-etapa','score-busca'].concat(SCORE_FLOW_FIELDS.map(f => f.id))
     .forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   SCORE_SHOW_ALL = false;
-  renderScore();
+  renderLeadFinder();
 }
 
 /* ════════════════════════════════════════════════════════════════
