@@ -1817,7 +1817,7 @@
           Esse é o perfil que <b>já está acostumado com o modelo</b>.
         </div>
         <div style="margin-top:8px;padding:10px 12px;border-radius:8px;background:rgba(245,158,11,.08);border-left:3px solid #f59e0b;font-size:12px;line-height:1.5;color:var(--text)">
-          ⚠️ <b>Atenção:</b> esse critério vem do <b>bot antigo</b> (intermediário de maio/26, que tinha a pergunta "Como sua família normalmente se hospeda quando viaja?" com opção "Resorts All Inclusive"). Esse bot foi descontinuado quando os testes A/B atuais (v1 + v2) entraram em produção.<br>
+          ⚠️ <b>Atenção:</b> esse critério vem do <b>bot antigo</b> (intermediário de maio/26, que tinha a pergunta "Como sua família normalmente se hospeda quando viaja?" com opção "Resorts All Inclusive"). Esse bot foi descontinuado quando o pré-atendimento atual entrou em produção.<br>
           <b>Leads novos não conseguem ser classificados como A automaticamente</b> — só leads históricos do bot mai/26.
         </div>
       </div>
@@ -3408,28 +3408,23 @@ function renderAnalises() {
         return pairs[cap] || cap;
       };
 
-      // bot:
-      //   'both'   → em AMBOS fluxos em teste (Pré-atendimento v1 LONGO + v2 CURTO)
-      //   'v1'     → exclusivo do v1 (versão longa · 8 perguntas)
-      //   'v2'     → exclusivo do v2 (versão curta · 5 perguntas)
-      //   'legacy' → bot descontinuado (campos coletados em datas anteriores)
+      // bot: 'atual' entra na renderização; 'legacy' fica de fora (bots
+      // descontinuados pré-mai/26, cujos campos ainda existem em leads antigos).
+      // A distinção v1/v2 saiu junto com o teste A/B — hoje é o bot inteiro.
       const fields = [
-        // ── Em AMBOS os fluxos atuais (v1 + v2) ──
-        {bot:'both', key:'hosp_allinc',  lbl:'Já se hospedou em All-Inclusive?', q:'Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive?', color:'#06b6d4'},
-        {bot:'both', key:'prox_ferias',  lbl:'Interesse em Resort All-Inclusive', q:'Você tem interesse em ir para um Resort All-Inclusive?', color:'#8b5cf6',
+        {bot:'atual', key:'hosp_allinc',  lbl:'Já se hospedou em All-Inclusive?', q:'Nos últimos dez anos, você ou sua família já se hospedaram em Resorts All Inclusive?', color:'#06b6d4'},
+        {bot:'atual', key:'prox_ferias',  lbl:'Interesse em Resort All-Inclusive', q:'Você tem interesse em ir para um Resort All-Inclusive?', color:'#8b5cf6',
          note:'O bot bifurca em 2 perguntas conforme a resposta anterior em "Já se hospedou em All-Inclusive?": quem disse Sim recebe a pergunta sobre <b>continuar viajando</b> (P22); quem disse Não recebe a pergunta sobre <b>primeira experiência</b> (P235). As respostas das duas caem nesta mesma coluna.'},
-        {bot:'both', key:'investimento', lbl:'Investimento em viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?', color:'#e85d28'},
+        {bot:'atual', key:'investimento', lbl:'Investimento em viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?', color:'#e85d28'},
 
-        // ── EXCLUSIVOS do v1 (versão LONGA · 8 perguntas) ──
-        {bot:'v1', key:'idade',        lbl:'Faixa etária',              q:'Qual sua idade?',                                                                  color:'#0ea5e9', transform:idadeBucket},
-        {bot:'v1', key:'freq_viagem',  lbl:'Frequência de viagens',     q:'Com que frequência você costuma viajar de férias?',                                color:'#f97316'},
-        {bot:'v1', key:'profissao',    lbl:'Profissão',                 q:'Pra finalizar, qual a sua profissão?',                                             color:'#7c3aed', transform:profNorm},
-        {bot:'v1', key:'cep',          lbl:'CEP (origem geográfica)',   q:'Me diga, qual é o seu CEP da sua residência?',                                     color:'#0891b2', transform:(r)=>{ if(!r) return null; const s=String(r).replace(/\D/g,''); return s.length>=5 ? s.slice(0,2)+'.xxx-xxx' : null; }},
+        {bot:'atual', key:'idade',        lbl:'Faixa etária',              q:'Qual sua idade?',                                                                  color:'#0ea5e9', transform:idadeBucket},
+        {bot:'atual', key:'freq_viagem',  lbl:'Frequência de viagens',     q:'Com que frequência você costuma viajar de férias?',                                color:'#f97316'},
+        {bot:'atual', key:'profissao',    lbl:'Profissão',                 q:'Pra finalizar, qual a sua profissão?',                                             color:'#7c3aed', transform:profNorm},
+        {bot:'atual', key:'cep',          lbl:'CEP (origem geográfica)',   q:'Me diga, qual é o seu CEP da sua residência?',                                     color:'#0891b2', transform:(r)=>{ if(!r) return null; const s=String(r).replace(/\D/g,''); return s.length>=5 ? s.slice(0,2)+'.xxx-xxx' : null; }},
 
-        // ── EXCLUSIVOS do v2 (versão CURTA · 5 perguntas) ──
-        {bot:'v2', key:'o_que_buscava',lbl:'O que você estava buscando',q:'Me diz uma coisa, o que você estava buscando quando enviou seu cadastro?', color:'#ec4899'},
+        {bot:'atual', key:'o_que_buscava',lbl:'O que você estava buscando',q:'Me diz uma coisa, o que você estava buscando quando enviou seu cadastro?', color:'#ec4899'},
 
-        // ── LEGADO (bots descontinuados · pré-mai/26) ──
+        // ── LEGADO · fora da renderização ──
         {bot:'legacy', key:'hospedagem',   lbl:'Como se hospeda',           q:'Como sua família normalmente se hospeda quando viaja?',                       color:'#3b82f6'},
         {bot:'legacy', key:'custo_ano',    lbl:'Custo anual com viagens',   q:'Hoje, quanto vocês costumam investir por ano em viagens?',                    color:'#f59e0b'},
         {bot:'legacy', key:'viaja_mais',   lbl:'Com quem viaja',            q:'Você costuma viajar mais com quem?',                                          color:'#a855f7'},
@@ -3485,25 +3480,36 @@ function renderAnalises() {
             </div>
           </div>`;
       };
-      // 2 seções limpas: v1 (LONGO) e v2 (CURTO).
-      // Cards 'both' aparecem nas 2 seções (porque ambos os bots coletam).
-      // 'legacy' (bots descontinuados) NÃO entra na renderização.
-      const v1Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v1').map(cardHtml).filter(Boolean);
-      const v2Cards = fields.filter(f => f.bot === 'both' || f.bot === 'v2').map(cardHtml).filter(Boolean);
-      // Quantidade de PERGUNTAS que o lead REALMENTE responde
-      // (P22 e P235 são ramificadas — lead só vê uma das duas, então conta 1)
-      const V1_PERGUNTAS = 7;
-      const V2_PERGUNTAS = 4;
-      const sectionLabel = (title, qtd, color) => `
-        <div style="grid-column:1/-1;display:flex;align-items:baseline;gap:12px;margin:14px 2px 4px;padding-top:8px;border-top:2px solid ${color}33">
-          <h4 style="margin:0;font-size:15px;font-weight:800;color:${color}">${title}</h4>
-          <span style="font-size:12px;font-weight:600;color:var(--muted)">${qtd} pergunta${qtd===1?'':'s'}</span>
-        </div>`;
-      const cards =
-          (v1Cards.length ? sectionLabel('Pré-atendimento v1 (versão longa)', V1_PERGUNTAS, '#3b82f6') + v1Cards.join('') : '')
-        + (v2Cards.length ? sectionLabel('Pré-atendimento v2 (versão curta)', V2_PERGUNTAS, '#a855f7') + v2Cards.join('') : '');
+      // Teste A/B v1 vs v2 finalizado — seção única, bot inteiro.
+      // Cada pergunta aparece UMA vez, não importa em qual fluxo ela nasceu.
+      // 'legacy' (bots descontinuados) continua fora da renderização.
+      const botCards = fields.filter(f => f.bot !== 'legacy').map(cardHtml).filter(Boolean);
 
-      preGrid.innerHTML = cards;
+      // Conclusão do bot no período — mesma definição do card de Bot do
+      // Diagnóstico (tag 'bot-concluído' vs 'bot-incompleto' no Kommo).
+      const concl   = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
+      const incompl = sdr.filter(l => (l.tags||[]).includes('bot-incompleto')).length;
+      const tocados = concl + incompl;
+      const txConcl = tocados > 0 ? concl/tocados*100 : 0;
+      const headerConcl = tocados > 0 ? `
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:14px 16px;margin-bottom:4px;border-radius:12px;background:var(--surface2)">
+          <div>
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Conclusão do bot · SDR</div>
+            <div style="font-size:26px;font-weight:900;line-height:1.15;color:#16a34a">${txConcl.toFixed(1)}%</div>
+            <div style="font-size:11.5px;color:var(--muted)">${concl} de ${tocados} leads SDR abordados no período</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(txConcl,100).toFixed(0)}%;background:#16a34a"></div>
+            </div>
+            <div style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
+              <b style="color:var(--text)">${incompl}</b> largaram no meio — as respostas abaixo saem só de quem chegou até cada pergunta.<br>
+              <span style="font-size:10.5px">Recorte só do pipeline SDR. O card de Bot no Diagnóstico usa outra base (SDR + Nutrição, dedup por telefone), então a % de lá é diferente por construção.</span>
+            </div>
+          </div>
+        </div>` : '';
+
+      preGrid.innerHTML = headerConcl + botCards.join('');
       const subEl = document.getElementById('perfil-preatend-sub');
       if (subEl) subEl.textContent = `Distribuição de respostas no bot · ${totalLeads} leads SDR no período`;
     }
