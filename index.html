@@ -1750,20 +1750,54 @@
   </div>
 
   <!-- Tabela de leads classificados -->
-  <div class="ds-sec" style="margin-top:24px"><h3>Leads classificados</h3><span class="sub">Top 50 mais recentes — coluna 'motivo' mostra a regra aplicada</span></div>
+  <div class="ds-sec" style="margin-top:24px"><h3>Buscar leads pelas respostas do fluxo</h3><span class="sub">Combine os filtros — cada resposta do bot de pré-atendimento é um filtro</span></div>
   <div class="ds-card">
-    <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <select id="score-filter" class="period-select" style="font-size:11.5px;padding:6px 12px" onchange="renderScore()">
-        <option value="all" selected>Todas as classes</option>
-        <option value="A">Score A</option>
-        <option value="B">Score B</option>
-        <option value="C">Score C</option>
-        <option value="D">Score D</option>
-        <option value="E">Score E</option>
-        <option value="F">Score F</option>
-        <option value="sem">Sem score no Kommo</option>
-      </select>
+
+    <!-- ── FILTROS ─────────────────────────────────────────────── -->
+    <div style="padding:14px;border-radius:12px;background:var(--surface2);margin-bottom:14px">
+
+      <!-- linha 1: busca livre -->
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="score-busca" oninput="renderScore()" placeholder="🔎 Buscar por nome, telefone, e-mail, profissão ou qualquer resposta…"
+               class="period-select"
+               style="flex:1;min-width:280px;font-size:12px;padding:8px 14px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
+        <button onclick="scoreLimparFiltros()" style="padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;white-space:nowrap">↺ Limpar filtros</button>
+      </div>
+
+      <!-- linha 2: selects das respostas do fluxo (opções montadas a partir dos dados reais) -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px">
+        <select id="score-filter"   class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()">
+          <option value="all" selected>Score Kommo · todos</option>
+          <option value="A">Score A</option>
+          <option value="B">Score B</option>
+          <option value="C">Score C</option>
+          <option value="D">Score D</option>
+          <option value="E">Score E</option>
+          <option value="F">Score F</option>
+          <option value="sem">Sem score no Kommo</option>
+        </select>
+        <select id="sf-hosp-allinc" class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
+        <select id="sf-prox"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
+        <select id="sf-inv"         class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
+        <select id="sf-freq"        class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
+        <select id="sf-idade"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()"></select>
+        <select id="sf-etapa"       class="period-select" style="font-size:11.5px;padding:7px 12px" onchange="renderScore()">
+          <option value="">Etapa · todas</option>
+          <option value="venda">💰 Virou venda</option>
+          <option value="realizada">🤝 Reunião realizada</option>
+          <option value="agendada">📅 Reunião agendada</option>
+          <option value="qualified">✅ Qualificado</option>
+          <option value="perda">❌ Perdido</option>
+          <option value="nenhum">· Sem avanço</option>
+        </select>
+      </div>
+
+      <div style="margin-top:9px;font-size:10.5px;color:var(--muted);line-height:1.45">
+        As opções saem das respostas que <b>realmente existem na base</b> — labels novos e antigos do bot aparecem juntos, e <b>“— sem resposta —”</b> acha quem não respondeu aquela pergunta.<br>
+        ⚠️ O número entre parênteses é a contagem na <b>base inteira</b> (<span id="sf-base-n">—</span> leads SDR); a tabela abaixo respeita o <b>período selecionado no topo da aba</b>, então costuma vir menor.
+      </div>
     </div>
+
     <div id="score-table" style="overflow-x:auto"></div>
   </div>
 
@@ -7554,51 +7588,198 @@ function renderScore() {
       </div>`;
   }
 
-  // ── Tabela de leads classificados (top 50 mais recentes, com filtro)
+  // ── Tabela de leads classificados (com filtros por resposta do fluxo)
   const tblEl = document.getElementById('score-table');
   if (tblEl) {
-    const filtroEl = document.getElementById('score-filter');
-    const f = filtroEl ? filtroEl.value : 'all';
-    const sorted = scored.slice().sort((a,b) => (b.created_at||0) - (a.created_at||0));
-    // Filtro usa Score do KOMMO (l.score — A/B/C/D/E/F) — não a régua calculada.
-    // A régua nunca retorna A porque exige 'Resorts All Inclusive' (bot antigo).
-    // Bia confirmou: score oficial é sempre o do Kommo (memória: dash-imr-score-oficial).
+    scoreFillFlowFilters();   // monta as opções dos selects a partir dos dados reais (1x)
+
+    const _val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+    const f = _val('score-filter') || 'all';
+
+    // Filtro de score usa o Score do KOMMO (l.score — A/B/C/D/E/F), não a régua
+    // calculada. A régua nunca retorna A porque exige 'Resorts All Inclusive'
+    // (bot antigo). Score oficial é sempre o do Kommo.
     const _kommoScoreOf = s => (s.score && String(s.score).trim().toUpperCase()) || '';
-    const filtered = f === 'all'
-      ? sorted
-      : f === 'sem'
-        ? sorted.filter(s => !_kommoScoreOf(s))
-        : sorted.filter(s => _kommoScoreOf(s) === f);
-    const limit = 50;
+
+    let filtered = scored.slice().sort((a,b) => (b.created_at||0) - (a.created_at||0));
+
+    // 1) Score Kommo
+    if (f === 'sem')      filtered = filtered.filter(s => !_kommoScoreOf(s));
+    else if (f !== 'all') filtered = filtered.filter(s => _kommoScoreOf(s) === f);
+
+    // 2) Respostas do fluxo — match exato no label (ou '__sem__' = não respondeu)
+    SCORE_FLOW_FIELDS.forEach(ff => {
+      const v = _val(ff.id);
+      if (!v) return;
+      filtered = v === '__sem__'
+        ? filtered.filter(s => !((s[ff.key]||'').trim()))
+        : filtered.filter(s => (s[ff.key]||'').trim() === v);
+    });
+
+    // 3) Faixa de idade (normaliza número solto e label de faixa no mesmo bucket)
+    const fIdade = _val('sf-idade');
+    if (fIdade) filtered = fIdade === '__sem__'
+      ? filtered.filter(s => !_idadeFaixa(s.idade))
+      : filtered.filter(s => _idadeFaixa(s.idade) === fIdade);
+
+    // 4) Etapa no funil
+    const fEtapa = _val('sf-etapa');
+    if (fEtapa) filtered = filtered.filter(s =>
+        fEtapa === 'venda'     ? !!s.venda
+      : fEtapa === 'realizada' ? !!s.reuniao_realizada
+      : fEtapa === 'agendada'  ? !!s.reuniao_agendada
+      : fEtapa === 'qualified' ? !!s.qualified
+      : fEtapa === 'perda'     ? !!s.perda
+      : fEtapa === 'nenhum'    ? !(s.venda || s.reuniao_realizada || s.reuniao_agendada || s.qualified)
+      : true);
+
+    // 5) Busca livre — nome, telefone, e-mail, profissão e todas as respostas
+    const q = _scoreNorm(_val('score-busca'));
+    if (q) filtered = filtered.filter(s => _scoreNorm([
+      s.name, s.phone, s.email, s.profissao, s.o_que_buscava,
+      s.hosp_allinc, s.prox_ferias, s.investimento, s.freq_viagem, s.idade,
+    ].join(' ')).includes(q));
+
+    const temFiltro = f !== 'all' || fIdade || fEtapa || q
+      || SCORE_FLOW_FIELDS.some(ff => _val(ff.id));
+    const limit = SCORE_SHOW_ALL ? filtered.length : 50;
+    const KOMMO_SUB = 'ipiocamarresort';
+
+    // Célula de resposta — trunca visualmente mas mantém o texto no title
+    const _cel = (v, w) => {
+      const t = (v||'').trim();
+      if (!t) return `<td style="padding:9px 8px;color:var(--border);text-align:center">—</td>`;
+      const curto = t.length > w ? t.slice(0, w-1) + '…' : t;
+      return `<td style="padding:9px 8px;font-size:11px;color:var(--text)" title="${_scoreAttr(t)}">${_scoreAttr(curto)}</td>`;
+    };
+
     const rows = filtered.slice(0, limit).map(s => {
       const c = SCORE_COLOR[s._scored.score];
       const dt = new Date((s.created_at||0)*1000).toLocaleDateString('pt-BR');
-      const status = s.venda ? '💰 venda' : s.reuniao_realizada ? '🤝 realizada' : s.reuniao_agendada ? '📅 agendada' : s.qualified ? '✅ qualif' : '·';
+      const status = s.venda ? '💰 venda' : s.reuniao_realizada ? '🤝 realizada' : s.reuniao_agendada ? '📅 agendada' : s.qualified ? '✅ qualif' : s.perda ? '❌ perdido' : '·';
+      const kScore = (s.score||'').toUpperCase();
       return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:9px 10px;font-weight:600">${s.name||'—'}</td>
-        <td style="padding:9px 10px;text-align:center"><span style="font-size:11px;padding:2px 9px;border-radius:10px;background:${c}22;color:${c};font-weight:800">● ${s._scored.score}</span></td>
-        <td style="padding:9px 10px;text-align:center"><span style="font-size:10.5px;color:var(--muted)">${(s.score||'').toUpperCase()||'—'}</span></td>
-        <td style="padding:9px 10px;font-size:11px;color:var(--muted)">${s._scored.motivo}</td>
-        <td style="padding:9px 10px;font-size:11.5px">${status}</td>
-        <td style="padding:9px 10px;text-align:right;color:var(--muted);font-size:11px">${dt}</td>
+        <td style="padding:9px 10px;font-weight:600">
+          <a href="https://${KOMMO_SUB}.kommo.com/leads/detail/${s.id}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none" title="Abrir lead ${s.id} no Kommo">${_scoreAttr(s.name||'—')} <span style="color:var(--accent);font-size:10px">↗</span></a>
+          ${s.phone ? `<div style="font-size:10px;color:var(--muted);font-weight:400">${_scoreAttr(s.phone)}</div>` : ''}
+        </td>
+        <td style="padding:9px 10px;text-align:center"><span style="font-size:10.5px;color:var(--muted);font-weight:700">${kScore||'—'}</span></td>
+        <td style="padding:9px 10px;text-align:center"><span style="font-size:11px;padding:2px 9px;border-radius:10px;background:${c}22;color:${c};font-weight:800" title="${_scoreAttr(s._scored.motivo)}">● ${s._scored.score}</span></td>
+        ${_cel(s.hosp_allinc, 6)}
+        ${_cel(s.prox_ferias, 34)}
+        ${_cel(s.investimento, 22)}
+        ${_cel(s.freq_viagem, 20)}
+        ${_cel(s.idade, 14)}
+        <td style="padding:9px 8px;font-size:11.5px;white-space:nowrap">${status}</td>
+        <td style="padding:9px 10px;text-align:right;color:var(--muted);font-size:11px;white-space:nowrap">${dt}</td>
       </tr>`;
     }).join('');
+
+    const th = (t, al) => `<th style="text-align:${al||'left'};padding:8px 8px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;white-space:nowrap">${t}</th>`;
     tblEl.innerHTML = `
-      <div style="margin-bottom:10px;font-size:11.5px;color:var(--muted)">
-        Mostrando <b style="color:var(--text)">${Math.min(filtered.length, limit)}</b> de <b style="color:var(--text)">${filtered.length}</b> leads ${f === 'all' ? '' : f === 'sem' ? '<b>sem score no Kommo</b>' : `com <b>Score ${f}</b> no Kommo`}
+      <div style="margin-bottom:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--muted)">
+        <div><b style="color:var(--text);font-size:14px">${fmtN(filtered.length)}</b> lead(s) encontrado(s)
+          · <b style="color:var(--text)">${PERIOD_LABELS[currentPeriod]||currentPeriod}</b>
+          ${temFiltro ? `<span style="color:var(--accent);font-weight:700">· filtros ativos</span>` : ''}
+          ${filtered.length > limit ? ` — mostrando os ${limit} mais recentes` : ''}
+        </div>
+        ${filtered.length > 50 ? `<button onclick="scoreToggleShowAll()" style="padding:5px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:var(--accent);font-family:inherit">${SCORE_SHOW_ALL ? '↑ Mostrar só os 50 mais recentes' : `↓ Mostrar todos os ${fmtN(filtered.length)}`}</button>` : ''}
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:720px">
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:1080px">
         <thead><tr style="border-bottom:2px solid var(--border)">
-          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Lead</th>
-          <th style="text-align:center;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Score calc</th>
-          <th style="text-align:center;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Score Kommo</th>
-          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Motivo</th>
-          <th style="text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Status</th>
-          <th style="text-align:right;padding:8px 10px;font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Criado</th>
+          ${th('Lead')}${th('Kommo','center')}${th('Calc','center')}
+          ${th('Já All-Inc')}${th('Próximas férias')}${th('Investe/ano')}${th('Frequência')}${th('Idade')}
+          ${th('Etapa')}${th('Criado','right')}
         </tr></thead>
-        <tbody>${rows || '<tr><td colspan=6 style="padding:24px;text-align:center;color:var(--muted)">Sem leads nesse filtro.</td></tr>'}</tbody>
-      </table>`;
+        <tbody>${rows || '<tr><td colspan=10 style="padding:24px;text-align:center;color:var(--muted)">Nenhum lead bate com esses filtros. Tente afrouxar um deles ou usar “↺ Limpar filtros”.</td></tr>'}</tbody>
+      </table>
+      <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:rgba(59,130,246,.06);font-size:11px;line-height:1.5;color:var(--muted)">
+        📖 Clique no <b>nome do lead</b> pra abrir a ficha no Kommo. <b>Kommo</b> = score atribuído no CRM (oficial); <b>Calc</b> = o que a régua desta página calculou (passe o mouse pra ver o motivo). Respostas cortadas aparecem inteiras no tooltip.
+      </div>`;
   }
+}
+
+/* ── Filtros por resposta do fluxo (tabela da calculadora) ───────── */
+// Campos de resposta do bot que viram filtro. 'hospedagem' ficou de fora:
+// zerado na base atual (só existia no bot intermediário de mai/26).
+const SCORE_FLOW_FIELDS = [
+  {id:'sf-hosp-allinc', key:'hosp_allinc',  label:'Já se hospedou em All-Inc'},
+  {id:'sf-prox',        key:'prox_ferias',  label:'Próximas férias'},
+  {id:'sf-inv',         key:'investimento', label:'Investe por ano'},
+  {id:'sf-freq',        key:'freq_viagem',  label:'Frequência de viagens'},
+];
+let SCORE_SHOW_ALL = false;
+let _scoreFiltersReady = false;
+
+const _scoreNorm = s => (s||'').toString().toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+const _scoreAttr = s => (s||'').toString()
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// Idade vem bagunçada do bot: faixa ("Entre 40 e 55"), número solto ("45"),
+// "53 anos" e até texto que não é idade (cidade). Normaliza tudo em faixas.
+function _idadeFaixa(v) {
+  const t = _scoreNorm(v);
+  if (!t) return '';
+  if (t.includes('menos que 29')) return 'Até 29';
+  if (t.includes('30 e 39'))      return '30–39';
+  if (t.includes('40 e 55'))      return '40–55';
+  if (t.includes('56 e 65'))      return '56–65';
+  if (t.includes('mais que 66'))  return '66+';
+  // Texto longo que não é label de faixa não é idade (ex: cidade, recado solto)
+  if (t.length > 25) return 'outro';
+  const m = t.match(/\b(\d{2})\b/);
+  if (!m) return 'outro';
+  const n = +m[1];
+  if (n < 18 || n > 99) return 'outro';
+  if (n <= 29) return 'Até 29';
+  if (n <= 39) return '30–39';
+  if (n <= 55) return '40–55';
+  if (n <= 65) return '56–65';
+  return '66+';
+}
+
+// Monta as opções dos selects a partir das respostas que existem na base.
+// Usa a base SDR inteira (não a do período) pra as opções não sumirem quando
+// o usuário troca o período no topo.
+function scoreFillFlowFilters() {
+  if (_scoreFiltersReady || !KOMMO_RAW) return;
+  const all = KOMMO_RAW.sdr || [];
+  const _fill = (id, label, counts, ordem) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const keys = ordem || Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+    const semN = all.length - keys.reduce((t,k) => t + (counts[k]||0), 0);
+    el.innerHTML = `<option value="">${_scoreAttr(label)} · todas</option>`
+      + keys.filter(k => counts[k]).map(k => `<option value="${_scoreAttr(k)}">${_scoreAttr(k)} (${counts[k]})</option>`).join('')
+      + (semN > 0 ? `<option value="__sem__">— sem resposta — (${semN})</option>` : '');
+  };
+
+  SCORE_FLOW_FIELDS.forEach(ff => {
+    const counts = {};
+    all.forEach(l => { const v = (l[ff.key]||'').trim(); if (v) counts[v] = (counts[v]||0) + 1; });
+    _fill(ff.id, ff.label, counts);
+  });
+
+  // Idade em faixas, na ordem etária (não por volume)
+  const cIdade = {};
+  all.forEach(l => { const fx = _idadeFaixa(l.idade); if (fx) cIdade[fx] = (cIdade[fx]||0) + 1; });
+  _fill('sf-idade', 'Faixa de idade', cIdade, ['Até 29','30–39','40–55','56–65','66+','outro']);
+
+  const baseEl = document.getElementById('sf-base-n');
+  if (baseEl) baseEl.textContent = all.length.toLocaleString('pt-BR');
+
+  _scoreFiltersReady = true;
+}
+
+function scoreToggleShowAll() { SCORE_SHOW_ALL = !SCORE_SHOW_ALL; renderScore(); }
+
+function scoreLimparFiltros() {
+  const sf = document.getElementById('score-filter'); if (sf) sf.value = 'all';
+  ['sf-idade','sf-etapa','score-busca'].concat(SCORE_FLOW_FIELDS.map(f => f.id))
+    .forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  SCORE_SHOW_ALL = false;
+  renderScore();
 }
 
 /* ════════════════════════════════════════════════════════════════
