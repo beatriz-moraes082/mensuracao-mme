@@ -1596,6 +1596,15 @@
   #tab-vendas .vd-tag.score-a{background:rgba(238,77,32,.12);color:var(--accent);font-weight:700}
   #tab-vendas .vd-tag.score-b{background:rgba(34,197,94,.12);color:var(--up)}
   #tab-vendas .vd-tag.score-other{background:var(--surface2);color:var(--muted)}
+  /* Score do funil (SDR / Closer) — mesma paleta A–F usada nas demais abas */
+  #tab-vendas .vd-sc{display:inline-block;min-width:20px;text-align:center;padding:3px 7px;border-radius:6px;font-size:10.5px;font-weight:700;line-height:1}
+  #tab-vendas .vd-sc.sc-A{background:rgba(22,163,74,.14);color:#16a34a}
+  #tab-vendas .vd-sc.sc-B{background:rgba(132,204,22,.16);color:#65a30d}
+  #tab-vendas .vd-sc.sc-C{background:rgba(245,158,11,.16);color:#d97706}
+  #tab-vendas .vd-sc.sc-D{background:rgba(239,68,68,.14);color:#ef4444}
+  #tab-vendas .vd-sc.sc-E{background:rgba(185,28,28,.14);color:#b91c1c}
+  #tab-vendas .vd-sc.sc-F{background:rgba(127,29,29,.14);color:#7f1d1d}
+  #tab-vendas .vd-sc.sc-x{background:var(--surface2);color:var(--muted);font-weight:600}
   #tab-vendas .vd-empty{color:var(--muted);font-style:italic;font-size:11px}
 </style>
 
@@ -1672,7 +1681,7 @@
     <div class="vd-tablescroll">
       <table class="vd-table">
         <thead><tr>
-          <th>Nome</th><th>Data entrada</th><th>Data fech.</th><th>Ciclo (dias)</th>
+          <th>Nome</th><th>Score SDR</th><th>Score Closer</th><th>Data entrada</th><th>Data fech.</th><th>Ciclo (dias)</th>
           <th>Origem</th><th>Produto</th><th>Preço</th><th>Bot</th>
           <th>Idade</th><th>Investimento/ano</th><th>Profissão</th>
           <th>Hospedou All-inc</th><th>Próx. férias</th><th>Frequência</th><th>Audience</th><th>Criativo</th>
@@ -6726,6 +6735,10 @@ function vdBuildVendas(){
       audience: pick('audience'),
       creative: pick('creative'),
       score: pick('score'),
+      // Score em cada funil separadamente — o lead pode ser reclassificado
+      // pelo Closer depois da reunião, então SDR e Closer divergem.
+      score_sdr: (sm && sm.score) || '',
+      score_closer: cl.score || '',
       price: cl.price || 0,
       closed_at: cl.closed_at || sm?.closed_at || cl.created_at,
       start_at: startTs,
@@ -6903,7 +6916,7 @@ function vdRenderTable(vendas){
   const tbody = document.getElementById('vd-tbody');
   const tfootEmpty = document.getElementById('vd-tfoot');
   if (!list.length){
-    tbody.innerHTML = '<tr><td colspan="16" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18" class="vd-empty" style="text-align:center;padding:24px">Sem vendas no filtro/busca atual</td></tr>';
     if (tfootEmpty) tfootEmpty.innerHTML = '';
     return;
   }
@@ -6912,10 +6925,13 @@ function vdRenderTable(vendas){
     const bot = v.respondeu_bot
       ? '<span class="vd-tag bot-y">respondeu</span>'
       : '<span class="vd-tag bot-n">não passou</span>';
-    const score = (v.score||'').toUpperCase();
-    const scoreTag = score
-      ? `<span class="vd-tag score-${score==='A'?'a':(score==='B'?'b':'other')}">${score}</span> `
-      : '';
+    // Score por funil — badge A–F; valores fora da régua (ex.: "Atualizar") ficam neutros
+    const scCell = raw => {
+      const sc = (raw||'').toString().trim().toUpperCase();
+      if (!sc) return '<span class="vd-empty">—</span>';
+      const cls = /^[A-F]$/.test(sc) ? 'sc-'+sc : 'sc-x';
+      return `<span class="vd-sc ${cls}">${sc}</span>`;
+    };
     // Rótulo canônico por bucket — evita mostrar "Meta Ads" e "Meta+Ads"
     // (mesma fonte gravada de formas diferentes no Kommo) como se fossem distintas.
     const _VD_ORIGEM_LBL = {meta:'Meta Ads', google:'Google Ads', ibr:'IBR', indicacao:'Indicação', 'sem-origem':'sem origem'};
@@ -6926,7 +6942,9 @@ function vdRenderTable(vendas){
       ? `<b>${v.cycle_days}</b>`
       : '<span class="vd-empty">—</span>';
     return `<tr>
-      <td><b>${cel(v.name)}</b>${scoreTag ? '<br>'+scoreTag : ''}</td>
+      <td><b>${cel(v.name)}</b></td>
+      <td style="text-align:center">${scCell(v.score_sdr)}</td>
+      <td style="text-align:center">${scCell(v.score_closer)}</td>
       <td>${vdFmtDate(v.start_at)}</td>
       <td>${vdFmtDate(v.closed_at)}</td>
       <td style="text-align:center">${cicloCell}</td>
@@ -6954,6 +6972,7 @@ function vdRenderTable(vendas){
     const ticket = list.length ? Math.round(totPrice/list.length) : 0;
     tfoot.innerHTML = `<tr>
       <td>Total (${list.length})</td>
+      <td colspan="2"></td>
       <td colspan="2" style="color:var(--muted);font-weight:500;font-size:11px">${list.length} venda${list.length===1?'':'s'} no filtro</td>
       <td style="text-align:center">${avgCycle != null ? `~${avgCycle}d médio` : '—'}</td>
       <td></td>
