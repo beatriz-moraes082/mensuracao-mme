@@ -3888,13 +3888,22 @@ function renderDiagnostico() {
     if (k) { if (_seenPh.has(k)) continue; _seenPh.add(k); }
     leadsCampanha++;
   }
-  // Base total da conta = SDR + Nutrição, TODAS as origens, dedup por pessoa.
-  // Diferente de leadsCampanha (que exige origem Meta/Google): mostra o volume
-  // real que entrou no CRM, incluindo os leads que chegaram sem UTM. A diferença
-  // entre os dois é exatamente o que fica fora da atribuição de campanha.
+  // ── Base total do Diagnóstico ────────────────────────────
+  // TODAS as entradas do funil SDR, independente da origem, exceto:
+  //   · Closer — são leads do SDR promovidos; contariam a mesma pessoa 2×.
+  //   · BDR e Duque — base própria/outbound, operação separada do SDR.
+  //   · "Etapa de leads de entrada" — fila de triagem, ainda não é lead
+  //     trabalhado. (Hoje o fetcher nem traz esses: o /api/v4/leads do Kommo
+  //     não retorna lead não-ordenado. O filtro abaixo é a garantia caso
+  //     passem a ser coletados via /api/v4/leads/unsorted.)
+  // Inclui SDR + Nutrição (os que o SDR não conseguiu contato e foram movidos),
+  // dedup por pessoa (telefone→email→id).
+  const ST_ENTRADA = new Set([98147475, 99059495, 98168235, 98164999, 100773640]);
+  const PIPE_NUTRI = 12719007;
   const _seenBase = new Set();
   const baseTotal = [];
   for (const l of [...sdr, ...nutriInWin]) {
+    if (ST_ENTRADA.has(l.status)) continue;
     const k = _leadDedupKey(l);
     if (k) { if (_seenBase.has(k)) continue; _seenBase.add(k); }
     baseTotal.push(l);
@@ -3908,31 +3917,34 @@ function renderDiagnostico() {
   }
 
   // ── Métricas base ───────────────────────────────────────
-  const qualif  = sdr.filter(l => l.qualified).length;
-  const agend   = sdr.filter(l => l.reuniao_agendada).length;
-  const realiz  = sdr.filter(l => l.reuniao_realizada).length;
+  // Numeradores sobre baseTotal (mesma lista deduplicada do denominador) —
+  // antes vinham da lista SDR bruta, o que misturava bases.
+  const qualif  = baseTotal.filter(l => l.qualified).length;
+  const agend   = baseTotal.filter(l => l.reuniao_agendada).length;
+  const realiz  = baseTotal.filter(l => l.reuniao_realizada).length;
   // Closer: vendas filtradas por closed_at, demais por created_at
   const closerC = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
   const closerVendas = KOMMO_DATA.closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
   const vendas  = closerVendas.length;
-  // Denominador ÚNICO das taxas do funil = leadsCampanha (SDR + Nutrição,
-  // origem Meta/Google, dedup por telefone). Antes o medidor usava total do
-  // SDR (1.639) e os cards usavam leadsCampanha (2.495) — mesma taxa com dois
-  // valores. Unificado em leadsCampanha conforme alinhado com a Bia.
-  const txQ     = leadsCampanha > 0 ? qualif/leadsCampanha*100 : 0;
-  const txA     = leadsCampanha > 0 ? agend/leadsCampanha*100  : 0;
-  const txR     = leadsCampanha > 0 ? realiz/leadsCampanha*100 : 0;
+  // Denominador ÚNICO das taxas do funil = leadsTotal (todas as entradas do
+  // funil SDR + Nutrição, qualquer origem, dedup por pessoa). Antes era
+  // leadsCampanha, que excluía os leads sem UTM do denominador mas contava a
+  // qualificação deles no numerador. CPL/CAC/ROAS/Tx.Conversão seguem sobre
+  // leadsCampanha — só fazem sentido contra o investimento pago.
+  const txQ     = leadsTotal > 0 ? qualif/leadsTotal*100 : 0;
+  const txA     = leadsTotal > 0 ? agend/leadsTotal*100  : 0;
+  const txR     = leadsTotal > 0 ? realiz/leadsTotal*100 : 0;
 
   // ── Bot ────────────────────────────────────────────────
   // Base = SDR + Nutrição: os leads movidos pra Nutrição também passaram
   // pelo bot (só não engajaram), então contam pra eficiência do bot.
   // Dedup por telefone (dkey) pra evitar contar o mesmo lead em ambos.
-  // Mesma base do KPI "Leads na base" (SDR + Nutrição, dedup por pessoa).
+  // Mesma base do Diagnóstico (SDR + Nutrição) — todos passaram pelo bot.
   const botBase = baseTotal;
   const botC = botBase.filter(l => (l.tags||[]).includes('bot-concluído'));
   const botI = botBase.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído'));
   // Movidos pra Nutrição: subconjunto dos bot-incompleto que estão no pipeline Nutrição
-  const botNutri = botI.filter(l => l.pipeline === 12719007);
+  const botNutri = botI.filter(l => l.pipeline === PIPE_NUTRI);
   const botCQual = botC.filter(l => l.qualified).length;
   const botIQual = botI.filter(l => l.qualified).length;
   const txBotC = botC.length > 0 ? botCQual/botC.length*100 : 0;
@@ -4035,11 +4047,13 @@ function renderDiagnostico() {
       <div class="lbl">Tx. Qualificação · agora
         <span class="info-btn" tabindex="0">?<span class="tip">
           <b>Como é calculado?</b><br>
-          <code>Tx. = qualificados ÷ total SDR × 100</code>
+          <code>Tx. = qualificados ÷ base do funil SDR × 100</code>
           <hr>
-          <b>Denominador</b> · ${total} leads SDR<br>
-          Todos os leads criados no <b>pipeline SDR</b> dentro do período selecionado
-          (filtro por <code>created_at</code>). Não inclui Nutrição, Closer nem Duque.
+          <b>Denominador</b> · ${leadsTotal.toLocaleString('pt-BR')} leads<br>
+          Todas as entradas do <b>funil SDR</b> no período (filtro por <code>created_at</code>),
+          qualquer origem, incluindo os movidos pra <b>Nutrição</b> e deduplicados por pessoa
+          (telefone → email). <b>Não inclui</b> Closer, BDR, Duque nem a
+          <b>Etapa de leads de entrada</b>.
           <hr>
           <b>Numerador</b> · ${qualif} qualificados<br>
           Lead conta como qualificado se <b>qualquer uma</b>:<br>
@@ -4051,7 +4065,7 @@ function renderDiagnostico() {
         </span></span>
       </div>
       <div class="val">${fmtP(txQ)}</div>
-      <div class="meta-line">${qualif} de ${leadsCampanha} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
+      <div class="meta-line">${qualif} de ${leadsTotal.toLocaleString('pt-BR')} leads · meta <b>${META_TX_QUALIF}%</b> · ${gap > 0 ? '<b>gap '+gap.toFixed(1)+'pp</b>' : '<b>meta atingida</b>'}</div>
       <div class="gauge-wrap"><div class="gauge-fill" style="width:${gaugePct.toFixed(0)}%"></div></div>
     </div>
   `;
@@ -4126,7 +4140,7 @@ function renderDiagnostico() {
   const cacInbound  = cac;
   // ── Métricas extras pra novos KPIs ──────────────────────
   // Taxa de Reunião = realizadas / total de leads
-  const txReuniao = leadsCampanha > 0 ? (realiz/leadsCampanha*100) : 0;
+  const txReuniao = leadsTotal > 0 ? (realiz/leadsTotal*100) : 0;
   // Taxa de Conversão do Closer = vendas / reuniões realizadas
   const txConvCloser = realiz > 0 ? (vendas/realiz*100) : 0;
   // Sinal Verde: SEMPRE atual (não filtra por período) — pipeline Closer status 98334563
@@ -4135,17 +4149,19 @@ function renderDiagnostico() {
   const tiles = [
     // ── Linha 1 · Volumetria (6 absolutos) ──
     {lbl:'Investimento',     val:fmtBRL(totalInvest), iconColor:'#d97706',
-     trend:tdInv, sub:'Meta + Google · ' + (leadsCampanha > 0 ? 'CPL R$ '+(totalInvest/leadsCampanha).toFixed(0) : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
-    {lbl:'Leads',            val:fmtN(leadsCampanha), iconColor:'#3b82f6',
-     trend:tdLeads, sub:`campanha Meta+Google · de <b>${fmtN(leadsTotal)}</b> na base (SDR + Nutrição)`, sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
-    {lbl:'Leads na base',    val:fmtN(leadsTotal),    iconColor:'#0891b2',
-     trend:{pct:0,cls:'neut',txt:''},
+     trend:tdInv, sub:'Meta + Google · ' + (leadsCampanha > 0 ? 'CPL R$ '+(totalInvest/leadsCampanha).toFixed(0)+' (÷ leads de campanha)' : 'sem leads'), sparkData:wkTot.map(w=>w.invest), sparkColor:'#d97706'},
+    {lbl:'Leads',            val:fmtN(leadsTotal),    iconColor:'#3b82f6',
+     trend:tdLeads,
      sub: semAtrib > 0
-       ? `SDR + Nutrição · <b>${fmtN(semAtrib)}</b> sem atribuição de campanha`
-       : 'SDR + Nutrição · toda a base atribuída',
+       ? `todas as entradas do SDR + Nutrição · <b>${fmtN(semAtrib)}</b> sem atribuição`
+       : 'todas as entradas do SDR + Nutrição',
+     sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
+    {lbl:'Leads de campanha', val:fmtN(leadsCampanha), iconColor:'#0891b2',
+     trend:{pct:0,cls:'neut',txt:''},
+     sub:`origem Meta+Google · base do CPL, CAC e ROAS`,
      sparkData:wkTot.map(w=>w.leads), sparkColor:'#0891b2'},
     {lbl:'Leads qualificados', val:fmtN(qualif),      iconColor:'#8b5cf6',
-     trend:tdQualif, sub: leadsCampanha > 0 ? `${(qualif/leadsCampanha*100).toFixed(1)}% dos leads` : 'sem base', sparkData:wkTot.map(w=>w.qualif), sparkColor:'#8b5cf6'},
+     trend:tdQualif, sub: leadsTotal > 0 ? `${(qualif/leadsTotal*100).toFixed(1)}% da base` : 'sem base', sparkData:wkTot.map(w=>w.qualif), sparkColor:'#8b5cf6'},
     {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed',
      trend:tdRealiz, sub:fmtP(txR)+' do total de leads', sparkData:wkTot.map(w=>w.realiz), sparkColor:'#7c3aed'},
     {lbl:'Vendas',           val:fmtN(vendas),        iconColor:'#16a34a',
@@ -4158,7 +4174,7 @@ function renderDiagnostico() {
     // ── Linha 2 · Taxas de conversão (3 taxas) ──
     {lbl:'Tx. Reunião',      val:fmtP(txReuniao),     iconColor:'#a855f7',
      trend:tdTxReu,
-     sub:`${realiz} reuniões realizadas ÷ ${fmtN(leadsCampanha)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.realiz/w.leads*100) : 0), sparkColor:'#a855f7'},
+     sub:`${realiz} reuniões realizadas ÷ ${fmtN(leadsTotal)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.realiz/w.leads*100) : 0), sparkColor:'#a855f7'},
     {lbl:'Tx. Conversão Closer', val:fmtP(txConvCloser), iconColor:'#c2410c',
      trend:tdTxCC,
      sub:`${vendas} vendas ÷ ${realiz} reuniões realizadas`, sparkData:wkTot.map(w=>w.realiz>0 ? (w.vendas/w.realiz*100) : 0), sparkColor:'#c2410c'},
@@ -4205,6 +4221,8 @@ function renderDiagnostico() {
     if (covStart && win.from < covStart && win.to >= win.from) {
       const gapEnd = covStart < win.to ? covStart : win.to;   // fim do trecho descoberto
       const gapWin = { from: win.from, to: new Date(gapEnd.getTime() - 1) };
+      // Continua sobre leads de CAMPANHA: o aviso é sobre distorção de CPL,
+      // que só faz sentido contra o investimento pago.
       const _seenGap = new Set(); let leadsGap = 0;
       for (const l of [...sdr, ...nutriInWin]) {
         if (!_isCampOrigin(l.origem)) continue;
@@ -4384,7 +4402,7 @@ function renderDiagnostico() {
 
   // ── Render: Bot · ranking horizontal ────────────────────
   // 3 estados do bot: concluído (✅) · incompleto no SDR (⚠️) · abandono total na Nutrição (🧊)
-  const botISdr     = botI.filter(l => l.pipeline !== 12719007);
+  const botISdr     = botI.filter(l => l.pipeline !== PIPE_NUTRI);
   const botISdrQual = botISdr.filter(l => l.qualified).length;
   const txBotISdr   = botISdr.length > 0 ? botISdrQual/botISdr.length*100 : 0;
   const botNutriQ   = botNutri.filter(l => l.qualified).length;
@@ -4587,18 +4605,20 @@ function renderDiagnostico() {
     // Pra cada mês, calcula os 8 KPIs
       const rowsByKpi = { invest:{}, leads:{}, lq:{}, reu:{}, ven:{}, txReu:{}, txCC:{}, txCG:{} };
     for (const m of months) {
-      // Leads campanha (SDR + Nutrição do mês, dedup por telefone)
+      // Leads = todas as entradas do mês no SDR + Nutrição (qualquer origem),
+      // dedup por pessoa e sem a etapa de entrada — mesma base dos KPIs.
       const sdrM   = sdrAll.filter(l => monthKey(l.created_at) === m);
       const nutriM = nutriAll.filter(l => monthKey(l.created_at) === m);
-      const seen = new Set(); let leadsM = 0;
+      const seen = new Set(); const baseM = [];
       for (const l of [...sdrM, ...nutriM]) {
-        if (!_isCampOrigin(l.origem)) continue;
+        if (ST_ENTRADA.has(l.status)) continue;
         const k = _leadDedupKey(l);
         if (k) { if (seen.has(k)) continue; seen.add(k); }
-        leadsM++;
+        baseM.push(l);
       }
-      const lqM  = sdrM.filter(l => l.qualified).length;
-      const reuM = sdrM.filter(l => l.reuniao_realizada).length;
+      const leadsM = baseM.length;
+      const lqM  = baseM.filter(l => l.qualified).length;
+      const reuM = baseM.filter(l => l.reuniao_realizada).length;
       const venM = closerAll.filter(l => l.venda && isValidVenda(l) && monthKey(l.closed_at) === m).length;
       // Investimento = Meta + Google (do JSON) OU valor manual histórico (Jan-Mar/26)
       const invM = (metaByMonth[m]||0) + (googleByMonth[m]||0) + (INVEST_HISTORICO[m]||0);
@@ -4615,7 +4635,7 @@ function renderDiagnostico() {
     const fmtBR2 = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
     const rows = [
       {k:'invest', lbl:'Investimento',       fmt:fmtBR2},
-      {k:'leads',  lbl:'Leads (campanha)',   fmt:v => fmtN(v)},
+      {k:'leads',  lbl:'Leads (base SDR)',   fmt:v => fmtN(v)},
       {k:'lq',     lbl:'Leads qualificados', fmt:v => fmtN(v)},
       {k:'reu',    lbl:'Reuniões realizadas',fmt:v => fmtN(v)},
       {k:'ven',    lbl:'Vendas',             fmt:v => fmtN(v)},
@@ -4658,16 +4678,12 @@ function renderDiagnostico() {
     const dayKey = (ts) => { const d = new Date(ts*1000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
     const leadsByDay = {}, reuByDay = {}, venByDay = {};
     days.forEach(d => { leadsByDay[d]=0; reuByDay[d]=0; venByDay[d]=0; });
-    // leadsCampanha = SDR + Nutrição dedup por telefone
-    const seenDay = new Set();
-    for (const l of [...sdr, ...nutriInWin]) {
-      if (!_isCampOrigin(l.origem)) continue;
-      const k = _leadDedupKey(l);
-      if (seenDay.has(k)) continue; seenDay.add(k);
+    // Leads/dia = baseTotal (todas as entradas do SDR + Nutrição, dedup)
+    for (const l of baseTotal) {
       const d = dayKey(l.created_at);
       if (leadsByDay[d] !== undefined) leadsByDay[d]++;
     }
-    for (const l of sdr) {
+    for (const l of baseTotal) {
       if (!l.reuniao_realizada) continue;
       const d = dayKey(l.created_at);
       if (reuByDay[d] !== undefined) reuByDay[d]++;
