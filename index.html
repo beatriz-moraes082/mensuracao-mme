@@ -488,7 +488,7 @@
     .kpi-tile canvas.spark{width:100%!important;height:36px!important;margin-top:4px}
 
     .kpi-grid-modern{display:grid;gap:14px;margin-bottom:0}
-    .kpi-grid-ops{grid-template-columns:repeat(6,1fr)}
+    .kpi-grid-ops{grid-template-columns:repeat(5,1fr)}
     .kpi-grid-tax{grid-template-columns:repeat(3,1fr)}
     .kpi-grid-fin{grid-template-columns:repeat(3,1fr)}
     @media(max-width:1400px){.kpi-grid-ops{grid-template-columns:repeat(3,1fr)}}
@@ -4156,10 +4156,6 @@ function renderDiagnostico() {
        ? `todas as entradas do SDR + Nutrição · <b>${fmtN(semAtrib)}</b> sem atribuição`
        : 'todas as entradas do SDR + Nutrição',
      sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
-    {lbl:'Leads de campanha', val:fmtN(leadsCampanha), iconColor:'#0891b2',
-     trend:{pct:0,cls:'neut',txt:''},
-     sub:`origem Meta+Google · base do CPL, CAC e ROAS`,
-     sparkData:wkTot.map(w=>w.leads), sparkColor:'#0891b2'},
     {lbl:'Leads qualificados', val:fmtN(qualif),      iconColor:'#8b5cf6',
      trend:tdQualif, sub: leadsTotal > 0 ? `${(qualif/leadsTotal*100).toFixed(1)}% da base` : 'sem base', sparkData:wkTot.map(w=>w.qualif), sparkColor:'#8b5cf6'},
     {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed',
@@ -4196,7 +4192,7 @@ function renderDiagnostico() {
      sub: roas > 0 ? `${fmtBRL(faturamentoInbound)} ÷ ${fmtBRL(totalInvest)} · receita de campanha` : 'sem dados',
      sparkData:wkTot.map(w => w.invest > 0 ? (w.fat/w.invest) : 0), sparkColor:'#10b981'},
   ];
-
+  // Renderiza em 3 grids: [0-4] ops (5) · [5-7] tax (3) · [8-10] fin (3)
   // Renderiza em 3 grids: [0-4] ops (5) · [5-7] tax (3) · [8-10] fin (3)
   const tileHtml = (t, i) => `
     <div class="ds-kpi">
@@ -4208,9 +4204,9 @@ function renderDiagnostico() {
       <div class="sub">${t.sub}</div>
       <canvas class="spark" id="spark-${i}"></canvas>
     </div>`;
-  document.getElementById('diag-kpi-ops').innerHTML = tiles.slice(0,6).map((t,i) => tileHtml(t, i)).join('');
-  document.getElementById('diag-kpi-tax').innerHTML = tiles.slice(6,9).map((t,i) => tileHtml(t, i+6)).join('');
-  document.getElementById('diag-kpi-fin').innerHTML = tiles.slice(9).map((t,i) => tileHtml(t, i+9)).join('');
+  document.getElementById('diag-kpi-ops').innerHTML = tiles.slice(0,5).map((t,i) => tileHtml(t, i)).join('');
+  document.getElementById('diag-kpi-tax').innerHTML = tiles.slice(5,8).map((t,i) => tileHtml(t, i+5)).join('');
+  document.getElementById('diag-kpi-fin').innerHTML = tiles.slice(8).map((t,i) => tileHtml(t, i+8)).join('');
 
   // ── Aviso: período inclui dias sem cobertura de mídia paga ──────────────
   // CAC, ROAS e CPL só fazem sentido no trecho com investimento. Se a janela
