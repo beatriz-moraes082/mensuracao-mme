@@ -2432,32 +2432,60 @@ function renderFunilCanal() {
   document.getElementById('closer-canal-sub').textContent = `${sel.l} · ${fmt(sel.closer.total)} entradas · ${perCurto}`;
 
   // ── Tabela comparativa: todos os canais de uma vez
-  const cel = (n, base) => base > 0
-    ? `<b>${fmt(n)}</b> <span style="color:var(--muted)">${pct(n, base)}%</span>`
-    : `<b>${fmt(n)}</b>`;
-  const linha = (r, destaque) => `
-    <tr${destaque ? ' style="border-top:2px solid var(--border);font-weight:700"' : ''}>
-      <td class="nm">${destaque ? '' : `<span style="display:inline-block;width:8px;height:8px;background:${r.c};border-radius:50%;margin-right:6px"></span>`}${r.l}</td>
-      <td class="num" style="text-align:right">${fmt(r.sdr.total)}</td>
-      <td class="num" style="text-align:right">${cel(r.sdr.qualif,  r.sdr.total)}</td>
-      <td class="num" style="text-align:right">${cel(r.sdr.agend,   r.sdr.qualif)}</td>
-      <td class="num" style="text-align:right">${cel(r.sdr.concret, r.sdr.agend)}</td>
-      <td class="num" style="text-align:right;border-left:1px solid var(--border)">${fmt(r.closer.total)}</td>
-      <td class="num" style="text-align:right">${cel(r.closer.prop,   r.closer.total)}</td>
-      <td class="num" style="text-align:right">${cel(r.closer.vendas, r.closer.prop)}</td>
-      <td class="num" style="text-align:right">${fmtR(r.closer.receita)}</td>
+  // Quantitativo e percentual em linhas separadas dentro da célula: o número
+  // absoluto lê na horizontal (comparação entre canais), a taxa lê logo abaixo
+  // sem competir com ele. Onde a etapa tem meta, a taxa usa a mesma cor do
+  // funil (verde = bateu a meta), igual às pirâmides.
+  const celNum = (n, base, meta) => {
+    const p = base > 0 ? pct(n, base) : null;
+    return `<td class="num" style="text-align:right;white-space:nowrap">
+      <div style="font-size:14px;font-weight:700;line-height:1.25">${fmt(n)}</div>
+      <div style="font-size:11px;font-weight:600;line-height:1.25;color:${p === null ? 'var(--muted)' : rateColor(p, meta)}">${p === null ? '—' : p + '%'}</div>
+    </td>`;
+  };
+  // Entrada de funil não tem taxa: linha de baixo fica vazia só pra manter o
+  // alinhamento vertical com as células que têm quantitativo + percentual.
+  const celEntrada = (n, borda) => `
+    <td class="num" style="text-align:right;white-space:nowrap${borda ? ';border-left:1px solid var(--border)' : ''}">
+      <div style="font-size:14px;font-weight:700;line-height:1.25">${fmt(n)}</div>
+      <div style="font-size:11px;line-height:1.25">&nbsp;</div>
+    </td>`;
+  const celReceita = (v, tot, isTotal) => `
+    <td class="num" style="text-align:right;white-space:nowrap">
+      <div style="font-size:14px;font-weight:700;line-height:1.25">${fmtR(v)}</div>
+      <div style="font-size:11px;font-weight:600;line-height:1.25;color:var(--muted)">${isTotal || tot <= 0 ? '&nbsp;' : pct(v, tot) + '% do total'}</div>
+    </td>`;
+
+  const receitaTot = geral.closer.receita;
+  const linha = (r, isTotal) => `
+    <tr${isTotal ? ' style="border-top:2px solid var(--border)"' : ''}>
+      <td class="nm" style="${isTotal ? 'font-weight:800' : ''}">${isTotal ? '' : `<span style="display:inline-block;width:8px;height:8px;background:${r.c};border-radius:50%;margin-right:8px;vertical-align:1px"></span>`}${r.l}</td>
+      ${celEntrada(r.sdr.total, false)}
+      ${celNum(r.sdr.qualif,  r.sdr.total,  META.qualif)}
+      ${celNum(r.sdr.agend,   r.sdr.qualif, META.qualif_to_agend)}
+      ${celNum(r.sdr.concret, r.sdr.agend,  META.comparec)}
+      ${celEntrada(r.closer.total, true)}
+      ${celNum(r.closer.prop,   r.closer.total, null)}
+      ${celNum(r.closer.vendas, r.closer.prop,  META.prop_venda)}
+      ${celReceita(r.closer.receita, receitaTot, isTotal)}
     </tr>`;
 
+  const thGrupo = 'font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px 4px';
   document.getElementById('funis-canal-tabela').innerHTML = `
-    <table style="width:100%;min-width:820px;border-collapse:collapse">
+    <table style="width:100%;min-width:860px;border-collapse:collapse">
       <thead>
         <tr>
+          <th></th>
+          <th colspan="4" style="text-align:center;color:#3b82f6;${thGrupo}">Funil SDR</th>
+          <th colspan="4" style="text-align:center;color:#8b5cf6;border-left:1px solid var(--border);${thGrupo}">Funil Closer</th>
+        </tr>
+        <tr>
           <th style="text-align:left">Canal</th>
-          <th style="text-align:right">Leads SDR</th>
+          <th style="text-align:right">Leads</th>
           <th style="text-align:right">Qualificado</th>
           <th style="text-align:right">Reun. agendada</th>
           <th style="text-align:right">Reun. realizada</th>
-          <th style="text-align:right;border-left:1px solid var(--border)">Entradas Closer</th>
+          <th style="text-align:right;border-left:1px solid var(--border)">Entradas</th>
           <th style="text-align:right">Proposta</th>
           <th style="text-align:right">Venda</th>
           <th style="text-align:right">Receita</th>
@@ -2468,11 +2496,12 @@ function renderFunilCanal() {
         ${linha({l:'Total', c:'#6b7069', sdr:geral.sdr, closer:geral.closer}, true)}
       </tbody>
     </table>
-    <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6">
-      O <b>%</b> em cada coluna é sobre a etapa anterior do funil (qualificado sobre leads, agendada sobre qualificado,
-      realizada sobre agendada, proposta sobre entradas, venda sobre proposta). As colunas do SDR e do Closer não se somam
-      lead a lead: entradas do Closer contam por <b>data de criação do card no Closer</b> e vendas por <b>data de fechamento</b>,
-      então um lead pode aparecer só de um lado — pela mesma razão explicada na nota acima.
+    <div style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.65">
+      Em cada célula, o número de cima é o <b>quantitativo</b> e o de baixo é a <b>taxa de conversão sobre a etapa anterior</b>
+      (qualificado sobre leads, agendada sobre qualificado, realizada sobre agendada, proposta sobre entradas, venda sobre proposta).
+      A taxa fica <b style="color:#16a34a">verde</b> quando bate a meta da etapa — mesmas metas das pirâmides acima.
+      As colunas do SDR e do Closer não se somam lead a lead: entradas do Closer contam por <b>data de criação do card no Closer</b>
+      e vendas por <b>data de fechamento</b>, então um lead pode aparecer só de um lado — pela mesma razão explicada na nota acima.
     </div>`;
   const tsub = document.getElementById('funis-canal-tab-sub');
   if (tsub) tsub.textContent = `${linhas.length} canal(is) com lead no período · ${perCurto}`;
