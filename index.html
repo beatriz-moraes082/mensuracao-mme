@@ -2371,7 +2371,7 @@ function renderFunis() {
 const CANAIS = [
   {k:'meta',   l:'Meta Ads',        c:'#3b82f6', m:s => s.includes('meta')},
   {k:'google', l:'Google Ads',      c:'#22c55e', m:s => s.includes('google')},
-  {k:'duque',  l:'Duque/BDR',       c:'#8b5cf6', m:s => s.includes('duque') || s.includes('outbound') || s.includes('bdr')},
+  {k:'duque',  l:'Duque/BDR',       c:'#8b5cf6', m:s => s.includes('disparo') || s.includes('duque') || s.includes('outbound') || s.includes('bdr')},
   {k:'org',    l:'Orgânico/Outros', c:'#f5a623', m:() => true},   // fallback: inclui origem vazia
 ];
 // Origem também chega com '+' no lugar de espaço em parte dos leads ("Meta+Ads").
@@ -2524,20 +2524,11 @@ function renderVendasCanal() {
     return;
   }
 
-  // Classifica origem da venda
-  const classify = o => {
-    const s = (o||'').toLowerCase();
-    if (s.includes('meta'))   return {k:'meta',   l:'Meta Ads',   c:'#3b82f6'};
-    if (s.includes('google')) return {k:'google', l:'Google Ads', c:'#22c55e'};
-    if (s.includes('duque') || s.includes('outbound') || s.includes('bdr')) return {k:'duque', l:'Duque/BDR', c:'#8b5cf6'};
-    return {k:'org', l:'Orgânico/Outros', c:'#f5a623'};
-  };
-
   const totFat = vendas.reduce((s,v) => s + (v.price||0), 0);
   const groups = {};
   vendas.forEach(v => {
-    const ch = classify(v.origem);
-    if (!groups[ch.k]) groups[ch.k] = {...ch, n:0, fat:0, items:[]};
+    const ch = canalOf(v.origem);
+    if (!groups[ch.k]) groups[ch.k] = {k:ch.k, l:ch.l, c:ch.c, n:0, fat:0, items:[]};
     groups[ch.k].n++;
     groups[ch.k].fat += (v.price || 0);
     groups[ch.k].items.push(v);
@@ -2579,7 +2570,7 @@ function renderVendasCanal() {
         </tr></thead>
         <tbody>
           ${vendas.sort((a,b) => (b.closed_at||0)-(a.closed_at||0)).map(v => {
-            const ch = classify(v.origem);
+            const ch = canalOf(v.origem);
             const d = v.closed_at ? new Date(v.closed_at*1000) : null;
             const dStr = d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '—';
             const aud = (v.audience || '').substring(0,40) || '—';
