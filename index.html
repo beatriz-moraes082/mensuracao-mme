@@ -1289,6 +1289,37 @@
     </div>
   </div>
 
+  <!-- Funil por canal de origem · mesmos funis, recortados pela origem do lead -->
+  <div class="ds-sec"><h3>Funil por canal de origem</h3><span class="sub">Os mesmos funis acima, recortados pela origem do lead — escolha o canal</span></div>
+  <div id="funis-canal-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
+  <div class="ds-grid-2" style="align-items:start">
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil SDR</h4><span class="sub" id="sdr-canal-sub">—</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-sdr-canal"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+          <div id="sdr-canal-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ds-card">
+      <div class="ds-card-h"><h4>Funil Closer</h4><span class="sub" id="closer-canal-sub">—</span></div>
+      <div class="ds-card-b">
+        <div class="pyramid-wrap" id="pyr-closer-canal"></div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Taxas derivadas</div>
+          <div id="closer-canal-rates" style="font-size:13px;line-height:1.95;color:var(--text)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativo: todos os canais lado a lado, sem precisar clicar chip por chip -->
+  <div class="ds-card" style="margin-top:16px">
+    <div class="ds-card-h"><h4>Comparativo entre canais</h4><span class="sub" id="funis-canal-tab-sub">—</span></div>
+    <div class="ds-card-b" style="overflow-x:auto" id="funis-canal-tabela"></div>
+  </div>
   <!-- Funil completo combinado -->
   <div class="ds-sec"><h3>Funil completo · SDR → Closer</h3><span class="sub">Da entrada do lead até a venda</span></div>
   <div class="ds-card">
@@ -2070,6 +2101,33 @@ function periodLabel(periodKey, win, isPartial) {
   return `${s}–${e}`;
 }
 
+// Agregações de etapa do funil. Extraídas pra que o recorte por canal use
+// exatamente as mesmas regras do funil geral — se uma etapa mudar, muda nos dois.
+function aggSdr(list) {
+  return {
+    total:        list.length,
+    qualificacao: list.filter(l => l.status === 98147487).length, // etapa Kommo "Qualificação" (em triagem)
+    qualif:       list.filter(l => l.qualified).length,          // soma das 3 etapas: LQ + RA + VG
+    lq:           list.filter(l => l.status === 98147491).length,
+    agend:        list.filter(l => l.reuniao_agendada).length,
+    concret:      list.filter(l => l.reuniao_realizada).length,
+    perdidos:     list.filter(l => l.perda).length,
+  };
+}
+// created = cards criados na janela · won/lost = fechados na janela (closed_at),
+// mesma assimetria do funil geral: entrada conta por criação, venda por fechamento.
+function aggCloser(created, won, lost) {
+  return {
+    total:    created.length,
+    reuniao:  created.length,
+    prop:     created.filter(l => l.proposta).length,
+    sinal:    created.filter(l => l.status === 98334563).length,
+    vendas:   won.length,
+    perdidos: lost.length,
+    receita:  won.reduce((s, l) => s + (l.price || 0), 0),
+  };
+}
+
 // Calcula FUNNEL para um período específico a partir dos JSONs
 function computeFunnelForPeriod(kommo, periodKey, refDate) {
   const win = periodWindow(periodKey, refDate);
@@ -2077,27 +2135,12 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
   const isPartial = win.to.getTime() >= today.getTime() - 86400000;  // janela termina hoje
 
   const sdrInP = (kommo.sdr || []).filter(l => _inWindow(l.created_at, win));
-  const sdr = {
-    total:        sdrInP.length,
-    qualificacao: sdrInP.filter(l => l.status === 98147487).length, // etapa Kommo "Qualificação" (em triagem)
-    qualif:       sdrInP.filter(l => l.qualified).length,          // soma das 3 etapas: LQ + RA + VG
-    lq:           sdrInP.filter(l => l.status === 98147491).length,
-    agend:        sdrInP.filter(l => l.reuniao_agendada).length,
-    concret:      sdrInP.filter(l => l.reuniao_realizada).length,
-    perdidos:     sdrInP.filter(l => l.perda).length,
-  };
+  const sdr = aggSdr(sdrInP);
 
   const closerCreated = (kommo.closer || []).filter(l => _inWindow(l.created_at, win));
   const closerWonInP  = (kommo.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
-  const closer = {
-    total:    closerCreated.length,
-    reuniao:  closerCreated.length,
-    prop:     closerCreated.filter(l => l.proposta).length,
-    sinal:    closerCreated.filter(l => l.status === 98334563).length,
-    vendas:   closerWonInP.length,
-    perdidos: (kommo.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win)).length,
-    receita:  closerWonInP.reduce((s,l) => s + (l.price || 0), 0),
-  };
+  const closerLostInP = (kommo.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win));
+  const closer = aggCloser(closerCreated, closerWonInP, closerLostInP);
 
   // Duque REAL (pipeline 13069100): Entrada → Lead Novo → Follow-Up → Qualificação → Reunião → (perda)
   const duqueInP = (kommo.duque || []).filter(l => _inWindow(l.created_at, win));
@@ -2316,10 +2359,124 @@ function renderFunis() {
   renderPyramid('pyr-full',   fullSteps(d));
   document.getElementById('sdr-rates').innerHTML    = sdrRateHtml(d);
   document.getElementById('closer-rates').innerHTML = closerRateHtml(d);
+  renderFunilCanal();
   renderVendasCanal();
   renderLossReasons();
 }
 
+/* ── Funil por canal de origem ───────────────────────────
+   Recorta os funis SDR e Closer pela origem do lead. Usa as mesmas
+   agregações do funil geral (aggSdr/aggCloser), então as etapas e a
+   janela de período são idênticas — muda só o conjunto de leads. */
+const CANAIS = [
+  {k:'meta',   l:'Meta Ads',        c:'#3b82f6', m:s => s.includes('meta')},
+  {k:'google', l:'Google Ads',      c:'#22c55e', m:s => s.includes('google')},
+  {k:'duque',  l:'Duque/BDR',       c:'#8b5cf6', m:s => s.includes('duque') || s.includes('outbound') || s.includes('bdr')},
+  {k:'org',    l:'Orgânico/Outros', c:'#f5a623', m:() => true},   // fallback: inclui origem vazia
+];
+// Origem também chega com '+' no lugar de espaço em parte dos leads ("Meta+Ads").
+function canalOf(origem) {
+  const s = (origem || '').replace(/\+/g, ' ').toLowerCase().trim();
+  return CANAIS.find(c => c.m(s)) || CANAIS[CANAIS.length - 1];
+}
+
+let funisCanal = 'all';
+
+function setFunisCanal(k) { funisCanal = k; renderFunilCanal(); }
+
+function renderFunilCanal() {
+  if (!KOMMO_RAW) return;
+  const chipsEl = document.getElementById('funis-canal-chips');
+  if (!chipsEl) return;
+
+  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const sdrInP   = (KOMMO_RAW.sdr || []).filter(l => _inWindow(l.created_at, win));
+  const cloCriad = (KOMMO_RAW.closer || []).filter(l => _inWindow(l.created_at, win));
+  const cloGanha = (KOMMO_RAW.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
+  const cloPerda = (KOMMO_RAW.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win));
+
+  const porCanal = k => ({
+    sdr:    aggSdr(sdrInP.filter(l => canalOf(l.origem).k === k)),
+    closer: aggCloser(cloCriad.filter(l => canalOf(l.origem).k === k),
+                      cloGanha.filter(l => canalOf(l.origem).k === k),
+                      cloPerda.filter(l => canalOf(l.origem).k === k)),
+  });
+
+  // Só entra na lista o canal que tem lead no período (evita coluna vazia).
+  const linhas = CANAIS.map(c => ({...c, ...porCanal(c.k)}))
+    .filter(r => r.sdr.total > 0 || r.closer.total > 0);
+  const geral = {sdr: aggSdr(sdrInP), closer: aggCloser(cloCriad, cloGanha, cloPerda)};
+
+  if (funisCanal !== 'all' && !linhas.some(r => r.k === funisCanal)) funisCanal = 'all';
+
+  // ── Chips
+  const opcoes = [{k:'all', l:'Todos os canais', c:'#6b7069', sdr:geral.sdr, closer:geral.closer}, ...linhas];
+  chipsEl.innerHTML = opcoes.map(o => `
+    <button class="pbtn${o.k === funisCanal ? ' active' : ''}" onclick="setFunisCanal('${o.k}')">
+      ${o.l} <span style="opacity:.65">${fmt(o.sdr.total)}</span>
+    </button>
+  `).join('');
+
+  // ── Pirâmides do canal selecionado
+  const sel = opcoes.find(o => o.k === funisCanal) || opcoes[0];
+  const d   = {sdr: sel.sdr, closer: sel.closer};
+  const per = (FUNNEL[currentPeriod] || {}).label || '';
+  const perCurto = per.split('·')[1]?.trim() || per;
+
+  renderPyramid('pyr-sdr-canal',    sdrSteps(d));
+  renderPyramid('pyr-closer-canal', closerSteps(d));
+  document.getElementById('sdr-canal-rates').innerHTML    = sdrRateHtml(d);
+  document.getElementById('closer-canal-rates').innerHTML = closerRateHtml(d);
+  document.getElementById('sdr-canal-sub').textContent    = `${sel.l} · ${fmt(sel.sdr.total)} leads · ${perCurto}`;
+  document.getElementById('closer-canal-sub').textContent = `${sel.l} · ${fmt(sel.closer.total)} entradas · ${perCurto}`;
+
+  // ── Tabela comparativa: todos os canais de uma vez
+  const cel = (n, base) => base > 0
+    ? `<b>${fmt(n)}</b> <span style="color:var(--muted)">${pct(n, base)}%</span>`
+    : `<b>${fmt(n)}</b>`;
+  const linha = (r, destaque) => `
+    <tr${destaque ? ' style="border-top:2px solid var(--border);font-weight:700"' : ''}>
+      <td class="nm">${destaque ? '' : `<span style="display:inline-block;width:8px;height:8px;background:${r.c};border-radius:50%;margin-right:6px"></span>`}${r.l}</td>
+      <td class="num" style="text-align:right">${fmt(r.sdr.total)}</td>
+      <td class="num" style="text-align:right">${cel(r.sdr.qualif,  r.sdr.total)}</td>
+      <td class="num" style="text-align:right">${cel(r.sdr.agend,   r.sdr.qualif)}</td>
+      <td class="num" style="text-align:right">${cel(r.sdr.concret, r.sdr.agend)}</td>
+      <td class="num" style="text-align:right;border-left:1px solid var(--border)">${fmt(r.closer.total)}</td>
+      <td class="num" style="text-align:right">${cel(r.closer.prop,   r.closer.total)}</td>
+      <td class="num" style="text-align:right">${cel(r.closer.vendas, r.closer.prop)}</td>
+      <td class="num" style="text-align:right">${fmtR(r.closer.receita)}</td>
+    </tr>`;
+
+  document.getElementById('funis-canal-tabela').innerHTML = `
+    <table style="width:100%;min-width:820px;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="text-align:left">Canal</th>
+          <th style="text-align:right">Leads SDR</th>
+          <th style="text-align:right">Qualificado</th>
+          <th style="text-align:right">Reun. agendada</th>
+          <th style="text-align:right">Reun. realizada</th>
+          <th style="text-align:right;border-left:1px solid var(--border)">Entradas Closer</th>
+          <th style="text-align:right">Proposta</th>
+          <th style="text-align:right">Venda</th>
+          <th style="text-align:right">Receita</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${linhas.sort((a, b) => b.sdr.total - a.sdr.total).map(r => linha(r, false)).join('')}
+        ${linha({l:'Total', c:'#6b7069', sdr:geral.sdr, closer:geral.closer}, true)}
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6">
+      O <b>%</b> em cada coluna é sobre a etapa anterior do funil (qualificado sobre leads, agendada sobre qualificado,
+      realizada sobre agendada, proposta sobre entradas, venda sobre proposta). As colunas do SDR e do Closer não se somam
+      lead a lead: entradas do Closer contam por <b>data de criação do card no Closer</b> e vendas por <b>data de fechamento</b>,
+      então um lead pode aparecer só de um lado — pela mesma razão explicada na nota acima.
+    </div>`;
+  const tsub = document.getElementById('funis-canal-tab-sub');
+  if (tsub) tsub.textContent = `${linhas.length} canal(is) com lead no período · ${perCurto}`;
+}
 /* ── Vendas por canal de origem ──────────────────────────── */
 function renderVendasCanal() {
   if (!KOMMO_RAW) return;
