@@ -6096,13 +6096,14 @@ function updateTopbarPills() {
 
 // Normaliza nomes de UTM que chegam com '+' no lugar de espaço.
 // Parte dos leads (campanhas [LP A]/[LP B]) grava o UTM sem decodificar —
-// "26+-+50+|+LookaLike+Score+A" — e o MESMO público/campanha vira duas
-// linhas nos rankings, além de perder o match de status ACTIVE/PAUSED.
+// "26+-+50+|+LookaLike+Score+A", "BN01+|+IMR+-+Genérico+(v1)" — e o MESMO
+// público/campanha/criativo vira duas linhas nos rankings, além de perder
+// o match de status ACTIVE/PAUSED.
 // Decodifica e casa com a variante "humana" já existente na base
 // (mesmo texto ignorando pontuação e acento).
 function canonicalizeUtmNames(kommo) {
   const LISTS  = ['sdr', 'closer', 'nutricao', 'bdr', 'duque'];
-  const FIELDS = ['audience', 'campaign'];
+  const FIELDS = ['audience', 'campaign', 'creative'];
   // Só decodifica quem não tem NENHUM espaço — assim um nome legítimo com
   // '+' ("Profissões [+] viajantes frequentes") passa intacto.
   const decode = s => (s && !s.includes(' ') && s.includes('+'))
