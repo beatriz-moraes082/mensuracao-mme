@@ -1106,16 +1106,22 @@
   <div id="perfil-funil-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div>
   <div id="perfil-funil-insight" style="margin-top:14px"></div>
 
-  <!-- Top 3 públicos · Top 3 criativos -->
-  <div class="ds-grid-2" style="margin-top:24px">
+  <!-- Top 3 públicos · Top 3 criativos — segmentados por campanha -->
+  <div class="ds-sec" style="margin-top:24px">
+    <h3>Top públicos e criativos por campanha</h3>
+    <span class="sub">Escolha a campanha que vai otimizar — os dois rankings recalculam só com os leads dela</span>
+  </div>
+  <div id="perfil-top-camp" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
+  <div class="ds-grid-2">
     <div class="ds-card">
-      <div class="ds-card-h"><h4>Top 3 públicos por Score A+B</h4><span class="sub">Qualidade de qualificação</span></div>
+      <div class="ds-card-h"><h4>Top 3 públicos por Score A+B</h4><span class="sub" id="perfil-top-aud-sub">Qualidade de qualificação</span></div>
       <div class="ds-card-b" id="perfil-top-aud"></div>
     </div>
     <div class="ds-card">
-      <div class="ds-card-h"><h4>Top 3 criativos por Score A+B</h4><span class="sub">Qualidade de qualificação</span></div>
+      <div class="ds-card-h"><h4>Top 3 criativos por Score A+B</h4><span class="sub" id="perfil-top-cri-sub">Qualidade de qualificação</span></div>
       <div class="ds-card-b" id="perfil-top-cri"></div>
     </div>
+  </div>
   </div>
 
   <!-- Respostas do Pré-atendimento · distribuição por pergunta -->
@@ -3271,7 +3277,6 @@ function renderAnalises() {
   // Hero KPIs e Top 3 do Perfil do Qualificado (sistema novo)
   // ════════════════════════════════════════════════════════
   (function renderPerfilHero() {
-    const validAud = sdr.filter(l => !isInvalidAud(l.audience));
     const valid = sdr.filter(l => l.score);
 
     const kpisEl = document.getElementById('perfil-score-kpis');
@@ -3319,68 +3324,132 @@ function renderAnalises() {
       `;
     }
 
-    // Top 3 públicos por Score A+B
-    const audMap = {};
-    validAud.forEach(l => {
-      if (!audMap[l.audience]) audMap[l.audience] = {tot:0, ab:0};
-      audMap[l.audience].tot++;
-      if (l.score === 'A' || l.score === 'B') audMap[l.audience].ab++;
-    });
-    const topAudList = Object.entries(audMap)
-      .filter(([,d]) => d.tot >= 5)
-      .map(([aud,d]) => ({aud, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
-      .sort((a,b) => b.pct - a.pct)
-      .slice(0,3);
-    const audEl = document.getElementById('perfil-top-aud');
-    if (audEl) {
-      const maxAB = Math.max(...topAudList.map(t => t.ab), 1);
-      audEl.innerHTML = topAudList.length > 0 ? `
-        <div class="ds-rank">
-          ${topAudList.map((r, i) => `
-            <div class="item medal-${i+1}">
-              <div class="row1">
-                <div class="lbl">${r.aud}${statusBadge(audStatus(r.aud))}</div>
-                <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
-              </div>
-              <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
-            </div>
-          `).join('')}
-        </div>
-      ` : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">Sem amostra suficiente (mínimo 5 leads/público).</div>';
-    }
+    // ── Top 3 públicos · Top 3 criativos — segmentados por campanha ──
+    // O gestor otimiza uma campanha por vez: os chips filtram os dois
+    // rankings pelos leads daquela campanha. Em "Todas" cada linha mostra
+    // um badge com a campanha que mais contribuiu com aquele público/criativo.
+    const TOP_MIN_LEADS = 5;
+    const ALL_CAMP = '__all__';
 
-    // Top 3 criativos por Score A+B
-    const _normCre = c => (c||'').split('|')[0].trim();
-    const criMap = {};
-    sdr.filter(l => l.creative && !isInvalidAud(l.creative)).forEach(l => {
-      const c = _normCre(l.creative);
-      if (!c) return;
-      if (!criMap[c]) criMap[c] = {tot:0, ab:0};
-      criMap[c].tot++;
-      if (l.score === 'A' || l.score === 'B') criMap[c].ab++;
-    });
-    const topCriList = Object.entries(criMap)
-      .filter(([,d]) => d.tot >= 5)
-      .map(([c,d]) => ({c, tot:d.tot, ab:d.ab, pct: d.tot > 0 ? d.ab/d.tot*100 : 0}))
-      .sort((a,b) => b.pct - a.pct)
-      .slice(0,3);
-    const criEl = document.getElementById('perfil-top-cri');
-    if (criEl) {
-      const maxAB = Math.max(...topCriList.map(t => t.ab), 1);
-      criEl.innerHTML = topCriList.length > 0 ? `
+    // Nome de campanha vem do UTM: às vezes com '+' no lugar do espaço.
+    const _normCamp = c => {
+      const s = (c || '').replace(/\+/g, ' ').replace(/\s+/g, ' ').trim();
+      return (!s || /\{\{.*?\}\}/.test(s)) ? '' : s;
+    };
+    // Rótulo curto pro chip: "Fundo de Funil | Leads | IMR | 08/03/26 #TP" → "FF 08/03/26"
+    const _shortCamp = full => {
+      if (!full) return 'Sem campanha';
+      const dt = (full.match(/(\d{2}\/\d{2}\/\d{2})/) || [])[1];
+      if (dt) {
+        const lp  = (full.match(/\[LP\s*([AB])\]/i) || [])[1];
+        const cop = /C[óo]pia/i.test(full);
+        return `FF ${dt}${lp ? ' · LP ' + lp : ''}${cop ? ' · cópia' : ''}`;
+      }
+      return full.length > 30 ? full.slice(0, 29) + '…' : full;
+    };
+    const _campBadge = full => `<span title="${full || 'Sem campanha identificada'}" style="display:inline-block;padding:1px 7px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:600;white-space:nowrap;vertical-align:1px;margin-left:6px">${_shortCamp(full)}</span>`;
+
+    // Base dos dois rankings: leads SDR com campanha resolvida (inclui "sem campanha").
+    const topBase = sdr.map(l => ({...l, _camp: _normCamp(l.campaign)}));
+
+    // Campanhas elegíveis a chip: 10+ leads no período (menos que isso é ruído).
+    const campCount = {};
+    topBase.forEach(l => { campCount[l._camp] = (campCount[l._camp] || 0) + 1; });
+    const campChips = Object.entries(campCount)
+      .filter(([, n]) => n >= 10)
+      .sort((a, b) => b[1] - a[1]);
+
+    // Seleção persiste entre trocas de período (cai pra "Todas" se sumir).
+    if (!campChips.some(([c]) => c === window.__perfilTopCamp)) window.__perfilTopCamp = ALL_CAMP;
+
+    // Público/criativo → campanha que mais trouxe leads dele (badge da visão "Todas").
+    const _domCamp = (rows) => {
+      const c = {};
+      rows.forEach(l => { c[l._camp] = (c[l._camp] || 0) + 1; });
+      return Object.entries(c).sort((a, b) => b[1] - a[1])[0][0];
+    };
+
+    const _rankTop = (rows, keyFn) => {
+      const map = {};
+      rows.forEach(l => {
+        const k = keyFn(l);
+        if (!k) return;
+        if (!map[k]) map[k] = {tot: 0, ab: 0, leads: []};
+        map[k].tot++;
+        map[k].leads.push(l);
+        if (l.score === 'A' || l.score === 'B') map[k].ab++;
+      });
+      return Object.entries(map)
+        .filter(([, d]) => d.tot >= TOP_MIN_LEADS)
+        .map(([k, d]) => ({k, tot: d.tot, ab: d.ab, pct: d.ab / d.tot * 100, camp: _domCamp(d.leads)}))
+        .sort((a, b) => b.pct - a.pct)
+        .slice(0, 3);
+    };
+
+    const _rankHTML = (list, decorate, showCamp, vazio) => {
+      if (list.length === 0) return `<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">${vazio}</div>`;
+      const maxAB = Math.max(...list.map(t => t.ab), 1);
+      return `
         <div class="ds-rank">
-          ${topCriList.map((r, i) => `
-            <div class="item medal-${i+1}">
+          ${list.map((r, i) => `
+            <div class="item medal-${i + 1}">
               <div class="row1">
-                <div class="lbl">${r.c}${statusBadge(criStatus(r.c))}${criPreviewButton(r.c)}</div>
+                <div class="lbl">${r.k}${decorate(r.k)}${showCamp ? _campBadge(r.camp) : ''}</div>
                 <div class="meta"><b>${r.ab}</b> A+B · <b>${r.pct.toFixed(0)}%</b> · ${r.tot} leads</div>
               </div>
-              <div class="bar"><div class="fill" style="width:${(r.ab/maxAB*100).toFixed(0)}%"></div></div>
+              <div class="bar"><div class="fill" style="width:${(r.ab / maxAB * 100).toFixed(0)}%"></div></div>
             </div>
           `).join('')}
-        </div>
-      ` : '<div style="font-size:12px;color:var(--muted);text-align:center;padding:24px">Sem amostra suficiente (mínimo 5 leads/criativo).</div>';
+        </div>`;
+    };
+
+    const _normCre = c => (c || '').split('|')[0].trim();
+
+    function renderPerfilTop() {
+      const sel  = window.__perfilTopCamp;
+      const all  = sel === ALL_CAMP;
+      const rows = all ? topBase : topBase.filter(l => l._camp === sel);
+      const nome = all ? 'todas as campanhas' : (sel ? _shortCamp(sel) : 'leads sem campanha');
+
+      const chipsEl = document.getElementById('perfil-top-camp');
+      if (chipsEl) {
+        chipsEl.innerHTML = [[ALL_CAMP, topBase.length], ...campChips].map(([c, n]) => `
+          <button class="pbtn${c === sel ? ' active' : ''}" data-camp="${encodeURIComponent(c)}"
+                  title="${c === ALL_CAMP ? 'Todas as campanhas' : (c || 'Leads sem campanha identificada')}">
+            ${c === ALL_CAMP ? 'Todas' : _shortCamp(c)} <span style="opacity:.65">${n}</span>
+          </button>
+        `).join('');
+        chipsEl.querySelectorAll('.pbtn').forEach(b => b.addEventListener('click', () => {
+          window.__perfilTopCamp = decodeURIComponent(b.dataset.camp);
+          renderPerfilTop();
+        }));
+      }
+
+      const audEl = document.getElementById('perfil-top-aud');
+      if (audEl) {
+        audEl.innerHTML = _rankHTML(
+          _rankTop(rows.filter(l => !isInvalidAud(l.audience)), l => l.audience),
+          a => statusBadge(audStatus(a)), all,
+          `Sem amostra suficiente em ${nome} (mínimo ${TOP_MIN_LEADS} leads/público).`
+        );
+      }
+      const criEl = document.getElementById('perfil-top-cri');
+      if (criEl) {
+        criEl.innerHTML = _rankHTML(
+          _rankTop(rows.filter(l => l.creative && !isInvalidAud(l.creative)), l => _normCre(l.creative)),
+          c => statusBadge(criStatus(c)) + criPreviewButton(c), all,
+          `Sem amostra suficiente em ${nome} (mínimo ${TOP_MIN_LEADS} leads/criativo).`
+        );
+      }
+      const subTxt = all
+        ? `Qualidade de qualificação · todas as campanhas (${rows.length} leads)`
+        : `Qualidade de qualificação · ${nome} (${rows.length} leads)`;
+      ['perfil-top-aud-sub', 'perfil-top-cri-sub'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = subTxt;
+      });
     }
+    renderPerfilTop();
 
     // ── Respostas do Pré-atendimento · distribuição por pergunta ──
     const preGrid = document.getElementById('perfil-preatend-grid');
@@ -6025,6 +6094,48 @@ function updateTopbarPills() {
   if (pv) pv.textContent = d.closer.vendas + ' vendas';
 }
 
+// Normaliza nomes de UTM que chegam com '+' no lugar de espaço.
+// Parte dos leads (campanhas [LP A]/[LP B]) grava o UTM sem decodificar —
+// "26+-+50+|+LookaLike+Score+A" — e o MESMO público/campanha vira duas
+// linhas nos rankings, além de perder o match de status ACTIVE/PAUSED.
+// Decodifica e casa com a variante "humana" já existente na base
+// (mesmo texto ignorando pontuação e acento).
+function canonicalizeUtmNames(kommo) {
+  const LISTS  = ['sdr', 'closer', 'nutricao', 'bdr', 'duque'];
+  const FIELDS = ['audience', 'campaign'];
+  // Só decodifica quem não tem NENHUM espaço — assim um nome legítimo com
+  // '+' ("Profissões [+] viajantes frequentes") passa intacto.
+  const decode = s => (s && !s.includes(' ') && s.includes('+'))
+    ? s.replace(/\+/g, ' ').replace(/\s+/g, ' ').trim() : s;
+  const key = s => (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+  for (const f of FIELDS) {
+    const byKey = {};
+    for (const list of LISTS) for (const l of (kommo[list] || [])) {
+      const raw = l[f];
+      if (!raw) continue;
+      const k = key(decode(raw));
+      if (!k) continue;
+      byKey[k] = byKey[k] || {};
+      byKey[k][raw] = (byKey[k][raw] || 0) + 1;
+    }
+    const canon = {};
+    for (const [k, vars] of Object.entries(byKey)) {
+      const ent   = Object.entries(vars);
+      const human = ent.filter(([v]) => v.includes(' '));   // variante já legível
+      canon[k] = decode((human.length ? human : ent).sort((a, b) => b[1] - a[1])[0][0]);
+    }
+    for (const list of LISTS) for (const l of (kommo[list] || [])) {
+      const raw = l[f];
+      if (!raw) continue;
+      const c = canon[key(decode(raw))];
+      if (c && c !== raw) l[f] = c;
+    }
+  }
+}
+
 // Carrega dados e dispara re-render do dashboard
 async function loadDashboardData() {
   try {
@@ -6034,6 +6145,7 @@ async function loadDashboardData() {
       fetch('data/google_ads_spend.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})),
       fetch('data/mailchimp.json?t=' + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null)
     ]);
+    canonicalizeUtmNames(kommoRes);   // UTMs "a+b+c" → "a b c", antes de qualquer agregação
     KOMMO_RAW = kommoRes;
     META_RAW  = metaRes;
     GOOGLE_RAW = googleRes;
