@@ -2367,11 +2367,17 @@ function renderFunis() {
    Recorta os funis SDR e Closer pela origem do lead. Usa as mesmas
    agregações do funil geral (aggSdr/aggCloser), então as etapas e a
    janela de período são idênticas — muda só o conjunto de leads. */
+// Mesma taxonomia (chaves, rótulos, cores e ordem) do recorte por canal do
+// Perfil do Qualificado — assim as duas telas nunca discordam sobre um lead.
+// 'sem_origem' é canal próprio, não é jogado junto com os não-classificados.
 const CANAIS = [
-  {k:'meta',   l:'Meta Ads',        c:'#3b82f6', m:s => s.includes('meta')},
-  {k:'google', l:'Google Ads',      c:'#22c55e', m:s => s.includes('google')},
-  {k:'duque',  l:'Duque/BDR',       c:'#8b5cf6', m:s => s.includes('disparo') || s.includes('duque') || s.includes('outbound') || s.includes('bdr')},
-  {k:'org',    l:'Orgânico/Outros', c:'#f5a623', m:() => true},   // fallback: inclui origem vazia
+  {k:'meta',       l:'Meta Ads',        c:'#3b82f6', m:s => s.includes('meta')},
+  {k:'google',     l:'Google Ads',      c:'#22c55e', m:s => s.includes('google')},
+  {k:'indicacao',  l:'Indicação',       c:'#d97706', m:s => s.includes('indica')},
+  {k:'ibr',        l:'IBR',             c:'#7c3aed', m:s => s.includes('ibr') || s.includes('propriet')},
+  {k:'outbound',   l:'Duque/Outbound',  c:'#0891b2', m:s => s.includes('disparo') || s.includes('duque') || s.includes('outbound') || s.includes('bdr')},
+  {k:'sem_origem', l:'Sem origem',      c:'#94a3b8', m:s => !s},
+  {k:'outros',     l:'Outros',          c:'#6b7280', m:() => true},   // residual: rotulado abaixo pela origem real
 ];
 // Origem também chega com '+' no lugar de espaço em parte dos leads ("Meta+Ads").
 function canalOf(origem) {
@@ -2405,15 +2411,33 @@ function renderFunilCanal() {
   // Só entra na lista o canal que tem lead no período (evita coluna vazia).
   const linhas = CANAIS.map(c => ({...c, ...porCanal(c.k)}))
     .filter(r => r.sdr.total > 0 || r.closer.total > 0);
+
+  // 'Outros' é o residual dos que não casaram com nenhuma regra. Em vez de
+  // esconder o lead atrás de um rótulo genérico, mostra a origem crua quando
+  // sobrou só uma — mesmo critério do _VD_ORIGEM_LBL na aba Vendas.
+  const resto = linhas.find(r => r.k === 'outros');
+  if (resto) {
+    const nomes = [...new Set([...sdrInP, ...cloCriad]
+      .filter(l => canalOf(l.origem).k === 'outros')
+      .map(l => (l.origem || '').replace(/\+/g, ' ').trim())
+      .filter(Boolean))];
+    if (nomes.length === 1) resto.l = nomes[0].length > 26 ? nomes[0].slice(0, 25) + '…' : nomes[0];
+    else if (nomes.length > 1) resto.l = `Outros (${nomes.length} origens)`;
+  }
   const geral = {sdr: aggSdr(sdrInP), closer: aggCloser(cloCriad, cloGanha, cloPerda)};
 
   if (funisCanal !== 'all' && !linhas.some(r => r.k === funisCanal)) funisCanal = 'all';
 
   // ── Chips
+  // O número é o volume de leads SDR. Alguns canais (Indicação, IBR) só
+  // aparecem no Closer — aí mostra a entrada de lá em vez de um "0" seco.
+  const chipN = o => o.sdr.total > 0 || o.closer.total === 0
+    ? fmt(o.sdr.total)
+    : `${fmt(o.closer.total)} no Closer`;
   const opcoes = [{k:'all', l:'Todos os canais', c:'#6b7069', sdr:geral.sdr, closer:geral.closer}, ...linhas];
   chipsEl.innerHTML = opcoes.map(o => `
     <button class="pbtn${o.k === funisCanal ? ' active' : ''}" onclick="setFunisCanal('${o.k}')">
-      ${o.l} <span style="opacity:.65">${fmt(o.sdr.total)}</span>
+      ${o.l} <span style="opacity:.65">${chipN(o)}</span>
     </button>
   `).join('');
 
