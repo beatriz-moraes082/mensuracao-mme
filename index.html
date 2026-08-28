@@ -2360,7 +2360,6 @@ function renderFunis() {
   document.getElementById('sdr-rates').innerHTML    = sdrRateHtml(d);
   document.getElementById('closer-rates').innerHTML = closerRateHtml(d);
   renderFunilCanal();
-  renderVendasCanal();
   renderLossReasons();
 }
 
@@ -2505,88 +2504,6 @@ function renderFunilCanal() {
     </div>`;
   const tsub = document.getElementById('funis-canal-tab-sub');
   if (tsub) tsub.textContent = `${linhas.length} canal(is) com lead no período · ${perCurto}`;
-}
-/* ── Vendas por canal de origem ──────────────────────────── */
-function renderVendasCanal() {
-  if (!KOMMO_RAW) return;
-  const ref = KOMMO_RAW.fetched_at ? new Date(KOMMO_RAW.fetched_at) : new Date();
-  const win = periodWindow(currentPeriod, ref);
-  const vendas = (KOMMO_RAW.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
-
-  const fmtBRL = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {maximumFractionDigits:0});
-  const sub = document.getElementById('vendas-canal-sub');
-  const cont = document.getElementById('vendas-canal-content');
-  if (!sub || !cont) return;
-
-  if (vendas.length === 0) {
-    sub.textContent = `0 vendas no período · ${(FUNNEL[currentPeriod]||{}).label||''}`;
-    cont.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Sem vendas no período selecionado.</div>';
-    return;
-  }
-
-  const totFat = vendas.reduce((s,v) => s + (v.price||0), 0);
-  const groups = {};
-  vendas.forEach(v => {
-    const ch = canalOf(v.origem);
-    if (!groups[ch.k]) groups[ch.k] = {k:ch.k, l:ch.l, c:ch.c, n:0, fat:0, items:[]};
-    groups[ch.k].n++;
-    groups[ch.k].fat += (v.price || 0);
-    groups[ch.k].items.push(v);
-  });
-  const list = Object.values(groups).sort((a,b) => b.fat - a.fat);
-
-  sub.textContent = `${vendas.length} venda(s) · Faturamento ${fmtBRL(totFat)} · ${(FUNNEL[currentPeriod]||{}).label||''}`;
-  const maxFat = Math.max(...list.map(g => g.fat), 1);
-
-  cont.innerHTML = `
-    <div style="display:grid;gap:12px">
-      ${list.map(g => {
-        const w = (g.fat/maxFat*100).toFixed(0);
-        const pct = (g.fat/totFat*100).toFixed(1);
-        const ticket = g.n > 0 ? g.fat/g.n : 0;
-        return `
-          <div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:700">${g.l}</div>
-              <div style="font-size:11px;color:var(--muted)">
-                <b style="color:var(--text);font-size:16px">${g.n}</b> venda(s) ·
-                <b style="color:${g.c};font-size:14px">${fmtBRL(g.fat)}</b> ·
-                ticket <b style="color:var(--text)">${fmtBRL(ticket)}</b> ·
-                <b style="color:${g.c}">${pct}%</b> do faturamento
-              </div>
-            </div>
-            <div style="height:14px;background:rgba(107,112,105,.1);border-radius:6px;overflow:hidden">
-              <div style="width:${w}%;height:100%;background:linear-gradient(90deg,${g.c},${g.c}cc);border-radius:6px"></div>
-            </div>
-          </div>`;
-      }).join('')}
-    </div>
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Detalhe das vendas</div>
-      <table style="width:100%;font-size:11px">
-        <thead><tr>
-          <th>Canal</th><th>Público</th><th>Criativo</th>
-          <th style="text-align:right">Valor</th><th style="text-align:right">Fechado em</th>
-        </tr></thead>
-        <tbody>
-          ${vendas.sort((a,b) => (b.closed_at||0)-(a.closed_at||0)).map(v => {
-            const ch = canalOf(v.origem);
-            const d = v.closed_at ? new Date(v.closed_at*1000) : null;
-            const dStr = d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '—';
-            const aud = (v.audience || '').substring(0,40) || '—';
-            const cre = ((v.creative || '').split('|')[0].trim()) || '—';
-            return `<tr>
-              <td><span style="display:inline-block;width:8px;height:8px;background:${ch.c};border-radius:50%;margin-right:6px"></span>${ch.l}</td>
-              <td class="nm">${aud}</td>
-              <td>${cre}</td>
-              <td class="num" style="text-align:right">${fmtBRL(v.price||0)}</td>
-              <td class="num" style="text-align:right;color:var(--muted)">${dStr}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
 }
 
 /* ── Render motivos de perda ─────────────────────────── */
@@ -7369,8 +7286,6 @@ function renderVendas(){
   vdRenderCycle(v);
   vdRenderConvCanal(v);
   vdRenderTable(v);
-  // Vendas por canal de origem (movido de Funis Comerciais)
-  if (typeof renderVendasCanal === 'function') renderVendasCanal();
 }
 
 /* ── Taxa de conversão por canal ────────────────────────────
