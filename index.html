@@ -5716,8 +5716,8 @@ function computeMensData(kommo, meta, google, monthOrWin) {
   const isWindow = monthOrWin && typeof monthOrWin === 'object' && monthOrWin.from && monthOrWin.to;
   const month = isWindow ? null : (monthOrWin || currentMonth);
   const D = {
-    meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
-    google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0}},
+    meta:   {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}},
+    google: {w1:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w2:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w3:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}, w4:{invest:0,leads:0,qualif:0,agend:0,realiz:0,vendas:0,fat:0}},
     duque:  {w1:{leads:0,disparo:0,realiz:0}, w2:{leads:0,disparo:0,realiz:0}, w3:{leads:0,disparo:0,realiz:0}, w4:{leads:0,disparo:0,realiz:0}},
     org:    {w1:{leads:0,qualif:0,agend:0,realiz:0}, w2:{leads:0,qualif:0,agend:0,realiz:0}, w3:{leads:0,qualif:0,agend:0,realiz:0}, w4:{leads:0,qualif:0,agend:0,realiz:0}},
     closer: {w1:{leads:0,prop:0,vendas:0,fat:0}, w2:{leads:0,prop:0,vendas:0,fat:0}, w3:{leads:0,prop:0,vendas:0,fat:0}, w4:{leads:0,prop:0,vendas:0,fat:0}}
@@ -5839,6 +5839,17 @@ function computeMensData(kommo, meta, google, monthOrWin) {
         if (D.closer[wv]) {
           D.closer[wv].vendas++;
           D.closer[wv].fat += (l.price || 0);
+        }
+        // Atribui a venda ao canal de origem do lead que fechou, pra alimentar
+        // CAC e ROAS por canal. Usa o canalOf() canônico (mesmo classificador
+        // dos funis por canal). Só Meta e Google têm mídia paga e bucket de
+        // venda (ver A1); vendas Orgânico/Duque continuam só no total do Closer.
+        // Consequência: soma das vendas por canal ≤ total do Closer — a diferença
+        // é a fatia sem origem paga atribuível.
+        const cv = canalOf(l.origem).k;
+        if (D[cv] && wv && D[cv][wv] && 'vendas' in D[cv][wv]) {
+          D[cv][wv].vendas++;
+          D[cv][wv].fat += (l.price || 0);
         }
       }
     }
@@ -6408,6 +6419,11 @@ function renderMensuracao(){
     if(!invest||invest===0||!unit||unit===0)return'<span class="tc-muted">—</span>';
     return'R$\u00a0'+(invest/unit).toFixed(2).replace('.',',');
   };
+  // ROAS = faturamento / investimento (retorno por real investido).
+  const froas=(fat,invest)=>{
+    if(!invest||invest<=0||!fat||fat<=0)return'<span class="tc-muted">—</span>';
+    return(fat/invest).toFixed(2).replace('.',',')+'×';
+  };
   const fp=(n,d,goal)=>{
     const v=pct(n,d);
     if(v===null)return'<span class="tc-muted">—</span>';
@@ -6421,8 +6437,8 @@ function renderMensuracao(){
   };
 
   // Geral totals by channel
-  const mg={invest:sum('meta','invest'),leads:sum('meta','leads'),qualif:sum('meta','qualif'),agend:sum('meta','agend'),realiz:sum('meta','realiz')};
-  const gg={invest:sum('google','invest'),leads:sum('google','leads'),qualif:sum('google','qualif'),agend:sum('google','agend'),realiz:sum('google','realiz')};
+  const mg={invest:sum('meta','invest'),leads:sum('meta','leads'),qualif:sum('meta','qualif'),agend:sum('meta','agend'),realiz:sum('meta','realiz'),vendas:sum('meta','vendas'),fat:sum('meta','fat')};
+  const gg={invest:sum('google','invest'),leads:sum('google','leads'),qualif:sum('google','qualif'),agend:sum('google','agend'),realiz:sum('google','realiz'),vendas:sum('google','vendas'),fat:sum('google','fat')};
   const dg={leads:sum('duque','leads'),disparo:sum('duque','disparo'),realiz:sum('duque','realiz')};
   const og={leads:sum('org','leads'),qualif:sum('org','qualif'),agend:sum('org','agend'),realiz:sum('org','realiz')};
   const cg={leads:sum('closer','leads'),prop:sum('closer','prop'),vendas:sum('closer','vendas'),fat:sum('closer','fat')};
@@ -6560,9 +6576,14 @@ function renderMensuracao(){
     trow('Qualificados',       [...ws.map(w=>fn(d1[w].qualif)),   fn(mg.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d1[w].agend)),    fn(mg.agend)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d1[w].realiz)),  fn(mg.realiz)]),
+    trow('Vendas',             [...ws.map(w=>fn(d1[w].vendas)),   fn(mg.vendas)]),
+    trow('Faturamento',        [...ws.map(w=>fc(d1[w].fat)),      fc(mg.fat)]),
     grpLbl('Custos por Resultado'),
     trow('CPL',                [...ws.map(w=>fcpu(d1[w].invest,d1[w].leads)),  fcpu(mg.invest,mg.leads)]),
+    trow('CPL qualificado',    [...ws.map(w=>fcpu(d1[w].invest,d1[w].qualif)), fcpu(mg.invest,mg.qualif)]),
     trow('CPO (custo p/ agend.)',[...ws.map(w=>fcpu(d1[w].invest,d1[w].agend)),fcpu(mg.invest,mg.agend)]),
+    trow('CAC (custo p/ venda)',[...ws.map(w=>fcpu(d1[w].invest,d1[w].vendas)),fcpu(mg.invest,mg.vendas)]),
+    trow('ROAS',               [...ws.map(w=>froas(d1[w].fat,d1[w].invest)),   froas(mg.fat,mg.invest)]),
     grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...ws.map(w=>fp(d1[w].qualif,d1[w].leads,G.txQ)),   fp(mg.qualif,mg.leads,G.txQ)],   G.txQ+'%'),
     trow('Qualif → Agendado',  [...ws.map(w=>fp(d1[w].agend,d1[w].qualif,G.qToA)),  fp(mg.agend,mg.qualif,G.qToA)],  G.qToA+'%'),
@@ -6579,9 +6600,14 @@ function renderMensuracao(){
     trow('Qualificados',       [...ws.map(w=>fn(d2[w].qualif)),   fn(gg.qualif)]),
     trow('Reunião Agendada',   [...ws.map(w=>fn(d2[w].agend)),    fn(gg.agend)]),
     trow('Reunião Concretizada',[...ws.map(w=>fn(d2[w].realiz)),  fn(gg.realiz)]),
+    trow('Vendas',             [...ws.map(w=>fn(d2[w].vendas)),   fn(gg.vendas)]),
+    trow('Faturamento',        [...ws.map(w=>fc(d2[w].fat)),      fc(gg.fat)]),
     grpLbl('Custos por Resultado'),
     trow('CPL',                [...ws.map(w=>fcpu(d2[w].invest,d2[w].leads)),  fcpu(gg.invest,gg.leads)]),
+    trow('CPL qualificado',    [...ws.map(w=>fcpu(d2[w].invest,d2[w].qualif)), fcpu(gg.invest,gg.qualif)]),
     trow('CPO (custo p/ agend.)',[...ws.map(w=>fcpu(d2[w].invest,d2[w].agend)),fcpu(gg.invest,gg.agend)]),
+    trow('CAC (custo p/ venda)',[...ws.map(w=>fcpu(d2[w].invest,d2[w].vendas)),fcpu(gg.invest,gg.vendas)]),
+    trow('ROAS',               [...ws.map(w=>froas(d2[w].fat,d2[w].invest)),   froas(gg.fat,gg.invest)]),
     grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...ws.map(w=>fp(d2[w].qualif,d2[w].leads,G.txQ)),   fp(gg.qualif,gg.leads,G.txQ)],   G.txQ+'%'),
     trow('Qualif → Agendado',  [...ws.map(w=>fp(d2[w].agend,d2[w].qualif,G.qToA)),  fp(gg.agend,gg.qualif,G.qToA)],  G.qToA+'%'),
@@ -6638,6 +6664,7 @@ function renderMensuracao(){
     trow('CPL',  [...tot.map(t=>fcpu(t.invest,t.leads)),  fcpu(tg.invest,tg.leads)]),
     trow('CPO (custo p/ agend.)',  [...tot.map(t=>fcpu(t.invest,t.agend)),  fcpu(tg.invest,tg.agend)]),
     trow('CAC (custo p/ venda)',   [...tot.map(t=>fcpu(t.invest,t.vendas)), fcpu(tg.invest,tg.vendas)]),
+    trow('ROAS',                   [...tot.map(t=>froas(t.fat,t.invest)),   froas(tg.fat,tg.invest)]),
     grpLbl('Taxas de Conversão (vs Meta)'),
     trow('Tx. Qualificação',   [...tot.map(t=>fp(t.qualif,t.leads,G.txQ)),    fp(tg.qualif,tg.leads,G.txQ)],    G.txQ+'%'),
     trow('Qualif → Agendado',  [...tot.map(t=>fp(t.agend,t.qualif,G.qToA)),   fp(tg.agend,tg.qualif,G.qToA)],   G.qToA+'%'),
