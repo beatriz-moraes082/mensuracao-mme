@@ -1055,6 +1055,10 @@
     <div class="ds-card-b" style="height:200px;position:relative"><canvas id="cMensInvest"></canvas></div>
   </div>
 
+  <div class="ds-card" style="margin-top:18px">
+    <div id="evol-tabela-semanal"></div>
+  </div>
+
   <details class="ds-accordion" data-protected="trilha">
     <summary><span>🔒 Ver tabela completa W1–W4 (todos os canais) · uso interno Trilha</span></summary>
     <div class="acc-body">
@@ -2386,6 +2390,59 @@ const CANAIS = [
 function canalOf(origem) {
   const s = (origem || '').replace(/\+/g, ' ').toLowerCase().trim();
   return CANAIS.find(c => c.m(s)) || CANAIS[CANAIS.length - 1];
+}
+
+// Classificador de origem → canal FINO (uma linha por origem real). Meta e
+// Google agrupam variantes ("Meta Ads"/"Meta+Ads", "google"/"Google+Ads");
+// origem vazia vira "Não rastreado"; qualquer outra mantém o rótulo original.
+// Usado no Diagnóstico (Canais) e na Evolução (Tabela semanal), pra não ter
+// classificações divergentes entre as abas.
+function originChannel(origem) {
+  const raw = (origem || '').replace(/\+/g, ' ').trim();
+  const o = raw.toLowerCase();
+  if (!o)                   return {key:'__none', label:'Não rastreado', color:'#9aa0a6', paid:false};
+  if (o.includes('meta'))   return {key:'meta',   label:'Meta Ads',      color:'#f0562e', paid:true};
+  if (o.includes('google')) return {key:'google', label:'Google Ads',    color:'#0f9d8f', paid:true};
+  return {key:o, label:raw, color:'#9aa0a6', paid:false};
+}
+
+// Base de leads do funil numa janela: SDR + Nutrição, dedup por pessoa, sem a
+// "Etapa de leads de entrada". Mesma regra do baseTotal do Diagnóstico —
+// centralizada aqui pras duas abas baterem o mesmo total.
+function buildLeadBase(win) {
+  if (!KOMMO_DATA) return [];
+  const ST_ENTRADA = new Set([98147475, 99059495, 98168235, 98164999, 100773640]);
+  const src = [
+    ...(KOMMO_DATA.sdr || []).filter(l => _inWindow(l.created_at, win)),
+    ...(KOMMO_DATA.nutricao || []).filter(l => _inWindow(l.created_at, win)),
+  ];
+  const seen = new Set();
+  const base = [];
+  for (const l of src) {
+    if (ST_ENTRADA.has(l.status)) continue;
+    const k = _leadDedupKey(l);
+    if (k) { if (seen.has(k)) continue; seen.add(k); }
+    base.push(l);
+  }
+  return base;
+}
+
+// Divide a janela em semanas alinhadas na segunda-feira, aparadas nas bordas.
+// Ex: janela começando num sábado → 1ª "semana" = sáb+dom, depois seg→dom cheias.
+function weekBucketsMon(win) {
+  const buckets = [];
+  let cur = new Date(win.from); cur.setHours(0,0,0,0);
+  const end = new Date(win.to);
+  let guard = 0;
+  while (cur <= end && guard++ < 60) {
+    const bs = new Date(cur);
+    const daysToSun = (7 - bs.getDay()) % 7;   // getDay: 0=dom … 6=sáb
+    let be = new Date(bs); be.setDate(bs.getDate() + daysToSun); be.setHours(23,59,59,999);
+    if (be > end) be = new Date(end);
+    buckets.push({from: new Date(bs), to: be});
+    cur = new Date(be); cur.setDate(cur.getDate() + 1); cur.setHours(0,0,0,0);
+  }
+  return buckets;
 }
 
 let funisCanal = 'all';
@@ -6517,7 +6574,136 @@ function rebuildMensPeriodMap(refDate) {
   MENS_PERIOD_MAP['custom'] = { ws: ['w1','w2','w3','w4'], lbls: ['W1','W2','W3','W4'] };
 }
 
+/* ── Evolução · Tabela semanal (aberta, por origem) ──────────────────────
+   Todos os indicadores do período, semana a semana. Chips filtram por origem
+   (só esta tabela). Semanas alinhadas na segunda, aparadas na janela global. */
+let evolSemCanal = 'all';
+function setEvolSemCanal(k){ evolSemCanal = k; renderEvolSemanal(); }
+
+function renderEvolSemanal(){
+  const host = document.getElementById('evol-tabela-semanal');
+  if (!host || !KOMMO_DATA) return;
+  const fmtN = v => (v || 0).toLocaleString('pt-BR');
+
+  const ref = KOMMO_DATA.fetched_at ? new Date(KOMMO_DATA.fetched_at) : new Date();
+  const win = periodWindow(currentPeriod, ref);
+  const base    = buildLeadBase(win);
+  const closer  = KOMMO_DATA.closer || [];
+  const vendas  = closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
+  const propAll = closer.filter(l => l.proposta && _inWindow(l.created_at, win));
+  const M = (typeof META_RAW   !== 'undefined' && META_RAW)   ? META_RAW   : {};
+  const G = (typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW) ? GOOGLE_RAW : {};
+
+  // ── Chips: total de leads por origem na janela ─────────────
+  const chipMap = {};
+  base.forEach(l => { const d = originChannel(l.origem); if (!chipMap[d.key]) chipMap[d.key] = {...d, n:0}; chipMap[d.key].n++; });
+  const chips = [{key:'all', label:'Todos os canais', color:'#f0562e', n:base.length},
+    ...Object.values(chipMap).sort((a,b) => b.n - a.n)];
+  if (!chips.some(c => c.key === evolSemCanal)) evolSemCanal = 'all';
+
+  // ── Filtro do canal selecionado ────────────────────────────
+  const inSel     = (origem) => evolSemCanal === 'all' ? true : originChannel(origem).key === evolSemCanal;
+  const investSub = (sub) => {
+    if (evolSemCanal === 'all')    return _sumSpendInWindow(M.adset || {}, sub) + _sumSpendInWindow((G && G.campaign) || {}, sub);
+    if (evolSemCanal === 'meta')   return _sumSpendInWindow(M.adset || {}, sub);
+    if (evolSemCanal === 'google') return _sumSpendInWindow((G && G.campaign) || {}, sub);
+    return 0;  // canal sem mídia paga
+  };
+
+  // ── Uma linha de métricas por sub-janela (semana ou total) ─
+  const metrics = (sub) => {
+    const L  = base.filter(l => inSel(l.origem) && _inWindow(l.created_at, sub));
+    const invest = investSub(sub);
+    const pagos  = L.filter(l => originChannel(l.origem).paid).length;
+    const qualif = L.filter(l => l.qualified).length;
+    const agend  = L.filter(l => l.reuniao_agendada).length;
+    const realiz = L.filter(l => l.reuniao_realizada).length;
+    const prop   = propAll.filter(l => inSel(l.origem) && _inWindow(l.created_at, sub)).length;
+    const vend   = vendas.filter(l => inSel(l.origem) && _inWindow(l.closed_at, sub));
+    return {
+      leads: L.length, pagos, invest,
+      cpl: pagos > 0 ? invest / pagos : 0,
+      qualif, taxa: L.length > 0 ? qualif / L.length * 100 : 0,
+      agend, realiz, prop,
+      vendas: vend.length, receita: vend.reduce((s,v) => s + (v.price || 0), 0),
+    };
+  };
+
+  const buckets = weekBucketsMon(win);
+  const rows    = buckets.map(b => ({label: b.from, m: metrics(b)}));
+  const tot     = metrics(win);
+
+  // ── Formatters ─────────────────────────────────────────────
+  const fDate = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+  const fInv  = v => v <= 0 ? '<span class="tc-muted">—</span>'
+    : 'R$ ' + (v >= 10000 ? Math.round(v/1000) + 'k' : v >= 1000 ? (v/1000).toFixed(1).replace('.',',') + 'k' : Math.round(v));
+  const fRec  = v => v <= 0 ? '<span class="tc-muted">—</span>' : 'R$ ' + (v >= 1000 ? Math.round(v/1000) + 'k' : Math.round(v));
+  const fCpl  = v => v <= 0 ? '<span class="tc-muted">—</span>' : 'R$ ' + Math.round(v);
+  const fInt  = v => v > 0 ? String(v) : '<span class="tc-muted">—</span>';
+  const fPct  = v => v > 0 ? Math.round(v) + '%' : '<span class="tc-muted">—</span>';
+
+  const td  = 'text-align:right;white-space:nowrap;padding:11px 14px';
+  const th  = 'text-align:right;white-space:nowrap;padding:8px 14px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)';
+  const cells = (m, bold) => {
+    const w = bold ? ';font-weight:800' : '';
+    return `
+      <td style="${td}${w}">${fInt(m.leads)}</td>
+      <td style="${td}${w}">${fInt(m.pagos)}</td>
+      <td style="${td}${w}">${fInv(m.invest)}</td>
+      <td style="${td}${w}">${fCpl(m.cpl)}</td>
+      <td style="${td}${w}">${fInt(m.qualif)}</td>
+      <td style="${td}${w}">${fPct(m.taxa)}</td>
+      <td style="${td}${w}">${fInt(m.agend)}</td>
+      <td style="${td}${w}">${fInt(m.realiz)}</td>
+      <td style="${td}${w}">${fInt(m.prop)}</td>
+      <td style="${td};font-weight:800">${fInt(m.vendas)}</td>
+      <td style="${td}${w}">${fRec(m.receita)}</td>`;
+  };
+
+  const chipHtml = chips.map(c => `
+    <button onclick="setEvolSemCanal('${c.key.replace(/'/g,"\\'")}')"
+      style="border:1px solid ${c.key === evolSemCanal ? '#f0562e' : 'var(--border)'};background:${c.key === evolSemCanal ? 'rgba(240,86,46,.08)' : 'transparent'};
+      color:${c.key === evolSemCanal ? '#f0562e' : 'var(--text)'};border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:${c.key === evolSemCanal ? '700' : '600'};
+      cursor:pointer;white-space:nowrap">${c.label} <span style="opacity:.6;font-weight:600">${fmtN(c.n)}</span></button>`).join('');
+
+  host.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:18px;font-weight:800">Tabela semanal</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px">Todos os indicadores do período, semana a semana</div>
+      </div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:right;padding-top:4px">O seletor vale só para esta tabela</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px">${chipHtml}</div>
+    <div style="overflow-x:auto;margin-top:10px">
+      <table style="width:100%;min-width:900px;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="${th};text-align:left">Semana</th>
+            <th style="${th}">Leads</th><th style="${th}">Pagos</th><th style="${th}">Invest.</th><th style="${th}">CPL</th>
+            <th style="${th}">Qualif.</th><th style="${th}">Taxa</th><th style="${th}">Agend.</th><th style="${th}">Realiz.</th>
+            <th style="${th}">Prop.</th><th style="${th}">Vendas</th><th style="${th}">Receita</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `<tr class="evolsem-row" style="border-top:1px solid var(--border)">
+            <td style="padding:11px 14px;font-weight:700;white-space:nowrap">${fDate(r.label)}</td>${cells(r.m, false)}
+          </tr>`).join('')}
+          <tr style="border-top:2px solid var(--border);background:rgba(107,112,105,.06)">
+            <td style="padding:12px 14px;font-weight:800">Total</td>${cells(tot, true)}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--muted);line-height:1.7">
+      <b>Pagos</b> são os leads de Meta + Google, e é por eles que o <b>CPL</b> divide — não pelo total, que inclui orgânico e não rastreado.
+      <b>Invest.</b> soma as duas mídias. <b>Vendas</b> e <b>receita</b> entram pela <b>data de fechamento</b>; o resto pela data de criação.
+      Semanas alinhadas na segunda-feira, aparadas na janela do período.
+    </div>`;
+}
+
 function renderMensuracao(){
+  try { renderEvolSemanal(); } catch(e){ console.warn('renderEvolSemanal falhou', e); }
   const D=MENS_DATA, G=MENS_GOALS;
   const {ws, lbls} = MENS_PERIOD_MAP[currentPeriod] || MENS_PERIOD_MAP['30d'];
   const sum=(ch,f)=>ws.reduce((s,w)=>s+(D[ch][w][f]||0),0);
