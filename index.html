@@ -997,6 +997,9 @@
   <div class="ds-card">
     <div id="diag-canal-content"></div>
   </div>
+  <div class="ds-card" style="margin-top:18px">
+    <div id="diag-qualif-canal"></div>
+  </div>
 
 
 </div>
@@ -4138,57 +4141,50 @@ function renderDiagnostico() {
   // Total de leads que o bot trabalhou (base honesta de eficiência)
   const botTotal = botBase.length;
 
-  // ── Por canal · eficiência financeira (buckets reais) ────────────────
-  // Classificador único de origem → bucket. Ordem importa: 'meta' primeiro
-  // (pega "Meta Ads" e "Meta+Ads"), depois google, buckets específicos, sem
-  // origem por último. Usado tanto pros leads (baseTotal) quanto pras vendas
-  // (closerVendas), pra volume e receita caírem no mesmo canal.
-  const _bucketOf = (origem) => {
-    const o = (origem || '').replace(/\+/g, ' ').toLowerCase().trim();
-    if (!o) return 'sem_origem';
-    if (o.includes('meta')) return 'meta';
-    if (o.includes('google')) return 'google';
-    if (o.includes('indica')) return 'indicacao';
-    if (o.includes('ibr') || o.includes('propriet')) return 'ibr';
-    if (o.includes('disparo') || o.includes('duque') || o.includes('outbound') || o.includes('bdr')) return 'outbound';
-    return 'outros';
+  // ── Por origem · agregação única (financeiro + qualificação) ─────────
+  // Classificador de origem → canal. Meta e Google agrupam todas as variantes
+  // ("Meta Ads", "Meta+Ads", "google", "Google+Ads"); origem vazia vira "Não
+  // rastreado"; qualquer outra vira uma linha própria com o rótulo original
+  // (Indicação, Disparo, IBR…). Mesmo classificador pros leads (baseTotal) e
+  // pras vendas (closerVendas), pra volume e receita caírem no mesmo canal.
+  const _META_C = '#f0562e', _GOOGLE_C = '#0f9d8f', _GRAY_C = '#9aa0a6';
+  const _originOf = (origem) => {
+    const raw = (origem || '').replace(/\+/g, ' ').trim();
+    const o = raw.toLowerCase();
+    if (!o)                return {key:'__none', label:'Não rastreado', color:_GRAY_C,   paid:false};
+    if (o.includes('meta'))   return {key:'meta',   label:'Meta Ads',   color:_META_C,   paid:true};
+    if (o.includes('google')) return {key:'google', label:'Google Ads', color:_GOOGLE_C, paid:true};
+    return {key:o, label:raw, color:_GRAY_C, paid:false};
   };
-  const CH_DEFS = [
-    {key:'meta',       label:'Meta Ads',       color:'#f0562e'},
-    {key:'google',     label:'Google Ads',     color:'#0f9d8f'},
-    {key:'indicacao',  label:'Indicação',      color:'#d97706'},
-    {key:'ibr',        label:'IBR',            color:'#7c3aed'},
-    {key:'outbound',   label:'Duque/Outbound', color:'#0891b2'},
-    {key:'sem_origem', label:'Sem origem',     color:'#94a3b8'},
-    {key:'outros',     label:'Outros',         color:'#6b7280'},
-  ];
   const _chAgg = {};
-  CH_DEFS.forEach(d => { _chAgg[d.key] = {...d, n:0, q:0, opp:0, vendas:0, receita:0, invest:0}; });
-  // Volume, qualificação e oportunidade vêm da base do funil (SDR + Nutrição).
-  // Oportunidade = reunião agendada (padrão de CPO do IMR; no IBR é realizada).
+  const _touch = (origem) => {
+    const d = _originOf(origem);
+    if (!_chAgg[d.key]) _chAgg[d.key] = {...d, n:0, q:0, opp:0, realiz:0, vendas:0, receita:0, invest:0};
+    return _chAgg[d.key];
+  };
+  // Volume, qualificação, oportunidade e reuniões vêm da base do funil (SDR +
+  // Nutrição). Oportunidade = reunião agendada (padrão de CPO do IMR; no IBR é
+  // realizada). "Reuniões" (tooltip da qualificação) = reunião realizada.
   baseTotal.forEach(l => {
-    const b = _chAgg[_bucketOf(l.origem)];
+    const b = _touch(l.origem);
     b.n++;
-    if (l.qualified)        b.q++;
-    if (l.reuniao_agendada) b.opp++;
+    if (l.qualified)         b.q++;
+    if (l.reuniao_agendada)  b.opp++;
+    if (l.reuniao_realizada) b.realiz++;
   });
   // Venda e receita vêm do Closer (venda válida, closed_at na janela).
-  closerVendas.forEach(v => {
-    const b = _chAgg[_bucketOf(v.origem)];
-    b.vendas++;
-    b.receita += (v.price || 0);
-  });
-  // Gasto medido: só Meta e Google têm mídia paga → só eles têm investimento
-  // na janela (mesmo fonte da Mensuração: soma de todos os adsets/campanhas).
+  closerVendas.forEach(v => { const b = _touch(v.origem); b.vendas++; b.receita += (v.price || 0); });
+  // Gasto medido: só Meta e Google têm mídia paga → só eles têm investimento na
+  // janela (mesmo fonte da Mensuração: soma de todos os adsets/campanhas).
   const _M = (typeof META_RAW   !== 'undefined' && META_RAW)   ? META_RAW   : {};
   const _G = (typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW) ? GOOGLE_RAW : {};
-  _chAgg.meta.invest   = _sumSpendInWindow(_M.adset || {}, win);
-  _chAgg.google.invest = _sumSpendInWindow((_G && _G.campaign) || {}, win);
+  if (_chAgg.meta)   _chAgg.meta.invest   = _sumSpendInWindow(_M.adset || {}, win);
+  if (_chAgg.google) _chAgg.google.invest = _sumSpendInWindow((_G && _G.campaign) || {}, win);
 
-  const chRows = CH_DEFS.map(d => _chAgg[d.key])
+  const chRows = Object.values(_chAgg)
     .filter(r => r.n > 0 || r.vendas > 0)   // canal aparece se teve lead OU venda
-    // Paga primeiro (por investimento), depois o resto por receita e volume.
-    .sort((a,b) => (b.invest - a.invest) || (b.receita - a.receita) || (b.n - a.n));
+    // Paga primeiro (por investimento), depois o resto por volume e receita.
+    .sort((a,b) => (b.invest - a.invest) || (b.n - a.n) || (b.receita - a.receita));
 
   // ── Sinais preditivos ──────────────────────────────────
   const qualGroup = sdr.filter(l => l.qualified);
@@ -4651,8 +4647,30 @@ function renderDiagnostico() {
   const _numStrong = _num + ';font-weight:700';
   const _bd    = 'border-left:1px solid var(--border)';
 
-  const _row = r => `
-    <tr style="border-top:1px solid var(--border)">
+  // CSS injetado uma vez (hover das linhas + tooltip da qualificação por canal).
+  if (!document.getElementById('canal-css')) {
+    const st = document.createElement('style');
+    st.id = 'canal-css';
+    st.textContent = `
+      .effin-row:hover{background:rgba(240,86,46,.045)}
+      .effin-paid{background:rgba(240,86,46,.05)}
+      .effin-paid:hover{background:rgba(240,86,46,.09)}
+      .qcanal-row{position:relative;display:grid;grid-template-columns:170px 1fr 132px;align-items:center;gap:14px;padding:5px 0}
+      .qcanal-lbl{display:flex;align-items:center;justify-content:flex-end;gap:9px;font-size:14px;font-weight:600;white-space:nowrap}
+      .qcanal-track{height:22px;border-radius:11px;background:rgba(107,112,105,.12);overflow:hidden}
+      .qcanal-fill{height:100%;border-radius:11px;min-width:6px}
+      .qcanal-val{font-size:13px;white-space:nowrap}
+      .qcanal-row[data-tip]:hover::after{content:attr(data-tip);position:absolute;left:180px;top:-6px;transform:translateY(-100%);
+        background:#1c1c1c;color:#fff;font-size:12.5px;font-weight:600;padding:9px 13px;border-radius:9px;white-space:nowrap;z-index:20;
+        box-shadow:0 6px 20px rgba(0,0,0,.25)}
+    `;
+    document.head.appendChild(st);
+  }
+
+  const _row = (r) => {
+    const cls = 'effin-row' + (r.paid ? ' effin-paid' : '');
+    return `
+    <tr class="${cls}" style="border-top:1px solid var(--border)">
       <td style="padding:12px;white-space:nowrap;font-weight:700">
         <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};margin-right:9px;vertical-align:1px"></span>${r.label}
       </td>
@@ -4668,6 +4686,16 @@ function renderDiagnostico() {
       <td style="${_num};${_bd}">${r.receita > 0 ? _fK(r.receita) : _dash}</td>
       <td style="${_numStrong}">${_roas(r.receita, r.invest)}</td>
     </tr>`;
+  };
+
+  // Organização: canais pagos (com custo medido) primeiro e destacados; depois
+  // um divisor e os canais sem gasto medido (só volume e receita).
+  const _paidRows = chRows.filter(r => r.paid);
+  const _freeRows = chRows.filter(r => !r.paid);
+  const _divider = (_paidRows.length && _freeRows.length)
+    ? `<tr><td colspan="12" style="padding:7px 12px;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:rgba(107,112,105,.06);border-top:1px solid var(--border)">Sem gasto medido · só volume e receita</td></tr>`
+    : '';
+  const _tbody = _paidRows.map(_row).join('') + _divider + _freeRows.map(_row).join('');
 
   document.getElementById('diag-canal-content').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:4px">
@@ -4689,7 +4717,7 @@ function renderDiagnostico() {
             <th colspan="2" style="${_grpTh};${_bd}">Venda</th>
             <th colspan="2" style="${_grpTh};${_bd}">Retorno</th>
           </tr>
-          <tr style="border-bottom:1px solid var(--border)">
+          <tr style="border-bottom:2px solid var(--border)">
             <th style="${_subTh};text-align:left">Canal</th>
             <th style="${_subTh};text-align:right;${_bd}">Investimento</th>
             <th style="${_subTh};text-align:right">Leads</th>
@@ -4704,13 +4732,40 @@ function renderDiagnostico() {
             <th style="${_subTh};text-align:right">ROAS</th>
           </tr>
         </thead>
-        <tbody>${chRows.map(_row).join('')}</tbody>
+        <tbody>${_tbody}</tbody>
       </table>
     </div>
     <div style="margin-top:14px;font-size:11px;color:var(--muted);line-height:1.7">
       Leads, qualificados e oportunidades vêm da base do funil (SDR + Nutrição, dedup por pessoa); vendas e receita vêm do Closer (fechamento na janela).
       <b>Oportunidade</b> = reunião agendada. Custos por resultado (CPL, CPL qualif., CPO, CAC, ROAS) só aparecem onde há gasto medido — <b>Meta</b> e <b>Google</b>.
     </div>`;
+
+  // ── Render: Qualificação por canal · ranking + tooltip ───
+  const _qRows = [...chRows].sort((a,b) => b.n - a.n);
+  const _maxQ = Math.max(..._qRows.map(r => r.n), 1);
+  // "Melhor taxa" só entre canais com volume relevante (evita 1 lead a 100%).
+  const _MIN_VOL = 20;
+  const _comVol = _qRows.filter(r => r.n >= _MIN_VOL);
+  const _melhor = _comVol.slice().sort((a,b) => (b.q/b.n) - (a.q/a.n))[0];
+  const _qRowHtml = _qRows.map(r => {
+    const tx = r.n > 0 ? (r.q / r.n * 100) : 0;
+    const w  = Math.max(r.n / _maxQ * 100, 2);
+    const tip = `${r.label}: ${fmtN(r.n)} leads · ${r.q} qualificados · ${r.realiz} reuniões`;
+    return `
+      <div class="qcanal-row" data-tip="${tip.replace(/"/g,'&quot;')}">
+        <div class="qcanal-lbl"><span style="width:9px;height:9px;border-radius:50%;background:${r.color};flex:0 0 auto"></span>${r.label}</div>
+        <div class="qcanal-track"><div class="qcanal-fill" style="width:${w}%;background:${r.color}"></div></div>
+        <div class="qcanal-val"><b style="font-size:15px">${fmtN(r.n)}</b> <span style="color:var(--muted)">${tx.toFixed(0)}% qualif.</span></div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('diag-qualif-canal').innerHTML = `
+    <div style="font-size:18px;font-weight:800">Qualificação por canal</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:3px;margin-bottom:16px">Volume de leads e taxa de qualificação por origem</div>
+    <div style="border-top:1px solid var(--border);padding-top:14px">${_qRowHtml}</div>
+    ${_melhor ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)">
+      Melhor taxa de qualificação entre canais com volume: <b style="color:var(--text)">${_melhor.label}</b> com <b style="color:var(--text)">${(_melhor.q/_melhor.n*100).toFixed(0)}%</b>.
+    </div>` : ''}`;
 
   // ── Render: Reativados · leads com tag "lead reativado" ────
   (function renderReativados() {
