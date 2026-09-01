@@ -1936,6 +1936,42 @@
   </div>
 </dialog>
 
+<!-- Dialog explicativo · como "Reunião Realizada" é contada -->
+<dialog id="info-reuniao" style="padding:0;border:none;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);background:var(--surface);color:var(--text);max-width:min(560px,92vw);width:520px">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px">Como contamos</div>
+      <div style="font-size:15px;font-weight:800">🤝 Reunião Realizada</div>
+    </div>
+    <button type="button" onclick="document.getElementById('info-reuniao').close()" title="Fechar" style="width:32px;height:32px;padding:0;font-size:18px;line-height:1;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;cursor:pointer;flex-shrink:0;font-family:inherit">×</button>
+  </div>
+  <div style="padding:18px 22px;font-size:13px;line-height:1.65;color:var(--text)">
+    <p style="margin:0 0 12px">
+      A reunião conta no período em que <b>aconteceu</b> — pela data da tarefa
+      <b>"Meeting"</b> no Kommo, igual à conferência manual do time. Uma reunião de
+      agosto de um lead que entrou em julho conta em <b>agosto</b> (antes o dash
+      contava no mês de entrada do lead, e por isso o número vinha abaixo do real).
+    </p>
+    <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin:0 0 12px">
+      <div style="font-weight:700;margin-bottom:6px;color:#22c55e">✅ Conta como realizada</div>
+      <ul style="margin:0;padding-left:18px">
+        <li>Lead com <b>reunião marcada no SDR</b> (status "Reunião Realizada" ou tag), <b>ou</b></li>
+        <li>Lead que <b>chegou ao Closer</b> — só sobe de pipeline quem reuniu (inclui indicação/Duque/IBR que caem direto no Closer, e vendas ganhas).</li>
+      </ul>
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin:0 0 12px">
+      <div style="font-weight:700;margin-bottom:6px;color:#e85d28">⛔ NÃO conta como realizada</div>
+      <ul style="margin:0;padding-left:18px">
+        <li>Quem só tem a tarefa de reunião fechada mas <b>não avançou</b> no funil (provável <b>no-show</b>) — entra apenas em "Reunião Agendada".</li>
+      </ul>
+    </div>
+    <p style="margin:0;color:var(--muted);font-size:12px">
+      Deduplicado <b>por pessoa</b> (telefone → e-mail): o mesmo lead com card no SDR
+      e no Closer conta <b>1</b> reunião.
+    </p>
+  </div>
+</dialog>
+
 <!-- Dialog do "Período personalizado" · reutilizado por todas as abas -->
 <dialog id="custom-period-dialog" style="padding:0;border:none;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:340px;background:var(--surface);color:var(--text)">
   <form method="dialog" onsubmit="event.preventDefault(); applyCustomPeriod()" style="padding:22px 24px">
@@ -4496,7 +4532,7 @@ function renderDiagnostico() {
      sparkData:wkTot.map(w=>w.leads), sparkColor:'#3b82f6'},
     {lbl:'Leads qualificados', val:fmtN(qualif),      iconColor:'#8b5cf6',
      trend:tdQualif, sub: leadsTotal > 0 ? `${(qualif/leadsTotal*100).toFixed(1)}% da base` : 'sem base', sparkData:wkTot.map(w=>w.qualif), sparkColor:'#8b5cf6'},
-    {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed',
+    {lbl:'Reuniões',         val:fmtN(realiz),        iconColor:'#7c3aed', info:'info-reuniao',
      trend:tdRealiz, sub:fmtP(txR)+' do total de leads', sparkData:wkTot.map(w=>w.realiz), sparkColor:'#7c3aed'},
     {lbl:'Vendas',           val:fmtN(vendas),        iconColor:'#16a34a',
      trend:{pct:0,cls:'neut',txt:''},
@@ -4506,7 +4542,7 @@ function renderDiagnostico() {
      sparkData:wkTot.map(w=>w.vendas), sparkColor:'#16a34a'},
 
     // ── Linha 2 · Taxas de conversão (3 taxas) ──
-    {lbl:'Tx. Reunião',      val:fmtP(txReuniao),     iconColor:'#a855f7',
+    {lbl:'Tx. Reunião',      val:fmtP(txReuniao),     iconColor:'#a855f7', info:'info-reuniao',
      trend:tdTxReu,
      sub:`${realiz} reuniões realizadas ÷ ${fmtN(leadsTotal)} leads`, sparkData:wkTot.map(w=>w.leads>0 ? (w.realiz/w.leads*100) : 0), sparkColor:'#a855f7'},
     {lbl:'Tx. Conversão Closer', val:fmtP(txConvCloser), iconColor:'#c2410c',
@@ -4535,7 +4571,7 @@ function renderDiagnostico() {
   const tileHtml = (t, i) => `
     <div class="ds-kpi">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div class="lbl">${t.lbl}</div>
+        <div class="lbl">${t.lbl}${t.info ? ` <button type="button" onclick="document.getElementById('${t.info}').showModal()" title="Como é contado?" style="width:15px;height:15px;padding:0;margin-left:3px;font-size:10px;font-weight:700;line-height:15px;text-align:center;border:none;border-radius:50%;background:var(--surface2);color:var(--muted);cursor:pointer;vertical-align:1px;font-family:inherit">i</button>` : ''}</div>
         ${t.trend.txt && t.trend.txt !== '—' ? `<span class="delta-pill ${t.trend.cls}">${t.trend.txt}</span>` : ''}
       </div>
       <div class="val">${t.val}</div>
