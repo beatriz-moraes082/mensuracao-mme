@@ -1946,6 +1946,15 @@
     <button type="button" onclick="document.getElementById('info-reuniao').close()" title="Fechar" style="width:32px;height:32px;padding:0;font-size:18px;line-height:1;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;cursor:pointer;flex-shrink:0;font-family:inherit">×</button>
   </div>
   <div style="padding:18px 22px;font-size:13px;line-height:1.65;color:var(--text)">
+    <!-- Números vivos do período (preenchidos por openReuniaoInfo) -->
+    <div id="info-reuniao-live" style="background:rgba(59,130,246,.06);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 12px"></div>
+    <div style="background:var(--surface2);border-radius:10px;padding:11px 14px;margin:0 0 12px;font-size:12px;line-height:1.55">
+      <b style="color:#3b82f6">Por pessoa × por evento</b><br>
+      O dash conta <b>reunião única por pessoa</b> (régua oficial). O time conta
+      <b>por evento</b> — se o lead <b>remarca</b>, conta de novo. Por isso o número
+      deles é maior: não é erro, é a remarcação sendo contada 2×. A taxa de
+      comparecimento fica mais fiel na régua por pessoa.
+    </div>
     <p style="margin:0 0 12px">
       A reunião conta no período em que <b>aconteceu</b> — pela data da tarefa
       <b>"Meeting"</b> no Kommo, igual à conferência manual do time. Uma reunião de
@@ -2148,9 +2157,11 @@ function buildMeetingIndex() {
   const sdr    = KOMMO_RAW.sdr    || [];
   const closer = KOMMO_RAW.closer || [];
   // Datas de tarefa "Meeting" por lead_id: concluída (reunião ocorreu) e agendada.
-  const doneAt = {}, schedAt = {};
+  // taskCount = nº de tarefas Meeting no card (usado pra contar remarcações/eventos).
+  const doneAt = {}, schedAt = {}, taskCount = {};
   for (const t of tasks) {
     if (t.task_type_id !== 2 || !t.lead_id) continue;
+    taskCount[t.lead_id] = (taskCount[t.lead_id] || 0) + 1;
     const ts = t.complete_till || t.updated_at || t.created_at || 0;
     if (!ts) continue;
     if (ts > (schedAt[t.lead_id] || 0)) schedAt[t.lead_id] = ts;
@@ -2172,20 +2183,30 @@ function buildMeetingIndex() {
     if (!cur.origem && l.origem) cur.origem = l.origem;
     if (!cur.score  && l.score)  cur.score  = l.score;
   };
+  // Acumula, por pessoa agendada, nº de agendamentos (tarefas Meeting) e se remarcou.
+  // "Por evento" = cada agendamento conta (remarcação inclusa) = régua manual do time.
+  const RESCHED_TAG = 'reagendar-reunião';
+  const accEv = (map, k, l) => {
+    const cur = map.get(k); if (!cur) return;
+    cur.ev = (cur.ev || 0) + (taskCount[l.id] || 0);
+    if ((l.tags || []).includes(RESCHED_TAG)) cur.resched = true;
+  };
   const held = new Map(), sched = new Map();
   for (const l of sdr) {
     const k = _leadDedupKey(l);
     if (l.reuniao_realizada) add(held, k, heldCand(l), l);
-    if (l.reuniao_agendada || l.reuniao_realizada) add(sched, k, schedCand(l), l);
+    if (l.reuniao_agendada || l.reuniao_realizada) { add(sched, k, schedCand(l), l); accEv(sched, k, l); }
   }
   for (const l of closer) {
     if (l.status === _CLO_ENTRADA_ST) continue;   // ainda não reuniu
     const k = _leadDedupKey(l);
     add(held,  k, heldCand(l),  l);
-    add(sched, k, schedCand(l), l);
+    add(sched, k, schedCand(l), l); accEv(sched, k, l);
   }
   MEETING_HELD  = [...held ].map(([key,v]) => ({key, at:v.at, origem:v.origem, score:v.score}));
-  MEETING_SCHED = [...sched].map(([key,v]) => ({key, at:v.at, origem:v.origem, score:v.score}));
+  // ev = nº de agendamentos (>=1); resched = remarcou (2+ tarefas OU tag reagendar).
+  MEETING_SCHED = [...sched].map(([key,v]) => ({key, at:v.at, origem:v.origem, score:v.score,
+    ev: Math.max(v.ev || 0, 1), resched: !!v.resched || (v.ev || 0) >= 2}));
 }
 
 // Conta reuniões de um índice dentro da janela, opcionalmente por canal.
@@ -2198,6 +2219,40 @@ function countMeetings(index, win, canalK) {
     n++;
   }
   return n;
+}
+
+// Agendadas no período em duas réguas: por PESSOA (única) e por EVENTO (com
+// remarcação, = régua manual do time). Também quantas pessoas remarcaram.
+function agendadaBreakdown(win, canalK) {
+  let pessoas = 0, eventos = 0, remarcaram = 0;
+  for (const e of MEETING_SCHED) {
+    if (!_inWindow(e.at, win)) continue;
+    if (canalK && canalK !== 'all' && canalOf(e.origem).k !== canalK) continue;
+    pessoas++; eventos += (e.ev || 1); if (e.resched) remarcaram++;
+  }
+  return { pessoas, eventos, remarcaram };
+}
+
+// Abre o pop-up "Como Reunião é contada" preenchendo os números do período atual
+// (por pessoa × por evento) — serve de ponte com a conferência manual do time.
+function openReuniaoInfo() {
+  const el = document.getElementById('info-reuniao-live');
+  if (el && typeof periodWindow === 'function') {
+    const ref = (KOMMO_RAW && KOMMO_RAW.fetched_at) ? new Date(KOMMO_RAW.fetched_at) : new Date();
+    const win = periodWindow(currentPeriod, ref);
+    const b = agendadaBreakdown(win, 'all');
+    const realiz = countMeetings(MEETING_HELD, win, 'all');
+    const per = (typeof periodLabel === 'function') ? periodLabel(currentPeriod, win, false) : '';
+    el.innerHTML =
+      `<div style="font-weight:700;margin-bottom:6px">Neste período (${per.split('·')[0].trim()})</div>` +
+      `<table style="width:100%;border-collapse:collapse;font-size:12.5px">` +
+      `<tr><td style="padding:3px 0">🤝 Reuniões realizadas (por pessoa)</td><td style="text-align:right;font-weight:800">${realiz}</td></tr>` +
+      `<tr><td style="padding:3px 0">📅 Agendadas — <b>por pessoa</b> (oficial)</td><td style="text-align:right;font-weight:800">${b.pessoas}</td></tr>` +
+      `<tr><td style="padding:3px 0;color:var(--muted)">📅 Agendadas — por evento (com remarcação)</td><td style="text-align:right;color:var(--muted);font-weight:700">${b.eventos}</td></tr>` +
+      `<tr><td style="padding:3px 0;color:var(--muted)">↻ Pessoas que remarcaram</td><td style="text-align:right;color:var(--muted)">${b.remarcaram}</td></tr>` +
+      `</table>`;
+  }
+  document.getElementById('info-reuniao').showModal();
 }
 
 function _fmtDDMM(d) {
@@ -4571,7 +4626,7 @@ function renderDiagnostico() {
   const tileHtml = (t, i) => `
     <div class="ds-kpi">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-        <div class="lbl">${t.lbl}${t.info ? ` <button type="button" onclick="document.getElementById('${t.info}').showModal()" title="Como é contado?" style="width:15px;height:15px;padding:0;margin-left:3px;font-size:10px;font-weight:700;line-height:15px;text-align:center;border:none;border-radius:50%;background:var(--surface2);color:var(--muted);cursor:pointer;vertical-align:1px;font-family:inherit">i</button>` : ''}</div>
+        <div class="lbl">${t.lbl}${t.info ? ` <button type="button" onclick="openReuniaoInfo()" title="Como é contado?" style="width:15px;height:15px;padding:0;margin-left:3px;font-size:10px;font-weight:700;line-height:15px;text-align:center;border:none;border-radius:50%;background:var(--surface2);color:var(--muted);cursor:pointer;vertical-align:1px;font-family:inherit">i</button>` : ''}</div>
         ${t.trend.txt && t.trend.txt !== '—' ? `<span class="delta-pill ${t.trend.cls}">${t.trend.txt}</span>` : ''}
       </div>
       <div class="val">${t.val}</div>
