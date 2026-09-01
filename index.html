@@ -1283,15 +1283,15 @@
     </div>
   </div>
 
-  <!-- Nota explicativa: por que 'Reunião Realizada SDR' pode divergir de 'Entradas Closer' -->
+  <!-- Nota explicativa: como "Reunião Realizada" é contada -->
   <div style="margin-top:14px;padding:14px 18px;border-radius:10px;background:rgba(59,130,246,.06);border-left:3px solid #3b82f6;font-size:12px;line-height:1.6;color:var(--text)">
-    <b style="color:#3b82f6">📖 Por que "Reunião Realizada" (SDR) não é igual a "Entradas" (Closer)?</b>
+    <b style="color:#3b82f6">📖 Como "Reunião Realizada" é contada</b>
     <div style="margin-top:6px;color:var(--muted)">
-      Cada funil filtra pelo <code style="background:var(--surface2);padding:1px 5px;border-radius:4px">created_at</code> do seu próprio pipeline: o SDR olha leads <b>criados no SDR</b> no período, o Closer olha cards <b>criados no Closer</b> no período. Divergem porque:
+      A reunião conta no período em que <b>aconteceu</b> (data da tarefa "Meeting" no Kommo), não no mês em que o lead entrou — igual à conferência manual do time. Uma reunião de agosto de um lead de julho conta em <b>agosto</b>.
       <ul style="margin:6px 0 0 18px;padding:0">
-        <li>Um lead do SDR de meses anteriores pode ter subido pro Closer <b>hoje</b> — conta em "Entradas Closer" mas não em "Reunião Realizada SDR" do período.</li>
-        <li>Leads que caem direto no Closer (<b>indicação</b>, <b>Duque</b>, <b>IBR</b>, importação manual) somam nas Entradas sem passar pelo SDR.</li>
-        <li>Reuniões realizadas no SDR podem ainda não ter virado card no Closer (delay de promoção).</li>
+        <li>É considerada realizada quem tem <b>reunião marcada no SDR</b> (status/tag) <b>ou</b> chegou ao <b>Closer</b> (só sobe de pipeline quem reuniu) — inclui indicação/Duque/IBR que caem direto no Closer.</li>
+        <li>Deduplicada <b>por pessoa</b> (telefone/e-mail): mesmo lead com card no SDR e no Closer conta 1 reunião.</li>
+        <li><b>Não</b> conta quem só tem a tarefa de reunião fechada sem avançar no funil (provável <b>no-show</b>) — esse caso fica em "Reunião Agendada".</li>
       </ul>
     </div>
   </div>
@@ -2088,6 +2088,82 @@ function _isCampOrigin(origem) {
 function _leadDedupKey(l) {
   return (l && (l.dkey || l.ekey)) || ('id:' + (l && l.id));
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Índice de REUNIÕES por PESSOA — atribuídas à DATA em que a reunião aconteceu,
+// não ao mês em que o lead entrou. Corrige a subcontagem da conferência manual:
+//   1) Data real: usa a tarefa "Meeting" (task_type_id=2) concluída no Kommo —
+//      é o que o time conta na mão. Uma reunião de agosto de um lead de julho
+//      passa a contar em AGOSTO (antes sumia).
+//   2) Cobertura: reunião comprovada = flag do SDR (status "Reunião Realizada"/
+//      tag) OU o lead chegou ao Closer (só se reúne pra subir de pipeline) —
+//      recupera pessoas que só existem no Closer e não tinham flag no SDR.
+// "Realizada" = reunião que de fato aconteceu (comprovada). NÃO conta como
+// realizada quem só tem tarefa Meeting fechada sem avançar (provável no-show);
+// esse caso entra só em "agendada" (MEETING_SCHED).
+let MEETING_HELD = [];   // [{key, at, origem, score}] — deduplicado por pessoa
+let MEETING_SCHED = [];  // idem, mas reuniões agendadas (marcadas)
+const _CLO_ENTRADA_ST = 98168235;  // etapa de entrada do Closer (ainda sem reunião)
+
+function buildMeetingIndex() {
+  MEETING_HELD = []; MEETING_SCHED = [];
+  if (!KOMMO_RAW) return;
+  const tasks  = KOMMO_RAW.tasks  || [];
+  const sdr    = KOMMO_RAW.sdr    || [];
+  const closer = KOMMO_RAW.closer || [];
+  // Datas de tarefa "Meeting" por lead_id: concluída (reunião ocorreu) e agendada.
+  const doneAt = {}, schedAt = {};
+  for (const t of tasks) {
+    if (t.task_type_id !== 2 || !t.lead_id) continue;
+    const ts = t.complete_till || t.updated_at || t.created_at || 0;
+    if (!ts) continue;
+    if (ts > (schedAt[t.lead_id] || 0)) schedAt[t.lead_id] = ts;
+    if (t.is_completed && ts > (doneAt[t.lead_id] || 0)) doneAt[t.lead_id] = ts;
+  }
+  // Data da reunião por prioridade: tarefa Meeting (2) > closed_at (1) > criação (0).
+  // Evita datar a reunião no fechamento da venda (que pode ser meses depois).
+  const heldCand = l => doneAt[l.id] ? {at:doneAt[l.id], p:2}
+                      : l.closed_at  ? {at:l.closed_at, p:1}
+                      :                {at:l.created_at||0, p:0};
+  const schedCand = l => schedAt[l.id] ? {at:schedAt[l.id], p:2}
+                       : doneAt[l.id]  ? {at:doneAt[l.id], p:2}
+                       : l.closed_at   ? {at:l.closed_at, p:1}
+                       :                 {at:l.created_at||0, p:0};
+  const add = (map, k, cand, l) => {
+    const cur = map.get(k);
+    if (!cur) { map.set(k, {at:cand.at, p:cand.p, origem:l.origem, score:l.score}); return; }
+    if (cand.p > cur.p || (cand.p === cur.p && cand.at > cur.at)) { cur.at = cand.at; cur.p = cand.p; }
+    if (!cur.origem && l.origem) cur.origem = l.origem;
+    if (!cur.score  && l.score)  cur.score  = l.score;
+  };
+  const held = new Map(), sched = new Map();
+  for (const l of sdr) {
+    const k = _leadDedupKey(l);
+    if (l.reuniao_realizada) add(held, k, heldCand(l), l);
+    if (l.reuniao_agendada || l.reuniao_realizada) add(sched, k, schedCand(l), l);
+  }
+  for (const l of closer) {
+    if (l.status === _CLO_ENTRADA_ST) continue;   // ainda não reuniu
+    const k = _leadDedupKey(l);
+    add(held,  k, heldCand(l),  l);
+    add(sched, k, schedCand(l), l);
+  }
+  MEETING_HELD  = [...held ].map(([key,v]) => ({key, at:v.at, origem:v.origem, score:v.score}));
+  MEETING_SCHED = [...sched].map(([key,v]) => ({key, at:v.at, origem:v.origem, score:v.score}));
+}
+
+// Conta reuniões de um índice dentro da janela, opcionalmente por canal.
+function countMeetings(index, win, canalK) {
+  if (!win) return 0;
+  let n = 0;
+  for (const e of index) {
+    if (!_inWindow(e.at, win)) continue;
+    if (canalK && canalK !== 'all' && canalOf(e.origem).k !== canalK) continue;
+    n++;
+  }
+  return n;
+}
+
 function _fmtDDMM(d) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
@@ -2110,14 +2186,17 @@ function periodLabel(periodKey, win, isPartial) {
 
 // Agregações de etapa do funil. Extraídas pra que o recorte por canal use
 // exatamente as mesmas regras do funil geral — se uma etapa mudar, muda nos dois.
-function aggSdr(list) {
+// win/canalK opcionais: quando passados, "agend" e "concret" contam pela DATA da
+// reunião (índice MEETING_*), não pelo mês de entrada do lead — alinha com a
+// conferência manual. Sem win, mantém a contagem antiga por coorte (fallback).
+function aggSdr(list, win, canalK) {
   return {
     total:        list.length,
     qualificacao: list.filter(l => l.status === 98147487).length, // etapa Kommo "Qualificação" (em triagem)
     qualif:       list.filter(l => l.qualified).length,          // soma das 3 etapas: LQ + RA + VG
     lq:           list.filter(l => l.status === 98147491).length,
-    agend:        list.filter(l => l.reuniao_agendada).length,
-    concret:      list.filter(l => l.reuniao_realizada).length,
+    agend:        win ? countMeetings(MEETING_SCHED, win, canalK) : list.filter(l => l.reuniao_agendada).length,
+    concret:      win ? countMeetings(MEETING_HELD,  win, canalK) : list.filter(l => l.reuniao_realizada).length,
     perdidos:     list.filter(l => l.perda).length,
   };
 }
@@ -2142,7 +2221,7 @@ function computeFunnelForPeriod(kommo, periodKey, refDate) {
   const isPartial = win.to.getTime() >= today.getTime() - 86400000;  // janela termina hoje
 
   const sdrInP = (kommo.sdr || []).filter(l => _inWindow(l.created_at, win));
-  const sdr = aggSdr(sdrInP);
+  const sdr = aggSdr(sdrInP, win, 'all');
 
   const closerCreated = (kommo.closer || []).filter(l => _inWindow(l.created_at, win));
   const closerWonInP  = (kommo.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
@@ -2462,7 +2541,7 @@ function renderFunilCanal() {
   const cloPerda = (KOMMO_RAW.closer || []).filter(l => l.perda && _inWindow(l.closed_at, win));
 
   const porCanal = k => ({
-    sdr:    aggSdr(sdrInP.filter(l => canalOf(l.origem).k === k)),
+    sdr:    aggSdr(sdrInP.filter(l => canalOf(l.origem).k === k), win, k),
     closer: aggCloser(cloCriad.filter(l => canalOf(l.origem).k === k),
                       cloGanha.filter(l => canalOf(l.origem).k === k),
                       cloPerda.filter(l => canalOf(l.origem).k === k)),
@@ -2484,7 +2563,7 @@ function renderFunilCanal() {
     if (nomes.length === 1) resto.l = nomes[0].length > 26 ? nomes[0].slice(0, 25) + '…' : nomes[0];
     else if (nomes.length > 1) resto.l = `Outros (${nomes.length} origens)`;
   }
-  const geral = {sdr: aggSdr(sdrInP), closer: aggCloser(cloCriad, cloGanha, cloPerda)};
+  const geral = {sdr: aggSdr(sdrInP, win, 'all'), closer: aggCloser(cloCriad, cloGanha, cloPerda)};
 
   if (funisCanal !== 'all' && !linhas.some(r => r.k === funisCanal)) funisCanal = 'all';
 
@@ -4166,8 +4245,11 @@ function renderDiagnostico() {
   // Numeradores sobre baseTotal (mesma lista deduplicada do denominador) —
   // antes vinham da lista SDR bruta, o que misturava bases.
   const qualif  = baseTotal.filter(l => l.qualified).length;
-  const agend   = baseTotal.filter(l => l.reuniao_agendada).length;
-  const realiz  = baseTotal.filter(l => l.reuniao_realizada).length;
+  // Reuniões agendadas/realizadas = contadas pela DATA da reunião (índice
+  // MEETING_*), não pelo mês de entrada do lead. Alinha com a conferência
+  // manual e com a tabela mensal / funil de conversão.
+  const agend   = countMeetings(MEETING_SCHED, win, 'all');
+  const realiz  = countMeetings(MEETING_HELD,  win, 'all');
   // Closer: vendas filtradas por closed_at, demais por created_at
   const closerC = KOMMO_DATA.closer.filter(l => _inWindow(l.created_at, win));
   const closerVendas = KOMMO_DATA.closer.filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
@@ -4968,7 +5050,9 @@ function renderDiagnostico() {
       }
       const leadsM = baseM.length;
       const lqM  = baseM.filter(l => l.qualified).length;
-      const reuM = baseM.filter(l => l.reuniao_realizada).length;
+      // Reuniões realizadas = contadas pela DATA da reunião (não pelo mês de
+      // entrada do lead). Alinha com a conferência manual do time.
+      const reuM = MEETING_HELD.filter(e => monthKey(e.at) === m).length;
       const venM = closerAll.filter(l => l.venda && isValidVenda(l) && monthKey(l.closed_at) === m).length;
       // Investimento = Meta + Google (do JSON) OU valor manual histórico (Jan-Mar/26)
       const invM = (metaByMonth[m]||0) + (googleByMonth[m]||0) + (INVEST_HISTORICO[m]||0);
@@ -5033,9 +5117,10 @@ function renderDiagnostico() {
       const d = dayKey(l.created_at);
       if (leadsByDay[d] !== undefined) leadsByDay[d]++;
     }
-    for (const l of baseTotal) {
-      if (!l.reuniao_realizada) continue;
-      const d = dayKey(l.created_at);
+    // Reuniões/dia = contadas pela DATA da reunião (índice MEETING_HELD),
+    // não pela data de entrada do lead.
+    for (const e of MEETING_HELD) {
+      const d = dayKey(e.at);
       if (reuByDay[d] !== undefined) reuByDay[d]++;
     }
     for (const l of closerVendas) {
@@ -6448,6 +6533,7 @@ async function loadDashboardData() {
     KOMMO_DATA = kommoRes;
     META_SPEND = metaRes;
     GOOGLE_SPEND = googleRes;
+    buildMeetingIndex();   // índice de reuniões por data real (usa KOMMO_RAW.tasks)
 
     // Detecta meses disponíveis. Default = mês com maior volume de leads SDR
     // (evita cair num mês recém-virado com 1-2 leads e zero spend Meta).
