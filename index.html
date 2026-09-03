@@ -250,6 +250,20 @@
     .mens-channel-card .mens-table tr.fw-row td:first-child{background:rgba(238,77,32,.06)!important}
     .mens-channel-card .mens-table tr.group-label td:first-child{background:rgba(0,0,0,.025)!important}
     .mens-channel-card .mens-table tr.sep-row td:first-child{background:var(--bg)!important}
+    /* Tabela desempenho por campanha (uso interno Trilha) */
+    .camp-table{width:100%;border-collapse:collapse;font-size:12px}
+    .camp-table thead th{padding:10px 12px;text-align:right;font-size:10px;font-weight:700;
+      letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+      border-bottom:2px solid var(--border);white-space:nowrap}
+    .camp-table thead th.ct-name{text-align:left;min-width:200px}
+    .camp-table td{padding:8px 12px;border-top:1px solid var(--border)}
+    .camp-table td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+    .camp-table td.ct-name{text-align:left;color:var(--text);font-weight:500}
+    .camp-table td.ct-strong{font-weight:800}
+    .camp-table tr.ct-group td{background:linear-gradient(to right,rgba(232,93,40,.10),transparent);
+      font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--text);padding:9px 12px}
+    .camp-table tr.ct-sub td{background:rgba(0,0,0,.035);font-weight:800;border-top:2px solid var(--border);color:var(--text)}
+    .camp-table tbody tr:not(.ct-group):not(.ct-sub):hover td{background:rgba(238,77,32,.04)}
     /* Coluna Δ% */
     .mens-channel-card .mens-table .delta-th{background:rgba(245,166,35,.12)!important;color:var(--accent2);font-weight:800}
     .mens-channel-card .mens-table .delta-cell{background:rgba(245,166,35,.04);font-weight:700;font-size:11px}
@@ -1066,6 +1080,13 @@
       <p style="font-size:10.5px;color:var(--muted);margin-top:10px">
         Leads: Kommo CRM · Investimento: Meta Ads API (act_2352574621900370) + Google Ads API (customer 2416269127)
       </p>
+    </div>
+  </details>
+
+  <details class="ds-accordion" data-protected="trilha">
+    <summary><span>🔒 Ver desempenho por campanha/adset (funil + custo) · uso interno Trilha</span></summary>
+    <div class="acc-body">
+      <div id="camp-perf-wrap" style="overflow-x:auto"></div>
     </div>
   </details>
 
@@ -6876,6 +6897,184 @@ function renderEvolSemanal(){
       <b>Pagos</b> são os leads de Meta + Google, e é por eles que o <b>CPL</b> divide — não pelo total, que inclui orgânico e não rastreado.
       <b>Invest.</b> soma as duas mídias. <b>Vendas</b> e <b>receita</b> entram pela <b>data de fechamento</b>; o resto pela data de criação.
       Semanas alinhadas na segunda-feira, aparadas na janela do período.
+    </div>`;
+
+  // Tabela de desempenho por campanha/adset (uso interno Trilha)
+  if (typeof renderCampanhas === 'function') renderCampanhas();
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Desempenho por campanha (Google) / adset (Meta) — uso interno Trilha
+   Espelha a mensuração externa: Gasto · Opo · Reuniões · Propostas ·
+   Em aberto · Vendas · Custo/proposta · Prop→venda.
+   · Gasto: real por entidade via _sumSpendInWindow (Google=campanha, Meta=adset —
+     não há gasto por campanha do Meta na API, por isso Meta agrega por adset)
+   · Opo (agendada) e Reuniões (realizada): leads SDR
+   · Propostas (= Em aberto + Vendas) / Em aberto / Vendas: leads Closer
+     (recupera atribuição via contact_id quando o card Closer perde audience/campaign)
+   · Janela: mês selecionado (currentMonth) — sincroniza com a tabela W1–W4 ao lado
+══════════════════════════════════════════════════════════════════════ */
+const GOOGLE_UTM_TO_CAMPAIGN = {
+  'performance-max':          '[Leads] [PMax] - IMR 16/03 #TP',
+  'leads-pmax-imr-24-06-tp':  '[Leads] [PMax] - IMR 24/06 #TP',
+  'sitelink-ipiocamarresort': '[Leads] [Search] - IMR 12/08 #TP',
+};
+
+function renderCampanhas() {
+  const wrap = document.getElementById('camp-perf-wrap');
+  if (!wrap) return;
+  const K = (typeof KOMMO_RAW !== 'undefined' && KOMMO_RAW) ? KOMMO_RAW : null;
+  if (!K) { wrap.innerHTML = ''; return; }
+
+  // Janela = mês selecionado (mesma da tabela W1–W4 ao lado)
+  const [yr, mo] = (currentMonth || '2026-04').split('-').map(Number);
+  const win = { from: new Date(yr, mo-1, 1, 0,0,0), to: new Date(yr, mo, 0, 23,59,59) };
+
+  const sdr           = (K.sdr || []).filter(l => _inWindow(l.created_at, win));
+  const closerCreated = (K.closer || []).filter(l => _inWindow(l.created_at, win));
+  const closerVendas  = (K.closer || []).filter(l => isValidVenda(l) && _inWindow(l.closed_at, win));
+  const _cids = new Set(closerCreated.map(l => l.id));
+  const closer = [...closerCreated, ...closerVendas.filter(l => !_cids.has(l.id))];
+
+  // contact_id → sdr (recupera audience/campaign/origem quando o Closer perde)
+  const sdrByCid = {};
+  for (const l of (K.sdr || [])) { const c = l.contact_id; if (c && !sdrByCid[c]) sdrByCid[c] = l; }
+  const _sdrFor   = l => sdrByCid[l.contact_id] || null;
+  const audOf     = l => l.audience || (_sdrFor(l) && _sdrFor(l).audience) || '';
+  const campOf    = l => l.campaign || (_sdrFor(l) && _sdrFor(l).campaign) || '';
+  const isMetaL   = l => /meta/i.test(l.origem||'')   || /meta/i.test((_sdrFor(l)   && _sdrFor(l).origem) || '');
+  const isGoogleL = l => /google/i.test(l.origem||'') || /google/i.test((_sdrFor(l) && _sdrFor(l).origem) || '');
+
+  // fuzzy match (nome do lead → nome da entidade de spend)
+  const _norm = s => (s||'').toString().toLowerCase().normalize('NFD')
+      .replace(/[̀-ͯ]/g,'').replace(/\+/g,' ').replace(/\s+/g,' ').trim();
+  const _lev = (a,b) => {
+    if (a===b) return 0; if (!a.length) return b.length; if (!b.length) return a.length;
+    const m=[]; for (let i=0;i<=b.length;i++) m[i]=[i]; for (let j=0;j<=a.length;j++) m[0][j]=j;
+    for (let i=1;i<=b.length;i++) for (let j=1;j<=a.length;j++)
+      m[i][j] = b[i-1]===a[j-1] ? m[i-1][j-1] : Math.min(m[i-1][j-1],m[i][j-1],m[i-1][j])+1;
+    return m[b.length][a.length];
+  };
+  function matchKey(name, keysNorm) {
+    const t = _norm(name); if (!t) return null;
+    if (keysNorm[t]) return keysNorm[t];
+    let best=null, bd=3;
+    for (const k in keysNorm) { const d=_lev(t,k); if (d<bd) { bd=d; best=keysNorm[k]; } }
+    return best;
+  }
+
+  const empty = () => ({ spend:0, opo:0, reun:0, prop:0, aberto:0, venda:0 });
+
+  // ── META (por adset) ──────────────────────────────────────────────
+  const metaRows = {}; const metaKeysNorm = {};
+  Object.entries((typeof META_RAW !== 'undefined' && META_RAW && META_RAW.adset) || {}).forEach(([name,obj]) => {
+    metaRows[name] = Object.assign(empty(), { spend: _sumSpendInWindow({[name]:obj}, win) });
+    metaKeysNorm[_norm(name)] = name;
+  });
+  for (const l of sdr) {
+    if (!isMetaL(l)) continue;
+    const k = matchKey(l.audience, metaKeysNorm); if (!k) continue;
+    if (l.reuniao_agendada)  metaRows[k].opo++;
+    if (l.reuniao_realizada) metaRows[k].reun++;
+  }
+  for (const l of closer) {
+    if (!isMetaL(l)) continue;
+    const k = matchKey(audOf(l), metaKeysNorm); if (!k) continue;
+    if (isValidVenda(l))  { metaRows[k].venda++;  metaRows[k].prop++; }
+    else if (l.proposta)  { metaRows[k].aberto++; metaRows[k].prop++; }
+  }
+
+  // ── GOOGLE (por campanha) ─────────────────────────────────────────
+  const gRows = {};
+  Object.entries((typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW && GOOGLE_RAW.campaign) || {}).forEach(([name,obj]) => {
+    gRows[name] = Object.assign(empty(), { spend: _sumSpendInWindow({[name]:obj}, win) });
+  });
+  const gCampFor = slug => {
+    const s = (slug||'').trim(); if (!s) return null;
+    if (GOOGLE_UTM_TO_CAMPAIGN[s] && gRows[GOOGLE_UTM_TO_CAMPAIGN[s]]) return GOOGLE_UTM_TO_CAMPAIGN[s];
+    const n = _norm(s); const names = Object.keys(gRows);
+    if (/search|sitelink|brand/.test(n)) return names.find(x => /search/i.test(x)) || null;
+    if (/pmax|performance/.test(n))      return names.filter(x => /pmax/i.test(x)).sort((a,b)=>gRows[b].spend-gRows[a].spend)[0] || null;
+    return null;
+  };
+  for (const l of sdr) {
+    if (!isGoogleL(l)) continue;
+    const k = gCampFor(l.campaign); if (!k) continue;
+    if (l.reuniao_agendada)  gRows[k].opo++;
+    if (l.reuniao_realizada) gRows[k].reun++;
+  }
+  for (const l of closer) {
+    if (!isGoogleL(l)) continue;
+    const k = gCampFor(campOf(l)); if (!k) continue;
+    if (isValidVenda(l))  { gRows[k].venda++;  gRows[k].prop++; }
+    else if (l.proposta)  { gRows[k].aberto++; gRows[k].prop++; }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────
+  const fR   = v => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+  const fN   = v => (v||0).toLocaleString('pt-BR');
+  const fPct = (a,b) => b>0 ? (a/b*100).toFixed(0)+'%' : '—';
+  const mesLbl = (typeof _monthLabel === 'function') ? _monthLabel(currentMonth) : currentMonth;
+
+  const rowHtml = (name, r) => `
+    <tr>
+      <td class="ct-name">${name}</td>
+      <td class="num">${r.spend>0 ? fR(r.spend) : '—'}</td>
+      <td class="num">${fN(r.opo)}</td>
+      <td class="num">${fN(r.reun)}</td>
+      <td class="num ct-strong">${fN(r.prop)}</td>
+      <td class="num">${fN(r.aberto)}</td>
+      <td class="num">${fN(r.venda)}</td>
+      <td class="num">${r.prop>0 && r.spend>0 ? fR(r.spend/r.prop) : '—'}</td>
+      <td class="num">${fPct(r.venda, r.prop)}</td>
+    </tr>`;
+
+  const buildGroup = (label, rowsObj) => {
+    const entries = Object.entries(rowsObj)
+      .filter(([,r]) => r.spend>0 || r.opo>0 || r.prop>0)
+      .sort((a,b) => b[1].spend - a[1].spend);
+    if (!entries.length) return '';
+    const sub = entries.reduce((s,[,r]) => { for (const k in s) s[k]+=r[k]; return s; }, empty());
+    const body = entries.map(([n,r]) => rowHtml(n, r)).join('');
+    return `
+      <tr class="ct-group"><td colspan="9">${label}</td></tr>
+      ${body}
+      <tr class="ct-sub">
+        <td>Subtotal ${label}</td>
+        <td class="num">${fR(sub.spend)}</td>
+        <td class="num">${fN(sub.opo)}</td>
+        <td class="num">${fN(sub.reun)}</td>
+        <td class="num">${fN(sub.prop)}</td>
+        <td class="num">${fN(sub.aberto)}</td>
+        <td class="num">${fN(sub.venda)}</td>
+        <td class="num">${sub.prop>0 ? fR(sub.spend/sub.prop) : '—'}</td>
+        <td class="num">${fPct(sub.venda, sub.prop)}</td>
+      </tr>`;
+  };
+
+  const groups = buildGroup('Google', gRows) + buildGroup('Meta', metaRows);
+  if (!groups) { wrap.innerHTML = `<p style="color:var(--muted);font-size:12px;padding:12px">Sem dados de campanha no mês selecionado.</p>`; return; }
+
+  wrap.innerHTML = `
+    <div class="mens-channel-card">
+      <div class="mens-channel-header">
+        <span>Desempenho por campanha · ${mesLbl}</span>
+        <span class="ch-meta">Google por campanha · Meta por adset (gasto real)</span>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="camp-table">
+        <thead><tr>
+          <th class="ct-name">Campanha</th><th>Gasto</th><th>Opo</th><th>Reuniões</th>
+          <th>Propostas</th><th>Em aberto</th><th>Vendas</th><th>Custo/proposta</th><th>Prop→venda</th>
+        </tr></thead>
+        <tbody>${groups}</tbody>
+      </table>
+      </div>
+      <p style="font-size:10.5px;color:var(--muted);margin:10px 4px 2px;line-height:1.6">
+        <b>Opo</b> = reunião agendada · <b>Reuniões</b> = realizada · <b>Propostas</b> = em aberto + vendas (chegou à proposta) ·
+        <b>Em aberto</b> = proposta ainda aberta · <b>Prop→venda</b> = vendas ÷ propostas.
+        Gasto real por entidade; o Meta agrega por <b>adset</b> (a API não expõe gasto por campanha). Janela: mês selecionado.
+      </p>
     </div>`;
 }
 
