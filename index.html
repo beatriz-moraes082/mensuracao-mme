@@ -1408,8 +1408,13 @@
   </div>
 
   <!-- Perfil & audiência -->
-  <div class="ds-sec"><h3>Perfil &amp; audiência</h3><span class="sub" id="vis-perfil-sub">Instagram @mmevacationclub · custo = gasto de tráfego ÷ métrica (blended)</span></div>
-  <div class="ds-grid-4">
+  <div class="ds-sec"><h3>Perfil &amp; audiência</h3><span class="sub" id="vis-perfil-sub">Instagram @mmevacationclub · custo = investimento de topo ÷ métrica (blended)</span></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px">
+    <div class="ds-kpi accent">
+      <div class="lbl">Investimento</div>
+      <div class="val" id="vis-invest">—</div>
+      <div class="sub" id="vis-invest-sub">campanhas de topo de funil</div>
+    </div>
     <div class="ds-kpi" style="border-top:3px solid #6366f1">
       <div class="lbl">Visitas ao perfil</div>
       <div class="val" id="vis-visitas">—</div>
@@ -2978,6 +2983,8 @@ function renderVisibilidade() {
   const perDay = n => nDays ? Math.round(n/nDays) : 0;
 
   // Perfil & audiência
+  setV('vis-invest', _fmtBRL(tot.spend));
+  setS('vis-invest-sub', nDays ? `topo de funil · ≈ ${_fmtBRL(tot.spend/nDays)}/dia` : 'campanhas de topo de funil');
   setV('vis-visitas', _fmtInt(tot.profile_views));
   setS('vis-visitas-sub', nDays ? `≈ ${_fmtInt(perDay(tot.profile_views))}/dia · ${nDays} dias` : 'sem dados no período');
   setV('vis-cpvisita', tot.profile_views ? _fmtBRL(cpv) : '—');
