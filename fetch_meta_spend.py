@@ -230,57 +230,76 @@ def fetch_visibility():
             for k, v in sorted(daily.items())}
 
 
+# Tipos de ação que contam como "interação/engajamento" de um criativo de anúncio.
+INTERACTION_TYPES = {'post_reaction', 'comment', 'post', 'onsite_conversion.post_save'}
+
 def fetch_top_content():
-    """Posts do Instagram @mmevacationclub (desde SINCE) com métricas de engajamento,
-    pra ranquear os 'top conteúdos'. Retorna lista de dicts com preview (thumbnail +
-    permalink). Os thumbnails do IG são URLs de CDN que expiram — como o cron re-roda
-    diariamente, ficam sempre frescos; o permalink nunca expira."""
-    from datetime import timedelta
+    """Top criativos dos ANÚNCIOS de topo de funil (campanhas com 'Topo de Funil' no
+    nome), ranqueados por engajamento (curtidas+coment.+compart.+salvamentos) desde
+    SINCE. Agrega o mesmo criativo veiculado em vários adsets (dedup por ad_name).
+    Retorna lista com preview (thumbnail do criativo + permalink do post no IG)."""
     G = 'https://graph.facebook.com/v21.0'
-    fields = ('id,caption,media_type,media_product_type,media_url,thumbnail_url,'
-              'permalink,timestamp,like_count,comments_count')
-    posts, url = [], f'{G}/{IG_ACCOUNT}/media'
-    params = {'access_token':TOKEN,'limit':50,'fields':fields}
-    stop = False
-    while url and not stop and len(posts) < 120:
-        d = requests.get(url, params=params).json()
-        if 'error' in d:
-            print(f'    ⚠️  media: {d["error"].get("message")}'); break
-        for m in d.get('data', []):
-            if (m.get('timestamp','') or '')[:10] < SINCE:
-                stop = True; break
-            posts.append(m)
-        if stop: break
-        url = d.get('paging', {}).get('next'); params = {}
+    agg = {}   # ad_name → métricas agregadas
+    for since, until in _month_chunks(SINCE, UNTIL):
+        url = f'{G}/{ACCOUNT}/insights'
+        params = {'access_token':TOKEN,'level':'ad',
+                  'fields':'ad_id,ad_name,campaign_name,spend,impressions,actions',
+                  'time_range':f'{{"since":"{since}","until":"{until}"}}','limit':500}
+        while url:
+            d = requests.get(url, params=params).json()
+            if 'error' in d:
+                print(f'    ⚠️  top ads {since}→{until}: {d["error"].get("message")}'); break
+            for r in d.get('data', []):
+                if 'topo de funil' not in (r.get('campaign_name') or '').lower():
+                    continue
+                name = (r.get('ad_name') or '—').strip()
+                a = agg.setdefault(name, {'name':name,'ad_id':r.get('ad_id'),
+                    'interactions':0,'reactions':0,'comments':0,'shares':0,'saves':0,
+                    'spend':0.0,'impressions':0,'_rep':-1})
+                counts = {t:0 for t in INTERACTION_TYPES}
+                for act in r.get('actions', []):
+                    if act['action_type'] in INTERACTION_TYPES:
+                        counts[act['action_type']] += int(float(act['value']))
+                inter = sum(counts.values())
+                a['interactions'] += inter
+                a['reactions']    += counts['post_reaction']
+                a['comments']     += counts['comment']
+                a['shares']       += counts['post']
+                a['saves']        += counts['onsite_conversion.post_save']
+                a['spend']        += float(r.get('spend', 0))
+                a['impressions']  += int(r.get('impressions', 0) or 0)
+                # guarda o ad_id da linha com mais interações (pra buscar o thumbnail)
+                if inter > a['_rep']:
+                    a['_rep'] = inter; a['ad_id'] = r.get('ad_id')
+            url = d.get('paging', {}).get('next'); params = {}
 
-    def _insights(mid):
-        for mset in ('reach,saved,shares,total_interactions,views','reach,saved,total_interactions'):
-            r = requests.get(f'{G}/{mid}/insights', params={'access_token':TOKEN,'metric':mset}).json()
-            if 'error' not in r:
-                return {x['name']: (x.get('values',[{}])[0].get('value') or 0) for x in r.get('data',[])}
-        return {}
+    top = sorted(agg.values(), key=lambda x: -x['interactions'])[:8]
 
-    out = []
-    for m in posts:
-        ins = _insights(m['id'])
-        cap = (m.get('caption') or '').replace('\n',' ').strip()
-        out.append({
-            'id':        m['id'],
-            'permalink': m.get('permalink',''),
-            'thumb':     m.get('thumbnail_url') or m.get('media_url') or '',
-            'type':      m.get('media_product_type') or m.get('media_type') or '',
-            'date':      (m.get('timestamp','') or '')[:10],
-            'caption':   cap[:120],
-            'reach':        int(ins.get('reach',0) or 0),
-            'views':        int(ins.get('views',0) or 0),
-            'saved':        int(ins.get('saved',0) or 0),
-            'shares':       int(ins.get('shares',0) or 0),
-            'comments':     int(m.get('comments_count',0) or 0),
-            'likes':        int(m.get('like_count',0) or 0),
-            'interactions': int(ins.get('total_interactions',0) or 0),
-        })
-    out.sort(key=lambda x: -x['interactions'])
-    return out
+    # Preview: o thumbnail_url do criativo vem em 64×64 (inútil). A imagem em alta
+    # está na mídia do IG por trás do anúncio (effective_instagram_media_id) — resolve
+    # 1080×1920. Fallback pro thumbnail_url do criativo se algo falhar.
+    for t in top:
+        thumb = permalink = ''
+        try:
+            cr = requests.get(f'{G}/{t["ad_id"]}', params={'access_token':TOKEN,
+                'fields':'creative{effective_instagram_media_id,instagram_permalink_url,image_url,thumbnail_url}'}
+                ).json().get('creative', {}) or {}
+            permalink = cr.get('instagram_permalink_url') or ''
+            imid = cr.get('effective_instagram_media_id')
+            if imid:
+                m = requests.get(f'{G}/{imid}', params={'access_token':TOKEN,
+                    'fields':'media_type,media_url,thumbnail_url,permalink'}).json()
+                if 'error' not in m:
+                    thumb = (m.get('media_url') if m.get('media_type') == 'IMAGE'
+                             else m.get('thumbnail_url')) or m.get('media_url') or ''
+                    permalink = permalink or m.get('permalink') or ''
+            if not thumb:
+                thumb = cr.get('image_url') or cr.get('thumbnail_url') or ''
+        except Exception:
+            pass
+        t['thumb'] = thumb; t['permalink'] = permalink
+        t.pop('_rep', None)
+    return top
 
 
 def main():
