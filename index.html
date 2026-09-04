@@ -924,6 +924,7 @@
   <button onclick="switchTab('evolucao',this)">Evolução Semanal</button>
   <button onclick="switchTab('analises',this)">Perfil do Qualificado</button>
   <button onclick="switchTab('funis',this)">Funis Comerciais</button>
+  <button onclick="switchTab('visibilidade',this)">Visibilidade de Marca</button>
   <button onclick="switchTab('atividades',this)">Atividades</button>
   <button onclick="switchTab('disparos',this)">E-mail Marketing</button>
   <button onclick="switchTab('vendas',this)">Vendas</button>
@@ -1372,6 +1373,100 @@
 
 </div>
 </div><!-- /tab-funis -->
+
+
+<!-- ================================================================
+     TAB · VISIBILIDADE DE MARCA (Instagram @mmevacationclub + anúncios)
+================================================================ -->
+<div id="tab-visibilidade" class="tab-pane">
+<div class="main">
+
+  <!-- Hero -->
+  <div class="hero-modern" style="grid-template-columns:1.2fr 1fr">
+    <div>
+      <div class="hl-eyebrow">Visibilidade de Marca</div>
+      <h2>Alcance e engajamento da marca</h2>
+      <div class="hl-sub">
+        Topo de funil: quanto a marca aparece e engaja. Visitas ao perfil e novos
+        seguidores vêm do Instagram <b>@mmevacationclub</b>; compartilhamentos,
+        salvamentos e comentários vêm do engajamento dos anúncios (Meta).
+      </div>
+      <div class="hl-pills">
+        <select class="period-select" id="vis-period-sel" onchange="setGlobalPeriod(this.value, this)">
+          <option value="w3">Esta semana</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="14d">Últimos 14 dias</option>
+          <option value="mes">Este mês</option>
+          <option value="mes_prev">Mês passado</option>
+          <option value="30d" selected>Últimos 30 dias</option>
+          <option value="max">Período máximo</option>
+          <option value="custom">Período personalizado…</option>
+        </select>
+      </div>
+    </div>
+    <div></div>
+  </div>
+
+  <!-- Perfil & audiência -->
+  <div class="ds-sec"><h3>Perfil &amp; audiência</h3><span class="sub" id="vis-perfil-sub">Instagram @mmevacationclub · custo = gasto de tráfego ÷ métrica (blended)</span></div>
+  <div class="ds-grid-4">
+    <div class="ds-kpi" style="border-top:3px solid #6366f1">
+      <div class="lbl">Visitas ao perfil</div>
+      <div class="val" id="vis-visitas">—</div>
+      <div class="sub" id="vis-visitas-sub">—</div>
+    </div>
+    <div class="ds-kpi">
+      <div class="lbl">Custo por visita</div>
+      <div class="val" id="vis-cpvisita">—</div>
+      <div class="sub" id="vis-cpvisita-sub">gasto ÷ visitas</div>
+    </div>
+    <div class="ds-kpi" style="border-top:3px solid #16a34a">
+      <div class="lbl">Novos seguidores</div>
+      <div class="val" id="vis-seguidores">—</div>
+      <div class="sub" id="vis-seguidores-sub">—</div>
+    </div>
+    <div class="ds-kpi">
+      <div class="lbl">Custo por seguidor</div>
+      <div class="val" id="vis-cpseguidor">—</div>
+      <div class="sub" id="vis-cpseguidor-sub">gasto ÷ novos seguidores</div>
+    </div>
+  </div>
+
+  <!-- Engajamento -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Engajamento</h3><span class="sub">Interações geradas pelos anúncios (Meta) no período</span></div>
+  <div class="ds-grid-3">
+    <div class="ds-kpi" style="border-top:3px solid #0ea5e9">
+      <div class="lbl">Compartilhamentos</div>
+      <div class="val" id="vis-compart">—</div>
+      <div class="sub" id="vis-compart-sub">—</div>
+    </div>
+    <div class="ds-kpi" style="border-top:3px solid #f59e0b">
+      <div class="lbl">Salvamentos</div>
+      <div class="val" id="vis-salv">—</div>
+      <div class="sub" id="vis-salv-sub">—</div>
+    </div>
+    <div class="ds-kpi" style="border-top:3px solid #ec4899">
+      <div class="lbl">Comentários</div>
+      <div class="val" id="vis-coment">—</div>
+      <div class="sub" id="vis-coment-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Tendência semanal -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Tendência semanal</h3><span class="sub">Semanas dentro do período selecionado</span></div>
+  <div class="ds-card"><div id="vis-trend" style="overflow-x:auto"></div></div>
+
+  <!-- Ressalvas -->
+  <div style="margin-top:14px;font-size:12px;color:var(--muted);line-height:1.6">
+    <b>Notas.</b> "Custo por visita/seguidor" é <b>blended</b>: usa o gasto total de tráfego
+    ÷ a métrica do perfil (que soma orgânico + pago). Visitas ao perfil têm histórico
+    desde 01/04/2026; <b>novos seguidores</b> só a partir de 05/08/2026 — o Instagram
+    libera esse dado apenas dos últimos ~30 dias, então o histórico passa a acumular
+    a partir de agora, a cada atualização.
+  </div>
+
+</div>
+</div><!-- /tab-visibilidade -->
 
 
 <!-- ================================================================
@@ -2037,6 +2132,7 @@ function switchTab(id, btn) {
   if (id === 'diagnostico') renderDiagnostico();
   if (id === 'evolucao') renderMensuracao();
   if (id === 'funis') renderFunis();
+  if (id === 'visibilidade') renderVisibilidade();
   if (id === 'outbound') renderOutbound();
   if (id === 'atividades') renderAtividades();
   if (id === 'vendas') renderVendas();
@@ -2838,6 +2934,114 @@ let PERIOD_LABELS = {
 // Função mantida pra compatibilidade com chamadas existentes.
 function refreshPeriodSelectLabels() {}
 
+// ══════════════════════════════════════════════════════════════════════════
+// VISIBILIDADE DE MARCA — Instagram @mmevacationclub + engajamento de anúncios
+// Lê META_RAW.visibility.daily (granularidade diária) e soma na janela do período.
+// ══════════════════════════════════════════════════════════════════════════
+function _visParseDay(ds) {
+  // 'YYYY-MM-DD' → Date local ao meio-dia (evita off-by-one de fuso).
+  const [y,m,d] = ds.split('-').map(Number);
+  return new Date(y, m-1, d, 12, 0, 0);
+}
+function _visWeekBucket(dt) {
+  const day = dt.getDate();
+  const wk = day<=7 ? 1 : day<=14 ? 2 : day<=21 ? 3 : 4;
+  const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-w${wk}`;
+  const ranges = {1:'01–07',2:'08–14',3:'15–21',4:'22–fim'};
+  const lbl = `${ranges[wk]}/${String(dt.getMonth()+1).padStart(2,'0')}`;
+  return {key, lbl};
+}
+const _fmtInt = n => (n||0).toLocaleString('pt-BR');
+const _fmtBRL = n => 'R$ ' + (n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function renderVisibilidade() {
+  const box = document.getElementById('tab-visibilidade');
+  if (!box) return;
+  const vis = META_RAW && META_RAW.visibility;
+  const daily = vis && vis.daily;
+  const setV = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  const setS = (id,v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
+  if (!daily) {
+    setV('vis-visitas','—'); setV('vis-seguidores','—');
+    setV('vis-compart','—'); setV('vis-salv','—'); setV('vis-coment','—');
+    const t=document.getElementById('vis-trend');
+    if(t) t.innerHTML='<div style="padding:18px;color:var(--muted)">Sem dados de visibilidade em meta_spend.json (rode fetch_meta_spend.py).</div>';
+    return;
+  }
+  const ref = new Date((META_RAW && META_RAW.fetched_at) || (KOMMO_RAW && KOMMO_RAW.fetched_at) || Date.now());
+  const win = periodWindow(currentPeriod, ref);
+
+  const tot = {spend:0,profile_views:0,followers:0,shares:0,saves:0,comments:0};
+  const weeks = {};          // key → {lbl, ...métricas}
+  let nDays = 0, followerDays = 0;
+  Object.entries(daily).forEach(([ds,r]) => {
+    const dt = _visParseDay(ds);
+    if (dt < win.from || dt > win.to) return;
+    nDays++;
+    for (const k in tot) tot[k] += (r[k]||0);
+    if ((r.followers||0) > 0) followerDays++;
+    const wb = _visWeekBucket(dt);
+    const w = weeks[wb.key] || (weeks[wb.key] = {lbl:wb.lbl, spend:0,profile_views:0,followers:0,shares:0,saves:0,comments:0});
+    for (const k in tot) w[k] += (r[k]||0);
+  });
+
+  const cpv = tot.profile_views ? tot.spend/tot.profile_views : 0;
+  const cpf = tot.followers     ? tot.spend/tot.followers     : 0;
+  const perDay = n => nDays ? Math.round(n/nDays) : 0;
+
+  // Perfil & audiência
+  setV('vis-visitas', _fmtInt(tot.profile_views));
+  setS('vis-visitas-sub', nDays ? `≈ ${_fmtInt(perDay(tot.profile_views))}/dia · ${nDays} dias` : 'sem dados no período');
+  setV('vis-cpvisita', tot.profile_views ? _fmtBRL(cpv) : '—');
+  setS('vis-cpvisita-sub', `gasto ${_fmtBRL(tot.spend)} ÷ visitas`);
+  setV('vis-seguidores', _fmtInt(tot.followers));
+  setS('vis-seguidores-sub', followerDays ? `líquido · ${followerDays} dias com dado` : '<span style="color:var(--muted)">fora da janela de 30d do IG</span>');
+  setV('vis-cpseguidor', tot.followers ? _fmtBRL(cpf) : '—');
+  setS('vis-cpseguidor-sub', tot.followers ? 'gasto ÷ novos seguidores' : '<span style="color:var(--muted)">sem seguidores no período</span>');
+
+  // Engajamento
+  setV('vis-compart', _fmtInt(tot.shares));
+  setS('vis-compart-sub', nDays ? `≈ ${_fmtInt(perDay(tot.shares))}/dia` : '');
+  setV('vis-salv', _fmtInt(tot.saves));
+  setS('vis-salv-sub', nDays ? `≈ ${_fmtInt(perDay(tot.saves))}/dia` : '');
+  setV('vis-coment', _fmtInt(tot.comments));
+  setS('vis-coment-sub', nDays ? `≈ ${_fmtInt(perDay(tot.comments))}/dia` : '');
+
+  // Tendência semanal
+  const t = document.getElementById('vis-trend');
+  if (t) {
+    const rows = Object.keys(weeks).sort().map(k => {
+      const w = weeks[k];
+      const wcpv = w.profile_views ? w.spend/w.profile_views : 0;
+      return `<tr>
+        <td style="font-weight:600">${w.lbl}</td>
+        <td style="text-align:right">${_fmtBRL(w.spend)}</td>
+        <td style="text-align:right">${_fmtInt(w.profile_views)}</td>
+        <td style="text-align:right">${w.profile_views?_fmtBRL(wcpv):'—'}</td>
+        <td style="text-align:right">${_fmtInt(w.followers)}</td>
+        <td style="text-align:right">${_fmtInt(w.shares)}</td>
+        <td style="text-align:right">${_fmtInt(w.saves)}</td>
+        <td style="text-align:right">${_fmtInt(w.comments)}</td>
+      </tr>`;
+    }).join('');
+    t.innerHTML = rows
+      ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="text-align:left;color:var(--muted);border-bottom:1px solid var(--border)">
+            <th style="padding:8px 10px">Semana</th>
+            <th style="padding:8px 10px;text-align:right">Gasto</th>
+            <th style="padding:8px 10px;text-align:right">Visitas</th>
+            <th style="padding:8px 10px;text-align:right">Custo/visita</th>
+            <th style="padding:8px 10px;text-align:right">Novos seg.</th>
+            <th style="padding:8px 10px;text-align:right">Compart.</th>
+            <th style="padding:8px 10px;text-align:right">Salv.</th>
+            <th style="padding:8px 10px;text-align:right">Coment.</th>
+          </tr></thead>
+          <tbody>${rows.replace(/<tr>/g,'<tr style="border-bottom:1px solid var(--border)">')}</tbody>
+        </table>`
+      : '<div style="padding:18px;color:var(--muted)">Sem dados no período selecionado.</div>';
+  }
+}
+
 function setGlobalPeriod(key, btn) {
   // 'custom' abre o diálogo pra usuária escolher as datas.
   // Se ela cancelar, mantém o período anterior. Se aplicar, seta
@@ -2847,7 +3051,7 @@ function setGlobalPeriod(key, btn) {
     // Volta o select pro período anterior enquanto o diálogo tá aberto
     for (const id of ['diag-period-sel','evol-period-sel','analises-period-sel',
                       'funis-period-sel','outbound-period-sel','vendas-period-sel',
-                      'disp-period-sel']) {
+                      'disp-period-sel','vis-period-sel']) {
       const sel = document.getElementById(id);
       if (sel && sel.value === 'custom' && currentPeriod !== 'custom') sel.value = currentPeriod;
     }
@@ -2882,6 +3086,7 @@ function setGlobalPeriod(key, btn) {
   renderOutbound();
   renderMensuracao();
   renderAnalises();
+  if (typeof renderVisibilidade === 'function') renderVisibilidade();
   if (typeof renderDiagnostico === 'function') renderDiagnostico();
   if (typeof renderVendas === 'function') renderVendas();
   if (typeof renderDisparos === 'function') renderDisparos();
@@ -6696,6 +6901,7 @@ async function loadDashboardData() {
     // Re-renderiza tabs ativas
     if (typeof renderMensuracao === 'function') renderMensuracao();
     if (typeof renderFunis === 'function')      renderFunis();
+    if (typeof renderVisibilidade === 'function') renderVisibilidade();
     if (typeof renderOutbound === 'function')   renderOutbound();
     if (typeof renderAnalises === 'function')   renderAnalises();
     if (typeof renderDiagnostico === 'function') renderDiagnostico();

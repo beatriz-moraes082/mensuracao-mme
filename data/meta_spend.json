@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-09-04T13:23:42.488288+00:00",
+  "fetched_at": "2026-09-04T15:41:04.604541+00:00",
   "period": {
     "since": "2026-04-01",
     "until": "2026-09-04"
@@ -65,7 +65,7 @@
         "w4": 489.21
       },
       "2026-09": {
-        "w1": 167.35999999999999
+        "w1": 170.82
       }
     },
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": {
@@ -146,7 +146,7 @@
         "w4": 1343.85
       },
       "2026-09": {
-        "w1": 1087.6100000000001
+        "w1": 1153.71
       }
     },
     "30 - 50 | BR | Profissões [+] viajantes frequentes": {
@@ -201,7 +201,7 @@
         "w4": 2321.86
       },
       "2026-09": {
-        "w1": 489.39000000000004
+        "w1": 498.40000000000003
       }
     },
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": {
@@ -223,12 +223,12 @@
         "w4": 469.9
       },
       "2026-09": {
-        "w1": 193.31
+        "w1": 198.12
       }
     },
     "26 - 50 | Remarketing": {
       "2026-09": {
-        "w1": 68.52000000000001
+        "w1": 71.46000000000001
       }
     }
   },
@@ -265,7 +265,7 @@
         "w4": 2148.3300000000004
       },
       "2026-09": {
-        "w1": 458.72999999999996
+        "w1": 467.73999999999995
       }
     },
     "VD01": {
@@ -348,7 +348,7 @@
         "w4": 1717.7
       },
       "2026-09": {
-        "w1": 353.72
+        "w1": 370.49
       }
     },
     "VD03": {
@@ -381,7 +381,7 @@
         "w4": 303.87999999999994
       },
       "2026-09": {
-        "w1": 216.86
+        "w1": 223.60000000000005
       }
     },
     "BN03": {
@@ -413,7 +413,7 @@
         "w4": 1612.71
       },
       "2026-09": {
-        "w1": 736.68
+        "w1": 782.43
       }
     },
     "VD04": {
@@ -445,7 +445,7 @@
         "w4": 97.09
       },
       "2026-09": {
-        "w1": 46.2
+        "w1": 48.6
       }
     },
     "VD04 - Motion (Depoimento)": {
@@ -601,7 +601,7 @@
         "w4": 489.69
       },
       "2026-09": {
-        "w1": 181.34
+        "w1": 184.94
       }
     },
     "Comprar casa de férias - 4/8": {
@@ -646,7 +646,7 @@
         "w4": 63.519999999999996
       },
       "2026-09": {
-        "w1": 13.100000000000001
+        "w1": 13.54
       }
     },
     "10/7 - Jeito tradicional": {
@@ -686,14 +686,14 @@
     "27 - 55 | BR | IG | [+] Férias": "CAMPAIGN_PAUSED"
   },
   "creative_status": {
+    "BN03": "ACTIVE",
+    "BN02": "ACTIVE",
+    "VD04": "ACTIVE",
     "Frequência de viagem - 7/8": "ACTIVE",
     "30/6 - Time falando sobre clientes": "ACTIVE",
-    "VD04": "ACTIVE",
-    "BN02": "ACTIVE",
     "VD03": "ACTIVE",
     "VD02": "ACTIVE",
     "28/04 - custo de viagem": "WITH_ISSUES",
-    "BN03": "ACTIVE",
     "17/8 - Gastos com viagem": "ACTIVE",
     "Comprar casa de férias - 4/8": "ACTIVE",
     "24/07 -  Férias parceladas": "ACTIVE",
@@ -714,59 +714,1321 @@
     "24/12 - Confiança": "PAUSED"
   },
   "creative_preview": {
-    "Frequência de viagem - 7/8": "https://fb.me/1URgXc5hG1qhbMX",
-    "30/6 - Time falando sobre clientes": "https://fb.me/1VBNhyVlj5154of",
-    "VD04": "https://fb.me/26bTmDoiXDqrNI0",
-    "BN02": "https://fb.me/1Wr2BGo6P5R3X51",
-    "VD03": "https://fb.me/z6q5B4OW2Yr04wv",
-    "VD02": "https://fb.me/21Cpd8ZylbgBmc4",
-    "28/04 - custo de viagem": "https://fb.me/1RPoEnBnqalsejO",
-    "BN03": "https://fb.me/z4p04X0zssPDnNF",
-    "17/8 - Gastos com viagem": "https://fb.me/21C511nKwlRw0g1",
-    "Comprar casa de férias - 4/8": "https://fb.me/2b2FbC5k61exYVG",
-    "24/07 -  Férias parceladas": "https://fb.me/1WeMGf8sGq8ToSB",
-    "10/7 - Jeito tradicional": "https://fb.me/1VMnebtDXQlBuo8",
-    "24/07 - Mapa de Clientes": "https://fb.me/2aPPEo4Qs5Z5QKy",
-    "16/06 - objeções": "https://fb.me/2ihkPpOiHo1a8rO",
-    "BN01": "https://fb.me/1TjIPvWoF8iehxr",
-    "19/02 - Apresentação": "https://fb.me/2DNq0CgSOcFZetZ",
-    "14/04 - especialista": "https://fb.me/2zO90ONDS4dn54k",
-    "30/04 - comprei? e agora?": "https://fb.me/1VVkpxr5mbqcL7l",
-    "23/02 - Apresentação V2 (Leo)": "https://fb.me/2rz0dLXU5uQyKOF",
-    "19/06 - pov": "https://fb.me/26wUdvFKiDFMz59",
-    "22/05 - direito de uso": "https://fb.me/2fXPm3wHzNm7waK",
-    "VD01": "https://fb.me/2p022Gn0K8LXNyQ",
-    "VD04 - Motion (Depoimento)": "https://fb.me/1V0pPftVH3eg0Ks",
-    "16/02 - Depoimento": "https://fb.me/237i12ZTkEtrpvq",
-    "17/03 - Não é um hotel": "https://fb.me/22Lkh69SAqlvAJW",
-    "24/12 - Confiança": "https://fb.me/28RoW2uwCQ5ObG9"
+    "BN03": "https://fb.me/1WebwhJMS0cKoRX",
+    "BN02": "https://fb.me/22Q2nkbVfubltP0",
+    "VD04": "https://fb.me/1RUjDunYtfrS1eD",
+    "Frequência de viagem - 7/8": "https://fb.me/2mGfytpAOR1VlSc",
+    "30/6 - Time falando sobre clientes": "https://fb.me/2ccuwEVHNTGp47D",
+    "VD03": "https://fb.me/2ceMu6dMH7x6ZGt",
+    "VD02": "https://fb.me/2JQyb1vUAzrVBLp",
+    "28/04 - custo de viagem": "https://fb.me/2GKjZuQfMvzPbuK",
+    "17/8 - Gastos com viagem": "https://fb.me/1T7CBoacR8SLfwI",
+    "Comprar casa de férias - 4/8": "https://fb.me/29EF3T73XztGt5M",
+    "24/07 -  Férias parceladas": "https://fb.me/1VgLYLtwfTWLpts",
+    "10/7 - Jeito tradicional": "https://fb.me/22IYaax1bOdtzFf",
+    "24/07 - Mapa de Clientes": "https://fb.me/2c6lCqQUMU1njNV",
+    "16/06 - objeções": "https://fb.me/23HshQ2PaQXOctF",
+    "BN01": "https://fb.me/2i0jj1WulTZOyqt",
+    "19/02 - Apresentação": "https://fb.me/1WenSuboWy6RWFk",
+    "14/04 - especialista": "https://fb.me/2aBpY7lTFt86ypO",
+    "30/04 - comprei? e agora?": "https://fb.me/221IC5ZYUE2kLeC",
+    "23/02 - Apresentação V2 (Leo)": "https://fb.me/22hLgdnPW8HlmTd",
+    "19/06 - pov": "https://fb.me/2cPS3KpuSofSvyA",
+    "22/05 - direito de uso": "https://fb.me/26x7VsS5InBHYb2",
+    "VD01": "https://fb.me/1VNBrAs4SxfObnL",
+    "VD04 - Motion (Depoimento)": "https://fb.me/2583SMWDNp80gH5",
+    "16/02 - Depoimento": "https://fb.me/1S36w7n4Hru5fbd",
+    "17/03 - Não é um hotel": "https://fb.me/1UuTIbcLvMeEEj5",
+    "24/12 - Confiança": "https://fb.me/qwgpqCq3rQpDO5W"
   },
   "creative_preview_iframe": {
-    "Frequência de viagem - 7/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIJiXWncoEeOGVn7IPcbDlfzuYhWaORaMTiLOt87mN2LNZYv4IiyYbK6DfjbYRocQNd93zsyy55AzjcezDbYCi7Ji6bu78cEE35LOXY022U8tLghHopmxg_UVK04BVa_bYyPLrgOzKSTpPwGtSFqJL9reXI8QFCHY4mzacNEXCHypslXLi9sc0M3EMJRBhTS6fG1S54jeD58FVRj1wC3LX7JWQu1Rdv20TW1qaCLpvdiL3I_Yk0T3gre6ovDe_aZIePyzhx5FrA8U_JiwL85GVr3RbcOL4Q23YaTQ-pnrVEYsvqnicoid-zMT5qiKEPU2EW7Rt7ivQNcwC-Uf1rEG0izKHfN17RRZ3SBR9R9FNHbqdZEkInaY40GsVY2V7wHjI83_At-fiLl2VTy-ScfkSYs0H9tXBfd2u9KowJSoK-JDUE8NolMlQL7yHcVdYODuA&t=AQLsGyV-bs8w2AKUjHg",
-    "30/6 - Time falando sobre clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIB1tu1cdyDFa8ZMUXSU94ZcE7bHfonFzgae6y17z1uFRYa6UWODlCkh-_3RE2htmfJ8tsclHm0aedMMEo_3S755HcgF_Yf4xTWC6WaK5t4PBYkuOZU5cjPSWOhmdVyKYlSNrtJz0lRSyurLNDeRJGHogR39kpfXNvZcMWC7MVFmjsxgHyIr6Y6FjQ2DKxun1lEe1iQ2HIM05MSk8rT_c9JJu1KjI-590-OcbAaa93lLoiEg1cHK9yeGcT_0JLODeebx6wcpcDJ9sM6Uo6xG_JsWCKYtGX4lwwEvqicz8nRUrbkFhkQ9rtEqyzxfsTzpTxUjTpl40S5tzkdTQZezgaLEiWp1Ii4sKc25d9ny9XiifrQtFepv3b-b4fxbmxbwjL6EkHVUNk8CC1GZ5X1i_Kk0YWwBWh1v5y4xiiyHjhsYNkq1b_Y_Nt-rZwJ3Gl5Rkc&t=AQJbJBDL7bNL8MRW__U",
-    "VD04": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJffWwrJg1EzfmcAg2-uw101ftixvPgInxFh5x5z4Hfea6OjIXoYXrrurQoV3OykueE6eoCnlh3QukgVY6RHPJOFMvj3rspI-9bZ0l8yB2ITM5urFqUnNviYPMAkGC05TRvjGZ2DW55dUA0IBJpTYQSeWNbd7ayd2r7V_UMxpzfPXYVOohiPguTm8eRV54Q5ok27KkLFT_OLrRUwLU2TZOfUe4F_rXKkfhSwimq4trps6cl34XcqzaM2j3mcwgEMkejYH6KC5wfoGAOdLlNCDQnEY8MQDhQv0OB9ulMkgh7m5kjL-qcdGo4Fwp_0afn6ayVKi-_OstsoGfeccAJHj5yYoyvLi-gk-QyunwBwXmtYBD-cbpiAOayHd5pgy59f39dChfvHbyI88XDrZxzhRfxlkVRLd1UrHN9KDdPkJ553YQ0Av-nj4Tobz3AtHrald4&t=AQJmlWRxQPQ40lgjmEE",
-    "BN02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLouCqXo5-pJCzLkN9RxzRum8LH_d726uFClse5AHF9VmJrx2wK77nmZfDFeKdC8DS53QEuetwexSoAocw8Q3iRIthHTPoH99e8fIBvxQUmf-wYT3gQULTjIc8sEs2BZXZ279QwJPwFyk6F4r7qnfAp_UXcrcib-fQXcLjOwnEjWJ_CU7EUvT-PwYEbSqHsLUsmhR0hJothqttulPxnTCLXss00JnJYIGEJNni2Xa85XzuG1Cm06qGqsrfm7INVphJ8PqsbFLh753O9xZSYm35TdNTbuqUfn3ZzWt0qpGb8A4lxmlYg7pnq5NJWH3wGAvfpCLDGF03UvFxhXrU4w0yBFAzan_BgU8cBqKkilGHYxEOrcmm3PABl2Ov5H5Frm9Hl-sX86OZ58FPVUQHwVabFgAeTdyUHL3-t1dKhb8zxhG9TW46fpeneZxoVKxOrSIQ&t=AQJR4yn3J2tpCio2Es0",
-    "VD03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIYLiPO61a-CfX8hm1x92BrB4pzxLAkylPfJvkzQfPvtqOg1I4HStGIOY5XZir2pnCie1IMWIBSvbmzw8V2ndTWUA0l4xlUlEvpMJCfbrPjFqztFXn0KbWw-Ug9CnbbYQKxF8PgkcHJBv1emZwN1eBN_RQltXBXLN_audy4mc1rxhImEyDIkE26dhnsbcoxIdUBMoabr3YEJzRidbXNPVUpizyfwEHxMpfCT2C6RNW2qIIpy86oxcx0hvPmGU7JLRYIIPRefINeyuudLXP2yt3n0I6IEFeHecMzX7nAYEUa51U78CFcZWF2dbWCzkvoS20yVOfKsAhP44JnW8sGXD9UH3canXmJa2SVqTOUuwMzpZPwjL_O8Emq88WxIr1pmOKB2iVEjhK7T96qD8DQh3G6G2AQcs6ptzebR5cU6KU0IVsN-QYlPOonUYxq3AkH0tM&t=AQKI5fECMKex8Oz86ro",
-    "VD02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJXIiYmZZZOrXeHcKxL45ag5Uv3YeaUAONRiYShkM0gZx5rixIq8pGNww22-D8_6yrQbsbfQZ5G_WlyNjFhF4dMPyvZQ1-J-PCUdSZJv1X3ES14E0-5df6Kf7Q1CPwHdWYbEuK_KCCUZvsGU6MUOjSLxrcYIfmk2v7aw5vduiet9Fpu2smeHUH2fyMjwlUdlH59robTXmTPRFyTJkonjFsy6PNsDzUh8F4LqRkhioayxHSxfmuQaHHvn9HafeT_v2njtPwLzsuQF5O29b3GsjTZoQ0nlWHOn4TKRcBuV1mIzThQmra_wUc78IgpF6kxv2pQK-kqoHKCxjfGKv15HaUwGjUQ8C5DkDG3w0tLaqeWnzPKpgikmHHBB4T7uYe5jXapNuSLE0wSWHP4e9TvNiiW6xo_sUzsr_r3R_ymLcNViJrIL_5EBCNQu0ZUlQSaM5s&t=AQLYEMEmFp8Y7HLrTCA",
-    "28/04 - custo de viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ6W783DP9sZGh1t52rDrR2GoLfLKrnKgMnGsL1YQ-7JEv-gsANLolbKrQ9caFV73svxlkH3CzvJvAJM0aSvzdAJwTfYYOyJS4_jbBN1AzFBDEkVui3qlpnWWU0ipZZui2AvyIPv-LeYT1fFT1GYSMQtzAof6rxxsWvSMYdRpbQ6vb7uZF-fyD6_VSJWRsQOyovyU88brYFdLlZ6C5QLlos73gpqaxR1K1Wwnf0fOo_b4vmgrRTJWlPyiY0D-ib-5ZroRs_3PsMBFYj2Cd8YK-15YBwbL3Yn75atVLcktTiQRhrf3sKal_t0v73IZ8jE4feZ7ib8_-J1yk7k7B3Gi3SBTpj7gvyIOWf4laE27Yf9uYz3KaDhbRYDEOcmZ5Q0LIgCjRQZ_swgBuWuLXC8YTGav9HI3Q3a2Odov7J9Al9_fIEujGRoMiRlVrEuwgJj-8&t=AQIW1lW_27OsIOMBXl0",
-    "BN03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIZYh71E61nFPA8jMCN8aQuIfbQrzbvxd88uUJrrf9AEMoXIsHkwfNtamjosVY2xV06RnMxso6ig5ALlEJnw5rbmgiGlWh1NLAHpI-hFFS6-vvpc6Si8rnriYD7lCI2e8o2iMzdW3RsCmuKkELOJnbdMJsOyqUf87Ks9CARG9YBr15EzQn1mOo2fXkiPNp6VYoJl71cWzzJinOrBcbO5ANRJ7z3brziC7HKirFPjbEInKhSj0d19p8acykkOq0CCRuiRPxbyom7w0NXVerII7yZdrMAyQaD99jymCdT-eyI066vpZ9X117-nF6RMm1MA-r792XfXdannMabeoCawgZnKoIFWwajcCKsNZ_ueeNoazJqw-Gu2_cQXHWxg4UTSY0L6kMK7oCOwi4dGzjavnHflwAZNZuVhCaACO-MkTMsY8BCrpWLH7ST7v_nTrjt7nU&t=AQJW_3XwsF-dMrXKIBI",
-    "17/8 - Gastos com viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI1K-FNvnNafrbxzXI-lHtsfXQjB_4NoMONPcUu1fPlUaFzta67LXLkjSvlXcCRlUo_TMK6fkgkmPWbgNTCx7lHsN06-6qBgFYzK3hw2NL5qoCS-lZOczGAEK5ynX6osl35tSSdoupCF9FpUOk_h79bswd8hsB9Bp7GNVfuPAFeq9-C1DJ2Ye57UIUsX2qZKZ_0Et4cEjqNETGoJOFQIvl_GgTIv2jj9YmZVuHn75LyDb3ieZxqbV7Q4p9e6-2AY2wuabQ-_BUe9GzfquurydKqfX8WJY2xYbqmkfPL-pVWOcMvQgsLMzNDR8lupXlsKrgbkStjBBwj9btS4U2EzdLbD3m6XN3pM7LzyyW0FZv67T83CoUlWm6kdNrkBz8CLzVpLUJyRRtcIgPEOY4tyHlFFy4BRoi9mh9hO-9JPZ9uZd-oykBxwOY8S7GFW755lnQ&t=AQJ7jwJsemUyUBrtvUc",
-    "Comprar casa de férias - 4/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLalxOCBH03xR9RsctFQ7sj4VovxPPGwyXaM-F6ywhIdzQ30-yXhj2UMLozUbZcA77JR2p_NS9JvsBDe2DqFyH8DPHk8OkSzRsttw4nhJjmfFU3ORZamkaud33yHu0Ts0C6zvxasQqL_JohgL77FqhpxPHyQXmSP0Uzac7UkNCy2f4nygwLAUt7tDXUlipl37HsPFAWYEt5tGH4Xl_prQIasznjvCwxjLj-_V3bVDrcRjketu1XoagjQjmrDrvwyzZySIZM2Fgh35YxkQPBtYI6vQxHe7RXFEP0rshXvnrRho7gfpnmCaRhKP44pY4OIwCOxz_xGKp3hn1wF53TJPReVLEuigLrCtxmb8gahYrJDsJozdydM5iEm8UE28wkvG-GKwE0PxdvHH9iKbPe7U7cfT4Y0ndMx-cbZUASLGyQCd8BGLCGMuut2zhydmfRBf0&t=AQIJUIgRoxBNldhZzZg",
-    "24/07 -  Férias parceladas": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLl4n0vSI94cMrYYCYI-K8VW46-gpnAIzTkKb04L0Fnj_5cZchjYQvwB9XfcBR7f_kGC6zE2wUcVkNy8eBG2hGTbqcL8P7TwiSEksQrlVSLKqVXGVjCtquFkvoWyfvYKOV_mn-3wC5S8tZi9tdP-gsZVAaJ2kGInb3ZWcW61cY_2z2laeltxvRpgblXIF4BM393lfXLC_XXuOCievjSrXsrXMnE37L5pLiphFEtKSON6VxRxBzJBZAWXnnmJhEmoWtqBpshWUxyU65up8d7XXjYBhWU6uw0LH0FFCjZEOByYFyKFLTqiX772EYxC4d2A4kHuTltw6JAcJwCR60gBckyL6bKsNMgWFqi_KK0FHS65sgUI_GJ_0PILAbjj1xiNE_xvEqR8PH9E_74FgfMl_8R-h5R8Z2Lzv6AKsu6UH35CPDF858nVtJh0hvxCcdqWpI&t=AQKU6MyeUmrmBJBikuc",
-    "10/7 - Jeito tradicional": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIEJkPlXyKPtV3JBhmqaTNdemu4xvvvznmZrcnKoY_ASLeWCnoRTnXo5FDuxMZrKo5BOk0_eJkEC0ZREKTnm5lAgVqqOa4w4RHUl6_kMfFe2bHW_J2Xo6fd_MCUX0wC7NQ1iyNs-Ud805QnDXSWUZ3gq2HvK_fKgw5xiYUALZxRx--fX8OtXBmZT6nryTMpECf52awx5fWGs7KiQRxm7-EIBrt088Q7_R3k4q2aLS_Xw09h11HnV9dyB99kqzzBlEnNCv9YoErR7SwTDat8dYWkRVAk5cAzQVWLcCNtirXqfQxr27r_p6bSVy-A35Cjj6MWwK04_8DkPYba2EaFsWiDmRGtivOf-rmEIqBCZ_rpK9o3xFBh0sOeik2vUQJ4TtVfZTe5weKhrfm1z9fBmaE836VDQVIsikWsFiGcWUXyIMIqhD8miU-bMNE-HnY76QA&t=AQL7lkgsq78cHUz8F8Y",
-    "24/07 - Mapa de Clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLGQ6tm_e9reW-7ROpxNcDup6HlqHto2aJ_sqmtBEO-qtG9xIMTdAd9PcO_yEWZqQoEhF8Ljm8PkSEz6PRuvWFMHRQ_fK06KgBkxJvORwzCXz4P7KxmuJ65axNl6MiwsvKp2v3nujN2y-TvuwWGovty8eufOfNpxTnFzxcV7S38KFqJ9FXOFpfabv7LuQnfEjFAHO2gEfYN6gKLHVFPryMXeOhfO2XB7QL44whrAG1-ZMcucgCicOzqnyKfpT6iGHlt_wYQVvyRgTcomXej5GxM29uP5_ApnOgWL6aLW9JIi7JrWXM9NvUpl0H5_EY9_NL1xRX3p-fboznI1B9FWc9iz_jCWiYkUXgeeNjjy2QW2VB15MumO_K9ecvHQiaFrkjNod8_ENx8bTJbGfLZ587CXNKhixWjFVIX5u09yWkwtUXISkU5XTV6tjIntpt9E60&t=AQIgzkqGWLu3SihONZc",
-    "16/06 - objeções": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLIW4DhqvOBvsJmW7WH4k8AGg1GqK4yFKxHmh8FnL9psTGVUC6K3TxEvySzz6LICnRB1wNoNyau5wuL7mn9-uLgwHS0-aVulQooBt3gDkyCXDXr6XxEVAjq0CO97gjEkMGHiJT4oZuhxivN5sugvLdAhOQ_i6GN--Oa0WvtyitahPPIBJXEkSelxv6EAY5BDu8JOfHGGaSRsTpIuM_p7Y0Rrc2PYszvgGrEAZ7xpAjSD6ebl1k2KA5l9-eWBpHLfu704kVons9bYhfZ6qLLnPGJDOcrk_mw890QEZRaF7QBHTB5gGd1LxjeT2IBRifDey9Ez4tavNZ15k-kusU_MarKWrTAciIrd9oT-JXQezCR1qJD1Qci5B-qK0fh8fCJKbOn1SD0CsnYVwjGQ3hy8ruvE3HI4xga1tYCtzmPL_2O_SBC7QqJO-6ulH1o3lf56sE&t=AQK7ont5F5YkbRXlq3k",
-    "BN01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL7S4YsNNOObRn5OuSs0KxfIWXsbLtvIy1rnVXQOLPlb0Y8dbOYqt86jvio8snqPKqqtyi54WQMXpqxe7YfNqARHkyQNrHlsuI9EQwSuc-KaupnU_HEwvlVBiXSNf9oCWnbmIh3kWFxvi2cIhQ4G-SkvOmIZ-c24M1XtxcCBBW9-q1dPGVqNx7iIcDDdBdnG5t7h-KPAKyIyJDVv1RBeXJk-ZZf9n2OUE9cfRksVqVfxzGjNWd4FOCfsKN6DN_Uv28CUGdjQn8xEyAEQnUuUmjFZvrGhmSWFzEv5uGv70nF0yzVly0K9CuET-UX_Gy3eoA5m21zOxD-acPwsK8hHGVfdsDiQSFL6iIZjbJEqOOq3qBcQA-dEBzOVhXXU-PKK9BjHhFd3P032PWWAAGDhbhUKuZu_fHeKx21ElZnxnZ0oRL3kVEFjMzwx5ermEb7ABE&t=AQJAeRwWIc8YtF2YZDc",
-    "19/02 - Apresentação": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJDqXGX1YLUnlvY4Ek4NKQEGLR5lYWIjvVZ1qPtOrpnHLsokBB22PCQPBTX3lCVHcDau-owYCdvgRqFlH-4G2mjeiIKmxC8nx4i6JV3gFO1WtF7HDuYgGsUK0Wxp2D4KaWlqqeOwnzo7H1lHq3RU_fPgwmxK7B49VONIAp8YCivxmmgWsNrpddGDN6mBncZfiLQ7HmHYRi8v2O9i78lSqqVaM0rcLx-e_VCnihs0Hf0Ig_-HcibaSRaYyFvZ2UHw-i3N3Sg13rR9ZqtBKVg3ElsWN3yJvbySUzONiY0g-kWw3MaBUb-GtNdqp8PfJEDpgcAtW5B7n0iSHsMj_t1WPkQlTe6Jc2Yi5LtXmapYOHyGZfseTLyOYu1Grq5JcKI7cWqxSYf_1Cp5Ig2bakKtU4oHGGGFMevgQWLNhVSypF_OPad-LJ0Sxr0ls629n47qfo&t=AQJlu5egEt6g04pOoq0",
-    "14/04 - especialista": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLW4GUBGTQWQ_Y5ETttZgV_zZmkrV2N6WV1A92jEtRu6A6IvXQJEGoMT-vySazGS9mm7vVENaSD3xhotCLcIQKrp8tacfGWW9MQRwoYqPBUeyv0DC2MD0uVXomGjaKBHU8cUj0ZlyPmxwPwo7kREVuCuiG24wRzw4hr9xu4YMM47EYYsdf4p5fSmELVy5msOkIlqMxMdgpYWPeVC9D132cSe0bJ6e9RqyLRwwK6dX3HcK8x9h_4WOKB_OD5h6uz3P_Qxsu__m2GQUMIJw-eNlm7SmJ1L14pf4N3goaNT1Qez-hToeQkcwLNsJgug4agIHQUa9c30bKgJEyxTEiZndxukcnPV34K75EkyQgaDM-TvC-e37auCLG9CJESQn6ZnuVGjui-Mr37C8Ldzr3ady8j20Q7pdgS1v5iarGKBVQm48Rk6BlF8tryIOC3KAcA8Ks&t=AQJLK1ADxLhMDnr9BVE",
-    "30/04 - comprei? e agora?": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJk1kYcuWM6kGxo2fhxptbTZCZtKIoMVuF-am6Ii_JyEANlya9yVxYyYPCl7ZAQb6JhOuP9fPrFLWBMiradM8S_YdRAA8qVWpfVDTQCSeaMEYIbyYFucXLDVTBGRDY_W-NVIgtSgyiVJVVVfT_08A2ViHrs5mb5o22-ae56ZmjI557-vCCcWjyH-5pD8rF699ZQU7VS8suWn9QTfeMdoECXaBTPeOQZ2ly_mU6ztRzo16m7xgGtR7TPWkL8iQBMj-Quem7ZAsbrF6vvAc9zXCtK5YNrRDjDj9Yt9cAo4_1nATnsEsBG9Teoj9Gsx_uD8pAik7koHILxb2gcpOZCp9MHiLZCqvIxx3_OcCIWG6sOvbI46Qxr9C7aXU6XI49_HmGDO8t3uB_rsGCgX6LoTiR3xQC0tK-TjFqByjdBCkLfkqOeYLkmBv1Bhbe48_8HHwI&t=AQJ_836ZXhDWHnW4oAI",
-    "23/02 - Apresentação V2 (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLF3EfaeH3xMhyK5rA5dZ1VSJTSQSnVlal-jkaj-IrDTuzqUUKKmMZ-EMlSjnJjpWaZOeuiNKdwpv0bZEzDs_2ltriNl8wxCQZeJWfQZLKJ64MzREhjgOKp1vrZr_q_1s52qyLxv5N5V4FbWoY-nihPusb3pnd9BX01P8Nk-1FzvQM1WwiIEck3MVjeSyOwG5mhCyHhID2DEkK-2Sb0S7dT2QcWVdOLm23biMhgmqpBi8TBS1vTZm6pdtLE7O_A1dUi0DVDqQYyRmBozdQx-48u-HVMKiO_LsZduR473gEH6dfjRTwm_2HuV9t8RWa7G3u9tEDK4l4bcMJUDc8Aw-X-FOFyyFUTkUwxICNt75dhytCSBwCJXMvPYPTd5dcIdU_sTxbKNkornV27KF5Yp3wShXvmsz-lIqOvUjSryXRrCBgmYOn7Rwj-BLqYwTAjkAg&t=AQIWUuLhI7BrVzAayyU",
-    "19/06 - pov": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLMAr72bMkUrUyqUUkxOCB3YdyeXGjEphctvj-MJKilfyDsCr49Gp6n84DJ9LMSGjbdT5IQrP-k0toW2QrkJPf1tuuj6rXfRg8BUzzTsd-2OCc4kxV-2bFZO38778Ax8BWAfhMzYUfGyrVun7WzXu_mmJw1x6HRJpk_ozyl-_Wrt3Y8d8P0sF34ruQ_hxpiwbVxLsQhttLSQxxCimNeygeX80qX004K2TFm7c6lKWua6CDoy4ciUbOSPhTZgGyEhXxIOdsdtvU-UcE8x23Nm5j4jK9RxNQI8rfgqV4nA5DuPeIBMxYekLDHykNnaUCP8RtO2b6HLxxzKfkl3kYNqN2ntGTT6XkLtJqCY7zFsfwlrS89LmNbjsht0joebZUDZjlYLcsQTPtAju0EJjW_HphvljdrHgcdKAwvPCFJ9-nbQ7EAGykjDLy_Ezp56PPjQRg&t=AQIOvCdjTg5iOLdvBwI",
-    "22/05 - direito de uso": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ5TOp_JeaSkjxcggTu1IuKHq3BpNJNdmjHvhaJsNaXXzNc9eKj_wKybVQz6fR_wMxlXUysXX3jAmFSBnTBV17z1xn55fMpcpQ-DQ0OcEAKLMrRb9BEWkHgxvQitLOfNRs1wKYMGwYM8qJa6y0ncddQbBiB7flcItqEPpPw_DDi4KEVHSJPg7k67SjL1tuQiTT5_7QiLo5KAyaF9Tp7-7LIxT45GYUh7yBm7M5gQslELrj1jYWc9lhfYpmJ0q2v2etV2dY9OKZ4UMPgOjwiExYJWBj_W2p7w3e02DC11lv3AcxQdpL3alYMEEsN_-M5wtofQHi8aMFqcKuOo6OP-FYmnaOFkJLsqiseexcBVirHiSdaDqgZm8Py97GcwaDpfarHs2YivKKiEkRzA9v2LRwu2dWmRvPIKHrTdSrGwa_qkZ5X7cwbldY7B979ugp2N6Y&t=AQLzI4wwZpwz62QlNSk",
-    "VD01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIYhFHp-fMVhGaGUDOmBTuzhQIKdyGvjMYVhdvdgJcfPf-3r15GO4Kjj5YfxAF0dVi_4tsfVzVzksgT03TWDCxgCAZckFvLJDfpSAfwROhT026BLeeymRemGcTHdHrTpvFpB55NQla9qvCBT-o5nxBtiOvmZTAZjsuk0d_XhkgxYIo2L44MWay8wA1vaUgpzydoyVCXcXeTcvb5epy9-weOCrpojkV-Fq1oxNN0oCudMQe2uM5X2KvH04vWA6LjGP4CRH2kV1LhgfZ79WDwigmr_vFj-8M0Fn1av_B88G2CodbCO5mTz7QLHLzBXw9u-Pi4PfLESYJB6BamZbgPsHFg4581hRxa_cIQLzmexQA8SSfF5-R7Q1YPwPpXu35mJxQdR_2QXRhEFrGLhVNCjo1DxQ4yhjFycYDfZHcGWhuat1CEwt6TBuc_7NqmpPaqao4&t=AQJ8NCuhz0Cb2qk2t7g",
-    "VD04 - Motion (Depoimento)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKR24NN5aYmKU2HG3dR_eImeW6WAvvqbIbbLQNiD22Z6m-OIIr-CIeds_RlvHhMKdl2iB19znMe3ErsT1r5MDB5zhWIK8tihqUwUn9Oiefc-LkNE9GDUq9C7nNs9NBSaa6AelUmLF09jf5fKnQkCbAChRc-oVpYpnT1Yd8g9vL9zFOWGBpTp8EOanTBgDMrOC0xflAFFpT9HBBRqLMiiEQieCsRW5V60vDbnwJIJTYO3j5zrSgj-YMHhjZ_3GHEGtNZRaEaAoE5Puu_4gHWUapmAHlg9wkgGHLssh1Ctv73Bw9jP5CCngUCei8D31nBYwunQv24q-2U-ICQ-aTJccgFQt1WW8-BS8HGAds5pyk4bmT-_6zdIFKFcelV8HYIvsuv4llDqghFh0nqcbxfKDwarjqhJx3jGLuhXiQSEUMHZw0z4vUk2fYFJfsvFZQqtjs&t=AQKLizx5mreCAOu75AM",
-    "16/02 - Depoimento": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJsI3ZY6XXzChkLF5yL0XRBnjMrFuxtfuIp9aSNaDeMakH9NoXuTzYGOy1MgUn0-7tGOhn8BvIpZPr2_494xiznVydqKZkadbn8p7MGbMmne3vm5b23BntfZ0i9t7RHqK3Bro2sEkskLrx5FqxknlCN1nd1Lbpnqb_nvXbdDF5ctPvT3XMUuZgH82vlbGlowsUUyTYGJ1o4VKtQW4r5QKQRiwsN5y70FDuj8ulUqsdwL4vxfGQZNVjo86GIUwBxNWWGlpL32s_k0ku08F0GhY7RSSiHJ9pm1Y00MAQ6tW_FlTbjfsw6b48P-OLdgWE9jzYKFAU6TmeU3Mk4Bpy1B8PDCUpH9SO9VSwoHhccurpbiiRPGuWFXsIqcI9tcmSUMoB9fkY2EdyWVjdie_La_la-TSiOkAaSNOjpPcD7NMHUpHoW0nXjbvubweUG2kDVeZY&t=AQLAY-5eR8kTJ75Vex8",
-    "17/03 - Não é um hotel": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKanaTC-e4bGapuaql5MGP-OKdcOs7niU5lB6hRG-uR68cnp8yd30IuGsaZhiN5MKsRY0vCeAd6qN1Ba3uTmENkFEZCpqp12Xb_9g3afmMGyP61n7tddeU72X0maXliZz51aWLpMizZHegM-7Vdi0c7EG0MUyQHf15aB7JDEetf99D6LcXamDUnSYKnLFzGKAe22RmfCv35jhCUdhu24nVW-pkJhjwaK5hU6ZKIhG-L9HrD6A2zH7mIWhYLBXNQqraAJqRRKIH-mW3AhMITHGVTievcYEVtwLKZB0r6cG9iA3_vZUo0coq0zyRp__JMRMtM8TlxuGwR3pCkf6r5DFs6SCI1d7awNNQYi2Gq0kpbC1YEqGqkQob92wevQ8ZEA3zxLn09u_HCxz90t7T5aPZI3PHtwC1wLekClj_nXQ8AlGD54YqMcJh86m-I7Gu0RG4&t=AQIZrduCz__pwkwcPzk",
-    "24/12 - Confiança": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ6Vcuwt-8PFZoH5tSuev5u7UT_u137j5sSKOsZ5kyb_iUy0JmDPSoQk9ICO6_nRA54HuC_0q1ZmFghzLZ1oA33TkaAGEFSNTT8cesyKVaxzAAShZ3tw4BdQFo9NIeYCS_IAe2GUhRbEnSyIIaRL0YbIg6YRcSVh-Nbdqr9Ggz3oKo_pWVDXtp0MprpVx_gDJpy7YsYKx-qLv_0WGDekDQy5Z79oud8yyzwTsMm9btmyQdAKLzLO-pjnn4bLopbdDQ8kGN8Uuwzg4cnLhGbOk6yvRxqP_D0g-4oJ9wt6Xw7uJaZGYZ3BEVKQmRLfB9HpB1BqWvP2rTEG2XavQN1IiAeIO1HANiIjMHiMHPg3-wzB8nDIEn1S9B5etdQyBM-PXnt2PgKQ89sZl9U9XeGe_gV0udHjdU3tkt0OND2ulAKt9wkWhcs-t5gi4wPr-P0tT0&t=AQLqbX46h-bLvLVck9I"
+    "BN03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL-MGr9QRRh8n_bCZoCyQS_LYwIDKzBEsM7TSzQ58DPwj6zXFAU69QuPDwUrTpz5lkgqDhBpuGmbonCIDn66dOQ5a1F2PserIUscGf3iFFxPKFmVKoflruYS6jv9cKmuxP6uQRhzyFAwU59wHJT9WMRDNLtm8KhiVtHKvd6XRKwp_aRVAx9aRxMtAPAJRoPGvc9Tklpv059e2ZmvOB5ouXfEv7eUYxaVK3l44CMtCXBRDSD_8GvWb6rC6uv8FibmtDj6q_OZNksjex7jjWnz_B6tb-697VvC1VLZ0AlURYbLMtyIIHk2_hH6E8QqSGrcieKjJxLxi75TDP3FlW3EcKe-fckpTqRewRQ7g2g6H7JRYwkqUkOoo3Gpdd3d6tehkJFgI617G4ZxtyDf6hIjHD2fujaY2QmDo9GJD3ZUOZgU530WC2S3cGAW-23e332IFs&t=AQIv-gTysRBoDbXwXlA",
+    "BN02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKPdFrIHRfi6ZSPBvMCYqLVKZKdvWy3XuPOWSfYXbTFv78foVLV0doAuAEPKQddhijBObj8o5b1fgmDIbnpwUa9kl4OMK1SVtddbJi-pZUMMjgeXcWDuY24vsleXmWS8U1ZE18dpg8i0eFezdW6ujh0LPr68dMQ-N3X9HLoJbXRdSiYqlGewary-C3bkjQWixOK2NupMGeEF0zLHaSCN28x203BC40WSU6HAiJPVwXFsZmIj0oGMODZFpcTpz0ph9C0bNIIFVlHzuBY9LbqedyFpOsbukyN-ZVfarh7Wmi1vmWT2dC0fz4nfnegMltiiElgjRqqviTFSWOtdhk3FBctVebKhjk-qBwp-wMJ-hc_BpvVwIDvldNmwn8uBN0Zk87DTHjRQ5DYoWolsJah86NzJ6rcqDkJRZvRtvluVcaquBLohgx9JFVBH70oSxS5m5U&t=AQK6OmluOAD2BiytJz0",
+    "VD04": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLcMkBicgGSd-OWIGna8geSGnBo7IukKBW2qKzH5D9xCp6OoIaAHv_cN0Tr__FJ81XcGMsM8dZoLDnAbnGKvygzyk6xCH6ZCDDhsZWcscKuyrcanQ0046JF_Vx7Qx3bxFqp_DcaBzxxl9LoZ2rhxEIM7awCHC2w2iQyOFFJNhgPynqYAw_FZxgyqsG1G0fIAaSRXOd5uV9IOOU5AtjvqJ7o_xz1COpJ9AseIt6RhfSuykH_joA9VAQrD0Eti8N0lORrfgCx24e2rV902raLHDqXv0dOxDJLE-zWc1yHD3EYXNAxngsKqQDzjxmziAaCvQqS8eyd3zpkk4i5rHDMTv5KtQUiDojUIYwkOjCCPiTm2CdDsFRKj5jYFJuruXfkDUQUs9M7vOnKPGB9JqpDshjIwGGFftd5WAy6gUkti2JE-UnSPHc1iMzBj1UkaHQc_eo&t=AQLv1Fj1svaUWsV7F1w",
+    "Frequência de viagem - 7/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJWwlkafjLcq2gF05475Modh3Bof4480GC4UehPBtILM0IqCwh9tBaJ9f6A6lPx12pqX7C-gtanA_zr-9eiMyjA_nL3_A85HC0qqphhtHh5H_wwVKK-MAjIxJsMSaEsNpBCQQBHkQqxTdr7S-3vSxE-anzrzNQzpAYbp2kpuXu6RumkKbzk5roSZQxnHjGoIZJrtfcc0sruIwZMAaO7WpaC1szpQRzulu2H2et8JVwsRdcB1IbbOMLib6Zigl-6km0BINEADT8eu73_OMf2rJl4nURTM9yODnxbrL63LSg9c1HKuV2SCB67IVvekVYBvDLSPEsSoAmi3rkRYp3C2qjuShvd-GSF_dDGERdWwBHOXt_i8-Ezi6mCYwEjufrS4d0Mp7l0GORwxloFbsxNrO5xoDDcwWm0VDMQWdPIpj3OJwczL5oSxIWaoyrIhvX8hzQ&t=AQLcutVsuRBU1UEql7I",
+    "30/6 - Time falando sobre clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJsi1SsysBKwkgs6pB_mW18d1R_oO3rK5lFeODiuZmEPkQ0r9vDPeDss7CmKOmebAjQjZzKq7XfGxLAOt6XKkS4tTLCLZroCNpm8TLcLi_9Eme3WAhFg4VuwArtwA7nhAJAWUcbYa2k-H0diDwNe4mWlUn4mnNuWdTnXBFkG2e5535l-4KSIHTv2L0N6IzuU8p-N2EPnNN3mmirQkzZFbcE5tQNcElse58Gsh1ytIamC8-ihZdTDT37hj1kZzctPOcms6dgxlJMY0wUeJeQZdg0slsTtZsKyuOc5VbssGwgDrfyVfR1J3Bn4xsNy1FN_8ZexzDRzQp-SuehJumSc5Z1wu9FxvnDyajPXDXas9mEubLAWMu4kraVQBKyyMA5yTDFaET4vqX_6Ksh5bajemzaVCWeliQ2gIZ3-vTgIJqJxoPEZIav3NSAZGAVI1zfl0w&t=AQK6fU4Yv-rjVe_W0KU",
+    "VD03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKobC33Ae7Et9WCkaG9Z7r-tjkCq-iJwNRgV7U0bNWOaZ5tnMHYkXTdVDjxAGwtkFY5wSFT-YuKRKdY-vaGLXoHBLsE0ZsIsQIo-33AkdywCgndOrtt19RvNdNPEy6fI9HsgAXhQHlM5o5k8Cpr8XnEcvXQ7vuPCaRP6McD1MGFt5EXaNQe8Wc_Hbdu--44XNj-YKX53_-yjlSLwCEdX8Sk4BJ3jkz4A__ppM4FcHzHoT1YhEs5STloggG4ptXNeuR4ztgUDqg6rH02KTVOaP7cOUWek08zTTqP-mac7CkLSpJ3m0z1CdBiQ-mY0uH-c591VprZcdOuXP8SQ7xxeGs-9-TtX2_dZamJ4A0on-Lddks6I8W1QFSHy2pORvW_JNFZ6JmOgFbHShACwFMbKwVN_tjgRRulriRBQaw-zUTOncBH_0hahLuJnGdMCc8WDLk&t=AQJ_OtyPeWCjqvu3aXc",
+    "VD02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL9B0mdo0hROJ0-olZVmCiJxNpSnTYDKQbxi9BUe8Y2FMLERBSPm_DaeqcTGQeo1UJg0HZ0bmoM-sulUWVeMslS08gvxmQ1GL48RchXc3x8u2aPKA3IWqx-svnisTqKAm7BntnSPqlgd3Yj0OV_xZpS1-byguRAuuCq2eCFNxRlPsIeE-q3sonAOg19LEWpyIUEH9Y3W7vxpnA11P9UgYaNNOBTh5wXOPjiyz1qhwHbZ42cW8fEg9HLdf4XNyxQb8s6Q6NtgX_IE2EjBAtM8-cNm59pSRNiJm5S_1l49nJz30IneWLEC__XqOOKJAa76VHgHrQ7XPqyvhgm3tHEuXx_ap_xqTlLNdYsPs1ueVEOJlEXI1Ek9aT8syOWU5vUp1qO3YTbcsw7Lxaeb0OWb9b-1ovL8KTIuq5LPC7geAgE1eeCmo53uKUk3BnQYpCU-TE&t=AQI0R3pIWDCVUFuIRB4",
+    "28/04 - custo de viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJAPUcLzwhSNXFa_2bjIFP0ZDE0z5ufbRLoLhdWVtjxsFYjbMiZ-B2VhIMsjDyzI5nkMQgrfcHZ28OaxOrMqsWAEvwE3zvQQhcx0GQuGdsiOG_5YiMohucKYZizSb_pqGxIZNAhXQ0QEEhXn8vQMiNmFjKLliMKJCIVonQvBlgD1v9JUyzeEZWP6n9ReaRUBwoTT8kpR4lGmAjFcWzkE4PQ7uX562ayt1NPljM18r2dxaYFaI1crAeocUwclDWoBERVsVi7An48w8m_vj3Iud2dfEkpy-qaB74dbMGQ5I19riRq6lKYsQ5KyJEo5JKX_Mk5zMpqOA2cR5hHjH70sn5yXBSSAI-BzbuClBfGKQKgbxFfZvruPRRlCIeIbCRCmrteVOPc6FhZPIU_BipA0FBxUiuK4EwtMEfuM2INHiiOIJWp-FLYup9spoQZyNNYydM&t=AQKXTk8qbC3ni60FU78",
+    "17/8 - Gastos com viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJAgVZHU5Qb7qYUkG33DK_E7YR4GFTfOkG779aMS0a74_nZIMD-R5GiSIUW08E7P68wnK1-ondX_t410jInME4Www5B9DGYqQgMJOR3a1HpCAdQN4V9fmiqTeYUUCPz57yDBfScnK0WAlO8EuUUjmZOq9syfAcJYaNUY_6m6pe-GD50-nKnLttHwdc5HcHiPB2ieWEELwVkPEl7w0vWkMrpP_GDs3gwgYjjJOEo7s0_s-X82uLYu_tmJS4UBEJ_98NUtK0132MFQnGTD1SZzs_RhHYD0XmYLI05ccq4sPCurJuHbvAvLKxBwMmdCOGgxKwGze84zUXoEnpYevDbGBOcDqPMdq6Q1PF3jcKkVx7bRB9Wu7L1DAg-bavt0ZhiyTqfCOer8VQ3PoZKDzZszYJ9Ls9-UXeiEcWbI_JWK6fi98IUZlqVWV67yYxdm0tNhfQ&t=AQJzI5XAmCs0myviD5w",
+    "Comprar casa de férias - 4/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK6teYYUL8-BbIPAEKzGuxiRvzr-4SkPBQpV7Ie-zuVMRMPLw6BIlfxGbmwlagNcgSmCddMtpcDwYDija4PK2iMtNNoOQwKoPkvaWydxL8ZLr2wW_2_3KOJobl-vEj0rXm5wOiPVR31MMr3Wca24quYpeR_R07Oe7Qdwot53oZuWo8ohnZW0edCmurmtAxb1_-HsEmBizquh63uXUkZ-GCfYMeIY2UChG9Jg32A98vGm0pZwCM7QdbbATeztFx2xsuer04cZlAvMMUuIKGxDju1KWLYYxHNSa8j19T-1mUdvQMXDv5n_C8EgxmN1c4eum2wTMwvL7-ZpiLt4YEpJdHvmLtTVWYOL-jd_hwKfdY-B4jSamQTxRrzaiOoAAJ7A-Ssx-7OELumjmYFShrK6aW8ppYX-jELXgKiQTfWS7hEyNis_MuGmPG9l_2jBytAlxw&t=AQJoQ4RbTgdxpbDnn44",
+    "24/07 -  Férias parceladas": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLHPQN6TPIP1Pip2z9kcLUCEBoPjRUMLXkxi-lfzuuQZ6hddshmfbht5fesXiD1cXsG3oXJVrQ2cd2LjsSsdCbPoJzfdoJbVtuXSTClDWPPyBCKbIyRdAaOCM_lVL1-q6QZx-oDQ4PgGDK19z-SnnE0G3YN9WQrA66VnXMVmZVUEZLAXKED_kagvKFqkcvdAPW2gi0l2_IKX_7uwr1_eMyf6vMycBZlrt0IWmzVwsrpYoV2vp_FkJ6bW25clvoXE1o3K2mbgWpZWU1jvDPsCmUjueLxaKr8x3ZrB7YoAcyuya8UpWx2kgF8SOWcOUpOgGKi6pNJkamN0ECIC-daYuhH4dQjg1Qxt4kAsX6PG5U7b8jPrttcDOZwnaQwkHZLOJcUf9P1SBIPjyhGhjTRGMabkweGD2xYHYy6mOxyLgloB8aSd17TVCjszWeb2XynKiA&t=AQJWrN6bSIv8Hq-EUEM",
+    "10/7 - Jeito tradicional": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJxMY2ko0NBp-kFiANa_wBlgzqUFfLluQ5ho_62bvchI1ISEnRxgy_fbDDQKVdscubAg5qkBfqSnECD0SMLNjyvRsfToKxZ394DOJqjlqeC_q1DSHkNJu3ihI9t26lizbsBMwvPjCFlaMoHmq8f-eqSKQonQVgjrk5fQpTG4MHI8IryuLV6hDnTfepgecPmjpwmZ3NRSa9dECSxKFGpTe4tcM0JalEhMkn2kmG3t0KX_SQTSc9BAqjcyHA8Ch0g2tUahguaC07GEb-zIKh9qTjyGo5ghCxzT62Cmo3soFvg1FsJPwI4EoxU69XkmhjBG3VIRGp8a75CJRTDqydnGHE0Gu0BAmQiL6ghHLwbl_Tixdgbqu7V5fVat74eUz-ZWV15TYdjyj5DqLq3BqTs2OMbjxoNQ_F2UD9ch_f97s6onflekimbzzP3A59cydfS3Q4&t=AQIH50SUetXy3ezgW3E",
+    "24/07 - Mapa de Clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIGKlP0SjzXl4XQyTilHXnBP5if9t4t5SsWmy5AnK25-T1S2LuDTwS2tPUXaEtIuDe5Ca1UbwxyTELkzyYTMco2NZ1SAV4S6RgPiGmA0RWreC_DNhNP8AFNuYAap8oN6zAUFb3_J1eJaQe07woAgtjpk1hj8EnRyiTPaSiu4R7jhRjseTXke9qC1DEnyWg3cHbnxbDq1rLRq8o6An-55k9lKbcdXx6mAb0ZvG3kAIWTA2hH2jLVq3XDAF27t6vuZtf6yvWfRQmPRF79uvpFlzJmO-I-qk3hytmQBqX6GBkkucU4bfhuaKLmJ1DMCZYQ4tfLf8OkrcIvdHxqHFjZNR9dS3fNxGYh2j4NiBQ1Cn0dcKrZ-XDx9JwAfl5T80spGz4Jf0a6vMg6zkUixgf7pzVIRvXmXr4rxj-pxKrQi6DAajDLMed_OQa78zDIe3iysMM&t=AQI1oN8SmFgl17V6qE0",
+    "16/06 - objeções": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLqKqyPhatQXxm-x6nA8XanxgcPH7T1McgCJIJ59nm-B98dEdVPfPh97GVXrIoJmdaH10hULIARsdQY14Wf6rXgfwq_N2YoMyCk7u6Oq62i80uham2C6RtfML2ZISUL_2YCPD88WM7A5Vr73ArMOKnsYbWWQF0vUC_AJUKc5aWrYL8PYZx9qpqVtCfvjp1kYuVJ5dE6JAVqRkVJUdgXXidXTwG3aBjxABNDfyEvbfACU0rrYvQkDU0t8utMRgwEPLUizmFugnHLMSxxSQSvGid7PV40YG3CJ35uBxfVZSWJRq38OqA9Ef2vppf2uCf3dYtUEK4h6IPyndBbE82MhvtDGAmth1JtileSc0GF43ydS23-ylINMLi8u9g69jNsQcom-wObJY6wZsrJhus7R7_uCwG8kOfH0SB5T7-0yfZznj6wdyjYCcuj-S6g1tqoK7s&t=AQLwwCKO3bdZHENFrxY",
+    "BN01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJAGC86IVbFZAPpiuTxI3x5x0J1_qPCBZnBMDT0FSGDQGpoLHIRXU5HJglNpx0HrEB4BTHfDrE7O7iMyvRTYc_EjBrKU7zNTx7SqhkQHBQclspBCDefUdhJpsnQUG5lhZXg5_guzwAoENv8RmVkqpTu2Efqqf2-rhcKnWeMaya1rEV2OT_J7nT8weidH-c68ykBj4wBqixchZ9mV2MDx7OUyMVoSI3z3ZXDelNyqbuAlpAM8dQjaIHOWuOiLhG3DDmN8_5jXRO3D-PfEGS3jhojXf8FXK4pVl-1Q9YXcvKpcN7zljr2SgTC9NVVQId64H9ciHWhN6qjc12IktNwtuBuuoad1Ubr6PBcDLEmn9ThNJP8HFGaYpk7OHTNbaF6UVCeSX1tNXS0LrGKC6DOk-so8evboxRHJxIx51ga6eEXIg6nGMZL3RGAXzKYQNRLZSQ&t=AQIwXoYO3NxXXe-j6k4",
+    "19/02 - Apresentação": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLBf47u-CvC--gtiRFB_HvCGs2onSe2HrUIA_DdE3Qx4Hbz420IDk72GomUCDf_MFIhWhUckvHsbbawdrTvQHQHTzLXQrc6LwhzxpVDC-dX5hZP_MBp9Nz60OTp4g069UEO_lsJD77pWYzsRHugoOYFZ5G79oa2GffCZOT4rrOV7jv_UBlZv3k_fHinJ4mKimy70Qm3tBFGh8Br1dYP-sVmtFrb399MnmbGWTtxSLY7SD4o_DH5WRIxnSMUdUyhLI6zoz-4o4dgJutD0T6lJqqutwxaDHzOY4XlrMfC9by4RwwQBvA2-XptRwxveOAKxpf81LOqq-jctK_gRkQNOFcj4vl0KVvzSff3pnTXPOWGT6d8gpkaGSV-KNlrTPK4jg5Nq3-VNzlNX1tSeVISQoHhR0ND2Exmu5bE5tn0GxxOooiQ36oxl_dl76NZTnb96gI&t=AQK2hdNHdjn-6Vjr9cw",
+    "14/04 - especialista": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLFg8iNWYe49TYrIS6ADA5AphmBRLAMHv3OkYoO7VNedUtrthk7q4zFO24ax0wRpLMjFhKsuQVTgPTdsnu5fUTi8wb9cPXuzCMO7Bqcp2wC_v-TyD3mmkt3EvdMW1ZBAucS0qUsxoh3Sf8rQmSB0cQ6aaY2ha9Gm08jXCGuDC2IF1hsZormE2gmxCRdbCYv4G9Y-b9stbKSkHONMqEp7AJDdpMeqXitoQhlGg953oJjuzwSV_7SKwpmlOXMwRGO279li9Z5SSurKsPx6N6Dwg8IWHOaOpnbo6m3MyhsCV3-aVqiIBeP_0wJC-m3R7q84m_7j3KGCavLtrK0ExrgnKcclkhPZEI3Kd6uSTReOfGrKzOQ-zGaZKco4WsHE0kY_hMX3h-eEZOZsQeOCwZ_rXYpOUhO2eFWHKH2hSLF9CujLoNESHOVl7FGZBpGBR-hG_M&t=AQIQJkvOgp2XCP01cl0",
+    "30/04 - comprei? e agora?": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJvJUAVEjGnM37xVPKKtguf9mjVRQd0ffTHkZ5Y3Wpxh8q66IsaGdxE93kPbPOaqbaFW1EqEkBWnjvKtb0p3PWqGmWBfPj3Bj4hIh7yOuzr9cTnFzZqx0kotaBO2lhwwTekBUjZRRwvgvW7YWFxLeUwk9ZEZiGBb3NdeIGIlml2pHsWF-pIUIbJR2DTyi5AmWR8qpxceK5Vw6p5KHK_DWKDev_f1CdgWFZsOv3whNgHV9X2MwQZ3smpZ8ZnWMirZLbP-pbYh-FLl_Wn-wJzzQbNWrbPhcXsqwB70G0DDeIXdD2FNFvfqYEaZYANleyYcUD8Uhw1rpqrSxi6DX91Lj1sWTKBAiYzjZmv59qFhTfg4kzUg7EZgF32fjhASPpeoLr17ZqDwwzI4ue5IGQ9-clTqnukSnm6T1C4BowR0xsxxg314XWz4Ho6ExygBMZnbKI&t=AQJ6Y3J42Oxy7CJ0Ku8",
+    "23/02 - Apresentação V2 (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJxQDV51AwS3QXNgRRB98KbSko4xQgBwVZJpaiwAsuw7RLYaZ9HAP6lk3eHyFzhpVNnNlnDyzVwE56hso8oDZAfNYnir34pBGOXsqGAwBmxBBVWtBGw6-7fGMKHr3G6i8lRpR_yV-J1xSjgVXMxB9kYO7ngUQgqJhi8jYlf4gKdR30-Q26oQIOSz2lKIWD0VG1nQEFcTInoiTIyCcqc5pJds6QQ-SFNInHytk69LyEOHtNRVEydIDNVzStFF4J__zme3mBLSNmXLmh9I8mikXYirfD-OaS3StBwW3ooUnLUmzpJpAnTowZW2J6sCCgd0cYsnODro-IaT2WPLETvg7-aJxZ1o9J3BImT1BpRibjKG3AsORjC0jlacNEqZIZ5gydWVjVZN6013nLzi1ZqaaSNlI0dleO2Io1TzKA7L-ryFaqmKqRkMTsgq7VU1Hovg4s&t=AQKAW8_4dJSL53KMe1c",
+    "19/06 - pov": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJsgQbGvU0VMfF05acmTCtvuT4Z_e08KCWUzXrUmY2O3Qs1Yf5wbOpklkiZAch15ux8FNAf_RccLmdK99OYMRxYoltlM1ibCsz0rx0Uck0KgFk-uA0cKl0paawEleQWqPWEu7oeegaSGfyyxFTC1WEQL8ifVOhh9P7JkGvVJi01OwTWixuM-4AB-b4MijRXnIQ9X507MKyIZJlTvkQwoKXI-1JI_EGERtg7qvLy0gKwuRwOI2GHmBjYICk4_fFJUxRHMkslG_cPCQFVBPR2IGWC1Vaz5Fyg0nY-G6FhO0Po-24dJ2mJ4t3KsPqi0O-gdccbVNhqLzcZkKZsIxTi65xscQKL2glIiqW0wlNE4h5IfVrtLg8WRGPhTJKKp9o-Cwo9DQOOk5nuzkxqHAQz2zacDoWZl5oyvsdg11PmA0zh3otJGLHymJol3TNFt3HFeaY&t=AQKBaND30FgaqNcQJmw",
+    "22/05 - direito de uso": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI2ZNKfkbP70iX0QXig4W37sLr8Eyaprvj0PSda3hy1M4HK5QomQYZ00fFCafbBEyzWdMCwJG_vwP9Uzq681tixatceuF5CB-98rU6L1KcmtlCtVSsjE4gbko6QPXs2VqDz7jNYINDgTf632N908pU7mwN4WuBaAkDZWa5TapJX-SvvB07xp0xzbQ6KrkwNRm6VNm2fYGvBOd6lEgiVe8JbqubzOJklmjas-JsuDbWf5i1QKzxYs40XltEPMNKEGAXyroAiUXSJyjz2_FWhWSP_zMnVSWAEm8KD47_sElYb5XDM8xI5F1xRaP_KO4b2SdM2ojtabTA_medOvF2DG1WazLOTA6Qz73L6ckealx_MQFh_bLXJ0CwjW5BwYAeclFU5gJfUHBtO4629D2WX7aOpuTDCEpHlytyudpygWijvTjpKOWhC6s1DHxNYepHW4-g&t=AQKqVbegPEJuMLDAE0A",
+    "VD01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLCRKFeLsGR2smI-fvlagJF2H3PLWHJyuBavrsjsiwHX_3nSxOw9gVGI-Zg7aUa90-D2R_ove8767XsH1zDVf6zOjv4LFEZuKX4kJETRDytEHPSHwJTo-LcwZXQ794Ccz7EREUgaOpuRsZM-QwWgCTHIGDIQqXCWPnfZWldXrJjCASWXktYl9D4i0E6PAQQ6X3iqdwVvfg4-0l5dvWpDuoQNq4qFH1gwwWuoBKOTKI49gpeTxIwDBsScJvcQIx17GWi49XeKFnJXDNPrlXPn7APUfYrDoQ-bHdXAB9y2eBTSXPtSqxMEyHWS-QxyIXV-b8QLZ5xDGU3N4GCkwXDiJJbRoIXE7_EZHN7x0v0vzl_TNpfA8mkoC-Glh9KLeiVfWfUegO940HsyulG04ALzTtbNeMpvpltoWeBQeRYUACbVHtglUmDL5jyWwN9jsuEL-0&t=AQKkhPI9EQPcA6gCmzk",
+    "VD04 - Motion (Depoimento)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ-HBYQpEfqbOBmJZvwvWzNzBtNwXw9QGmEQAKm0s-4b9YwmiV9EX2xb5z6QyDzkClyR33nw146DinWI-_aO36rWFLE3nTPnotBnD_vcP8F_Yl0UT18YQ5bD1gyAjnVWP_ZjZivyjIiR4uPtyOK_sQKS3ni0UavmE_SB5xJ_jclaUSFJzL-bFnrcDpuYDisPx87U_ohJfScx2IWM8K_WlTjPsmBmGV7qHHeo1v-wgBtjVyYJXtyI5Hqgf0ZtmhGRyf6zDyhuvlRXJ5la8k2SZp3Z5Cym9u9ytQ-AEcPLgpZKcIt4LmB39lr4LjD-8GCRMbiROA1e6XKasJ53FbYe5xIlFZFm09ZlyvmSJ3_biyMYUnXistnLANWjIueyl8Tp0SQx_3vHhrehHSU2tOa7FQIZFt9sN9P0hlQzIXQMkDzX5UjAHsTfEAOxMelVgUP63Y&t=AQK_KaftgoV4LfJnxf0",
+    "16/02 - Depoimento": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJWtn6vQdfgVQQmNRYEUe53-jIhQdeUK-FpxI0TOTOCFJbrJpa1hlhnnWRYIv7LhzQnScqRXviRNlWkGVTBJtvp4rvOt9i5JevosQjWEEViVRZ78y1SYdYclVXGJIP2OOQNnyLimFI9MZHhCcV2U7BSK6HpV4BA64RXmROmzomUvogF6VJ1hvvxZmIU7oG4ESIYSRFn2VemS_QAa_AuLoOQK6m2t4HFBqy36hCGIo3RXOleDzryMBph4w1cLSJ4_g-novjKUuApqwtpoiBV3C8lPKiPjYOg6tj9hLlROi3TyfISXz9zHBaBMjwtsvAe1CizpTxbiVbrOrqt95g-xdLNdbeNPaHIESTDgBRD-EebFmYrYW-FZgdLx1rohDj6RgyGYHO6MlfsxhB-iYwHadNYr-OOXmzj-gNRKLqLR5F73XK6MIWccff38TUVuGCpdr8&t=AQJ1CxjFLRVOMoEV73o",
+    "17/03 - Não é um hotel": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKxWOBs-6Ef1U2gM48UDN6XJMXBeQIbxWnc85mgbgpXqx0NGhL9qbInq-xkBsyn18zpCUvUen5fhGKksKGy9dJ0lUPor0yvNt1LfkC59fQFNmd71OGY-kov0SR8QAZkvaIoxm3Zq6mqHKSPySJVAFKqsD9omwGOHtXBlNFcgWxL3qNeCzHYSdt1Ep1Xq_tnb0hyqP63U432Z3wABEb_1pC9lA5KPi-rtb5kL8wrjMZ7MjhID9zS9i-PAOAe2pf2LoceCKA5Hy5lC3wf1y3bTyrGAHe5dyvk6_mqPsn7zJydZVl2EZdmJJX3p8qvmTH269yApmY27u-8gZZriR-t_Wh2p4S9Cai32QBMCbtpkVwVL9MMzvH0uKF6daP-ZMPuC9koCgw9pNFPDLfyokuQ-FyagHtElSnr2SE9XSAXIgk6GYU0Wyo1TOyEa5LFDCaCeV4&t=AQInHzJFgY6QJerMn9Y",
+    "24/12 - Confiança": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK4dzav-JcNB42asoFf1K4b8Z2q6y0kwB7oCzab7HSOVeXAG2ffsGEMxIfCFM_hC4qKDXDMmuZeR7h4gQtAL8vVxpdRj6fuAp1WBgxjTfviriI20pfSfI0rKNyQhs09ulggND4OdpeRjqERUuVeFuUFqdyRREwpIBMz-bzqulouA2eLkYcb0gyHxbo9LVkRc36zNPB3hStyTeksag1MmN_ZcM-MgCTM_u-68qwf3oUJGrP0EMp7S4HAc6DxpiteSwRm1d58f8dRP499fgM-mdjS8aE7hikjoOPcbxplxVglDKUamlaXi87rHxAVdRmo8sQKJaxvHd780M8jncHXMnrtpvlQV2AyKAqpKEeGhj73bPq8uiv-Ukp7iDbo-3kGWwa_ZvI3Y9g1W3xouwlzK7OjpaRJq9f79wYhDnlcibbDJVay8B_3_wMCHtTtnbW3Nec&t=AQL0PuB3-gp7YBGegJU"
+  },
+  "visibility": {
+    "ig_account": "mmevacationclub",
+    "ig_id": "17841472519672614",
+    "daily": {
+      "2026-04-01": {
+        "spend": 128.89,
+        "profile_views": 47,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 1
+      },
+      "2026-04-02": {
+        "spend": 119.16,
+        "profile_views": 34,
+        "followers": 0,
+        "shares": 1,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-04-03": {
+        "spend": 110.14,
+        "profile_views": 26,
+        "followers": 0,
+        "shares": 0,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-04": {
+        "spend": 111.51,
+        "profile_views": 14,
+        "followers": 0,
+        "shares": 2,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-05": {
+        "spend": 136.21,
+        "profile_views": 28,
+        "followers": 0,
+        "shares": 7,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-04-06": {
+        "spend": 114.52,
+        "profile_views": 30,
+        "followers": 0,
+        "shares": 2,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-04-07": {
+        "spend": 118.96,
+        "profile_views": 36,
+        "followers": 0,
+        "shares": 0,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-08": {
+        "spend": 132.04,
+        "profile_views": 24,
+        "followers": 0,
+        "shares": 3,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-09": {
+        "spend": 125.34,
+        "profile_views": 19,
+        "followers": 0,
+        "shares": 3,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-04-10": {
+        "spend": 133.71,
+        "profile_views": 28,
+        "followers": 0,
+        "shares": 1,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-04-11": {
+        "spend": 127.75,
+        "profile_views": 18,
+        "followers": 0,
+        "shares": 6,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-04-12": {
+        "spend": 137.65,
+        "profile_views": 32,
+        "followers": 0,
+        "shares": 7,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-13": {
+        "spend": 103.67,
+        "profile_views": 156,
+        "followers": 0,
+        "shares": 1,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-04-14": {
+        "spend": 114.13,
+        "profile_views": 50,
+        "followers": 0,
+        "shares": 0,
+        "saves": 5,
+        "comments": 0
+      },
+      "2026-04-15": {
+        "spend": 128.72,
+        "profile_views": 22,
+        "followers": 0,
+        "shares": 4,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-16": {
+        "spend": 118.37,
+        "profile_views": 37,
+        "followers": 0,
+        "shares": 1,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-17": {
+        "spend": 116.14,
+        "profile_views": 46,
+        "followers": 0,
+        "shares": 4,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-04-18": {
+        "spend": 79.79,
+        "profile_views": 21,
+        "followers": 0,
+        "shares": 4,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-19": {
+        "spend": 139.99,
+        "profile_views": 24,
+        "followers": 0,
+        "shares": 2,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-20": {
+        "spend": 113.74,
+        "profile_views": 30,
+        "followers": 0,
+        "shares": 3,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-21": {
+        "spend": 99.86,
+        "profile_views": 20,
+        "followers": 0,
+        "shares": 4,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-22": {
+        "spend": 89.64,
+        "profile_views": 25,
+        "followers": 0,
+        "shares": 2,
+        "saves": 5,
+        "comments": 0
+      },
+      "2026-04-23": {
+        "spend": 107.97,
+        "profile_views": 27,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 1
+      },
+      "2026-04-24": {
+        "spend": 73.95,
+        "profile_views": 12,
+        "followers": 0,
+        "shares": 1,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-25": {
+        "spend": 76.83,
+        "profile_views": 16,
+        "followers": 0,
+        "shares": 1,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-04-26": {
+        "spend": 119.93,
+        "profile_views": 21,
+        "followers": 0,
+        "shares": 3,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-04-27": {
+        "spend": 101.29,
+        "profile_views": 49,
+        "followers": 0,
+        "shares": 0,
+        "saves": 1,
+        "comments": 1
+      },
+      "2026-04-28": {
+        "spend": 128.17,
+        "profile_views": 87,
+        "followers": 0,
+        "shares": 1,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-04-29": {
+        "spend": 114.05,
+        "profile_views": 112,
+        "followers": 0,
+        "shares": 4,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-04-30": {
+        "spend": 184.62,
+        "profile_views": 174,
+        "followers": 0,
+        "shares": 3,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-05-01": {
+        "spend": 106.59,
+        "profile_views": 209,
+        "followers": 0,
+        "shares": 1,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-05-02": {
+        "spend": 160.48,
+        "profile_views": 220,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-05-03": {
+        "spend": 192.07,
+        "profile_views": 209,
+        "followers": 0,
+        "shares": 5,
+        "saves": 1,
+        "comments": 1
+      },
+      "2026-05-04": {
+        "spend": 191.22,
+        "profile_views": 164,
+        "followers": 0,
+        "shares": 7,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-05-05": {
+        "spend": 166.2,
+        "profile_views": 98,
+        "followers": 0,
+        "shares": 4,
+        "saves": 1,
+        "comments": 1
+      },
+      "2026-05-06": {
+        "spend": 146.94,
+        "profile_views": 87,
+        "followers": 0,
+        "shares": 5,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-07": {
+        "spend": 108.97,
+        "profile_views": 163,
+        "followers": 0,
+        "shares": 7,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-08": {
+        "spend": 102.89,
+        "profile_views": 101,
+        "followers": 0,
+        "shares": 1,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-05-09": {
+        "spend": 95.23,
+        "profile_views": 97,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-05-10": {
+        "spend": 159.28,
+        "profile_views": 134,
+        "followers": 0,
+        "shares": 2,
+        "saves": 3,
+        "comments": 1
+      },
+      "2026-05-11": {
+        "spend": 151.94,
+        "profile_views": 134,
+        "followers": 0,
+        "shares": 1,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-05-12": {
+        "spend": 160.35,
+        "profile_views": 130,
+        "followers": 0,
+        "shares": 4,
+        "saves": 3,
+        "comments": 2
+      },
+      "2026-05-13": {
+        "spend": 127.91,
+        "profile_views": 119,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-05-14": {
+        "spend": 117.4,
+        "profile_views": 154,
+        "followers": 0,
+        "shares": 7,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-05-15": {
+        "spend": 125.86,
+        "profile_views": 133,
+        "followers": 0,
+        "shares": 4,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-05-16": {
+        "spend": 106.05,
+        "profile_views": 50,
+        "followers": 0,
+        "shares": 3,
+        "saves": 2,
+        "comments": 1
+      },
+      "2026-05-17": {
+        "spend": 179.61,
+        "profile_views": 111,
+        "followers": 0,
+        "shares": 2,
+        "saves": 5,
+        "comments": 0
+      },
+      "2026-05-18": {
+        "spend": 136.54,
+        "profile_views": 76,
+        "followers": 0,
+        "shares": 7,
+        "saves": 2,
+        "comments": 1
+      },
+      "2026-05-19": {
+        "spend": 146.56,
+        "profile_views": 56,
+        "followers": 0,
+        "shares": 5,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-05-20": {
+        "spend": 141.36,
+        "profile_views": 76,
+        "followers": 0,
+        "shares": 3,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-21": {
+        "spend": 137.59,
+        "profile_views": 67,
+        "followers": 0,
+        "shares": 6,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-05-22": {
+        "spend": 176.75,
+        "profile_views": 70,
+        "followers": 0,
+        "shares": 4,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-23": {
+        "spend": 186.07,
+        "profile_views": 40,
+        "followers": 0,
+        "shares": 6,
+        "saves": 7,
+        "comments": 0
+      },
+      "2026-05-24": {
+        "spend": 263.05,
+        "profile_views": 73,
+        "followers": 0,
+        "shares": 2,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-25": {
+        "spend": 227.12,
+        "profile_views": 61,
+        "followers": 0,
+        "shares": 7,
+        "saves": 6,
+        "comments": 0
+      },
+      "2026-05-26": {
+        "spend": 213.45,
+        "profile_views": 81,
+        "followers": 0,
+        "shares": 8,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-27": {
+        "spend": 199.51,
+        "profile_views": 91,
+        "followers": 0,
+        "shares": 2,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-05-28": {
+        "spend": 192.88,
+        "profile_views": 86,
+        "followers": 0,
+        "shares": 2,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-05-29": {
+        "spend": 210.01,
+        "profile_views": 76,
+        "followers": 0,
+        "shares": 3,
+        "saves": 5,
+        "comments": 1
+      },
+      "2026-05-30": {
+        "spend": 201.48,
+        "profile_views": 44,
+        "followers": 0,
+        "shares": 1,
+        "saves": 5,
+        "comments": 0
+      },
+      "2026-05-31": {
+        "spend": 228.88,
+        "profile_views": 65,
+        "followers": 0,
+        "shares": 7,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-06-01": {
+        "spend": 210.21,
+        "profile_views": 58,
+        "followers": 0,
+        "shares": 5,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-06-02": {
+        "spend": 194.44,
+        "profile_views": 66,
+        "followers": 0,
+        "shares": 6,
+        "saves": 6,
+        "comments": 1
+      },
+      "2026-06-03": {
+        "spend": 224.07,
+        "profile_views": 99,
+        "followers": 0,
+        "shares": 5,
+        "saves": 7,
+        "comments": 0
+      },
+      "2026-06-04": {
+        "spend": 208.47,
+        "profile_views": 69,
+        "followers": 0,
+        "shares": 4,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-06-05": {
+        "spend": 213.23,
+        "profile_views": 85,
+        "followers": 0,
+        "shares": 2,
+        "saves": 0,
+        "comments": 0
+      },
+      "2026-06-06": {
+        "spend": 133.3,
+        "profile_views": 96,
+        "followers": 0,
+        "shares": 3,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-06-07": {
+        "spend": 222.15,
+        "profile_views": 109,
+        "followers": 0,
+        "shares": 2,
+        "saves": 9,
+        "comments": 0
+      },
+      "2026-06-08": {
+        "spend": 235.34,
+        "profile_views": 104,
+        "followers": 0,
+        "shares": 2,
+        "saves": 6,
+        "comments": 0
+      },
+      "2026-06-09": {
+        "spend": 192.66,
+        "profile_views": 72,
+        "followers": 0,
+        "shares": 7,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-10": {
+        "spend": 228.64,
+        "profile_views": 82,
+        "followers": 0,
+        "shares": 3,
+        "saves": 9,
+        "comments": 0
+      },
+      "2026-06-11": {
+        "spend": 247.73,
+        "profile_views": 99,
+        "followers": 0,
+        "shares": 3,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-12": {
+        "spend": 256.13,
+        "profile_views": 110,
+        "followers": 0,
+        "shares": 2,
+        "saves": 5,
+        "comments": 0
+      },
+      "2026-06-13": {
+        "spend": 251.01,
+        "profile_views": 121,
+        "followers": 0,
+        "shares": 3,
+        "saves": 5,
+        "comments": 1
+      },
+      "2026-06-14": {
+        "spend": 305.14,
+        "profile_views": 96,
+        "followers": 0,
+        "shares": 2,
+        "saves": 4,
+        "comments": 2
+      },
+      "2026-06-15": {
+        "spend": 261.5,
+        "profile_views": 123,
+        "followers": 0,
+        "shares": 4,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-16": {
+        "spend": 256.91,
+        "profile_views": 106,
+        "followers": 0,
+        "shares": 5,
+        "saves": 6,
+        "comments": 0
+      },
+      "2026-06-17": {
+        "spend": 243.57,
+        "profile_views": 73,
+        "followers": 0,
+        "shares": 4,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-06-18": {
+        "spend": 228.86,
+        "profile_views": 50,
+        "followers": 0,
+        "shares": 3,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-19": {
+        "spend": 308.73,
+        "profile_views": 92,
+        "followers": 0,
+        "shares": 5,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-06-20": {
+        "spend": 317.06,
+        "profile_views": 96,
+        "followers": 0,
+        "shares": 4,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-06-21": {
+        "spend": 366.99,
+        "profile_views": 109,
+        "followers": 0,
+        "shares": 2,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-22": {
+        "spend": 304.58,
+        "profile_views": 112,
+        "followers": 0,
+        "shares": 12,
+        "saves": 4,
+        "comments": 1
+      },
+      "2026-06-23": {
+        "spend": 322.72,
+        "profile_views": 137,
+        "followers": 0,
+        "shares": 11,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-24": {
+        "spend": 275.21,
+        "profile_views": 80,
+        "followers": 0,
+        "shares": 4,
+        "saves": 1,
+        "comments": 0
+      },
+      "2026-06-25": {
+        "spend": 352.13,
+        "profile_views": 175,
+        "followers": 0,
+        "shares": 6,
+        "saves": 3,
+        "comments": 1
+      },
+      "2026-06-26": {
+        "spend": 337.53,
+        "profile_views": 169,
+        "followers": 0,
+        "shares": 3,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-27": {
+        "spend": 346.22,
+        "profile_views": 149,
+        "followers": 0,
+        "shares": 3,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-06-28": {
+        "spend": 435.82,
+        "profile_views": 229,
+        "followers": 0,
+        "shares": 5,
+        "saves": 8,
+        "comments": 0
+      },
+      "2026-06-29": {
+        "spend": 394.63,
+        "profile_views": 249,
+        "followers": 0,
+        "shares": 8,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-06-30": {
+        "spend": 482.66,
+        "profile_views": 376,
+        "followers": 0,
+        "shares": 5,
+        "saves": 10,
+        "comments": 3
+      },
+      "2026-07-01": {
+        "spend": 483.64,
+        "profile_views": 398,
+        "followers": 0,
+        "shares": 7,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-07-02": {
+        "spend": 436.97,
+        "profile_views": 416,
+        "followers": 0,
+        "shares": 8,
+        "saves": 9,
+        "comments": 0
+      },
+      "2026-07-03": {
+        "spend": 429.9,
+        "profile_views": 297,
+        "followers": 0,
+        "shares": 10,
+        "saves": 10,
+        "comments": 3
+      },
+      "2026-07-04": {
+        "spend": 406.33,
+        "profile_views": 193,
+        "followers": 0,
+        "shares": 9,
+        "saves": 7,
+        "comments": 1
+      },
+      "2026-07-05": {
+        "spend": 448.74,
+        "profile_views": 202,
+        "followers": 0,
+        "shares": 7,
+        "saves": 7,
+        "comments": 1
+      },
+      "2026-07-06": {
+        "spend": 452.63,
+        "profile_views": 213,
+        "followers": 0,
+        "shares": 4,
+        "saves": 6,
+        "comments": 4
+      },
+      "2026-07-07": {
+        "spend": 464.23,
+        "profile_views": 237,
+        "followers": 0,
+        "shares": 8,
+        "saves": 7,
+        "comments": 0
+      },
+      "2026-07-08": {
+        "spend": 581.7,
+        "profile_views": 375,
+        "followers": 0,
+        "shares": 9,
+        "saves": 9,
+        "comments": 0
+      },
+      "2026-07-09": {
+        "spend": 583.51,
+        "profile_views": 412,
+        "followers": 0,
+        "shares": 13,
+        "saves": 13,
+        "comments": 0
+      },
+      "2026-07-10": {
+        "spend": 487.95,
+        "profile_views": 378,
+        "followers": 0,
+        "shares": 13,
+        "saves": 12,
+        "comments": 1
+      },
+      "2026-07-11": {
+        "spend": 463.04,
+        "profile_views": 382,
+        "followers": 0,
+        "shares": 6,
+        "saves": 2,
+        "comments": 0
+      },
+      "2026-07-12": {
+        "spend": 582.84,
+        "profile_views": 347,
+        "followers": 0,
+        "shares": 9,
+        "saves": 11,
+        "comments": 1
+      },
+      "2026-07-13": {
+        "spend": 510.91,
+        "profile_views": 344,
+        "followers": 0,
+        "shares": 12,
+        "saves": 7,
+        "comments": 1
+      },
+      "2026-07-14": {
+        "spend": 526.3,
+        "profile_views": 387,
+        "followers": 0,
+        "shares": 9,
+        "saves": 9,
+        "comments": 1
+      },
+      "2026-07-15": {
+        "spend": 564.32,
+        "profile_views": 339,
+        "followers": 0,
+        "shares": 6,
+        "saves": 8,
+        "comments": 1
+      },
+      "2026-07-16": {
+        "spend": 536.04,
+        "profile_views": 404,
+        "followers": 0,
+        "shares": 8,
+        "saves": 17,
+        "comments": 0
+      },
+      "2026-07-17": {
+        "spend": 509.3,
+        "profile_views": 405,
+        "followers": 0,
+        "shares": 17,
+        "saves": 5,
+        "comments": 3
+      },
+      "2026-07-18": {
+        "spend": 423.16,
+        "profile_views": 321,
+        "followers": 0,
+        "shares": 11,
+        "saves": 11,
+        "comments": 0
+      },
+      "2026-07-19": {
+        "spend": 541.68,
+        "profile_views": 375,
+        "followers": 0,
+        "shares": 11,
+        "saves": 19,
+        "comments": 0
+      },
+      "2026-07-20": {
+        "spend": 514.43,
+        "profile_views": 348,
+        "followers": 0,
+        "shares": 10,
+        "saves": 11,
+        "comments": 0
+      },
+      "2026-07-21": {
+        "spend": 547.01,
+        "profile_views": 446,
+        "followers": 0,
+        "shares": 11,
+        "saves": 9,
+        "comments": 2
+      },
+      "2026-07-22": {
+        "spend": 544.16,
+        "profile_views": 361,
+        "followers": 0,
+        "shares": 16,
+        "saves": 13,
+        "comments": 0
+      },
+      "2026-07-23": {
+        "spend": 473.51,
+        "profile_views": 326,
+        "followers": 0,
+        "shares": 6,
+        "saves": 8,
+        "comments": 0
+      },
+      "2026-07-24": {
+        "spend": 443.63,
+        "profile_views": 331,
+        "followers": 0,
+        "shares": 17,
+        "saves": 15,
+        "comments": 2
+      },
+      "2026-07-25": {
+        "spend": 429.77,
+        "profile_views": 275,
+        "followers": 0,
+        "shares": 13,
+        "saves": 3,
+        "comments": 2
+      },
+      "2026-07-26": {
+        "spend": 512.94,
+        "profile_views": 303,
+        "followers": 0,
+        "shares": 14,
+        "saves": 13,
+        "comments": 0
+      },
+      "2026-07-27": {
+        "spend": 452.37,
+        "profile_views": 302,
+        "followers": 0,
+        "shares": 7,
+        "saves": 11,
+        "comments": 1
+      },
+      "2026-07-28": {
+        "spend": 522.29,
+        "profile_views": 435,
+        "followers": 0,
+        "shares": 10,
+        "saves": 16,
+        "comments": 0
+      },
+      "2026-07-29": {
+        "spend": 504.11,
+        "profile_views": 377,
+        "followers": 0,
+        "shares": 12,
+        "saves": 8,
+        "comments": 1
+      },
+      "2026-07-30": {
+        "spend": 520.71,
+        "profile_views": 387,
+        "followers": 0,
+        "shares": 8,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-07-31": {
+        "spend": 550.66,
+        "profile_views": 424,
+        "followers": 0,
+        "shares": 10,
+        "saves": 16,
+        "comments": 0
+      },
+      "2026-08-01": {
+        "spend": 542.77,
+        "profile_views": 359,
+        "followers": 0,
+        "shares": 11,
+        "saves": 14,
+        "comments": 2
+      },
+      "2026-08-02": {
+        "spend": 639.22,
+        "profile_views": 395,
+        "followers": 0,
+        "shares": 17,
+        "saves": 17,
+        "comments": 2
+      },
+      "2026-08-03": {
+        "spend": 560.06,
+        "profile_views": 276,
+        "followers": 0,
+        "shares": 14,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-08-04": {
+        "spend": 512.67,
+        "profile_views": 382,
+        "followers": 0,
+        "shares": 7,
+        "saves": 12,
+        "comments": 0
+      },
+      "2026-08-05": {
+        "spend": 466.15,
+        "profile_views": 391,
+        "followers": 31,
+        "shares": 13,
+        "saves": 10,
+        "comments": 0
+      },
+      "2026-08-06": {
+        "spend": 561.41,
+        "profile_views": 408,
+        "followers": 38,
+        "shares": 17,
+        "saves": 20,
+        "comments": 1
+      },
+      "2026-08-07": {
+        "spend": 588.78,
+        "profile_views": 377,
+        "followers": 34,
+        "shares": 13,
+        "saves": 12,
+        "comments": 0
+      },
+      "2026-08-08": {
+        "spend": 670.91,
+        "profile_views": 382,
+        "followers": 35,
+        "shares": 15,
+        "saves": 17,
+        "comments": 2
+      },
+      "2026-08-09": {
+        "spend": 716.43,
+        "profile_views": 336,
+        "followers": 37,
+        "shares": 27,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-08-10": {
+        "spend": 610.87,
+        "profile_views": 213,
+        "followers": 30,
+        "shares": 13,
+        "saves": 14,
+        "comments": 3
+      },
+      "2026-08-11": {
+        "spend": 682.92,
+        "profile_views": 196,
+        "followers": 27,
+        "shares": 14,
+        "saves": 17,
+        "comments": 3
+      },
+      "2026-08-12": {
+        "spend": 725.27,
+        "profile_views": 272,
+        "followers": 25,
+        "shares": 11,
+        "saves": 11,
+        "comments": 0
+      },
+      "2026-08-13": {
+        "spend": 878.42,
+        "profile_views": 268,
+        "followers": 33,
+        "shares": 14,
+        "saves": 20,
+        "comments": 2
+      },
+      "2026-08-14": {
+        "spend": 648.41,
+        "profile_views": 347,
+        "followers": 25,
+        "shares": 17,
+        "saves": 18,
+        "comments": 2
+      },
+      "2026-08-15": {
+        "spend": 703.98,
+        "profile_views": 322,
+        "followers": 30,
+        "shares": 16,
+        "saves": 15,
+        "comments": 2
+      },
+      "2026-08-16": {
+        "spend": 879.97,
+        "profile_views": 287,
+        "followers": 35,
+        "shares": 20,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-08-17": {
+        "spend": 553.46,
+        "profile_views": 279,
+        "followers": 31,
+        "shares": 8,
+        "saves": 7,
+        "comments": 0
+      },
+      "2026-08-18": {
+        "spend": 743.93,
+        "profile_views": 760,
+        "followers": 45,
+        "shares": 13,
+        "saves": 14,
+        "comments": 3
+      },
+      "2026-08-19": {
+        "spend": 700.52,
+        "profile_views": 553,
+        "followers": 28,
+        "shares": 10,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-08-20": {
+        "spend": 738.33,
+        "profile_views": 626,
+        "followers": 15,
+        "shares": 9,
+        "saves": 5,
+        "comments": 1
+      },
+      "2026-08-21": {
+        "spend": 558.21,
+        "profile_views": 430,
+        "followers": 14,
+        "shares": 10,
+        "saves": 6,
+        "comments": 0
+      },
+      "2026-08-22": {
+        "spend": 560.01,
+        "profile_views": 548,
+        "followers": 7,
+        "shares": 10,
+        "saves": 4,
+        "comments": 1
+      },
+      "2026-08-23": {
+        "spend": 819.48,
+        "profile_views": 641,
+        "followers": 19,
+        "shares": 11,
+        "saves": 8,
+        "comments": 1
+      },
+      "2026-08-24": {
+        "spend": 558.15,
+        "profile_views": 823,
+        "followers": 13,
+        "shares": 7,
+        "saves": 13,
+        "comments": 0
+      },
+      "2026-08-25": {
+        "spend": 683.09,
+        "profile_views": 613,
+        "followers": 14,
+        "shares": 7,
+        "saves": 7,
+        "comments": 0
+      },
+      "2026-08-26": {
+        "spend": 678.35,
+        "profile_views": 595,
+        "followers": 18,
+        "shares": 13,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-08-27": {
+        "spend": 736.03,
+        "profile_views": 749,
+        "followers": 15,
+        "shares": 12,
+        "saves": 3,
+        "comments": 0
+      },
+      "2026-08-28": {
+        "spend": 861.17,
+        "profile_views": 599,
+        "followers": 30,
+        "shares": 10,
+        "saves": 14,
+        "comments": 0
+      },
+      "2026-08-29": {
+        "spend": 583.82,
+        "profile_views": 581,
+        "followers": 19,
+        "shares": 10,
+        "saves": 14,
+        "comments": 1
+      },
+      "2026-08-30": {
+        "spend": 791.91,
+        "profile_views": 700,
+        "followers": 35,
+        "shares": 19,
+        "saves": 15,
+        "comments": 0
+      },
+      "2026-08-31": {
+        "spend": 651.49,
+        "profile_views": 627,
+        "followers": 26,
+        "shares": 12,
+        "saves": 16,
+        "comments": 1
+      },
+      "2026-09-01": {
+        "spend": 588.63,
+        "profile_views": 642,
+        "followers": 18,
+        "shares": 14,
+        "saves": 9,
+        "comments": 2
+      },
+      "2026-09-02": {
+        "spend": 642.05,
+        "profile_views": 752,
+        "followers": 16,
+        "shares": 20,
+        "saves": 4,
+        "comments": 0
+      },
+      "2026-09-03": {
+        "spend": 560.34,
+        "profile_views": 546,
+        "followers": 0,
+        "shares": 10,
+        "saves": 12,
+        "comments": 1
+      },
+      "2026-09-04": {
+        "spend": 301.49,
+        "profile_views": 339,
+        "followers": 0,
+        "shares": 6,
+        "saves": 5,
+        "comments": 0
+      }
+    }
   }
 }

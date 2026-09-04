@@ -22,6 +22,16 @@ _load_env()
 TOKEN   = os.environ["META_TOKEN"]
 ACCOUNT = os.environ["META_ACCOUNT"]
 
+# Conta do Instagram usada pra métricas de visibilidade de marca (@mmevacationclub).
+# É a conta que os anúncios do IMR publicam; achada via act_.../connected_instagram_accounts.
+# Override por env IG_ACCOUNT se um dia mudar.
+IG_ACCOUNT = os.environ.get("IG_ACCOUNT", "17841472519672614")
+
+# Tipos de ação (actions) do Meta que representam engajamento de visibilidade.
+ACT_SHARE   = 'post'                          # compartilhamentos
+ACT_SAVE    = 'onsite_conversion.post_save'   # salvamentos
+ACT_COMMENT = 'comment'                        # comentários
+
 # Período: desde início da operação (01/04/2026) até hoje.
 SINCE   = '2026-04-01'
 UNTIL   = date.today().isoformat()
@@ -132,6 +142,89 @@ def fetch_insights(level):
         print(f'  window {since}→{until}: {len(chunk_rows)} rows (acumulado {len(all_rows)})')
     return all_rows
 
+def fetch_visibility():
+    """Métricas de visibilidade de marca, granularidade DIÁRIA (pra somar em qualquer
+    período do dashboard). Duas fontes:
+      • Anúncios (account insights, campo `actions`): compartilhamentos, salvamentos, comentários + spend.
+      • Instagram @mmevacationclub (IG Graph): visitas ao perfil (profile_views) e novos seguidores (follower_count).
+    Retorna {'YYYY-MM-DD': {spend, profile_views, followers, shares, saves, comments}}.
+    Cada bloco é isolado por try/except: se o IG falhar, ainda volta os dados de anúncio."""
+    from datetime import timedelta
+    daily = defaultdict(lambda: {'spend':0.0,'profile_views':0,'followers':0,
+                                 'shares':0,'saves':0,'comments':0})
+    start = datetime.fromisoformat(SINCE).date()
+    end   = datetime.fromisoformat(UNTIL).date()
+
+    # ── 1) Anúncios: spend + actions (compart./salv./coment.) por dia ──────────
+    print('  [vis] account insights (spend + actions)...')
+    for since, until in _month_chunks(SINCE, UNTIL):
+        url = f'https://graph.facebook.com/v21.0/{ACCOUNT}/insights'
+        params = {'access_token':TOKEN,'level':'account','fields':'spend,actions',
+                  'time_increment':1,'limit':500,
+                  'time_range':f'{{"since":"{since}","until":"{until}"}}'}
+        while url:
+            r = requests.get(url, params=params); d = r.json()
+            if 'error' in d:
+                print(f'    ❌ actions {since}→{until}: {d["error"].get("message")}'); break
+            for row in d.get('data', []):
+                ds = row.get('date_start')
+                if not ds: continue
+                daily[ds]['spend'] += float(row.get('spend', 0))
+                for a in row.get('actions', []):
+                    t, v = a.get('action_type'), int(float(a.get('value', 0)))
+                    if   t == ACT_SHARE:   daily[ds]['shares']   += v
+                    elif t == ACT_SAVE:    daily[ds]['saves']    += v
+                    elif t == ACT_COMMENT: daily[ds]['comments'] += v
+            url = d.get('paging', {}).get('next'); params = {}
+
+    # ── 2) Instagram: novos seguidores por dia (follower_count) ────────────────
+    # Limite do Meta: follower_count só cobre os ÚLTIMOS 30 DIAS (excluindo hoje).
+    # Histórico mais antigo é inacessível — por isso o main() mescla com o JSON
+    # anterior pra preservar os dias que já saíram dessa janela.
+    print(f'  [vis] IG follower_count (id={IG_ACCOUNT}, janela de 30d)...')
+    fc_start = max(start, end - timedelta(days=30))
+    fc_end   = end - timedelta(days=1)   # dia corrente não é suportado
+    if fc_end >= fc_start:
+        r = requests.get(f'https://graph.facebook.com/v21.0/{IG_ACCOUNT}/insights',
+                         params={'access_token':TOKEN,'metric':'follower_count','period':'day',
+                                 'since':fc_start.isoformat(),'until':(fc_end+timedelta(days=1)).isoformat()}).json()
+        if 'error' in r:
+            print(f'    ⚠️  follower_count: {r["error"].get("message")}')
+        for m in r.get('data', []):
+            for val in m.get('values', []):
+                ds = (val.get('end_time') or '')[:10]
+                if ds: daily[ds]['followers'] += int(val.get('value') or 0)
+
+    # ── 3) Instagram: visitas ao perfil por dia (profile_views, janelas de 1 dia) ─
+    # profile_views só sai como total_value de um intervalo — não tem array por dia —
+    # então puxamos dia a dia. Erro num dia não derruba o resto.
+    print('  [vis] IG profile_views (dia a dia)...')
+    pv_ok = pv_err = 0
+    d = start
+    while d <= end:
+        try:
+            r = requests.get(f'https://graph.facebook.com/v21.0/{IG_ACCOUNT}/insights',
+                             params={'access_token':TOKEN,'metric':'profile_views','period':'day',
+                                     'metric_type':'total_value',
+                                     'since':d.isoformat(),'until':(d+timedelta(days=1)).isoformat()},
+                             timeout=15).json()
+            data = r.get('data', [])
+            if data:
+                daily[d.isoformat()]['profile_views'] += int(data[0].get('total_value', {}).get('value') or 0)
+                pv_ok += 1
+            elif 'error' in r:
+                pv_err += 1
+        except Exception:
+            pv_err += 1
+        d += timedelta(days=1)
+    print(f'    profile_views: {pv_ok} dias ok, {pv_err} sem dado/erro')
+
+    return {k: {'spend':round(v['spend'],2),'profile_views':v['profile_views'],
+                'followers':v['followers'],'shares':v['shares'],
+                'saves':v['saves'],'comments':v['comments']}
+            for k, v in sorted(daily.items())}
+
+
 def main():
     print('=== Meta Ads Spend Fetch ===')
 
@@ -225,6 +318,15 @@ def main():
             cri_preview_iframe[name] = iframe
     print(f'  {len(cri_preview_iframe)} iframes coletados')
 
+    # ── Visibilidade de marca (engajamento anúncios + IG @mmevacationclub) ──────
+    print('\nFetching brand visibility metrics...')
+    try:
+        visibility_daily = fetch_visibility()
+        print(f'  {len(visibility_daily)} dias com dados de visibilidade')
+    except Exception as e:
+        print(f'  ⚠️  visibilidade falhou ({e}); mantém bloco anterior se existir')
+        visibility_daily = None
+
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
         'fetched_at':     datetime.now(timezone.utc).isoformat(),
@@ -236,6 +338,32 @@ def main():
         'creative_preview': cri_preview,   # {nome → URL fb.me (abre no FB)}
         'creative_preview_iframe': cri_preview_iframe,  # {nome → URL iframe embedável}
     }
+
+    # Visibilidade: se o fetch falhou, preserva o bloco do JSON anterior (não zera a aba).
+    prev_path = Path(__file__).resolve().parent / 'data/meta_spend.json'
+    prev_daily = {}
+    if prev_path.exists():
+        try:
+            prev_daily = (json.loads(prev_path.read_text()).get('visibility') or {}).get('daily') or {}
+        except Exception:
+            prev_daily = {}
+
+    if visibility_daily is not None:
+        # Merge: 'follower_count' do Meta só cobre ~30 dias. Pros dias que já saíram
+        # dessa janela (fetch novo traz followers=0), mantém o valor já capturado antes,
+        # senão o histórico de seguidores encolheria a cada rodada do cron.
+        for ds, prev in prev_daily.items():
+            if prev.get('followers', 0) and not visibility_daily.get(ds, {}).get('followers', 0):
+                visibility_daily.setdefault(ds, {'spend':0.0,'profile_views':0,'followers':0,
+                                                 'shares':0,'saves':0,'comments':0})
+                visibility_daily[ds]['followers'] = prev['followers']
+        out['visibility'] = {
+            'ig_account': 'mmevacationclub',
+            'ig_id':      IG_ACCOUNT,
+            'daily':      dict(sorted(visibility_daily.items())),
+        }
+    elif prev_daily:
+        out['visibility'] = {'ig_account':'mmevacationclub','ig_id':IG_ACCOUNT,'daily':prev_daily}
 
     # Salvaguarda: se a API falhou (token expirado etc) e voltou tudo vazio,
     # NÃO sobrescreve o JSON existente — preserva os dados anteriores.
