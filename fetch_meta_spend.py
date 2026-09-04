@@ -230,6 +230,59 @@ def fetch_visibility():
             for k, v in sorted(daily.items())}
 
 
+def fetch_top_content():
+    """Posts do Instagram @mmevacationclub (desde SINCE) com métricas de engajamento,
+    pra ranquear os 'top conteúdos'. Retorna lista de dicts com preview (thumbnail +
+    permalink). Os thumbnails do IG são URLs de CDN que expiram — como o cron re-roda
+    diariamente, ficam sempre frescos; o permalink nunca expira."""
+    from datetime import timedelta
+    G = 'https://graph.facebook.com/v21.0'
+    fields = ('id,caption,media_type,media_product_type,media_url,thumbnail_url,'
+              'permalink,timestamp,like_count,comments_count')
+    posts, url = [], f'{G}/{IG_ACCOUNT}/media'
+    params = {'access_token':TOKEN,'limit':50,'fields':fields}
+    stop = False
+    while url and not stop and len(posts) < 120:
+        d = requests.get(url, params=params).json()
+        if 'error' in d:
+            print(f'    ⚠️  media: {d["error"].get("message")}'); break
+        for m in d.get('data', []):
+            if (m.get('timestamp','') or '')[:10] < SINCE:
+                stop = True; break
+            posts.append(m)
+        if stop: break
+        url = d.get('paging', {}).get('next'); params = {}
+
+    def _insights(mid):
+        for mset in ('reach,saved,shares,total_interactions,views','reach,saved,total_interactions'):
+            r = requests.get(f'{G}/{mid}/insights', params={'access_token':TOKEN,'metric':mset}).json()
+            if 'error' not in r:
+                return {x['name']: (x.get('values',[{}])[0].get('value') or 0) for x in r.get('data',[])}
+        return {}
+
+    out = []
+    for m in posts:
+        ins = _insights(m['id'])
+        cap = (m.get('caption') or '').replace('\n',' ').strip()
+        out.append({
+            'id':        m['id'],
+            'permalink': m.get('permalink',''),
+            'thumb':     m.get('thumbnail_url') or m.get('media_url') or '',
+            'type':      m.get('media_product_type') or m.get('media_type') or '',
+            'date':      (m.get('timestamp','') or '')[:10],
+            'caption':   cap[:120],
+            'reach':        int(ins.get('reach',0) or 0),
+            'views':        int(ins.get('views',0) or 0),
+            'saved':        int(ins.get('saved',0) or 0),
+            'shares':       int(ins.get('shares',0) or 0),
+            'comments':     int(m.get('comments_count',0) or 0),
+            'likes':        int(m.get('like_count',0) or 0),
+            'interactions': int(ins.get('total_interactions',0) or 0),
+        })
+    out.sort(key=lambda x: -x['interactions'])
+    return out
+
+
 def main():
     print('=== Meta Ads Spend Fetch ===')
 
@@ -332,6 +385,14 @@ def main():
         print(f'  ⚠️  visibilidade falhou ({e}); mantém bloco anterior se existir')
         visibility_daily = None
 
+    print('Fetching top content (Instagram)...')
+    try:
+        top_content = fetch_top_content()
+        print(f'  {len(top_content)} posts coletados')
+    except Exception as e:
+        print(f'  ⚠️  top content falhou ({e})')
+        top_content = None
+
     # ── Build output ───────────────────────────────────────────────────────────
     out = {
         'fetched_at':     datetime.now(timezone.utc).isoformat(),
@@ -369,6 +430,19 @@ def main():
         }
     elif prev_daily:
         out['visibility'] = {'ig_account':'mmevacationclub','ig_id':IG_ACCOUNT,'daily':prev_daily}
+
+    # Top conteúdos: usa o fetch novo; se falhou, preserva o do JSON anterior.
+    if out.get('visibility') is not None:
+        if top_content is not None:
+            out['visibility']['top_content'] = top_content
+        else:
+            prev_tc = []
+            if prev_path.exists():
+                try:
+                    prev_tc = (json.loads(prev_path.read_text()).get('visibility') or {}).get('top_content') or []
+                except Exception:
+                    prev_tc = []
+            if prev_tc: out['visibility']['top_content'] = prev_tc
 
     # Salvaguarda: se a API falhou (token expirado etc) e voltou tudo vazio,
     # NÃO sobrescreve o JSON existente — preserva os dados anteriores.
