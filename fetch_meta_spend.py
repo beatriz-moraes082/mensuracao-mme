@@ -155,21 +155,26 @@ def fetch_visibility():
     start = datetime.fromisoformat(SINCE).date()
     end   = datetime.fromisoformat(UNTIL).date()
 
-    # ── 1) Anúncios: spend + actions (compart./salv./coment.) por dia ──────────
-    print('  [vis] account insights (spend + actions)...')
+    # ── 1) Anúncios: spend + actions por dia (nível CAMPANHA) ──────────────────
+    # GASTO conta APENAS campanhas de topo de funil (nome contém "Topo de Funil")
+    # — é o investimento em visibilidade/branding, não os leads (fundo de funil).
+    # Engajamento (compart./salv./coment.) segue contando todas as campanhas.
+    print('  [vis] campaign insights (spend topo-de-funil + actions)...')
     for since, until in _month_chunks(SINCE, UNTIL):
         url = f'https://graph.facebook.com/v21.0/{ACCOUNT}/insights'
-        params = {'access_token':TOKEN,'level':'account','fields':'spend,actions',
+        params = {'access_token':TOKEN,'level':'campaign','fields':'campaign_name,spend,actions',
                   'time_increment':1,'limit':500,
                   'time_range':f'{{"since":"{since}","until":"{until}"}}'}
         while url:
             r = requests.get(url, params=params); d = r.json()
             if 'error' in d:
-                print(f'    ❌ actions {since}→{until}: {d["error"].get("message")}'); break
+                print(f'    ❌ campaign {since}→{until}: {d["error"].get("message")}'); break
             for row in d.get('data', []):
                 ds = row.get('date_start')
                 if not ds: continue
-                daily[ds]['spend'] += float(row.get('spend', 0))
+                is_top = 'topo de funil' in (row.get('campaign_name') or '').lower()
+                if is_top:
+                    daily[ds]['spend'] += float(row.get('spend', 0))
                 for a in row.get('actions', []):
                     t, v = a.get('action_type'), int(float(a.get('value', 0)))
                     if   t == ACT_SHARE:   daily[ds]['shares']   += v
