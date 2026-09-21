@@ -214,6 +214,16 @@ def main():
     print(f"já corretos : {len(leads) - len(plano)}")
     print(f"a corrigir  : {len(plano)}\n")
 
+    # Distribuição final (como o mês fica DEPOIS de aplicar o plano)
+    dist = {}
+    for l in leads:
+        d = alvo(l, contatos)
+        dist[d] = dist.get(d, 0) + 1
+    print(f"distribuição de {a.mes} (após correção):")
+    for k, v in sorted(dist.items(), key=lambda x: -x[1]):
+        print(f"  {v:5d}  {k:<18} {v/max(len(leads),1)*100:5.1f}%")
+    print()
+
     resumo = {}
     for p in plano:
         resumo[(" + ".join(p["de"]), p["para"])] = resumo.get((" + ".join(p["de"]), p["para"]), 0) + 1
