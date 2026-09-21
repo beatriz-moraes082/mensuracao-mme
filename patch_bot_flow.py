@@ -168,6 +168,9 @@ def main():
         if ev.get("source") == "timer":
             ev["delay"] = 600
 
+    # nome próprio: se a importação funcionar, aparece um bot NOVO com este
+    # nome. Manter o nome da origem fazia o Kommo casar com o bot existente.
+    o["model"]["name"] = "[CORRIGIDO] Pre-atendimento tags"
     o["model"]["text"] = json.dumps(inner, ensure_ascii=False)
     o["model"]["positions"] = json.dumps(pos, ensure_ascii=False)
     Path(DESTINO).write_text(json.dumps(o, ensure_ascii=False), encoding="utf-8")
