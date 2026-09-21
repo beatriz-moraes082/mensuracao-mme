@@ -1,8 +1,8 @@
 {
-  "fetched_at": "2026-09-20T23:15:57.347832+00:00",
+  "fetched_at": "2026-09-21T15:55:56.349481+00:00",
   "period": {
     "since": "2026-04-01",
-    "until": "2026-09-20"
+    "until": "2026-09-21"
   },
   "adset": {
     "27 - 55 | Engajamento 365D": {
@@ -67,7 +67,7 @@
       "2026-09": {
         "w1": 346.96,
         "w2": 344.11,
-        "w3": 294.75
+        "w3": 337.88
       }
     },
     "26 - 50 | RO/AM/MS/MT/AP/TO/RR | Viajantes": {
@@ -106,7 +106,7 @@
       },
       "2026-09": {
         "w2": 444.85,
-        "w3": 444.17999999999995
+        "w3": 492.15
       }
     },
     "30 - 55 | RJ/DF/MT/MS/GO | Resort All-inclusive": {
@@ -154,7 +154,7 @@
       "2026-09": {
         "w1": 2572.84,
         "w2": 2570.19,
-        "w3": 1974.3000000000006
+        "w3": 2233.0000000000005
       }
     },
     "30 - 50 | BR | Profissões [+] viajantes frequentes": {
@@ -211,7 +211,7 @@
       "2026-09": {
         "w1": 854.6700000000001,
         "w2": 535.76,
-        "w3": 395.85
+        "w3": 438.11
       }
     },
     "26 - 50 | LookaLike 1% Clientes IMR (Iphone 13+) [LPA]": {
@@ -279,7 +279,7 @@
       "2026-09": {
         "w1": 1020.2699999999998,
         "w2": 692.7899999999998,
-        "w3": 403.38
+        "w3": 445.45
       }
     },
     "VD01": {
@@ -435,7 +435,7 @@
       "2026-09": {
         "w1": 1710.5399999999995,
         "w2": 1259.2499999999998,
-        "w3": 442.7799999999999
+        "w3": 499.38999999999993
       }
     },
     "VD04": {
@@ -649,7 +649,7 @@
       "2026-09": {
         "w1": 367.28,
         "w2": 352.09000000000003,
-        "w3": 295.01
+        "w3": 338.14
       }
     },
     "Comprar casa de férias - 4/8": {
@@ -671,7 +671,7 @@
       "2026-09": {
         "w1": 0.6100000000000001,
         "w2": 0.26,
-        "w3": 0.23
+        "w3": 0.26
       }
     },
     "24/07 -  Férias parceladas": {
@@ -704,7 +704,7 @@
       "2026-09": {
         "w1": 34.21,
         "w2": 22.170000000000005,
-        "w3": 4.13
+        "w3": 4.62
       }
     },
     "10/7 - Jeito tradicional": {
@@ -715,7 +715,7 @@
       "2026-09": {
         "w1": 0.34,
         "w2": 0.7500000000000001,
-        "w3": 0.21000000000000002
+        "w3": 0.29000000000000004
       }
     },
     "VD05 - Tela Dividada (Léo)": {
@@ -726,7 +726,7 @@
     "VD04 - Tela Divida (Leo)": {
       "2026-09": {
         "w2": 1158.4000000000003,
-        "w3": 1951.78
+        "w3": 2201.43
       }
     }
   },
@@ -760,10 +760,10 @@
     "27 - 55 | BR | IG | [+] Férias": "CAMPAIGN_PAUSED"
   },
   "creative_status": {
+    "VD05 - Tela Dividada (Léo)": "CAMPAIGN_PAUSED",
+    "BN02": "ACTIVE",
     "24/07 - Mapa de Clientes": "ACTIVE",
     "BN03": "ACTIVE",
-    "VD05 - Tela Dividada (Léo)": "WITH_ISSUES",
-    "BN02": "ACTIVE",
     "VD04 - Tela Divida (Leo)": "ACTIVE",
     "30/6 - Time falando sobre clientes": "ACTIVE",
     "Frequência de viagem - 7/8": "ACTIVE",
@@ -790,64 +790,64 @@
     "24/12 - Confiança": "PAUSED"
   },
   "creative_preview": {
-    "24/07 - Mapa de Clientes": "https://fb.me/2bjIqrns4gg6CJh",
-    "BN03": "https://fb.me/1WxVTcnloAMn0D9",
-    "VD05 - Tela Dividada (Léo)": "https://fb.me/24tZeClcJUMljMi",
-    "BN02": "https://fb.me/1W5zqvwN4JDBgyI",
-    "VD04 - Tela Divida (Leo)": "https://fb.me/2iCvnUQJM1eAvV4",
-    "30/6 - Time falando sobre clientes": "https://fb.me/1WtGhkZ8jZv4ShT",
-    "Frequência de viagem - 7/8": "https://fb.me/23TEW2mnwGMItmA",
-    "17/8 - Gastos com viagem": "https://fb.me/2fMfvlcnQMjL21N",
-    "19/02 - Apresentação": "https://fb.me/1ZshrDa2ERBDXF9",
-    "14/04 - especialista": "https://fb.me/2iBFwcSwdPhfwKL",
-    "30/04 - comprei? e agora?": "https://fb.me/1Suqf0cZIFbdWhF",
-    "Comprar casa de férias - 4/8": "https://fb.me/1VEa2Za9bIM9w4W",
-    "24/07 -  Férias parceladas": "https://fb.me/1Y9hpI9VYAhHd4E",
-    "10/7 - Jeito tradicional": "https://fb.me/23EuUtw5Azw5Ln0",
-    "22/05 - direito de uso": "https://fb.me/2hiArjlSw1ZRL5t",
-    "VD04": "https://fb.me/27wmCDccZkl1sjE",
-    "VD03": "https://fb.me/1VSfS3PR2TW4CEU",
-    "VD02": "https://fb.me/2pdJ31VUTfp0hCo",
-    "28/04 - custo de viagem": "https://fb.me/233Et9QGyLm3e3E",
-    "16/06 - objeções": "https://fb.me/2aiN4AJ9ZHPzNUZ",
-    "BN01": "https://fb.me/1UvrUKp5XkagZhn",
-    "23/02 - Apresentação V2 (Leo)": "https://fb.me/22AFeFxfdaWaavq",
-    "19/06 - pov": "https://fb.me/1VvsTbTKVFtjR9u",
-    "VD01": "https://fb.me/2QcRPBOBmF28U6g",
-    "VD04 - Motion (Depoimento)": "https://fb.me/2baOkkRNFMnRyML",
-    "16/02 - Depoimento": "https://fb.me/296q1FCxSXT7APl",
-    "17/03 - Não é um hotel": "https://fb.me/25aft09aKEQMowl",
-    "24/12 - Confiança": "https://fb.me/1RLQZSSAjDGu209"
+    "VD05 - Tela Dividada (Léo)": "https://fb.me/2hp9UFx2jY0QmzG",
+    "BN02": "https://fb.me/1VulcHzupyA4irc",
+    "24/07 - Mapa de Clientes": "https://fb.me/2j7ruufVEsi4BHy",
+    "BN03": "https://fb.me/1VuhrPyKdR8nVOI",
+    "VD04 - Tela Divida (Leo)": "https://fb.me/2t2xe5EmTIn3Pvj",
+    "30/6 - Time falando sobre clientes": "https://fb.me/2cAEszsne6fHf2p",
+    "Frequência de viagem - 7/8": "https://fb.me/34edUrUawFXKAJX",
+    "17/8 - Gastos com viagem": "https://fb.me/1VxTmbYpW2Yz0VM",
+    "19/02 - Apresentação": "https://fb.me/27X8TBpkrbJCBpP",
+    "14/04 - especialista": "https://fb.me/yS0T679jWfXDD4t",
+    "30/04 - comprei? e agora?": "https://fb.me/1VOzChZRvCzi9EI",
+    "Comprar casa de férias - 4/8": "https://fb.me/2r8qLp64llrZWns",
+    "24/07 -  Férias parceladas": "https://fb.me/2hhBQj5oB1o08zW",
+    "10/7 - Jeito tradicional": "https://fb.me/2xsyl9XbNJTnL8a",
+    "22/05 - direito de uso": "https://fb.me/1WbjDNSBlM6DGo3",
+    "VD04": "https://fb.me/1RdirubkuaDocg0",
+    "VD03": "https://fb.me/28eHMYwizvZUoe7",
+    "VD02": "https://fb.me/27mKT38Lqs5yNiV",
+    "28/04 - custo de viagem": "https://fb.me/yMdf8Y3h21SnyVT",
+    "16/06 - objeções": "https://fb.me/1WlikaPOQ8Y2epF",
+    "BN01": "https://fb.me/27AgdoGKogXXbX6",
+    "23/02 - Apresentação V2 (Leo)": "https://fb.me/2qlQkhuPYBSsrcq",
+    "19/06 - pov": "https://fb.me/2qGnIB18ypr2kyf",
+    "VD01": "https://fb.me/1VGkmMwmgWyyEIu",
+    "VD04 - Motion (Depoimento)": "https://fb.me/2706zFuTSnRRNkw",
+    "16/02 - Depoimento": "https://fb.me/24kRb5zcXTiJ7UI",
+    "17/03 - Não é um hotel": "https://fb.me/2rJOfD5zbu6Cymg",
+    "24/12 - Confiança": "https://fb.me/2baeZiPaWviCEUB"
   },
   "creative_preview_iframe": {
-    "24/07 - Mapa de Clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLikmMZ6PUZbhM5--EWPkJ6UBbV8IeNey3J5I9zudTkqDnBcs9W3xcfEL82mrR1q97CZzLYxcA-rDlZ2PVsIg1GA7SOFl53v9QM-hqEflUoZ_a5lsykDQP21DHHdO4xtKyMxGAvsGFdpg5IR37ikLvw6OVmkfUYbryOfvVzXZW0MnnN-ixRwL2-OlpuXUCgrpoJW9i931LYtiz1m1j6iuo51pPy1rr1WTC4QBr3NE9EnZLMPpw3v1EuON1RFOW8db5JFkkvXE7zSkmj0gyn_AW7EI8HpFJUjo2vcGy3td6F0_-8wE26Tt3HKVglgG-wEFxQOlIq6u5Jp8Z6wEvQAHeJXhThJQRLGBsOvCoTt49-WK6mCYoTYuT-eMzB4JrkhPQLZOJtUtx9vfy2K11x8n4MqwQk6bAAGR64W7V8HJeNZ6QI-ob67whQTK5NRYO7cP4&t=AQLwh-fUGuTosvtrsMI",
-    "BN03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK7Ppm0LLPnvHI7G21upIYMhBAosy_ogoe4pkVK2rWIfQxSVY4SDHOpRN6wM_ziys9du8BjEi1fLj3V8m8M8yXvYivoemQqquxju06CClKANvGmLX4c7QTSegEgwpcgPBPpvSXrurYCNja6q2EAOwtP3utXT5e9dQ4cTkuUnBLeBlbGIl-Q5nNFykxCfXgraRN-Tn7BhKB2f1d5P7ErNvblYzF36LnB61Us239GdACqypRS8MMFNJ85A2Amq3zgK-E0gmMBTMrXqO85yiwZnkS0njeiiXRErvIoE9hVrpzmjR5XZIN7eam4sd6lzQLXhxGP29q3zB7IWQAGGRQydqTsxGcD11VAS4d9GI4nPCG9SExX1-iKSBOCzvmDGtrOKLOXFpiHbyWeSjfFc7dkCCcHZ63T1IDWiNQj7VfA-6BVYiind_hrXCKizTFeGUkhyQ4&t=AQJ1cWMxC-mWFrDvS3o",
-    "VD05 - Tela Dividada (Léo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI0paB6w1f0XZeclEb7wS1nMvbLq3Icv78SKUTIQJpmkfkiIS4QWVMGzFklfMAcIxnG0TCy0xc1mZswEMjRQXZ7Gu95o-bhTk6hlvIaPAYaVZXeOmo9MbhSve0O7gme4P0792A4xZVL4HdZAFrGEKaYgtnUKFeBZk3cbf8ogxKkJCDt7IySokfXMBThx4bNbJKYfxd4uTGxwDh1E0vKpvI59R3X15VFglklCvif9glqSFbTOP2kHgtQYIYOr27t6V2cZEG1KRR-09w57B7BHNXyZn4iU5pYvvpcZxmHojY5NsN7m6piCgZ3NaaNZDrBQebgESlbiUGJw6ibIoPf2-Tu8p6kfYq_jeE6SyRXkGI9eDApEeDp_V-MKIWk2nt73x4LBgnmYDkyDZbE1WeOwmkzaoUcpiG2ZjHIcf8xr4dyvGIN8lLKsPueHk2S-tVvwfI&t=AQKoeSX4HdjeUC64ySg",
-    "BN02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKliItjyVfZNq7RCYzgpK9KFsBV3lHsf-0iWhIGcfx4kL-ARlb9m2eA53PN7DcnOXboJ3cWbxCzY-I_SqLxF3YEmSq4RA3yIwhi5UZH30FxRR5KrBvcJP-F1oFW8CrFPkA9dVz9FlQ-zmW-I24_yYASG6fn9EcyM54oxi4vzMQoaFEpsDyIOGyisXzbJStNcPk2IgjErqN0s04wb3eXzOU1HRZtNvRqgPrXofTeLWRm2xGQG0MmMMeoKli4AtCo46diCl3nsJ7f0mxiwZ6QxOWwcgnWYwmY8fI5FB9fUH2aq-eR2cPHUePFS1zD78LSIzaHqhKMeMxqZynsyM-p9UQjoCYc_-MJYlRV3lmyWOpV5U4TzDZrYU1SfW5aM0UnSBg9RxIs9E97Nr2CsI36PVvx0RB0AMMqMPipkiq9P6H2DF-CC8Jc0qyEjLiGFUPrcw4&t=AQL3HNPFlSbsutYG2JM",
-    "VD04 - Tela Divida (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJxsk6ukE1WwcrhDSwYOGyk-bgdBOM6FlwVxtcJ-Q-PwQ2xCGL7xyUpYMARRDSdsVB62aWphN5oa7-z_JlVvJtQrW1vkyGitxBw6ASqsZYyLGYCk-w9d7npgz_KVv-Bv-Yb8nUPaTzsj6n5faxvRf27V66gffmF0Mwngw7yuFT8Z1dnYLvvyUQCZ9ywm1pVxvs2EjxOdIbeTWDPDp6g6dmL91hzd_sgo-Pa8oGa5gnIK_orNa2fRxTqxqiJVssq7HCNI32-FYqw9fbbJB_waMfPRbxqUJf-li7VTvemoOIzzMJNjDNIvgl1AHW9EtH__ckam7UQH5esVhiynC2VRUR9NJjro0-42353cWi29z67Fe3O6l6gikiGYezUCLsDJhPU4D0u3g34RBNs7Grt1szIT9n3tTVY0gLoYXdGHSVnnm5aon-1ggom4duWmHGSrww&t=AQKQzy1u8m6yP7qGFrE",
-    "30/6 - Time falando sobre clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKD3oeJMxv--tM0jB01i39sx21u49b-NzPtWLLuv8mvs-xcNPYb1PasdJQHHCQWjwECxawKei9W-QRGoyHYMIpeQmQYVEsALMNWodnSm1QnVJyYepbugV5DxG2iblKIVW71VfsJuE7IKcuG4qELErID3-1aLPa6oJvNfIwr-uLGsGfdZP7PXt3cfAh7UAX3Ych9wUMlck3nQr7HHAad8Cim53nmRW7aOBvP7DgWXQ0fl_RmH8dQzx7c-43JrUUba4zz2AhBJD6QukWNiCsk-9By-zQe9tVQaSp78qLzulxdOQSk2PzveSvvWPiIYoIZYr5gCiFIVMAdQsSiRpNkOBfiRBWaUQcRvp_t1rVU3TgAvMRlleP57IsdrO08TiPcIJX-4vfXQYKdImKjYINtSUDpLz0Qatseep1t9bZXkVPAau_RTrPLIumBPpEWfzWdAfE&t=AQKRUaHgIXKar_V2FzM",
-    "Frequência de viagem - 7/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKM7qmxT7Yu5MjQYrd9sFEYZzXCZYFyI4lfF4vi1lcXvtjIDYbWIk29uQoLR2fz2mWTMYRdx89SIRJjFV0OdwEsqB-gEoYVkkbzIDvY6e8NencgowDHImhSEPIZ_El1XTHdt7ZklkyMnwCBnMET6jlzXaj5qAxdxaAq6Y-Wmqyt0-zNgacuNEzKOZKPY_xZ383JHSmEk1h7vRX_ksAma35QR-LjDM4vfPLSLBbcDqYELyPBGrUjT5XZoc1VsX1lmB4GfY7ih6Dnk4oUyU9TgKbp-crPMUSY_Dg4mtgJF3tbMpzMTe010gUQKRD367O3B91RuuhNnjBYANq0qgVpHdH6A1ygAAOsdI77yaq5dB5WlwwgSWu8qqZn3n4cC1cwXPzNk5XRu6vf4BG9CUxVux0CqGjYv--4n1QhbsVxLCPUSFfhc_poaziAKeuf8vw4v50&t=AQIIWZLFQLu-NCm14tY",
-    "17/8 - Gastos com viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKYmAdlXC4F_ZnFtxRypROAP5-LpbfNSKGH8dy6Tl2DL79QzQKC73W4eiWgxglpPpzkyf9PPjLrbKhDh1of0SIILmtAWXnVkhyWc8mWa54Ft7YIqHfzz7OZVRcSBf52m4ZfjY8e0aXAOhT1tXs1zdFsBFA13ZCE-EitAWgpMuO67x8wFIgO7rXERLLMExzXknS5MR5VjBn9KMu2T7jyk5lJLoX-86XElisdE6fOuJPKYYLz1QOzKCN-8GXnws4gGXQna8djCVAAV6u6Y0bXc6u3rXH1oSYN4rGnwKwrYllEOC5ECBN_DIkaLS6u9V5VVESargN2LfTGnu2Wi2b1oPRomgM2HxZMP9jmIIUYjQ-BfSxYkvle8RE0ZAse91hJt9RNufFQrOa12DMtJxSzsedIGDBTH_D_PoU1S0PMmMzeEfZuYinUAPrGLwo1TIpFgWg&t=AQJ5uGWkLUCCcBYoW9U",
-    "19/02 - Apresentação": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKouuNaNo1YcHnZhvUznzCFPkfD9nav4DdAorgfX4jH-e-SjccTyrt8vc66h54gE-P_VrA3FQYsMikTM-MD9_QXkCfN0n4IG4-4z3d6CSja4tHViUOVdixFiQXLf-RqFfQLeYl6Bhpk2eknL5SPHNOKI_uwUiUYec6qJnmwOxa4tBcDPVlrp-tJBZ8ltNoWEeN-dYsqXzldt8-EbULAhdynxU-Yhhkk6VMV7baelx_d2K_1AVu8pV_4R0OCytAk04NBO5bPJLu99JjlTh5p2eI_AOmowk6Hj7UPdiYB32Z80XWKzcBiIb2pOwTN6Sp6fVkG6X60C4dx294AKQ1tkJJlaKkNRmhXnV-sFEx84xEDSTa-LzRUTEuUtp3yPWNw-ReATFrRPxtUijSgNvyxFbn-ja8P1zke5VVaT6mLhrsz6TEdXFmmHXZRZ9b4shn4Wxk&t=AQJiGg7athdZ4Awq0Uo",
-    "14/04 - especialista": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJV1pu4jzGWWon8qdEqILWVuLjeg_TIa-1aaDUfHYtOpNIglGFNXczQcp6g20fKG7wlkFGOecPDCHWB5_L46eX4b3rmZcLHmbYkBYn_4LKJ6mb-U2sLoX51UDjMBf2XXJmqwVzKQMVUns1v783IQFiEa25btmhozAUUHM-MjqvI3mRnRTFMpAoe5MndJIxZk4RADMYYs6C5M4CeXs-orQXq9H1VTZGi4fheQG7k9SrQ_YCHcIRPFnaZ_aiP8VewOh7VKS4hSj2jmeD6hSuxYM0lAvMvQH3VgsX0QBOSPRq8n7AUJUK1ivKWWjUGQFCTijmVy_qXZ5_jMxsc0T15DfZ0E7d_J0lsO1I8GAyGpYDakJQBDaJHHDKzC0y3Mhgsk4U21jaJm5Kf1C8zbSWUYICUojze3yAAg552fF41gxkt6kAdgPKxM6A467ZMVQ9Xewc&t=AQLLGjtYVQ8hKtW9Tos",
-    "30/04 - comprei? e agora?": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLFnZn765P9-ZOHjOFjPlyms3Y6h5dsCrHgnuEo-jgNXZcO5KpBxDvxwwmrqovInP3ZYdl38LzUx6k02eXniDqhrlEB_zkVliuHysoB0Nhyade2D-sKShZrZ2BwYdmUTKdeViASi2kiQxjXKdKMcqXIz5tVPJAea8oUVCtrJICkuHtMXaJv8OGjPi41GsB4jKoBm49Y_HQeIJ2nw4jgRwrRvY9Eg6Ah_hqTagS_ku2s9ETcPMGL4j9PkGC4PUFB0TdXS9Uc_8EkvAwRSzP2oqxfXKiHsw1pdhoXzIpWCJRh0DJLbYI-Dz40kn7UEFuUlVe-VM67IG4rq8x2aSAbwceyVqp2Q6xS537w6W9JXNYpjnt9OcxpEAWh2c5DC4IZ0PlHoLprCRNZ7CipYRqwONWWIY7kxscW_x7krdbFqyp7wbk-6liAqmSk-qTAKL-4cYk&t=AQJyOV2BDsWQJY_78i4",
-    "Comprar casa de férias - 4/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIJkJdfeAlwNTIEo1Fwq-B5EE9jkrg6KRGKjpdLFHk5s69mcsY0qIKLEN8vTk9lV1z5GDm7agQqd3oZPw8rRaJhwrcCJazIqanA_1HjMlqUCM9h2cqb11Nwrxk0sWaZS0kBOJA0AfjlBmXJCsZgEkv3501vFdW_AK5907hh27GsmEJjCpnBSuHsp9TH4ju0H5ysWzIZ15XZaGNrIgW8nBEbgFQvRJ3Ly2oAztRMO7PlYw3yzg1-mrrQpHm6EiwOt44IZzUPtVruFFOem2nbWoqcHWOJ9T-0o11BpfqRgc1dwd29qeJbxqfTM2g_SMdpzHGFiZ6r0wWQlu98nXEef4mUppW5OW9j-xdTEPdKFBFLXbzSAOP7zTd5s8H2tuuXI0uq6EJgMWczALkzbBEDbYfizM_QQBGW-bMjsFTcSxnK_9_XJN1vLjrFnnyin7hPWAM&t=AQL9pTflazjRU783FVc",
-    "24/07 -  Férias parceladas": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ-F1TsVIjUm0qpXgc0mhKKb53RELlb9dRg73RrV1c_LFSCxNznXOlRg9DaVIvORmdyqQ53VpW3N4Y7vK-TbwzFPvUsZjl9ltlIGcxp11HLMc9w3sr6PbpNt5OFCqh2lXlmXeetYQNWRZwO_QnU3hCZLu_nOxDiARNpmlkE9aBhMi1FVt44kQf6M5j1HR3rGTdwOSnCYxZ9u2XKZPw3--e3LHlUJzBww7OcQONASPxyoqW83Dtq1Uq3fUxEYrUQvkB3ezyITCtgDadIUtzidXJJqp02D51-lD1UwIK8p6Xn8b5Px1iCzHvPvzScKTYYvl1zk1J6GlUJafZMAW3FooHfNaYyfJIbiwdXwrTcZf4r0FeJGFS-UE6I4TMjMswhY5TXoVHoK8TpaIPNu5vu0nrLwG0cUTa1Mmql2EYI4HT3pu8GhJyHkPBo2SPp-dcIzgk&t=AQI60PlKHaGcv8c7fdk",
-    "10/7 - Jeito tradicional": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIu9LBFdyoyxIUP86W6_O1eziH_yqpb9BS9Y7bz1pOxN-5GTtRrh6ftqnr3mYwX1Z1Bw_ILWDl8eFdcr1hwZOVAZWQbIDdP7lMe66ISNoTZO3UwZYmRY9nYjlTLeZd0xqEXOpHh0bO0-NU-eR1wEfdfFZMEnIr-2LKj9gwaIg3sNBrUocJd8V_Nyr0a9KfVnbA5PPWnc9PHiCfnu5CTRkkSv8cxPvOl-BmmG536CpiIbSdEMxV_w1tlcRRH_VDl8_geUfxHUknD4jab4qAlU9hLLYJkGfbWMCGFzLZAAcbb_NhsPcchhPI5gaxm7IY25LmLbqheoFECkZiPlMydHntKon1m4j1K1D1OUQaTDjnIu2aCrh3656d9qpMCzjTxZwuEQu9AAZBx0rDQfPT6XiIO5sCCwmtU63ks11fbDpufBZM2lXJ5s2AHf8FPVsI78BE&t=AQIjgZZ22tZYzOKhOAY",
-    "22/05 - direito de uso": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQItdlERELSxiGsVCWa1K9bexwMZlzuAF4nug_po-GbeMePbOFFD8KiC8ZbSkLHS5rgwXoPd0RDyY22-9DN45WM1OPa9lPUS6a3en0SEtl0prSZ2s_-HM066BggQn1vqO2UeMehXLaythQ8nUF2UKFerNrDd-nQZqslgUBftvvo1wBaNDvKzJwez2QFJONCoB_TytsdXvbScY1shOoNyifoWA0SdByikZJWAF9vzUnctFnL2jdBpeBI9clXI8doXM_NGbs81NWrF4S2_t55EG7SYAfyqsPTv4DNujMoT-GuYd9gVJB-NMkCw82N7tjvVcL-xiFzy6JoULo-k6ige476LvGcCG-sp4x7W2-ek2wiU62VwlLmQBLWhMKG4HzATnHtpljwOyGJDw5oVn3FzFG2d1KQ3R0l_F4If5y-NbbBxIC91PB-bGRPjuJ5CRLRoheA&t=AQIctDW8P_IAdMVCZnY",
-    "VD04": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQInr2OK_Y_Y7ntpU9iK-JMP0vVdiYpHW1NHCIuiL66mZARBcOzWuTClcMSR6LYNOqwnk0r798K8rFFEauhL2q0n4y9UCVuS7Emt2gA8Sqkt_I6OFvbilbkVOS0CkdvqJwwBANBgh_d6MFWSA9FwOquyYTVz7apZN1dyNUU9ceL8SHwZZfCsHIuTEnsyKZszPb3s0-dnUSAikdGpaz7S9JLfvz_s819tyQ671KwCz3JUoB74fU1rWl_obuNdL8dm0pKcTMKSO9JsxcrwthYqh01FDw_IHSS7MmOmvd27c_277leLNiMQM1fivV-QNWssQijXUETRwqSIW4_R4fEwUcLC68AthjomfFWqAzRI0wTN-enyxD4z4XvBnxdJdnzdlOv4fGncKxxO_KyOkfRDH8D7sPh4Z6g7uVboTZAOJP2AEbsdTZbRIEGYM70F2zROjos&t=AQLF2Fl4pKonz4cSWHs",
-    "VD03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLgJIH6n7aF8VO_rS3w4iCrUtoAFnp9kghgr7lbLkRQAWmLGh4_O0TpdNIiOzU8G4-zbyJxbj3WXHqwOcn7Fv6m4zQ_XfNeYwbAaDoEWPmdT2zHfVNq9Uhupuok9MdeOyMSg7hbCWLxpqh9hl21eb461sOaPXU0VyGbVLF-Q-ukZf45qrQOs_ktSSAF4FNfaMRCTV0PSHLZXPy6qtlUVzsz_-FHsnrYMVSAvPa_GuganLJXOCgkJPydOVW2lpZxHooh8PCqV-8XucQMrQMXDKQxN-ZMKzu69qo-jeRKZgGlilWI7fuuS056jHmDE0uxsOJTeDjAhB8Riue-H-2GmeoyhhVMknOD_wU0dMVfpOghuC0z_k6eymAokr7eEfmM7odeHHBKgx46-uIzgF9E_tfcVqjRdpl-V_MDJZvAHYFZQyiAqY_vWw0W35eiQ1y7hbk&t=AQKCC__mUlWMTAXM7po",
-    "VD02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKf-mrVfmHyD4yyjmgot-VNgKU0_TwyY6siQbGZ5h3L655CTNU56IWWCjRCHDOtCFrspFlk70FUYG8YCLTF_cC2F0e98ZGx4mP3_Y_PHNr9MvbDvtd4VerX777vW4hec0la5xrWHOoMcKWrubOmH3C2ckINgNSIHVAjkz2WoExaEicvg1lq4MUq7g0PnK7Tv4eqAbeY6-Uk_tuICz4mAgwm8iTA91j5yM5Q3alScHc9KAQmZQegwRf927A4hGfs0XeeYXk1sEBvL_pgQjjFFrecg9whoSuLvhGRq249hKmSvqbGjyID3duie0PMUHdc5OQSBWIRdCqK8eM1PjA-5-1-98gMjQFY5yCI3L5fjPUe6bE5d3Xi453m2GsrrrCVpZyWQYvTCjc2nkqBj2Tc9CCenKOo698pELg0hYVQI7Wx9bIjQWl9RymEYlPrwYga0Pk&t=AQIYNjogwL0Kc0mMBsM",
-    "28/04 - custo de viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLLOVTrMshc7wYWsg3ULAxaDylDOWxf6Zil94lknB6Mkcy345HcPaoHN9fh3Zj09tH2A1XIN5eGmXffy0k6wendbLyJx0Xs4ys6NdXXqmZji_O7Od2RkmY2ecoxGamSYafGWPzbW1BqPMHOi1LM9d5f8ZIiwfn34qP9DwnYGxZWIDiR9oe5BS7gNuXLdNUdJr2R-b4uAaR5r5vDK41YQ4FUGXECE7McSJ94CmkGB9BtAU8uMvqTtVuZUdm72RcV5BSUkqsEJ0TXA_37Mm_PnD6vWBzh1LROQLvlXHIZlEK7gyRVtc8jkjvKYo7pni-vYgT-MXxP9-4IlCmTmPIw5yMkk7XxaGQUVzhPurhbbHIz_tMIQ3cF1W_uD5p9BD8DWMLkJ7KWSqMk18VKO_Y2ISDGDsCzLclT5ZOG0pPig42ODqyZjrX5RRDlYzMh9sWuZf4&t=AQL4JIUXjJ9Jd51gGyc",
-    "16/06 - objeções": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQISlRWxGG_7MM6a7LY70JrOno8A0TV6mFOjI29ulZpQAdfyJaeL9hWfivIwopz0mkhijQZunHXEEjv0ynXN_aruCHaxJhe0lhzLmcZkAYctzes2xvWvD2G2_8rNLZO61Iq2CTmjHTP93iBNIvLTUsh0feP7axLAi6E0VhV1XfhdRnQp2ZX_X8m3dWao_Y_NNko1DExqCA0PjBV_MHl0lD9qd2ixifytdpzLitE9veyYif06FcTLAO6ijC2oee59HeFKHeQ2l32Yh_kscBS_VHs8aUJJ_zIvA5PqfUV5-BVXAT-PucxjEsMXeQ_-mLU_cvkVewD1K_rIKCCnd_eNp9JeMu60ONoNg4LtgGhm-gPjOCwNM-6orqAiRA0niJtsDwijuVtKmWZAt2-JzuxR2IJfwHuo1q95AtUrQaNZU0aCa42mLrDeM860LC35sKJcvfc&t=AQIfcfi4WwNcLz49gOg",
-    "BN01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIvDqiWHpyMoTShQzUx7dN72Ae0aHKHDTTR4nNtzZE2VCkuL-XroU874RDDeqRC24qyPfdvott3ifm-svlv_hC3xBw5MK72WlWOZKZZoFogKWDb8Gk3p2v0h0aeFCPJB5lNuQTFGKWRTSrE2cnrgtnuok7UEnnqU-BUcNeJxFrA3U9rAksA5ybhbv3C9yNXbTncn8crkRjrO8DXiOkamDGsqihBNZSP5YIFzN3vuG5snzUf8KPYQmZERE7b4fEAa_h0PPI4UAKL1dDJQMrGe2HOjZ6D6hvMo_EEoLACebuOgmyW3XIClsq1yIsb8_QfPhtitnaBfa-BnOPNvAYJDKKfQtmK2ddqv7tswjEmVPDziqLnj6lbJIUT1_v07MA2RwgYmGRkdk4RKfhvWDFOmp4WI-IGku8wVtT9l0yvZNqLoh6BX1go34uL19EFD0cpTCc&t=AQJd8eapKZoXOydyH-w",
-    "23/02 - Apresentação V2 (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL3Mq4AYyWXQnNmPWGibI9kWxmVg6u_w623t2Btwlf29W4RM8C91KlbMevTO_293XdQPCJLjYT3bDozFg8MScFG5iZiwkyMzIkE0oWf8o7v59mu1hbfL1rsK-Ryy6kRjMZM94y67SLm7K91r5w5vRHcrGKbOiGsEcmbHTjTLIUVuDUC07h2tm-LKpU-ZOOGuWolU2N0_xn8Ry_mTwI9xPezjK23h_blTcoZIk6K4XTmAGIcVWDNED3wdwYwdlIQkov-5vSNT-FZsNr392W3x6XChXW4NtJu8TUeKeqlrQcXsr7Wn3UxPp3uFycaj3o5hL7aCJN2IyKE2RmpXpGCKnyg7wP0MW736d5BNujQRCQNp4Wz1rjKKpZLbqDNM7-lqCxgYAV1yfAJ7i_YSp3Jqm0YK0JbFu2_fCVMSZVDm5fzp7X9GOcB0NFLnH0OzoQ0M1U&t=AQJ_vaqOHXlifLOQgQ4",
-    "19/06 - pov": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKLN02DFAVuF-FTFsuP7-mjDOGvlly6ayAozllrvrWVq4YwB5UReD6lbUOIraztzmnQowVF3E1azzcvlSSSKGPm2JJzGHLlCKVdvwjTXx0SgF0iq6D65Pan-_ExYFxafg1gIRIc4t-ppZOl_UtXuFP6BhFtcomAWkftvyIIF8rGdDOqylDJL0rzGgOcoQMSR7eX8sqib2stxlPDDZodhtbJ1kBLHGLMycmpQWMcqoDulnayhjV9sPjXHc1ulkPby_8jYPK_ARW6Q5gvOGO8gT05LGD0bXQWbQHD_Z_WtQg-NxialtTzE89vmlIglsBD4F4zMWnIX8HkU6v_dAwuykVlLREMTrMkmswwmkkxJkQu_FkrtQhp5R4WzbnMH_6n42zhQ2E1jxsXP8Jdpl6eh5EHoFKTFVsq8sRCMAf-EFebPbsi4ktuQnmaneCoBL-VV6c&t=AQJM8XhLavauLS9klj4",
-    "VD01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL_v5f92SCuakBWmMGVstP2yuXkxxqqPzj06fo1Ls9b3KrN6_ZTem6_9nSJh12rytnmgxoQtOkTobrd8EqNAOKEt2MktM1cKzjny7EqnsSK2m_kfjeMB6Aruu9gz9LN-E2d-7T36Fqv4GXLtBjj_HZbqa3EoZKaycFaYSjPwnn-F-iy54lhgynR4oeyyCOlbyxdA4dKmi_N923E9N08zenzK4Wx5i4xEtKm3L9ZycnQULnRQmzpLAIiFdZgq3awX1mDWcQDk2aQpsa1nq94Woj__-42oqykqyYs6hqbd6DtuECW8ZE9ml97DmlB-wCTGRbqgk5Jx7ozaARZ7eGJYdXyt2e8Rqs25LOuOapV9Te4aMAvPVnB3U5TIoYc7Q7CbU943GJrsjPF84RjNhBZeRTdeh6ArA_gyPunoHkUkubtZMr0EGEnd6OJ_9fQSp0ciXI&t=AQJnWSyrY_Sy3UmY1Dw",
-    "VD04 - Motion (Depoimento)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ3jCGOE3wWJ0mG8f300mnJ0A4e0tWWUABIjKRJ1eyX6L3kk-SDjYpyAyHC-N-P4AVR5PpF0JczK2tITzDjxrZoGD4HPPlfiR6S4SIZo4-Nrqd-KIEknUO8bVzu5iEz23zeICv-V-zgP_-jR5BnoNpkrHYfgAjcfE_HH7g1eYujH5VJVTWpW9Cn8EG-fIczHjHWh_ThrHnvW7Y4W_5PxthXfGyuS3Qkc7LAcjG5ltzBI1upHJ21atR2d9R-b5uj-2T05RdKlC5QqV8myRcONqJnx8fkUbmaLWAS0VASVYc54hgXx7zAl37hzESWERvYlIVWC7YL-l-H_30OINWoq4nLisbuy-87ZFjFE_dSN0ezgPy8ILfPnoqdTMY6lQuR0oKeN0UYK8R54s9ph7pHP-CLlWMd1vVKpnB1EwS3uH3wLQAkkFVO550jwwzTui6ju_c&t=AQIqBewHtbBb1ADNHls",
-    "16/02 - Depoimento": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK-ma9b38dtF4B5wtOvGQSQR4HAIRkSNyqtogGZgT2ib3BM17hT1bRHPGP22AFkp1GXTyY5ducODaMxgYrlBnOew1m-D6hpS9fAxE3tY135tzlIEtvRaVweNsGXNwX-_EhChBoD6JFly4hJ5Ed-tyCat34m2RLEsgc7hUp9Z7ahczkZ9Rd6DuzrpguengsEN3VRNOsWxPxi5k4_qX3UQWyoOf1-GbikaewYBKk_EM5JMVLJQgwvq9iDnXBvAcEM05Vv-esgZqZ49lBHCQaApXWYM5259JABpithjBlIzJun9Ex8CL6uGWyEMSxeoa3RZoS_HF64PsoxizTrOnHr0TkDBW8CO0QAeJb8b1jeP5sZT_xha87YLhtOCPSQLnje9BzqeiJ1Wow3FMxrVtbKIUzuZFhYCK4JubokGGsYkqT5u-ZPrAlJcsPznjgcGYqwZ_4&t=AQKjX46tcswgt5RQc6s",
-    "17/03 - Não é um hotel": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJjkXsE04bFmC3EjnWfe-w3criBrUrrgBW5hdCMlQzGZWfiBTvoECcOFwavf0WZAFHRm_zDYYhxTkjmp5MhAmgR-FQtIfrT19O3h0JttUotEzr0nigVAs5JRyiCIFM-JWuWXHKjyVO9UYsf7okxK8lGp-QJkKbUSDUhOoa5jHUBycn07flv1EpQhiAOoRq1hMJw_DwE3ayoKktxJ5kjDd2Pn2T1cjHTIbQnogqJwqNA7uRW1H9qHur9PtG2QQfeO0qWRbikGaZb_TF_DOAO_iAOTCXfiZrdoKc1jiMbN0HCuiGu16HEVN5C9gyHKehb-8rwJ3hRoIJG3LCS199TYbzEMZ5NhWgpXBOu5xigZgFz7E0mdAaFZ-5EzubYOhYwIgDouYlG4XxRidPLjviI9ccfTRKgXWtBgtKp1_WyLg3k2wqwcFji1JTtwTmxeOrOsG0&t=AQKuSem0ZjCr05Plqa8",
-    "24/12 - Confiança": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLJcv9WVsaJRFX5ydtk6uMcCrLTQuMNbHNSLKaGngPrgyrmc-aK4iAFd7dDlz9VdfjTDRSmnjGo5bftAADUJsGGJUePcPgjuD_SInDhO-sFVNNqq-3ZoJEQxsm_ViRjM53TbCYxaO6cVraJPhEjFkaZjEN6S0_haNPVwJuKLC00Mq6f235jpsDSmsnXTc8MFIx_5ZK-GSjs7z-zXzbuflAWXWd0VhIfkKDXQBHazGlzjlkixPVKGVmg2CIuRK58XyWV5lPoDqDKsnHVcxDDqtNloGN7k5NDRalS9kJlxvMbt_iGkKKxaEEpQhV0Vj14ZikxPPGxx5shFeXgSRyMALjClAIbPfGRznN4Cae_JvfYVuEZajBsbqRvsl2YRHFrRGumRZn7NLAwsgcxrMjnPQb0pyOL-Ze4mO5X4BHt1_kdhNUYrWQ3GSUlqPHH5rvFtXc&t=AQJKbjjFgLR2kEcnnaE"
+    "VD05 - Tela Dividada (Léo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKtaM8pz6E2eizy75Caxm26phF_ZeuRVtCKXK8Z3B9zmVmONCFBFYCq1qHEVizQwuh6a6DMNeyq9qsGUqc6FDBafNesjiixXfNGkChJRcwDWgGBfyvCg00YqUSiYFGYFyZbmglSSzuYjIKGKRNtDgiVbCpvqLSr_fLoGw0iC-6FEXdKSTHwV9OD_I3IDqSRYqTwDp678im01m5jsQkR0-4SzVC3LXhTrUquOjYkM0StvGRghUYX63rUx5CcGk2XgaRFN8JztOI0d--fXnbMxapjz7tsQE_LsEaNN3yJtd5YfV1t0xRLDXXiBztYTlu959o-gvydRWOXtML0rhzw4Bz9z8iECy_jHGw5qR7hf4Re9L2-TcN_eM9lzk9-Gktm1HkhoXGCSNl-7wNcHw0x3bct_gf7dJylbYCADzKSrQLwl2hoxzj0kYiP9bVZPt80X-o&t=AQIRuLV1CvZja88lS2s",
+    "BN02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKIDvTqV8Si-FoheoVuTVhkdlAoqrgywYVowvBjcLqYw_Fpcaxjz8S4I-8fN3g8e9eKAk65XuAyiWLvZ4DtSEBF3Uoxzxa4UzyD91C_U1Yb-yuQDwzyD2owTTvuAxRPM2TjoMPrnwWCGF0Z7b7Wiw3dt8UKMMn_TqTdPMvtxdRkeCvrUaJmhp4kdZAZXnoC3itg4N9uUrsDQW2sjvaRPLepf4jwimnjNrKsd2PVRQlvw6I2EFhL2OBr-bDrR3mM9a8jpw6zE3i-mYB8Chm1ARJfTu6wLfbbQkr-IwgzLHm24eBJeVNQ6zYFNdyiJoU16X71lAcgJevlrJEYUqYHzK5nBfqUlTJH0iaDTW28UY7NIvsX_bmt-3-7r2iPj7jD3F4ZvUvwqmcpQDDQby5Wy3VhxZwl7HQZGHuctw__2pxYuy0edbboTT6UV4RWYLxCg3g&t=AQJvfb4duA9939tBAB0",
+    "24/07 - Mapa de Clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ4bAwbc3rtRdvRGH5wmI6td1FAUXXmRtHwyITQL9cpVMPU_F3arrWnCvfYlIREIw8KDAlITu9WOsWcrrtvJ_dilI6WuQvB5ugYk2ZgnnMswSD44VA-dqmcgb5ZoPCgJpeJ-JxhJA-Id-re7pArU62ucor5VxWeLKPYQrbzZxjq5iGh2yHaiFnbQwfinNHSL8fZlXh0VriYlUjHJOaybaBbh--nAXeYx-v-NJZ7f_pSaAfXzrOoHjCRPmbnl9DpOYmQ-SkrDaMc70KsXio5y7Fp9VTMDf87ePa0AKeuPBlZXHSWPU1HLNJfmn0A7QdNnaBupt8BLfkQ8ezSELItJmxpKHOojtaPCOG3V8YXJA3lgwPnpcLpDD0SLlBoPwn-CbTGzu1YWfG94Mj7WHxvVe6BzIMb-lhBlvOu_7kQ2ifM8dJFMKCXZtykDIP4Rb1HOms&t=AQKH9dGY4wi8OQ3UayM",
+    "BN03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL2xAgUKhYmMrjP3o8CCVFSK-Xt9UrMQOYtZjqIgllbbSb9ZuaWy4zDpr9jmSAOmN8of_ut8UXNjkZObfikgpt_fs6MibVKVnUiNNmfA8-8MLUNrbFfe5ljtJWyY1TTd2rOQTi7SbihyD8bD6CriOlhtL-1bgIrROR6VQVMrDINZumuQpii-9BcdhEQvwGIIt7Vnh4pDOthib5Qn7zqzYU-16b73d9aVE-TpZlXyRsU3BgEyJjEZvGPbtIr24gLA9jXzhEZ0fYBuE2rXwVoddcGQJEyA89QIeAQEJ0maqr3Ofj0Y86kYlx8VKs4VmYqDiOYZcXf8RpCFhW05hNFyGYIxgJdZILui-SMML3Xy04JrBNxbq0jWKE3qlpWpJuXn_OGhK88gs1hF5u3oRSh58VU8MNbXwExNJNPJRzMo9zt5x83-2cBbzQIBetB6QLHsYU&t=AQLkgcIQjt_sGL5wf7I",
+    "VD04 - Tela Divida (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQICMqLdLEwQmL3ittTQsvjblPrchtxO4393ofyeOFSF94dJNze9H9FK3t7wrM2Vp3qj1Mv6CDQI3Vwv06gPDejQ0wqy1Xeo0wlW-7BWVN0ewQhqA3kCgCPem9LKnuYrxhVa5O942rjVa_CIn8m0Y49c6yEb9kgVxY0QuixO1pdkACSTOR0CLz9uYo31zYqnYqh78ZLb6CunB4M-5pDQNuqcIsSBv8mKXbzoTh0d3cSQD8JPllcyaXrk4YUKU_fvHzuwTY9PaNc0hdLxqKaJdVwFLZlhpJcNewMpGXE4b74maIntm9kaIS0QyvVG3lmKbRe3pCVZgx5BMQaAkYMUPJ5_8SXS4GYeHvC_tIKqR0ZKfDAjbkPoTeFQh4qyRzq-OCaGVU8fdQUGMQPgdlcN7Yt285Sb7AB0clx8WGsf-VldJzCziSeYSrpmOYvsCtxOiVM&t=AQJBS4YLZA2g3Z7bYms",
+    "30/6 - Time falando sobre clientes": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJTLLIq-fe9tcwsqrkn7c_Vrv4bsoY1Af6D827FpWKHZynoWeX-bxEsZiYRFcIXJSRu1w6q7ht5hhe3uvDjoHqPQCJo4qikwoidwfxt9sSMU_G7m5wpzjhuTXj52QJ3GqvugJZX41nYCNqdtWLKobWJXP6pu8gph48kAsVd_podL9PCd1keqZEhGYALZmf9kW3xetDYBJMaIP1H_tR0d0Jsr2VByxyr6ZfF7GGQCmbBrBlcGGesJ_8XEvN8D4cVLfTE7NkyQOqhC7YuQFGFIRupyiAjG5i4tgOMQMUnacQSa4zrnjq1cmBnm66Jfu7BzRorEiaZ27nbGhGTTJm50Lekd4KcjCP2S_rm-wvIi7ES3Lvn9MPZBOxgfRbDnwnMkJR5e8flrs6M_xuM7LsGWl5e50EBtAMieFDRIHez8P24Laq4ebFXANfXk4Vqlubbh_E&t=AQL6XEFJiT4BglS0trM",
+    "Frequência de viagem - 7/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJGWmHd0e2IxUDWtZxOekjWgAfTYdzeUUk5HUHb1P6qisYgmSfLpUfBDaM_8FWXI-7STTnYfs8JivOZILQTMBEnR7PUOQ56LZ-EGBc_NopogR74ic7Zbo0VibefoKCSj-ACCxIGtDspq0-dTRWvaL5RYpgPIGP9lOpI-_Tkn8N9q3MBrOmQQCXoW1jwL7CrYtPlbPHLOzHCHJz1ZC3faF_cZscyT2bH6AL8QD-kl1AG5387zKetSOLU750kSMfLMaG2Qcek_-EtUTTV1eR2Wrdkmc_o15Qn4BIqKPaG7KuJlobtDAGIDb-aB6UIEmZ84Ju0NIoxuMDrA4qmAxpm9tYEOcIQWucmz5IlJgfhgUb_c8dIFDVV6T2GKZdFXmOssr8ZbKzqHZBWx2w5cFRmbfDjt00HA3fhejSprDkLZq98YRndYTPQp7NaUluFBEHrhhk&t=AQIxZ6iMAxjejWSa39s",
+    "17/8 - Gastos com viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI_lX0R_LPZuv0KAWydZbTbgHnMBcc3EsA9UfXkYkkgFdLyFq9AZPbWgi8nJs9g-oXb5O-yyR1ojtiAyQz7Tg4ba9wc_PWEjqRI3e6IATfJVo6D9Qi_zn5Oq4z7lRSUgXPg4hNJccUxBU2WCEsvdR89rhmSMDN0l5iY6DqNS2ptRrwBwOT_Qc9C5h8XmkbeBZKXl6m0S5JhbvmsT5OfiLZs6GAgG0dcqdz2HLoHZRWOMkwbP6KZoyifiAR5WCGV3CuMBEyfNCu7bp20BHtfjsvExAovVOGpWgYyviR5t2jFyU-Q1p1ruq0vbSjA-bEx2fK6DHaZnvX6ElkwOqAC0XIPxHhWdsKZd4tnnVFYh4lFnY97Vf9riDqzt_98qhOb3ZdtveWBdnPumjKJhDXXzFuDFuPYA90UGyx70KmOSLYGCF7I6X56-KqNoTFZf2120SA&t=AQJV0FgHpm2rkulqZ-4",
+    "19/02 - Apresentação": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJwA8BeTBnnhtUKYynm_isd89r_yZhrC2ivx26b8_EJtVb-Og2UJ-tDGvUYfz3BfDxUnO9dH2cHwkNIOVYbMDkqbvCvYiZqS5d2v5l452Dq75CuouYA2Sbss17pr3xvr436fuUlcbWKpAK7wsgfVU5IGc2_dDxdGF_d0Eblrepybtq71KL_h0sw8itOM0pCasrtORA28kgGHjpPf7oucTc51A6jRsSPbSHHy6lux-MV3K-kQ1A3vCLiophw6MFHIA9_Ybo02nsL46LYbUmyGMxT-1iX9c1J2TLdrQs9mQyrYW44waFZbM7ROMY9PdVR9TtrpMasQZxczhcBGrNAttHe-d4yjlukn8XbVZCZlF2M_Al13Mu5si51pM4uB_2_09MDWohaw58PCVpkVSDm8saXenTctwM8KuxpJqD4MpOVgMtCWyQP7_mbilidpQwssU4&t=AQI_fFb9Xf0W_mse1Eg",
+    "14/04 - especialista": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ5-Z4_KwuDaA4G1LIwcQuMzktGrxv9g0muIVCDUmTPcDvSxQ8RRqRKAgAc5WB92cDWI5z_Twxf9WpVEztmEiPQecONlpY50Xync0KEmbWy8-Fwq-61fEs-SiG1v7tfIS9BEKhff8NwiayWMvqRD6EzsYHfLsmbwHg2YMwWSCbDd9tuq9xq6GQbkIJ8FNpdgjlHJDx4UIHR5HM3PqRUKukGTnf3aBdPF_gjB-vAd_65elqNggzOW_3wupE9wV82FdVBEUQw1PS4GOwcoAWziKrwneR15wxdazTjklMwEwz97jqh3KuQ_3acdycNlf3_nCcq7nizWCKMCIu1yy8NlZSbj6xEAF9jzFt7lcMrGgLW6e1905g30vgOCB2nU9tbnGdWxphzW3yrJndhegfu4h1YTnH_mmgZniGhrGo_SHzBdtiwdcjW5zGW5pacefc5gLY&t=AQKvNJo7zmohSBAh4Ak",
+    "30/04 - comprei? e agora?": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL6XgpzfrS2UKqhJXiXPXy3yRq_-9BUQgoecxykFg05VNXqA_uV7Us5DAg_NwfhQ89omwLKK-8me8SuSNYVb1xmdEeCkC1Fqos6HbS5YkDUdUGuKq8MFpGBXiFA9bQezQghd6gwZIwlJyRSoCcBpyYvejpOQVjQAQ0UM1p548vV9PwsE2k6UKTrx0ULCPh8g-FwQDsgiZs3e2ZfXIJCj-B6kmG-bHjhVxnaq4CWe-3PEkcUxl5jef24QjuXbUgzybNZoJLeRO06xF6BJVwOMF39B91lqg9VnFlS50fTBB0wIjbjEne4MkVDWTjtNgeBLifqtguCq51pMgvHeasohymJRMcUk_GQjBBg-MOXskql5tupkhpxN6nftcsiDndlPSrEnB6IJulmlDXs6BD_zbj-tEqCtuOZBw9e2CMi8lrW-g2hnDdmt1YBByIFpzt1UpY&t=AQJV90pU5FMGjc_Q0UQ",
+    "Comprar casa de férias - 4/8": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ3IDrcdFIvWt6mdyeDc7AwpjXfj5CJS9zaUcXCOJFBUQpEX_iWwyz_f-RTzWGq5xsHEYv9w23qIZ32A3wDPuxRDPvjflHzNeOrNh1S-nd8hxPCMQrXBjiniYj2XxKdOtpDheO3AsmLFwlmc_ULduFEEoulPSSQk-1gPaku1EFx6xJElM3gklpZledt5G5OaSU0eJJDVwRjQ50__ZNmGedqbONtB03e3u4GCM_SW1c7EWKVXhSluqh3C3-3PB-95t8mRZvrlxeUNaTnAxbE6c57J0Ymfb2J7kZQdnQwGnkC8wlZhf_Ci3otOE7WStzK4l1EGRR2FDoTIe4Cd_qEG7hYgJHLxHxKb7UTLypMQ-h4spE6wB2Q3qZXjL5UwgNgNVanyVsoelND6kZ2c7IEJNTAZUJ7FMqtvyDLKNl6kg5r7L1czb4UQ2nqKMjSD9nuhYg&t=AQItf5oCy4qzQ689ZBk",
+    "24/07 -  Férias parceladas": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLjognUjtcqrI2CLaekcjI3A1iNt0JVuKX6BI6wdVepaPmj7nVOjsC0te-flcrMDjYeF7PwuO1SVLYt1KJU1Kid0K-NhymE7T15OG7nfD4_9uzt4fl7htNBJ5P83QqUi7CDNSGKZt2lVIzP87U9xHdqYutjoA3VzeRTjRJX5dTrFrI3d_SuVJMclvpsfj1YQDUCf6Step5LjBQQyBpeXrS_JLsGQ2oMNafeS210q7j-N9t6S3yDlbNwPwK70gU8xXQRil_2tZF0Hs6bgvNI0KQL7lLvn7p10h2PImzA_MApKMmAWn0gmGNlhW04EECiODT6HQQHQn0L3MjMoOLGqYN8DzA091DqS0bJeV4jQ3Cty_66vRBuWlot-TrCJMScaRXD2yEEBjT2y3bGGs18Ltz9c4V7CXl2QzfOHuEP4kiemEggWlhmdwWjCkIAKYmImWM&t=AQLYBda8v2LHTLyTDOc",
+    "10/7 - Jeito tradicional": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK0EU2S7U0H1EnYNl5K7liYM7-azWH3CFZGM8L_FPOAyOrs83sI-etgO-ltKSm-ClhNb2qX6BjIFAxHecaoqCRTfyZK4qkkwAVedekEDBThbVxDgCS5rlE9OoEnqB2AQZx7MPO9pIlcHsMKoyuY2I-FmCK3PiXKd6W_ylbVHn3HpVgtaaFisxLDyY7yIobX_4_ukUoHFWt1a2iMmnvVmACfgOLbBtLIh835bJASPXbQY_0VJLtBK_nKsg0Z-JTTgGBsrNCkbKMptkx6k6jJQW1wlN5BV6Auax7GAxbyDKLBkWSw_VqPpv2NkL1SpSb4jc14m8nlnr1cciX0L2Nr4oMN3YHtDNlY0dnOdD1fyWmVzVl59kxiKuAWFud_ahhKM2PbSWtWj77PPUsBzujwTfW-kJ7N80ivvbBDiTY-TZAWHbIzOohqTJ8g9IpBLcRBD10&t=AQJEUKlZG9NeMHT0Fqw",
+    "22/05 - direito de uso": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKHE6dU5H3mOeaQTfEBddI0NbszQkyvjyV3z0a6_I6fKOgJTvgvt6vmtN7D7ogpSiXLALB177wcdglUdEuDfni741WZqg1r_wUSwP0sdZ1c_lpgP5pnA30RDXEj92EcnP6lYLWHUQDotl03Ky2uPCdWDy7WuVFYTK1VyECKKtRgl7bwycWBLvnOdhwgZD6g8Xfdxw57QALK-HvCHF4p1vdYxQ7dsOvJSHAjydmObmwAo7WY3rgeZp_P7mLZlYnwfY59GKjH6qqs_nmheBOhmoA0jobem9YdvT1-q8lhffAIWV8AXAbnrhsdzC6fyCCumdHEG-D2lNjDcNLlHrhdSTCz3MNi7CjixVA7LO0kbc-qzLwzbVDJeON7FYeyCVXmJf1xAqL-y-t-ySkJiIor4Z_Zcs5OuNWyCNtjGvrn6RmaxQJqyn1Cjs6jbx-i0TuRp6A&t=AQKRvfUy__xokd7up9M",
+    "VD04": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQK10YT8gBUVUnY6PXNjDYihfInf_PiuQiNh9nbhHfEArPG0h5xd4Fioyqa7x-ReycfOYgK572kj7Sb4CkQzkR4F3UgFSV4A6lSUrsxYhVSj3UJgOfar4az2rUxV1rUL-N8WFcEIYj2wGbhjaoscOuW_PxMwBMVQEm3oEXK97Yh3rG33O5XnUhTLYtCi7xkCgJImBDfipYE5IaPW8bsU9wfggtxta22HDAM6fgt63zOM9rHnxScvZWCtBedfvFTabhyYQV11rsyAfTUnNatmImf_WiAEiUcOL6hc8HBOZu2NUp5D7Ch-uaSESK-CxLMYawKT8owRoLzjsHEJY6bSMkVYomAkWqJCgKYdut3exi8ytAhoM6rAvgO92nPmM6-EyNKLqtTxsX6GRdk-qzAGWlDun88XOjuGh0bPaos6DHa2S4iivSMfuWzl-bbcBCS345w&t=AQKGrKF-rRuM-4gmda4",
+    "VD03": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI7ADSAuIQ2mXGdkMw3CspYT-hB0ItMZYVVUSgu4UJO1nD2rS2h8uJEZnDhcrXw_0mAVt-4x7P4KcvLiB08t8zRttKLDnp6UgJTK0F0h89jglHkRwVvcUJTo_sx49gHrymlwa2Ze9tC56bEYQ-DZBkDTEIAzPJDd3R4mrFZxNFX24j9I_9YeqOzgti0RWPnpCxTpFG7J-KRxgEpfCX54qEAIuKi3a-hoe9jbe6lDnJ5Ow0FIINvrM7hZ2iHv1Kbh9clr29loQPERxHbplF0TtOM3YPeUy33d-neADisq_khKRb7z0uiYfOCneEBb65Gboah_BIwb2HaIOFGitDE2UfNoF7vtLOFNLXW8x03yMx57TZS_3V7CqVEG5wDkFfZzjAMq9Yh98r3MBoiwefzSJkQBILbNyuJfYkSTSXdzIYPhHKeRClzLGa3hAJk4rZg6lo&t=AQJlhtzpZgNO0XhFmck",
+    "VD02": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJ7iDmv6jSHoXPCZ6dhJjMuLhXzsVnsi5pjja-ERVGhZetthhD0R4Kezv20vZNDE2skzp6EWrWvbJYS-x-avYA0yEm_38dY1c5O-AmFlzQX8aKyWV0kuH-yp7g-Z4lNKF7mh8_K19V1Pa07P2p_NsHjegpK__aVyAEJQOIr_smyIQnFjmNU_oEQ_AIac1l-KPuhxWf-YNm_UMtLuWv2UvwTMQHdgdlOvibtzep_wp5Zpm_i7Ss54VgOCVopVKF4msJS5cm5477aMwpZSefuwgNTF0Gu1lRMFZSFrrC5np5GxpIRUOgx9TAsujPmI_qmAcgNv-wUSibuLHSY8tuVmu0xsVkCQwZd-QJA0qzki7mow4kyWhlJaBSgcDdjNwNwvUvZIvW4J9qkpwJMX8pL1ht8smSenqYa9oc44tbGExYu20o2x87Q6WONhC2ZHGglOcA&t=AQIY63UNfk4Q8B-T-HU",
+    "28/04 - custo de viagem": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJEbBtI_TkqciIgEGxLTHjprMcAMEzOSWACkB_8UwwmRq662iCjOqsTZndCvI7Tv6brJMZpl5SWbzWcFboYJi75Jv7EHCC5yWHi8JYXx7sx8SkpPOO593PeDjJ6A2wPlI6sHxYr47FsZBS7oSD3Szv5RBuZyaMgB7-B-PAOAm98sga2rR0bhLRKEfdKfjAJ8hC4jOyWGxwifEsKdRItN_sGAfvGvpoPjoNH56XZDK78f41T5yJ8EzfVQtdfnMKBBESo-dQoycVIm6ivGSJGYKMbOXXPu1GAOGGDG3UZeYFaHDNPyv9r2NjnX9mIuY-zZgaoljn5uT9f7Z6qysJjb1xH0XKobouKk93s0nZzMYFzE8lPs1sP-HUlQNh2Qe80Gpoe1GvTi-tI5ioI1D6rY_H9Nfs3LWj178qrDBKRPxx7Oyt_YuazwKMB4jNnUgDCkus&t=AQIfQxnk0BbttXv1pdk",
+    "16/06 - objeções": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLacjzY2ebl0I3vMZTmbM8iX-cP44hJF5rbZqpL0Hpq0hysN8sEg9wvnuwUakANbDu_Kz7R19UghFfccD66KM1aQGi9wmymIvBPt0pAlx96V9yiPAC1Lxsus78DVGpfikxPdrsC3mgK8r31nNZc4ejjaTKok3tXUhgYIWFDfUIc4HK6KfyzB7UzdWBSSPIu6-dAQ0kGXrfM8JkLbMBZjDzrbyGsGV1yj3kOzrcK6b0bXQwo5feMiOacuvJb1kNMkWWuV5Qh_0TFMOOEjPMRokXcltK6-HMs34CH_53nv4WhDRVvvMrnW4J74XzHN3ZPEeNLhXDBwGo0-X9Esc9xLOVdns2Yx5U3f0rj1jl9Ds4okIIaTqMEElRfPV6bpLKjCv6DqmHFuwzTYZPLenP6S7qH7GhCKjUfQxP64A609kKOk91wY4RHyw4rCx8aSYs5xZw&t=AQLBY6LqLS3jaTl_a78",
+    "BN01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQIPzHGG6200pqfArfaLvEp-oowjGy3EHkk8aoy17PS-DwRqrhE_KtyqjQqtCeqGpBl5tjY0yiALtHxqnbq74J4YAddmL9itaO1x5hTILNAtB4P6KuStWJwFAtneicNa-Xa7hfqOnZLitAe2CPW5aO99JismCCeWbUMYH-aA1YahycML8A1i1i78eh7ZwD_zJqDBlCL2NGwAsHjHgOHVCMHo8q_YyucLuOTnmx2hRY23C-Xo77xLRfpWf3VfXa7ik0mkwnQMWOqjsSerDkV90LnkEbM65DA122WczCU9MxFfgPJ0IMPtfDtpm8AKo7478WwAGbPzh-lTLOMQH0zD197x9XXeMvQGwYA9kVsYBxOKUJWkdC_ka3tC-ooz5Thl1ks3I4pl8VrgacwMyLE9gsemUygnDxopgPfwdDdAmm8q2NkPdfs_h3fvzxSYvKQ00zc&t=AQKrEAPh1gA0Faqf3OY",
+    "23/02 - Apresentação V2 (Leo)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQKLreZEbzOe7bIqDotWN_FjZhbLXf6PcV-kOLuvx4QbWEXty7BzeCiXz0pSwhJ0ise4-7klpsg4E4eL3n2reizD8Sr3IBmb81jJOVYse2yfJaU7fUJK556Piu6duV-LYVEDqP4MscNn7XOTTHNJWPfAZT7uk1_0DPK4R22ZvCRrW880lCwwBTZ7ORtS51tP-wxb_0ce3EAZtv1tarU8dXBP7Te2POJBw6N0N3e9_shfyOMO29F01mFFNCSIFbAW8-jUQAhMohia8y7DdMmulDU028RGN8FxQaf_cAqoZdZhHgdvUGH0eRJhBD69QnTKXjbtlyz-Qu3cvlA3-CHBuHyCYqksxP5jWk9jr27FQWpWYMuMn3kc0ydalVFyqTxgbIymWz1Y8a88fl-HzZl3AUMuAnTdYS76wQpi5Ao08Wb8h3mwMWJlVoGox6sPjgoE94g&t=AQJH3Pn56xa8-2Pn6Tw",
+    "19/06 - pov": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI83PoOLlwK-FIT4A8j0dbyw8CYYYiWR8GAU2hcH7qIiRqY4hyCxUsx1gYPcDWiWhiKwa7wa_HE3Q_Ng2ygMXUmhh4yYjBCpU5II82XrDLtnNYwVUAqGVo8qvkHwUBGrO-LLfIs__VFURrtpKRPDepxsAlMIueSmuXlBiKcIEqG0yi8elOkF2zGfT9j_-uUjivC_LTKHP7bjqSjCfxx8WFadCe3x2IKOoV4FhjgOrAtx2KD5vfRustTrm8SWx5QSakS9hM8ej4g-okeL3yzz5Ml7VCoBW1aWNIKBXP8rN17FByfMAh3ebKw_l9BEgBaByI0QPiYngWca9D-bIpvmi5vhODPbkeWNArDK4TRYebax0Vnw4964kRw3fhfys_ZqPvNG0SrmgbMdLxecfaHV3zh_kNDjSvPJdjEXi3hWzITlPJr2d5ri0KQcdDozlHDIBc&t=AQLAl1wXzcqvIaSxCx0",
+    "VD01": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJXdDrv7EL15T6hEaWfeYUUugteIjCOXkBojeiCGaAHCthJMx160kEyiBWt39ka27I6GU69arO7OCfxzoTLb6FAAeJGaeoS1tjxp4co6FD9DIcZPpvPDspTKYNS1w3ThZWl1bYb7r9Mq_W7UUjqzLLXej9kYBme1qLcAQDf3L8AyonIQAOdRVgrwhRHxqsI_SnVdkZ0w0r_ndReI8L-8dP_VzgT6M6fh8BqXp4YGVn0CH5fEARYyhyk22zGfzHREFVIDiI_IYEGCQV22KOwwxjdqF0SsC3TzXzUJiue9EMy83SbG0OO1VW2rZ1cF6Jz30XHJbaywBP8QN85fx0pFvn8ug5_5ntBs6Jj5THuIY713J-EoTj9iFKfr3yfBmS5KQGfER8APu6RMhDNxcVCpppySUu9LVkBSpiuv97jE3zYlW36HlXrxznCFg1rdfGPiaE&t=AQJDd-uuRjiP_qjcsL8",
+    "VD04 - Motion (Depoimento)": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQLy0sFA6k5Ee7ZKnJVJa284IsVmOH8l3u0yvjJrKk5sUvn2HNZIcGF0JfsAI78AWKJxGqGosDaDbNcs2508l1K_TuwbVMamnHswon58_NQgvp8WqpcACKvkyAo04nfTat_kZU--ArULC5S8uHErVQ8s2aoGxrh-xZwhY140hB3TBrg9hdynsxD-3GWXilXRg4xamcTqSuknr6qmJJJkrUrtLzd5o9P78IWyP6ystGEE0zVHsjMB9Q_l69Y24e6kf-7NECHPndxNdltRCJIcPhctzIB51XzxRT8Gg4F7LDSUEbpMPttS9q9YvPJKnmL6LNixlqqLZxTRh3Rwk4e1oaAuKQidTmr8PKSf0i1SqqsAxQj9lYWcRhoQSTP2wEOKwLyIQIKS9k0OXVbe-GlX6D6XCqE5Y6xzcTQKdKpMdH5K4fP89Tc6_f5NKIgYGR1Pe64&t=AQI0QrQeVOWbvFDNf9o",
+    "16/02 - Depoimento": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQJvQpAKWH3PCSPULM7GffEMYsHGed9EMjxk7Oh7oxyCMmLfoPRT0YTH8W0egRGTzbOYwIN6ee8tG2mo9RaO8kU_HFowujE2banM6kSUQNpdWNcFzLAaiqRg4_EqxL6ZLw3bY4F5bF61JwRY2htXYoArCKEaWltKQC6FM4PVAwDZg-z4kNrZEhNKA6sq19CB8FUXzH2IqK0WXPOFTw_csNCto0bHCduIgaOS3Q6jUrOZz0JMyvF_lgeToOAEo32TEOHc9nDQ1PqYEz5Z8Y9258YShUtLeA_aITxJP-0RZ6NZhgl-yL8mc0NVUziVe194rwZPN7OJG43aEyzgNfwl0nwM2KucP_GgNrFcRFxXWrdZW2iY8vJcMC9QcjqdP01ULauk8uqTH9u8Afp3ECq-XSuNqm0JFy2ErRw1MPdhxhd2p-kE2o9dQHrpQYXHgkqdB1M&t=AQI8EFSLmZrQlMU_zsE",
+    "17/03 - Não é um hotel": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQL0c_6OvPdPM8M79awNakDDNPPKgyThlK6smyK8URWfanCawPfNZd1Y-u4_ZpW1XICKdeq7jdcZMCt-vvOfXhipqORigoOFwqsLV0iRNo2MwReO-6hJSIRJQ6wmtoKrLuJTfCQYHzVJbObIXpO5ppOz8f28ty40LFnwhfv4fQMbGSPMR7niIikTL2vaByxzUxHZ0JXH0MaU8XuQXiw_MfNoCulJYDHp_MCX2iS6XDmsCXa2HNkQkRf24P1R6N0pFI2hxSMLUo8iNM31iB0OMFJdzWdlhzDz3kFtl3l7H155POiBa5TB22qbpB9SrNJEf0dIt5amjvrbqTMxnLUKJ2wwNU6bk5kExOx4WGTnci3IkT3bs1mTZ3WYitCae_YW3jdv9YDzxW5ePTOOjIwTl_AiDC5uRCJwidvsAoEbQ6whZsag5w_b71sIKKAz17PyOWI&t=AQI_UAkb4_uQVnYNFk0",
+    "24/12 - Confiança": "https://business.facebook.com/ads/api/preview_iframe.php?d=AQI29Q5U1SWTiJ3_-QT-zet82YaRBh57XDAaPKvKHs8d4Vtm1SyK6ChfNKnWNqsamzAwwD8NfXShQjkahBJjyoOyx3zkkJGEJVkBcB4ehtbPXtSfUsyPIpA-m9nuomj0tIVo_P1um2UdTjDl7_VNEk8E7E9E38ttgEWqEjsgfPUHOB33r8OJxHRnkDmGlS7NCIoKi52g6ye8VX1Yjre5enwzKTu_DHxxz1kS86GeLg6i5Tt6hZJq-PbNWOwga2bk7cjScJXMaiVoS-Z6nyGmvQMy--F2mkMChDp27VpXzkcDO98WtQ_NVcCOYXNmDSi1PFqcKHoilq6hyLI3umJCzGIgINKAHL2-d_MneJKO_9d-_1NhyT4cI3TFpsHfFLRseYWRT6AGd03c53zFMAWAZoZN1j6LeZcdJWCCukU7f6nrcYG3oakrbnNR2Si4NqHDQgM&t=AQJT-_dMQ3z_jffuads"
   },
   "visibility": {
     "ig_account": "mmevacationclub",
@@ -2230,12 +2230,20 @@
         "comments": 1
       },
       "2026-09-20": {
-        "spend": 39.19,
-        "profile_views": 462,
+        "spend": 47.48,
+        "profile_views": 587,
         "followers": 0,
-        "shares": 16,
-        "saves": 11,
+        "shares": 21,
+        "saves": 15,
         "comments": 0
+      },
+      "2026-09-21": {
+        "spend": 34.83,
+        "profile_views": 436,
+        "followers": 0,
+        "shares": 7,
+        "saves": 3,
+        "comments": 1
       }
     },
     "top_content": [
@@ -2249,7 +2257,7 @@
         "saves": 264,
         "spend": 3812.7599999999998,
         "impressions": 298777,
-        "thumb": "https://scontent-sjc6-1.cdninstagram.com/v/t51.71878-15/731053615_1496075628869621_5394047450873550990_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DcpESw181OoQ7kNvwETwsGA&_nc_oc=AdrdUfdAxmNLrmWDUQQdsZUUJvxLCMfH3cc0U-vH0sgqni2B2fak6ppQU_aetgHDzgg&_nc_zt=23&_nc_ht=scontent-sjc6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=U6lu1xtTJmrWKqCmHSAn_g&_nc_tpa=Q5bMBQL9zVufiL9bGYjvj05Ql97m7gr3_qUTW_IcFZ0W1Ywhtkh-6z1MdnxhHGS-kU6cw3IH7oCW98Xb&oh=00_AQIRwrJ5tcoAbt8EnTyYn0ZgdlwhPtsYtlr38ez_HLk5vw&oe=6AB63E2D",
+        "thumb": "https://scontent-dfw6-1.cdninstagram.com/v/t51.71878-15/731053615_1496075628869621_5394047450873550990_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=DcpESw181OoQ7kNvwHi_MEr&_nc_oc=Adr6k1CZshAmd_1MIlaPxLt2kXMGVXgcns3vaZNvqBR8kYoOkRiFpEHZE_KhMqhlUpA&_nc_zt=23&_nc_ht=scontent-dfw6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=Asvsztn2RKTbY_lMfj51Ug&_nc_tpa=Q5bMBQJNSqMnFMKN7doJJr0gk0PJzLgfKZmA2hobt9nCmtBRvhlDqp0OAoYMsZ11ngnxAsdsY96_HXsK&oh=00_AQLybf5-3CCfN0vErSXNfpo-33kre7SHSxX5PoAIV4N4mg&oe=6AB71F2D",
         "permalink": "https://www.instagram.com/p/DaLmQ-SgLih/"
       },
       {
@@ -2262,7 +2270,7 @@
         "saves": 13,
         "spend": 1042.1200000000001,
         "impressions": 225736,
-        "thumb": "https://scontent-sjc3-1.cdninstagram.com/v/t51.71878-15/705386354_1341469104565883_3195782802530727805_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=2hdF-5DR4fYQ7kNvwEuIM6R&_nc_oc=AdosOxJKL5SfDe2ST32CgDqKx1J91YrnJpIjeMsaOmmXGO4EgcddS2JSiswEb61qG9w&_nc_zt=23&_nc_ht=scontent-sjc3-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=sj_Z-faOStuP9dVDAwdM6w&_nc_tpa=Q5bMBQKlR7b7X3lYYJMw5VwNtnW4tinzz6pSb4E6-bh65xYgEx2fAhWPyXrP9qm3NsZ_2L0wHWUGcsxG&oh=00_AQLRlgxOVHIfVSjzG18E_5Yv4NiSZUJLFdCbAhN_0rcSDw&oe=6AB63F84",
+        "thumb": "https://scontent-dfw6-1.cdninstagram.com/v/t51.71878-15/705386354_1341469104565883_3195782802530727805_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=103&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=2hdF-5DR4fYQ7kNvwHzlr17&_nc_oc=AdoDnee7Zx9CStuiW2Bf_nLVNyuu8vm_T2yDTzS1IQ0AXJrDtA6rt0zWVJjWIgN-t8k&_nc_zt=23&_nc_ht=scontent-dfw6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=hlN0Oprr6LthZDYS7V8WmQ&_nc_tpa=Q5bMBQJ14hYjZcIS4N59I1lqfiKz-_hkinDJMSU8bF95vV_NWmfefHO3mrdzDxXwvol-rKrKZY3eXGAs&oh=00_AQLKaG65-u0PybZ6dwkmQkzZbOAx0VCzL-5E7sifqqP2Cg&oe=6AB72084",
         "permalink": "https://www.instagram.com/p/DXp3mgjgOo5/"
       },
       {
@@ -2275,7 +2283,7 @@
         "saves": 9,
         "spend": 316.53,
         "impressions": 67195,
-        "thumb": "https://scontent-sjc3-1.cdninstagram.com/v/t51.71878-15/731059041_1550237470112560_7918039888502331300_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=GapcYD7eOyMQ7kNvwE7oERp&_nc_oc=AdpLsRWbljkZjVAJbWrV3062JvG0_k8ehIyaQtr9egS72lnRh9T4Gl8OpStZWzfz7GU&_nc_zt=23&_nc_ht=scontent-sjc3-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=raKpHAWDTu5kP56w6y3oMA&_nc_tpa=Q5bMBQJ_LMu8iyy8uqGOkKER5WY6aP0sqd6yVRJLm9EAtxycKdYXywfc7o4rUG0ukBIGycWywzP1KpTG&oh=00_AQLMfe3wF0WrbGT-1F9gb42vGc1yqy4WJd6A2hUAuaS-pQ&oe=6AB65662",
+        "thumb": "https://scontent-dfw5-1.cdninstagram.com/v/t51.71878-15/731059041_1550237470112560_7918039888502331300_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=106&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=GapcYD7eOyMQ7kNvwGnJ7HD&_nc_oc=AdrhdmHhrIhfJ3sYpJsgHpXSKRz63MAvim5zefTYz0woZBRJIJeeFTfxKyigoqhXOhI&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=OOroJfzigXPlpBAGPwTgxw&_nc_tpa=Q5bMBQIuQFWFbPeqaxT2VKl0bPEpmC83LB0Lbkjpfc64cGLV_Xtv82ptLzZOex1yLYAY9UtIaXHTNeON&oh=00_AQJgNzBxXLqRLQn2UiCX-Ol49QgcKlnavxc15p7cRE4aAw&oe=6AB73762",
         "permalink": "https://www.instagram.com/p/DXp3mOgAO3a/"
       },
       {
@@ -2288,7 +2296,7 @@
         "saves": 0,
         "spend": 308.9800000000001,
         "impressions": 74399,
-        "thumb": "https://scontent-sjc3-1.cdninstagram.com/v/t51.71878-15/731274047_874815291874870_7502173994549832598_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Xzj8JnPcncQQ7kNvwEZHqys&_nc_oc=AdoMDRRmbIAPHK4RwCf6-kveI5eRZJdwL50yLJc8d08aehIkW7fYmx2xG3x_4LF40bg&_nc_zt=23&_nc_ht=scontent-sjc3-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=S6oQQB99nTYV0EcKkFPi8g&_nc_tpa=Q5bMBQIN8r50nRuqAT4lE7Yb-2UAQkro_8tAMyD5JM2W8kvjDhRKkeKUoG9P2C-r3s79okDJHC_3WXfw&oh=00_AQJshzUiuT5ImiApg3ttxoZXtboRWTF4QfYtN7RaAjl8KA&oe=6AB641CF",
+        "thumb": "https://scontent-dfw6-2.cdninstagram.com/v/t51.71878-15/731274047_874815291874870_7502173994549832598_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=110&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=Xzj8JnPcncQQ7kNvwGL2mX1&_nc_oc=AdrsXc6DrxjlqTpoj2f3Gy0_WWT72dLVW2ui06i-1J2LL_udu4uL0fhfUBZozwR5LD8&_nc_zt=23&_nc_ht=scontent-dfw6-2.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=aPpYXIvFbazdkiSDw0WkKA&_nc_tpa=Q5bMBQLWR_Rx95YJqwEzFc7gj7pAz38LWXDvBsX15ynzrwcq2IfvbXdYoDpTwijkAV-RGYtgrtl7erBR&oh=00_AQLZWSVhiYyUKL68KDAh-h_Dn2kt6_rdHdtC5X9HVcrHjQ&oe=6AB722CF",
         "permalink": "https://www.instagram.com/p/DXp3mLdgFJR/"
       },
       {
@@ -2301,7 +2309,7 @@
         "saves": 5,
         "spend": 413.5,
         "impressions": 15289,
-        "thumb": "https://scontent-sjc6-1.cdninstagram.com/v/t51.71878-15/731067980_1707842710532978_7709384687303847472_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=4pQIZ2ZEOJkQ7kNvwG4_pUx&_nc_oc=Ado2iLgRe3HmZVLaiw1MWrTUvMee6QqXKjC-CvO-tx2os5GdcM_k2Xn39gFs6m5ndKE&_nc_zt=23&_nc_ht=scontent-sjc6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=4yqxn9zz-4AVsahNcNvm9w&_nc_tpa=Q5bMBQJjVgWEAJdmtq8zuMqha7a_nPnP8nE6kBhpXf-3LLSSHgWoPqDonGIiu1gcYilnPjgCRG8zZ7EJ&oh=00_AQJ3ydAe7FVX8v46IpKxFDZj8lIZP7tU_5etSSCY40-IXg&oe=6AB62C6D",
+        "thumb": "https://scontent-dfw6-1.cdninstagram.com/v/t51.71878-15/731067980_1707842710532978_7709384687303847472_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=4pQIZ2ZEOJkQ7kNvwFae_GK&_nc_oc=AdojaKQOyCsSWv6D7GXxxD7KuyzmQGlr4at5fuhbn7KMulLnrkGz2FqTUh2ZX5hH4F0&_nc_zt=23&_nc_ht=scontent-dfw6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=r1E1RxPInOs3wnQhZhFvwA&_nc_tpa=Q5bMBQJi1rIstPugIyfCR9STe7otah_kNN82gzTnEEVbz6JTR8AnePiklBzylD3kDAF4z5HQrVGWtY5U&oh=00_AQLgjM2pXvqi2t8jgRqdg60qIYdAG00Kz5FYAQNiJxbnCA&oe=6AB70D6D",
         "permalink": "https://www.instagram.com/p/DaLmY5OgrjP/"
       },
       {
@@ -2314,7 +2322,7 @@
         "saves": 2,
         "spend": 314.87,
         "impressions": 64405,
-        "thumb": "https://scontent-sjc6-1.cdninstagram.com/v/t51.71878-15/731113162_995966849835794_7548310338784188075_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=p-rq5qO3jM0Q7kNvwGATrQA&_nc_oc=AdoMP9knMQkEGrF3Wry5GEPtb5v6vqrqGkgNfqRRiBVjXZKadENxisGO2n0Njx-xXcQ&_nc_zt=23&_nc_ht=scontent-sjc6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=xztf1ABYQDSXoAxgckdNTw&_nc_tpa=Q5bMBQLYV4sHJD0bN2YHDn_w6CgFMQvJzyXBJggYfuSXdLBSURX1TRmvBN2jMZxid_405cOWVsJh6PKL&oh=00_AQIAi8IO8bzojWi_XlNZ9W36EwAFQZun_8bQXAfyLH4UkQ&oe=6AB646BB",
+        "thumb": "https://scontent-dfw6-1.cdninstagram.com/v/t51.71878-15/731113162_995966849835794_7548310338784188075_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=p-rq5qO3jM0Q7kNvwEAKWxx&_nc_oc=AdpmzVVq_nuabiQoSAjvKq2aE9g0X9mQiEf_SdN_7keQmmzOd0oxCTDfhw9NIVugPpk&_nc_zt=23&_nc_ht=scontent-dfw6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=b4RsjLoYnyWJFprlACRWiw&_nc_tpa=Q5bMBQJ2T_yYDbTjbPShll1Y8q2dBfeRVmAORpduzia0yfEh4nPCPjDfomVffiVrPzPXYaadIjoXmivl&oh=00_AQIiBs5-6_X3XJu2Ahv7K9qccJS1-v8Tpo1aTmDHcgRrDw&oe=6AB727BB",
         "permalink": "https://www.instagram.com/p/DaLmwSGgyMX/"
       },
       {
@@ -2325,9 +2333,9 @@
         "comments": 1,
         "shares": 1,
         "saves": 0,
-        "spend": 1677.94,
-        "impressions": 241659,
-        "thumb": "https://scontent-sjc3-1.cdninstagram.com/v/t51.71878-15/779816686_2327346544868532_7245625313925451395_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=FSEs1dsewSYQ7kNvwGcicYs&_nc_oc=AdpWefs0247RWzlbilSfCuJvOkTg31N_F57eDQPeyMH9seG3RXLPPsQZs3wZIVenhA8&_nc_zt=23&_nc_ht=scontent-sjc3-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=l8CJapXSeHQU3ZdwQUqgrw&_nc_tpa=Q5bMBQJZgq0fVh6e32buWaBiwxhhKt-ppC_pqwS9JNs54Pv4jZsJBkqvyCbCGJs4t62mFMeGW7hPfwFL&oh=00_AQKpIDq34efjtCnTb8gFgGQx03sZhrRx6_0nJ49tfN-ZzQ&oe=6AB6509E",
+        "spend": 1721.06,
+        "impressions": 248017,
+        "thumb": "https://scontent-dfw5-1.cdninstagram.com/v/t51.71878-15/779816686_2327346544868532_7245625313925451395_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=105&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=xQzJDzC766UQ7kNvwF1TC_K&_nc_oc=AdpVxFq2uilORlBwPx_hjZmArOrUZ_fPsiIzdDgmI6krjWKGVMx6Dv36sd5xU_LvDV0&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=7z69u2_3AYNvwrrwMx1dDg&_nc_tpa=Q5bMBQJffOirsKQzJzwgop6kF5gaG9q5OKAix98ejMSrm-i-Jq_aVi5By4gkW-7hVzEkJa0Z1IzftLAW&oh=00_AQIypg8aaE_eB0EFY7YKnPVp6YQ0Vu10RsRxdsGALN0PwA&oe=6AB7319E",
         "permalink": "https://www.instagram.com/p/DcLwH4ZgBC2/"
       },
       {
@@ -2340,7 +2348,7 @@
         "saves": 0,
         "spend": 255.3,
         "impressions": 60760,
-        "thumb": "https://scontent-sjc6-1.cdninstagram.com/v/t51.71878-15/731060112_1275149374485158_7207037515080966071_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=uPP1szEoVTkQ7kNvwGSHa4t&_nc_oc=AdqOG5KbzqkUBmbQAQc4K3HJHbgbd7zC57EibY3S7hEuXpLqBGNu-aFQLzZWdY0Fft0&_nc_zt=23&_nc_ht=scontent-sjc6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=TMYjwYEbBzCa2QtzB2EAuA&_nc_tpa=Q5bMBQKpAPc6fO1TfFZKHR-49Qf1sSsV28g3TvZorryEZMQcL4xj0ga03uxLNbUHkcb6lO031af6VNbT&oh=00_AQLT6i6ouLR13BqAMl5UHTyonIcKSAUmTWWvrCf1hifEcQ&oe=6AB654D9",
+        "thumb": "https://scontent-dfw6-1.cdninstagram.com/v/t51.71878-15/731060112_1275149374485158_7207037515080966071_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=7-5&_nc_sid=18de74&efg=eyJlZmdfdGFnIjoiQUQuYmVzdF9pbWFnZV91cmxnZW4uQzMifQ%3D%3D&_nc_ohc=EnSOtHqO4bgQ7kNvwE8xEvK&_nc_oc=Ado1EedpN4PvnQfTD1i9QowlOocirCf6DWSpvNgiHgss-cjJi75YYOGkqAFrsNp_tJM&_nc_zt=23&_nc_ht=scontent-dfw6-1.cdninstagram.com&edm=AIZKd-4EAAAA&_nc_gid=314MWiI2BOwwhqAKmEuQWQ&_nc_tpa=Q5bMBQJ-CR24t2v97U-ok57_brUDHc59iRWz-vPOALpVqn-nuT29qq6PcbBPRzgXHoK9-loQYPpBGpCt&oh=00_AQIyMwGC_iW63YqCheDfzOv83lfl9_u0CbBz5bSBc96tYQ&oe=6AB735D9",
         "permalink": "https://www.instagram.com/p/DaLnF4lA3Wm/"
       }
     ]
