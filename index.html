@@ -4134,8 +4134,13 @@ function renderAnalises() {
 
       // Conclusão do bot no período — mesma definição do card de Bot do
       // Diagnóstico (tag 'bot-concluído' vs 'bot-incompleto' no Kommo).
+      // Dedup obrigatória: o bloco 41 do Salesbot só ADICIONA 'bot-concluído'
+      // sem remover 'bot-incompleto', então parte dos leads carrega as duas
+      // tags e entrava no denominador 2× (39,6% em vez de 46,2% no SDR).
+      // Quem tem as duas conta como concluído — mesmo critério do botI do
+      // card de Bot do Diagnóstico.
       const concl   = sdr.filter(l => (l.tags||[]).includes('bot-concluído')).length;
-      const incompl = sdr.filter(l => (l.tags||[]).includes('bot-incompleto')).length;
+      const incompl = sdr.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído')).length;
       const tocados = concl + incompl;
       const txConcl = tocados > 0 ? concl/tocados*100 : 0;
       const headerConcl = tocados > 0 ? `
