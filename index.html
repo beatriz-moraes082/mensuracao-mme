@@ -4624,10 +4624,6 @@ function renderDiagnostico() {
   // confiável) ou vieram do BDR, que não passa pelo bot.
   const botTotal = botC.length + botI.length + botN.length;
 
-  // 'Interagiu' é um eixo independente: marca resgate pelo SDR (houve mensagem
-  // de um humano e o lead respondeu depois). Convive com qualquer estado do bot
-  // — é o cruzamento que mostra onde o resgate humano compensa a falha do bot.
-  const resg = (arr) => arr.filter(l => (l.tags||[]).includes('interagiu')).length;
 
   // ── Por origem · agregação única (financeiro + qualificação) ─────────
   // Classificador de origem → canal. Meta e Google agrupam todas as variantes
@@ -5058,30 +5054,14 @@ function renderDiagnostico() {
   // ── Render: Top Alavancas · 2 cards (1 laranja sólido) ────
   // Removido: card do canal líder — vinha 'base insuficiente' e duplicava
   // info já presente no bloco 'Qualificação por canal' abaixo.
-  // A alavanca do bot é o maior dos dois buracos: quem nunca respondeu ou quem
-  // parou no meio. Até 21/09/2026 os dois apareciam juntos como 'incompleto',
-  // o que apontava a alavanca errada — encurtar o fluxo não atinge quem não
-  // respondeu à primeira mensagem.
-  const botMult = txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'mais';
-  const botGargalo = botN.length >= botI.length
-    ? {n:'Primeiro contato', c:botN.length, tx:txBotN,
-       via:'horário de disparo, copy da abordagem e qualidade do número'}
-    : {n:'Abandono no meio',  c:botI.length, tx:txBotI,
-       via:'encurtar o fluxo e melhorar as perguntas que mais derrubam'};
   const alavancas = [
-    {
-      lbl: 'Gargalo do Bot · ' + botGargalo.n,
-      val: botTotal > 0 ? fmtP(botGargalo.c/botTotal*100) : '—',
-      sub: `${botGargalo.c} leads (${fmtP(botGargalo.tx)} tx. qualif) vs ${fmtP(txBotC)} de quem conclui · atacar por ${botGargalo.via}`,
-      variant: 'accent'  // alavanca de maior impacto
-    },
     {
       lbl: topAud.length > 0 ? 'Público top' : 'Públicos',
       val: topAud.length > 0 ? fmtP(topAud[0].txQ) : '—',
       sub: topAud.length > 0
         ? `${topAud[0].aud.substring(0,40)} (${topAud[0].q}/${topAud[0].tot}) · escalar pode trazer +${Math.round(topAud[0].txQ - txQ)}pp`
         : 'sem público com base mínima (10+ leads)',
-      variant: ''
+      variant: 'accent'
     }
   ];
   document.getElementById('diag-alavancas').innerHTML = alavancas.map(a => `
@@ -5098,9 +5078,9 @@ function renderDiagnostico() {
   // abandono passou a ser medido direto — e mostrou ser o maior grupo.
   const maxBot = Math.max(botC.length, botI.length, botN.length, 1);
   const botItems = [
-    {k:'concluido',   c:botC.length, q:botCQual, tx:txBotC, r:resg(botC)},
-    {k:'incompleto',  c:botI.length, q:botIQual, tx:txBotI, r:resg(botI)},
-    {k:'naoiniciado', c:botN.length, q:botNQual, tx:txBotN, r:resg(botN)},
+    {k:'concluido',   c:botC.length, q:botCQual, tx:txBotC},
+    {k:'incompleto',  c:botI.length, q:botIQual, tx:txBotI},
+    {k:'naoiniciado', c:botN.length, q:botNQual, tx:txBotN},
   ].map(b => ({...b, ...BOT_ESTADOS[b.k]}));
   const pct = (n) => botTotal > 0 ? fmtP(n/botTotal*100) : '—';
 
@@ -5113,36 +5093,16 @@ function renderDiagnostico() {
             <div class="meta"><b>${b.c}</b> leads · <b>${pct(b.c)}</b> da base · <b>${fmtP(b.tx)}</b> tx. qualif</div>
           </div>
           <div class="bar"><div class="fill" style="width:${(b.c/maxBot*100).toFixed(0)}%"></div></div>
-          <div style="font-size:11px;color:var(--muted);line-height:1.5">
-            ${b.def} · <b style="color:var(--text)">${b.r}</b> resgatados pelo SDR
-          </div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5">${b.def}</div>
         </div>
       `).join('')}
     </div>
 
-    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
-      Base: <b>${botTotal}</b> leads com estado conhecido (SDR + Nutrição, dedup por pessoa).
-      <b>O que separa os grupos é responder, não concluir.</b>
-      Quem responde ao menos uma pergunta qualifica a <b>${fmtP(txBotI)}</b> e quem vai
-      até o fim a <b>${fmtP(txBotC)}</b> — diferença de
-      <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : '—'}</b>.
-      Já quem não responde nada qualifica a <b>${fmtP(txBotN)}</b>:
-      <b>${txBotN > 0 ? Math.round(txBotI/txBotN) + '×' : 'muitas vezes'}</b> menos que
-      quem apenas começa.
-      ${botN.length > botI.length ? `
-        Por isso o gargalo é o <b>primeiro contato</b>, não o tamanho do questionário:
-        ${pct(botN.length)} dos leads não respondem nem à primeira mensagem, e encurtar
-        o fluxo não atinge esse grupo. As alavancas são horário de disparo, copy da
-        abordagem inicial e qualidade do número de telefone.` : ``}
-    </div>
 
     <div style="margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--surface2);font-size:11.5px;color:var(--muted);line-height:1.6">
       <b style="color:var(--text)">Como isso é medido.</b>
       As três tags são mutuamente exclusivas: o fluxo do Kommo aplica uma e remove as
       outras duas, então todo lead tem exatamente um estado.
-      <b style="color:var(--text)">Resgatado pelo SDR</b> é um eixo à parte (tag
-      <i>Interagiu</i>) — marca quem recebeu mensagem de um consultor e respondeu depois
-      dela, e por isso convive com qualquer um dos três estados.
       Leads sem nenhuma das três tags ficam fora da base: são anteriores a jun/2026,
       quando a marcação passou a ser confiável, ou vieram do BDR, que não passa pelo bot.
     </div>`;
