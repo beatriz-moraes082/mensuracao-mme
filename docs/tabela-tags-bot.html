@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAFA; --surface:#fff; --surface2:#F4F5F2; --border:#ECECEC;
+    --accent:#EE4D20; --text:#1A1A1A; --muted:#6B7069;
+    --ok:#16a34a; --warn:#f59e0b; --bad:#dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+       color:var(--text);padding:44px;width:1180px}
+
+  .head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+  .head img{width:44px;height:44px}
+  .head h1{font-size:27px;font-weight:800;letter-spacing:-.02em}
+  .head .sub{font-size:13.5px;color:var(--muted);margin-top:3px}
+  .rule{height:3px;background:var(--accent);width:56px;border-radius:2px;margin:22px 0 26px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+        overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.09em;
+     text-transform:uppercase;color:var(--muted);padding:15px 26px;
+     background:var(--surface2);border-bottom:1px solid var(--border)}
+  td{padding:19px 26px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  td.quando{font-size:15px;line-height:1.5;color:var(--text)}
+
+  .tag{display:inline-block;font-family:'SF Mono','Monaco',monospace;font-size:13.5px;
+       font-weight:600;padding:7px 13px;border-radius:8px;white-space:nowrap}
+  .t-ok  {background:rgba(22,163,74,.10); color:#15803d}
+  .t-warn{background:rgba(245,158,11,.13); color:#b45309}
+  .t-bad {background:rgba(220,38,38,.09);  color:#b91c1c}
+  .t-acc {background:rgba(238,77,32,.10);  color:var(--accent)}
+
+  .grupo td{background:var(--surface2);padding:11px 26px;font-size:10.5px;font-weight:800;
+            letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .grupo td span{font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px;
+                 color:var(--muted);margin-left:9px}
+
+  .pe{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.65}
+  .pe b{color:var(--text);font-weight:700}
+  .assin{margin-top:26px;padding-top:16px;border-top:1px solid var(--border);
+         display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+  <div class="head">
+    <img src="../img/trilha-logo.png" alt="">
+    <div>
+      <h1>Tags do bot de pré-atendimento</h1>
+      <div class="sub">Ipioca Mar Resort · Kommo CRM</div>
+    </div>
+  </div>
+  <div class="rule"></div>
+
+  <div class="card">
+    <table>
+      <tr><th style="width:250px">Tag</th><th>Quando é aplicada</th></tr>
+
+      <tr class="grupo"><td colspan="2">Estado do bot<span>só uma por lead — aplicar uma remove as outras duas</span></td></tr>
+
+      <tr>
+        <td><span class="tag t-ok">bot-concluído</span></td>
+        <td class="quando">Respondeu todas as perguntas e chegou ao fim do fluxo.</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-warn">bot-incompleto</span></td>
+        <td class="quando">Respondeu ao menos uma pergunta e parou no meio.</td>
+      </tr>
+      <tr>
+        <td><span class="tag t-bad">bot-nao-iniciado</span></td>
+        <td class="quando">Recebeu a primeira mensagem e não respondeu nada.</td>
+      </tr>
+
+      <tr class="grupo"><td colspan="2">Ação humana<span>independente — convive com qualquer estado acima</span></td></tr>
+
+      <tr>
+        <td><span class="tag t-acc">Interagiu</span></td>
+        <td class="quando">O consultor mandou mensagem <b>e</b> o lead respondeu depois dela.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="pe">
+    <b>Por que as três primeiras não se acumulam.</b> O fluxo do Kommo aplica uma e remove as outras duas,
+    então todo lead tem exatamente um estado — e a soma dos três fecha a base.
+    A <b>Interagiu</b> mede outra coisa: não é o bot, é o resgate pelo consultor. Por isso um lead pode ser
+    <i>bot-nao-iniciado</i> e <i>Interagiu</i> ao mesmo tempo — nunca respondeu ao bot, mas respondeu a uma pessoa.
+  </div>
+
+  <div class="assin">
+    <span>Trilha Performance Digital</span>
+    <span>Atualizado em 22/09/2026</span>
+  </div>
+
+</body>
+</html>
