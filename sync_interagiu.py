@@ -37,11 +37,14 @@ PIPELINES = (K.PIPELINE_SDR, K.PIPELINE_NUTRICAO)
 BASE = f"https://{K.SUBDOMAIN}.kommo.com"
 
 
-def eventos(tipo, ts_de):
+def _pagina(tipo, ts_de, ts_ate):
+    """Um fatia da janela. Levanta se estourar o teto de páginas: truncar aqui
+    faria lead com contato humano parecer 'sem resgate' e perder a tag."""
     out, page = [], 1
-    while page <= 60:
+    while True:
         r = K.kommo_get("/api/v4/events", {
-            "filter[type][]": tipo, "filter[created_at][from]": ts_de,
+            "filter[type][]": tipo,
+            "filter[created_at][from]": ts_de, "filter[created_at][to]": ts_ate,
             "limit": 250, "page": page})
         lote = (r.get("_embedded") or {}).get("events") or []
         if not lote:
@@ -50,7 +53,26 @@ def eventos(tipo, ts_de):
         if len(lote) < 250:
             break
         page += 1
+        if page > 200:
+            raise RuntimeError(
+                f"{tipo}: fatia de {ts_de}..{ts_ate} passou de 50 mil eventos. "
+                "Diminua FATIA_DIAS — truncar causaria remoção indevida de tag.")
         time.sleep(0.12)
+    return out
+
+
+FATIA_DIAS = 7   # janelas menores: cada fatia cabe folgada na paginação
+
+
+def eventos(tipo, ts_de, ts_ate=None):
+    """Varre a janela em fatias, pra nenhuma consulta chegar perto do teto."""
+    ts_ate = ts_ate or int(datetime.now().timestamp())
+    out, ini = [], ts_de
+    passo = FATIA_DIAS * 86400
+    while ini < ts_ate:
+        fim = min(ini + passo, ts_ate)
+        out += _pagina(tipo, ini, fim)
+        ini = fim
     return out
 
 
