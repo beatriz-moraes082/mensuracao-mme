@@ -5210,7 +5210,26 @@ function renderDiagnostico() {
     </div>`;
 
   // ── Render: Qualificação por canal · ranking + tooltip ───
-  const _qRows = [...chRows].sort((a,b) => b.n - a.n);
+  // WhatsApp sai do Meta SÓ AQUI. As campanhas de clique-para-WhatsApp chegam
+  // com origem "Meta Ads", mas o lead entra conversando em vez de preencher
+  // formulário — é outro comportamento e outra taxa, então merece linha própria.
+  // Na tabela financeira acima ele continua dentro do Meta de propósito: o gasto
+  // da API vem quebrado por adset e criativo, não por campanha, então separar lá
+  // deixaria o investimento do Meta sem os leads dele e inflaria o CPL dos dois
+  // lados. Aqui não há dinheiro envolvido — só volume e qualificação.
+  const _ehWhats = (l) => /whats/i.test(l.campaign || '')
+                       || (l.tags || []).includes('campanha-meta-whatsapp');
+  const _WA = {key:'whatsapp', label:'Meta · WhatsApp', color:'#25D366', paid:true};
+  const _qAgg = {};
+  baseTotal.forEach(l => {
+    const d = _ehWhats(l) ? _WA : _originOf(l.origem);
+    if (!_qAgg[d.key]) _qAgg[d.key] = {...d, n:0, q:0, realiz:0};
+    const b = _qAgg[d.key];
+    b.n++;
+    if (l.qualified)         b.q++;
+    if (l.reuniao_realizada) b.realiz++;
+  });
+  const _qRows = Object.values(_qAgg).sort((a,b) => b.n - a.n);
   const _maxQ = Math.max(..._qRows.map(r => r.n), 1);
   // "Melhor taxa" só entre canais com volume relevante (evita 1 lead a 100%).
   const _MIN_VOL = 20;
@@ -5230,7 +5249,7 @@ function renderDiagnostico() {
 
   document.getElementById('diag-qualif-canal').innerHTML = `
     <div style="font-size:18px;font-weight:800">Qualificação por canal</div>
-    <div style="font-size:13px;color:var(--muted);margin-top:3px;margin-bottom:16px">Volume de leads e taxa de qualificação por origem</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:3px;margin-bottom:16px">Volume de leads e taxa de qualificação por origem · as campanhas de WhatsApp aparecem separadas do Meta, mas na tabela financeira acima seguem dentro dele</div>
     <div style="border-top:1px solid var(--border);padding-top:14px">${_qRowHtml}</div>
     ${_melhor ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)">
       Melhor taxa de qualificação entre canais com volume: <b style="color:var(--text)">${_melhor.label}</b> com <b style="color:var(--text)">${(_melhor.q/_melhor.n*100).toFixed(0)}%</b>.
