@@ -655,6 +655,7 @@
     .ds-rank .item.muted .fill{background:rgba(107,112,105,.4)}
     .ds-rank .item.danger .fill{background:linear-gradient(90deg,var(--down),#f87171)}
     .ds-rank .item.success .fill{background:linear-gradient(90deg,var(--up),#4ade80)}
+    .ds-rank .item.warn .fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
     .ds-rank .item.medal-1 .lbl::before{content:'1.';color:var(--accent);font-weight:800;margin-right:6px}
     .ds-rank .item.medal-2 .lbl::before{content:'2.';color:var(--muted);font-weight:800;margin-right:6px}
     .ds-rank .item.medal-3 .lbl::before{content:'3.';color:var(--muted);font-weight:800;margin-right:6px}
@@ -1002,7 +1003,7 @@
   <div class="ds-grid-2" id="diag-alavancas"><!-- preenchido por JS · 1 laranja sólido --></div>
 
   <!-- Bot · ranking horizontal -->
-  <div class="ds-sec"><h3>Performance do Bot</h3><span class="sub">Conclusão vs incompleto · gargalo de qualificação</span></div>
+  <div class="ds-sec"><h3>Performance do Bot</h3><span class="sub">Os três estados do pré-atendimento · onde o funil perde mais gente</span></div>
   <div class="ds-card">
     <div id="diag-bot-content"></div>
   </div>
@@ -4587,16 +4588,46 @@ function renderDiagnostico() {
   // Dedup por telefone (dkey) pra evitar contar o mesmo lead em ambos.
   // Mesma base do Diagnóstico (SDR + Nutrição) — todos passaram pelo bot.
   const botBase = baseTotal;
-  const botC = botBase.filter(l => (l.tags||[]).includes('bot-concluído'));
-  const botI = botBase.filter(l => (l.tags||[]).includes('bot-incompleto') && !(l.tags||[]).includes('bot-concluído'));
-  // Movidos pra Nutrição: subconjunto dos bot-incompleto que estão no pipeline Nutrição
-  const botNutri = botI.filter(l => l.pipeline === PIPE_NUTRI);
+
+  // Estado do bot — três tags mutuamente exclusivas no Kommo, aplicadas pelo
+  // fluxo de pré-atendimento. A ordem de prioridade abaixo é a mesma regra do
+  // fix_bot_tags.py e existe pra cobrir o histórico anterior a 21/09/2026,
+  // quando as três ainda se sobrepunham no mesmo lead.
+  const BOT_ESTADOS = {
+    concluido:   {tag:'bot-concluído',    rot:'Concluiu o bot',     cls:'success',
+                  def:'Respondeu todas as perguntas e chegou ao fim do fluxo.'},
+    incompleto:  {tag:'bot-incompleto',   rot:'Começou e parou',    cls:'warn',
+                  def:'Respondeu ao menos uma pergunta e abandonou no meio.'},
+    naoiniciado: {tag:'bot-nao-iniciado', rot:'Nunca respondeu',    cls:'danger',
+                  def:'Recebeu a primeira mensagem e não respondeu nada.'},
+  };
+  const botEstado = (l) => {
+    const t = l.tags || [];
+    for (const k of ['concluido','incompleto','naoiniciado'])
+      if (t.includes(BOT_ESTADOS[k].tag)) return k;
+    return null;
+  };
+  const botPor = {concluido:[], incompleto:[], naoiniciado:[], semTag:[]};
+  for (const l of botBase) botPor[botEstado(l) || 'semTag'].push(l);
+
+  const botC = botPor.concluido;
+  const botI = botPor.incompleto;
+  const botN = botPor.naoiniciado;
   const botCQual = botC.filter(l => l.qualified).length;
   const botIQual = botI.filter(l => l.qualified).length;
+  const botNQual = botN.filter(l => l.qualified).length;
   const txBotC = botC.length > 0 ? botCQual/botC.length*100 : 0;
   const txBotI = botI.length > 0 ? botIQual/botI.length*100 : 0;
-  // Total de leads que o bot trabalhou (base honesta de eficiência)
-  const botTotal = botBase.length;
+  const txBotN = botN.length > 0 ? botNQual/botN.length*100 : 0;
+  // Denominador = leads com estado conhecido. Leads sem nenhuma das três tags
+  // ficam de fora: são anteriores a jun/2026 (quando a marcação passou a ser
+  // confiável) ou vieram do BDR, que não passa pelo bot.
+  const botTotal = botC.length + botI.length + botN.length;
+
+  // 'Interagiu' é um eixo independente: marca resgate pelo SDR (houve mensagem
+  // de um humano e o lead respondeu depois). Convive com qualquer estado do bot
+  // — é o cruzamento que mostra onde o resgate humano compensa a falha do bot.
+  const resg = (arr) => arr.filter(l => (l.tags||[]).includes('interagiu')).length;
 
   // ── Por origem · agregação única (financeiro + qualificação) ─────────
   // Classificador de origem → canal. Meta e Google agrupam todas as variantes
@@ -5027,12 +5058,21 @@ function renderDiagnostico() {
   // ── Render: Top Alavancas · 2 cards (1 laranja sólido) ────
   // Removido: card do canal líder — vinha 'base insuficiente' e duplicava
   // info já presente no bloco 'Qualificação por canal' abaixo.
+  // A alavanca do bot é o maior dos dois buracos: quem nunca respondeu ou quem
+  // parou no meio. Até 21/09/2026 os dois apareciam juntos como 'incompleto',
+  // o que apontava a alavanca errada — encurtar o fluxo não atinge quem não
+  // respondeu à primeira mensagem.
   const botMult = txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'mais';
+  const botGargalo = botN.length >= botI.length
+    ? {n:'Primeiro contato', c:botN.length, tx:txBotN,
+       via:'horário de disparo, copy da abordagem e qualidade do número'}
+    : {n:'Abandono no meio',  c:botI.length, tx:txBotI,
+       via:'encurtar o fluxo e melhorar as perguntas que mais derrubam'};
   const alavancas = [
     {
-      lbl: 'Conclusão do Bot',
-      val: fmtP(txBotC) + ' vs ' + fmtP(txBotI),
-      sub: `Bot concluído qualifica ${botMult} que incompleto · hoje ${fmtP(botC.length/botTotal*100)} concluem`,
+      lbl: 'Gargalo do Bot · ' + botGargalo.n,
+      val: botTotal > 0 ? fmtP(botGargalo.c/botTotal*100) : '—',
+      sub: `${botGargalo.c} leads (${fmtP(botGargalo.tx)} tx. qualif) vs ${fmtP(txBotC)} de quem conclui · atacar por ${botGargalo.via}`,
       variant: 'accent'  // alavanca de maior impacto
     },
     {
@@ -5052,40 +5092,59 @@ function renderDiagnostico() {
     </div>
   `).join('');
 
-  // ── Render: Bot · ranking horizontal ────────────────────
-  // 3 estados do bot: concluído (✅) · incompleto no SDR (⚠️) · abandono total na Nutrição (🧊)
-  const botISdr     = botI.filter(l => l.pipeline !== PIPE_NUTRI);
-  const botISdrQual = botISdr.filter(l => l.qualified).length;
-  const txBotISdr   = botISdr.length > 0 ? botISdrQual/botISdr.length*100 : 0;
-  const botNutriQ   = botNutri.filter(l => l.qualified).length;
-  const txBotNutri  = botNutri.length > 0 ? botNutriQ/botNutri.length*100 : 0;
-  const maxBot = Math.max(botC.length, botISdr.length, botNutri.length, 1);
+  // ── Render: Bot · os três estados ───────────────────────
+  // Antes esta seção comparava 'concluído vs incompleto' e usava a ida pra
+  // Nutrição como proxy de abandono total. Com a tag bot-nao-iniciado o
+  // abandono passou a ser medido direto — e mostrou ser o maior grupo.
+  const maxBot = Math.max(botC.length, botI.length, botN.length, 1);
   const botItems = [
-    {n:'Bot concluído',                  c:botC.length,     q:botCQual,      tx:txBotC,     cls:'success'},
-    {n:'Bot incompleto · SDR',           c:botISdr.length,  q:botISdrQual,   tx:txBotISdr,  cls:'danger'},
-    {n:'Abandono total · Nutrição',      c:botNutri.length, q:botNutriQ,     tx:txBotNutri, cls:'danger'},
-  ];
-  const ifBot70 = Math.round(botTotal*0.70*txBotC/100 + botTotal*0.30*txBotI/100);
+    {k:'concluido',   c:botC.length, q:botCQual, tx:txBotC, r:resg(botC)},
+    {k:'incompleto',  c:botI.length, q:botIQual, tx:txBotI, r:resg(botI)},
+    {k:'naoiniciado', c:botN.length, q:botNQual, tx:txBotN, r:resg(botN)},
+  ].map(b => ({...b, ...BOT_ESTADOS[b.k]}));
+  const pct = (n) => botTotal > 0 ? fmtP(n/botTotal*100) : '—';
 
   document.getElementById('diag-bot-content').innerHTML = `
     <div class="ds-rank">
       ${botItems.map(b => `
         <div class="item ${b.cls}">
           <div class="row1">
-            <div class="lbl">${b.n}</div>
-            <div class="meta"><b>${b.c}</b> leads · <b>${b.q}</b> qualif · <b>${fmtP(b.tx)}</b> tx. qualif</div>
+            <div class="lbl">${b.rot}</div>
+            <div class="meta"><b>${b.c}</b> leads · <b>${pct(b.c)}</b> da base · <b>${fmtP(b.tx)}</b> tx. qualif</div>
           </div>
           <div class="bar"><div class="fill" style="width:${(b.c/maxBot*100).toFixed(0)}%"></div></div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5">
+            ${b.def} · <b style="color:var(--text)">${b.r}</b> resgatados pelo SDR
+          </div>
         </div>
       `).join('')}
     </div>
+
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text);line-height:1.7">
-      Base: <b>${botTotal}</b> leads que o bot trabalhou (SDR + Nutrição, dedup por telefone).
-      Quem completa o bot qualifica <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : 'muito mais'}</b>.
-      Hoje, <b>${fmtP(botC.length/botTotal*100)}</b> concluem (${botC.length} de ${botTotal}) ·
-      <b>${fmtP(botNutri.length/botTotal*100)}</b> abandonam totalmente (vão pra Nutrição).
-      Se 70% concluíssem, a qualificação subiria de <b>${qualif}</b> para ~<b>${ifBot70}</b>
-      leads (${fmtP(ifBot70/botTotal*100)} tx. qualif).
+      Base: <b>${botTotal}</b> leads com estado conhecido (SDR + Nutrição, dedup por pessoa).
+      <b>O que separa os grupos é responder, não concluir.</b>
+      Quem responde ao menos uma pergunta qualifica a <b>${fmtP(txBotI)}</b> e quem vai
+      até o fim a <b>${fmtP(txBotC)}</b> — diferença de
+      <b>${txBotI > 0 ? (txBotC/txBotI).toFixed(1) + '×' : '—'}</b>.
+      Já quem não responde nada qualifica a <b>${fmtP(txBotN)}</b>:
+      <b>${txBotN > 0 ? Math.round(txBotI/txBotN) + '×' : 'muitas vezes'}</b> menos que
+      quem apenas começa.
+      ${botN.length > botI.length ? `
+        Por isso o gargalo é o <b>primeiro contato</b>, não o tamanho do questionário:
+        ${pct(botN.length)} dos leads não respondem nem à primeira mensagem, e encurtar
+        o fluxo não atinge esse grupo. As alavancas são horário de disparo, copy da
+        abordagem inicial e qualidade do número de telefone.` : ``}
+    </div>
+
+    <div style="margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--surface2);font-size:11.5px;color:var(--muted);line-height:1.6">
+      <b style="color:var(--text)">Como isso é medido.</b>
+      As três tags são mutuamente exclusivas: o fluxo do Kommo aplica uma e remove as
+      outras duas, então todo lead tem exatamente um estado.
+      <b style="color:var(--text)">Resgatado pelo SDR</b> é um eixo à parte (tag
+      <i>Interagiu</i>) — marca quem recebeu mensagem de um consultor e respondeu depois
+      dela, e por isso convive com qualquer um dos três estados.
+      Leads sem nenhuma das três tags ficam fora da base: são anteriores a jun/2026,
+      quando a marcação passou a ser confiável, ou vieram do BDR, que não passa pelo bot.
     </div>`;
 
   // ── Render: Eficiência financeira por canal · tabela ─────
