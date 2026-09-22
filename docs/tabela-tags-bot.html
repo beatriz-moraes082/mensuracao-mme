@@ -42,6 +42,10 @@
             letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
   .grupo td span{font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px;
                  color:var(--muted);margin-left:9px}
+  .nota{display:block;font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.45}
+  .selo{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.07em;
+        text-transform:uppercase;padding:4px 9px;border-radius:6px;margin-left:9px;
+        background:rgba(238,77,32,.10);color:var(--accent);vertical-align:2px}
 
   .pe{margin-top:22px;font-size:12.5px;color:var(--muted);line-height:1.65}
   .pe b{color:var(--text);font-weight:700}
@@ -79,11 +83,13 @@
         <td class="quando">Recebeu a primeira mensagem e não respondeu nada.</td>
       </tr>
 
-      <tr class="grupo"><td colspan="2">Ação humana<span>independente — convive com qualquer estado acima</span></td></tr>
+      <tr class="grupo"><td colspan="2">Ação humana<span>independente — convive com qualquer estado acima</span><span class="selo">1× por semana</span></td></tr>
 
       <tr>
         <td><span class="tag t-acc">Interagiu</span></td>
-        <td class="quando">O consultor mandou mensagem <b>e</b> o lead respondeu depois dela.</td>
+        <td class="quando">O consultor mandou mensagem <b>e</b> o lead respondeu depois dela.
+          <span class="nota">Não é aplicada na hora: uma rotina roda <b>toda segunda-feira</b> e
+          marca os resgates da semana. Um lead resgatado na terça só recebe a tag na segunda seguinte.</span></td>
       </tr>
     </table>
   </div>
@@ -93,6 +99,8 @@
     então todo lead tem exatamente um estado — e a soma dos três fecha a base.
     A <b>Interagiu</b> mede outra coisa: não é o bot, é o resgate pelo consultor. Por isso um lead pode ser
     <i>bot-nao-iniciado</i> e <i>Interagiu</i> ao mesmo tempo — nunca respondeu ao bot, mas respondeu a uma pessoa.
+    <br><b>Cadência.</b> As três do bot são aplicadas pelo próprio fluxo, em tempo real. A <b>Interagiu</b> é
+    aplicada por uma rotina semanal, então a contagem dela da semana corrente fica incompleta até a segunda seguinte.
   </div>
 
   <div class="assin">
