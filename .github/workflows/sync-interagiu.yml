@@ -1,0 +1,67 @@
+name: Sincronizar tag Interagiu
+
+# Aplica a tag `Interagiu` nos leads que o SDR realmente resgatou — houve
+# mensagem enviada por um humano e o lead respondeu depois dela.
+#
+# Só ADICIONA. A remoção dos falsos positivos (leads marcados pela regra antiga
+# do Kommo, sem contato humano prévio) é destrutiva e muda uma métrica que o
+# time usa, então fica fora do automático: rode `--remover` na mão quando
+# quiser, depois de desligar a regra antiga na etapa Qualificação.
+#
+# A janela de 14 dias é maior que o intervalo de 7 pra cobrir semana perdida,
+# lead que responde tarde e eventual falha de execução. Reprocessar não causa
+# efeito: quem já tem a tag é ignorado.
+
+on:
+  schedule:
+    - cron: '0 10 * * 1'   # segunda-feira, 10h UTC = 07h de Brasília
+  workflow_dispatch:
+    inputs:
+      dias:
+        description: 'Janela em dias'
+        required: false
+        default: '14'
+      dry_run:
+        description: 'Só simular (não escreve no Kommo)'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Create .env from secrets
+        run: |
+          cat > .env <<EOF
+          KOMMO_SUBDOMAIN=${{ secrets.KOMMO_SUBDOMAIN }}
+          KOMMO_TOKEN=${{ secrets.KOMMO_TOKEN }}
+          EOF
+
+      - name: Sincronizar
+        run: |
+          python3 -u sync_interagiu.py \
+            --dias "${{ github.event.inputs.dias || '14' }}" \
+            ${{ github.event.inputs.dry_run == 'true' && ' ' || '--apply' }}
+
+      - name: Guardar log e CSV como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sync-interagiu-${{ github.run_id }}
+          path: |
+            sync_interagiu_*.csv
+            sync_interagiu_*.log.json
+          retention-days: 30
+          if-no-files-found: ignore
