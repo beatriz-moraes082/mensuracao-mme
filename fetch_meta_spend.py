@@ -320,6 +320,24 @@ def main():
         total = sum(s for m in months.values() for s in m.values())
         print(f'  {name[:50]} → R${total:.2f}')
 
+    # ── Campaign level ────────────────────────────────────────────────────────
+    # Necessário pra separar as campanhas de clique-para-WhatsApp do resto do
+    # Meta no dashboard: sem isso o investimento fica todo numa linha só e o CPL
+    # dos dois lados sai errado.
+    print('\nFetching campaign insights...')
+    camp_rows = fetch_insights('campaign')
+    # {campaign_name: {month: {week: spend}}}
+    camp_spend = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+    for row in camp_rows:
+        name  = (row.get('campaign_name') or '—').strip()
+        spend = float(row.get('spend', 0))
+        ds    = row.get('date_start', '')
+        camp_spend[name][month_of(ds)][week_of(ds)] += spend
+    print(f'  {len(camp_spend)} campanhas')
+    for name, months in camp_spend.items():
+        total = sum(s for m in months.values() for s in m.values())
+        print(f'  {name[:60]} → R${total:.2f}')
+
     # ── Ad (creative) level ────────────────────────────────────────────────────
     print('\nFetching ad insights...')
     ad_rows = fetch_insights('ad')
@@ -417,6 +435,7 @@ def main():
         'fetched_at':     datetime.now(timezone.utc).isoformat(),
         'period':         {'since': SINCE, 'until': UNTIL},
         'adset':          _unwrap(adset_spend),
+        'campaign':       _unwrap(camp_spend),
         'creative':       _unwrap(cri_spend),
         'adset_status':   adset_status,
         'creative_status':cri_status,

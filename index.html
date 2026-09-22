@@ -4640,9 +4640,17 @@ function renderDiagnostico() {
     if (o.includes('google')) return {key:'google', label:'Google Ads', color:_GOOGLE_C, paid:true};
     return {key:o, label:raw, color:_GRAY_C, paid:false};
   };
+  // As campanhas de clique-para-WhatsApp chegam com origem "Meta Ads", então
+  // separá-las exige olhar a campanha do lead, não só a origem. Elas ganham
+  // linha própria porque o lead entra conversando em vez de preencher
+  // formulário — outro comportamento, outro custo, outra taxa.
+  const _WA_CH = {key:'whatsapp', label:'Meta · WhatsApp', color:'#25D366', paid:true};
+  const _ehWhats = (l) => /whats/i.test(l.campaign || '')
+                       || (l.tags || []).includes('campanha-meta-whatsapp');
+  const _canalDe = (l) => _ehWhats(l) ? _WA_CH : _originOf(l.origem);
   const _chAgg = {};
-  const _touch = (origem) => {
-    const d = _originOf(origem);
+  const _touch = (l) => {
+    const d = _canalDe(l);
     if (!_chAgg[d.key]) _chAgg[d.key] = {...d, n:0, q:0, opp:0, realiz:0, vendas:0, receita:0, invest:0};
     return _chAgg[d.key];
   };
@@ -4650,20 +4658,28 @@ function renderDiagnostico() {
   // Nutrição). Oportunidade = reunião agendada (padrão de CPO do IMR; no IBR é
   // realizada). "Reuniões" (tooltip da qualificação) = reunião realizada.
   baseTotal.forEach(l => {
-    const b = _touch(l.origem);
+    const b = _touch(l);
     b.n++;
     if (l.qualified)         b.q++;
     if (l.reuniao_agendada)  b.opp++;
     if (l.reuniao_realizada) b.realiz++;
   });
   // Venda e receita vêm do Closer (venda válida, closed_at na janela).
-  closerVendas.forEach(v => { const b = _touch(v.origem); b.vendas++; b.receita += (v.price || 0); });
+  closerVendas.forEach(v => { const b = _touch(v); b.vendas++; b.receita += (v.price || 0); });
   // Gasto medido: só Meta e Google têm mídia paga → só eles têm investimento na
   // janela (mesmo fonte da Mensuração: soma de todos os adsets/campanhas).
   const _M = (typeof META_RAW   !== 'undefined' && META_RAW)   ? META_RAW   : {};
   const _G = (typeof GOOGLE_RAW !== 'undefined' && GOOGLE_RAW) ? GOOGLE_RAW : {};
-  if (_chAgg.meta)   _chAgg.meta.invest   = _sumSpendInWindow(_M.adset || {}, win);
-  if (_chAgg.google) _chAgg.google.invest = _sumSpendInWindow((_G && _G.campaign) || {}, win);
+  // O gasto do Meta vem por adset e inclui os adsets da campanha de WhatsApp.
+  // Com a quebra por campanha (adicionada ao fetch_meta_spend em 22/09/2026) dá
+  // pra descontar: o WhatsApp leva a verba da campanha dele e o Meta fica com o
+  // resto. Sem esse desconto o Meta ficaria com todo o gasto e nenhum dos leads
+  // de WhatsApp, inflando o CPL de um lado e zerando o do outro.
+  const _waSpend = _sumSpendInWindow(Object.fromEntries(
+    Object.entries(_M.campaign || {}).filter(([nome]) => /whats/i.test(nome))), win);
+  if (_chAgg.meta)     _chAgg.meta.invest     = _sumSpendInWindow(_M.adset || {}, win) - _waSpend;
+  if (_chAgg.whatsapp) _chAgg.whatsapp.invest = _waSpend;
+  if (_chAgg.google)   _chAgg.google.invest   = _sumSpendInWindow((_G && _G.campaign) || {}, win);
 
   const chRows = Object.values(_chAgg)
     .filter(r => r.n > 0 || r.vendas > 0)   // canal aparece se teve lead OU venda
@@ -5206,23 +5222,15 @@ function renderDiagnostico() {
     </div>
     <div style="margin-top:14px;font-size:11px;color:var(--muted);line-height:1.7">
       Cada célula traz o <b>volume em cima</b> e o <b>custo embaixo</b>. Leads, qualificados e oportunidades vêm da base do funil (SDR + Nutrição, dedup por pessoa); vendas e receita vêm do Closer (fechamento na janela).
-      <b>Oportunidade</b> = reunião agendada. Custos (CPL, CPL qualif., CPO, CAC, ROAS) só aparecem onde há gasto medido — <b>Meta</b> e <b>Google</b>.
+      <b>Oportunidade</b> = reunião agendada. Custos (CPL, CPL qualif., CPO, CAC, ROAS) só aparecem onde há gasto medido — <b>Meta</b>, <b>Meta · WhatsApp</b> e <b>Google</b>. O WhatsApp sai do Meta com a verba da campanha dele descontada, então as duas linhas somam o investimento total do Meta.
     </div>`;
 
   // ── Render: Qualificação por canal · ranking + tooltip ───
-  // WhatsApp sai do Meta SÓ AQUI. As campanhas de clique-para-WhatsApp chegam
-  // com origem "Meta Ads", mas o lead entra conversando em vez de preencher
-  // formulário — é outro comportamento e outra taxa, então merece linha própria.
-  // Na tabela financeira acima ele continua dentro do Meta de propósito: o gasto
-  // da API vem quebrado por adset e criativo, não por campanha, então separar lá
-  // deixaria o investimento do Meta sem os leads dele e inflaria o CPL dos dois
-  // lados. Aqui não há dinheiro envolvido — só volume e qualificação.
-  const _ehWhats = (l) => /whats/i.test(l.campaign || '')
-                       || (l.tags || []).includes('campanha-meta-whatsapp');
-  const _WA = {key:'whatsapp', label:'Meta · WhatsApp', color:'#25D366', paid:true};
+  // Mesmo classificador da tabela financeira (_canalDe), pras duas seções
+  // contarem o WhatsApp do mesmo jeito.
   const _qAgg = {};
   baseTotal.forEach(l => {
-    const d = _ehWhats(l) ? _WA : _originOf(l.origem);
+    const d = _canalDe(l);
     if (!_qAgg[d.key]) _qAgg[d.key] = {...d, n:0, q:0, realiz:0};
     const b = _qAgg[d.key];
     b.n++;
@@ -5249,7 +5257,7 @@ function renderDiagnostico() {
 
   document.getElementById('diag-qualif-canal').innerHTML = `
     <div style="font-size:18px;font-weight:800">Qualificação por canal</div>
-    <div style="font-size:13px;color:var(--muted);margin-top:3px;margin-bottom:16px">Volume de leads e taxa de qualificação por origem · as campanhas de WhatsApp aparecem separadas do Meta, mas na tabela financeira acima seguem dentro dele</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:3px;margin-bottom:16px">Volume de leads e taxa de qualificação por origem</div>
     <div style="border-top:1px solid var(--border);padding-top:14px">${_qRowHtml}</div>
     ${_melhor ? `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted)">
       Melhor taxa de qualificação entre canais com volume: <b style="color:var(--text)">${_melhor.label}</b> com <b style="color:var(--text)">${(_melhor.q/_melhor.n*100).toFixed(0)}%</b>.
