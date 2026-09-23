@@ -23,7 +23,7 @@ troca a tag de estado do bot.
 """
 
 import argparse, csv, json, sys, time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
@@ -59,6 +59,14 @@ def mes_range(ym):
     ini = datetime(int(ym[:4]), int(ym[5:7]), 1)
     fim = datetime(ini.year + (ini.month == 12), (ini.month % 12) + 1, 1)
     return int(ini.timestamp()), int(fim.timestamp()) - 1
+
+
+def dias_range(n):
+    """Janela móvel de N dias. É o que o agendamento usa — mês fechado deixaria
+    o dia 1º sem cobrir o fim do mês anterior."""
+    fim = datetime.now()
+    ini = (fim - timedelta(days=n)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return int(ini.timestamp()), int(fim.timestamp())
 
 
 def busca_leads(ts_de, ts_ate):
@@ -186,7 +194,8 @@ def reverte(log_path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mes", default="2026-09", help="mês alvo (YYYY-MM), por data de criação")
+    ap.add_argument("--mes", help="mês alvo (YYYY-MM), por data de criação")
+    ap.add_argument("--dias", type=int, help="janela móvel de N dias (o agendamento usa esta)")
     ap.add_argument("--apply", action="store_true", help="aplica de verdade (default é dry-run)")
     ap.add_argument("--revert", metavar="LOG.json", help="desfaz uma aplicação anterior")
     a = ap.parse_args()
@@ -194,8 +203,14 @@ def main():
     if a.revert:
         return reverte(a.revert)
 
-    ts_de, ts_ate = mes_range(a.mes)
-    print(f"Buscando leads de {a.mes} (SDR + Nutrição, por data de criação)...")
+    if a.dias:
+        ts_de, ts_ate = dias_range(a.dias)
+        periodo = f"últimos {a.dias} dias"
+    else:
+        mes = a.mes or datetime.now().strftime("%Y-%m")
+        ts_de, ts_ate = mes_range(mes)
+        periodo = mes
+    print(f"Buscando leads de {periodo} (SDR + Nutrição, por data de criação)...")
     leads = busca_leads(ts_de, ts_ate)
     print(f"  {len(leads)} leads no período")
 

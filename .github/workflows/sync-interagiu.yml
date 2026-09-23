@@ -1,35 +1,53 @@
-name: Sincronizar tag Interagiu
+name: Sincronizar tags do SDR
 
-# Aplica a tag `Interagiu` nos leads que o SDR realmente resgatou — houve
-# mensagem enviada por um humano e o lead respondeu depois dela.
+# Mantém as quatro tags do funil coerentes com o que de fato aconteceu:
 #
-# Só ADICIONA. A remoção dos falsos positivos (leads marcados pela regra antiga
-# do Kommo, sem contato humano prévio) é destrutiva e muda uma métrica que o
-# time usa, então fica fora do automático: rode `--remover` na mão quando
-# quiser, depois de desligar a regra antiga na etapa Qualificação.
+#   bot-nao-iniciado  o lead nunca respondeu nada
+#   bot-incompleto    respondeu alguma coisa e não chegou ao fim
+#   bot-concluído     respondeu até a última pergunta
+#   Interagiu         o SDR mandou mensagem e o lead respondeu DEPOIS dela
 #
-# A janela de 14 dias é maior que o intervalo de 7 pra cobrir semana perdida,
-# lead que responde tarde e eventual falha de execução. Reprocessar não causa
-# efeito: quem já tem a tag é ignorado.
+# As três primeiras são mutuamente exclusivas e saem do `fix_bot_tags.py`.
+# A `Interagiu` é independente e sai do `sync_interagiu.py`.
+#
+# Por que rotina e não automação nativa do Kommo: o gatilho de lá não sabe quem
+# mandou a mensagem anterior, então não separa "respondeu ao consultor" de
+# "respondeu ao bot"; e o estado do bot só é conhecível depois, quando o lead
+# que ia responder tarde já respondeu.
+#
+# O salesbot cobre o caso rápido (ele espera a resposta e desfaz a marcação na
+# hora). Esta rotina cobre a cauda: quem responde horas depois, quando a sessão
+# do bot já expirou.
 
 on:
   schedule:
-    - cron: '0 10 * * 1'   # segunda-feira, 10h UTC = 07h de Brasília
+    # 10:00 e 17:00 UTC = 07h e 14h de Brasília (UTC-3), igual ao IBR.
+    - cron: '0 10,17 * * *'
   workflow_dispatch:
     inputs:
       dias:
         description: 'Janela em dias'
         required: false
-        default: '14'
+        default: '21'
       dry_run:
         description: 'Só simular (não escreve no Kommo)'
         type: boolean
         required: false
         default: false
 
+concurrency:
+  group: sync-tags-sdr      # duas execuções ao mesmo tempo brigariam pelo PATCH
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DIAS: ${{ github.event.inputs.dias || '21' }}
+      APLICA: ${{ github.event.inputs.dry_run == 'true' && ' ' || '--apply' }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,19 +67,26 @@ jobs:
           KOMMO_TOKEN=${{ secrets.KOMMO_TOKEN }}
           EOF
 
-      - name: Sincronizar
-        run: |
-          python3 -u sync_interagiu.py \
-            --dias "${{ github.event.inputs.dias || '14' }}" \
-            ${{ github.event.inputs.dry_run == 'true' && ' ' || '--apply' }}
+      # Primeiro o estado do bot: é o que o dash usa para separar os três grupos.
+      - name: Tags do bot (não-iniciado / incompleto / concluído)
+        run: python3 -u fix_bot_tags.py --dias "$DIAS" $APLICA
+
+      # Depois a Interagiu. Com --remover porque a regra antiga do Kommo (que
+      # marcava qualquer mensagem recebida, sem contato humano prévio) foi
+      # desligada em 23/09/2026 — sem ela, não há mais quem recrie os falsos
+      # positivos, então a limpeza pode ser automática.
+      - name: Tag Interagiu (resgate do SDR)
+        run: python3 -u sync_interagiu.py --dias "$DIAS" $APLICA ${{ github.event.inputs.dry_run == 'true' && ' ' || '--remover' }}
 
       - name: Guardar log e CSV como artefato
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sync-interagiu-${{ github.run_id }}
+          name: sync-tags-${{ github.run_id }}
           path: |
             sync_interagiu_*.csv
             sync_interagiu_*.log.json
+            fix_bot_tags_*.csv
+            fix_bot_tags_*.log.json
           retention-days: 30
           if-no-files-found: ignore
