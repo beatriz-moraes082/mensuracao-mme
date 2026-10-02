@@ -1136,6 +1136,10 @@
   <div id="perfil-funil-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"></div>
   <div id="perfil-funil-insight" style="margin-top:14px"></div>
 
+  <!-- Funil por qualificação de lead · tabela (score × agendamento × reunião × venda) -->
+  <div class="ds-sec" style="margin-top:24px"><h3>Funil por qualificação de lead</h3><span class="sub" id="perfil-funil-tbl-sub">—</span></div>
+  <div class="ds-card"><div id="perfil-funil-tbl" style="overflow-x:auto"></div></div>
+
   <!-- Top 3 públicos · Top 3 criativos — segmentados por campanha -->
   <div class="ds-sec" style="margin-top:24px">
     <h3>Top públicos e criativos por campanha</h3>
@@ -4502,6 +4506,97 @@ function renderAnalises() {
 
     // Insight automático removido a pedido da Bia (14/07/2026)
     if (insightEl) insightEl.innerHTML = '';
+  })();
+
+  // ── Funil por qualificação de lead · tabela ──────────────────────────────
+  // Coorte: pessoas que entraram no SDR no período (dedup telefone→email→id) e
+  // até onde chegaram — agendou, reuniu, comprou (a qualquer momento depois).
+  // Cada linha é um funil fechado (nenhuma taxa passa de 100%).
+  // Score: Closer prevalece sobre SDR (mesma régua dos mini-funis acima).
+  (function renderFunilQualifTabela() {
+    const el = document.getElementById('perfil-funil-tbl');
+    if (!el) return;
+    const subEl = document.getElementById('perfil-funil-tbl-sub');
+    const classes = ['A','B','C','D','E','F','Sem score'];
+    const clsColor = {A:'#16a34a', B:'#84cc16', C:'#f59e0b', D:'#ef4444', E:'#b91c1c', F:'#7f1d1d', 'Sem score':'#94a3b8'};
+    const norm = s => (s && String(s).trim()) || null;
+    const okCls = s => classes.includes(s) ? s : 'Sem score';
+
+    // Score por pessoa — Closer prevalece (sobrescreve o do SDR)
+    const scoreByKey = {}, scoreByCid = {};
+    for (const l of [...(KOMMO_DATA.sdr || []), ...(KOMMO_DATA.closer || [])]) {
+      const s = norm(l.score); if (!s) continue;
+      scoreByKey[_leadDedupKey(l)] = s;
+      if (l.contact_id) scoreByCid[l.contact_id] = s;
+    }
+    const agKeys = new Set(MEETING_SCHED.map(e => e.key));
+    const reKeys = new Set(MEETING_HELD.map(e => e.key));
+    const vendaKeys = new Set((KOMMO_DATA.closer || []).filter(isValidVenda).map(_leadDedupKey));
+    const vendaCids = new Set((KOMMO_DATA.closer || []).filter(isValidVenda).map(l => l.contact_id).filter(Boolean));
+
+    // Uma entrada por pessoa no período
+    const people = new Map();
+    for (const l of sdr) {
+      const k = _leadDedupKey(l);
+      const cur = people.get(k) || {cls:null, venda:false};
+      cur.cls = cur.cls || norm(scoreByCid[l.contact_id]) || norm(scoreByKey[k]) || norm(l.score);
+      cur.venda = cur.venda || vendaKeys.has(k) || (l.contact_id && vendaCids.has(l.contact_id));
+      people.set(k, cur);
+    }
+    const row = {}; classes.forEach(c => row[c] = {leads:0, ag:0, re:0, vendas:0});
+    for (const [k, pp] of people) {
+      const r = row[okCls(pp.cls)];
+      const re = reKeys.has(k) || pp.venda;          // só vende quem reuniu
+      const ag = agKeys.has(k) || re;
+      r.leads++; if (ag) r.ag++; if (re) r.re++; if (pp.venda) r.vendas++;
+    }
+
+    const tot = {leads:0, ag:0, re:0, vendas:0};
+    classes.forEach(c => Object.keys(tot).forEach(k => tot[k] += row[c][k]));
+    const p = (a, b, d=1) => b > 0 ? (a/b*100).toFixed(d)+'%' : '—';
+    const tx = (a, b, hi, lo) => { if (!(b > 0)) return 'tx-neutral'; const v = a/b*100; return v >= hi ? 'tx-good' : v >= lo ? 'tx-mid' : 'tx-bad'; };
+    const cells = r => `
+      <td>${r.leads}</td>
+      <td class="tx-neutral">${p(r.leads, tot.leads)}</td>
+      <td>${r.ag}</td>
+      <td class="tx-neutral">${p(r.ag, r.leads)}</td>
+      <td>${r.re}</td>
+      <td class="tx-neutral">${p(r.re, r.leads)}</td>
+      <td class="${tx(r.re, r.ag, 70, 50)}">${p(r.re, r.ag)}</td>
+      <td style="font-weight:700;color:${r.vendas>0?'#16a34a':'var(--muted)'}">${r.vendas}</td>
+      <td style="font-weight:700">${p(r.vendas, r.leads, 2)}</td>
+      <td class="${tx(r.vendas, r.re, 10, 4)}">${p(r.vendas, r.re, 2)}</td>
+      <td class="${tx(r.vendas, r.ag, 8, 3)}">${p(r.vendas, r.ag, 2)}</td>`;
+    const badge = c => c === 'Sem score'
+      ? `<span style="display:inline-block;padding:4px 9px;border-radius:6px;background:${clsColor[c]};color:#fff;font-size:11px;font-weight:700">Sem qualificação</span>`
+      : `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;background:${clsColor[c]};color:#fff;font-size:12px;font-weight:800">${c}</span>`;
+    const tip = t => `<span class="eff-info">?<span class="eff-tip">${t}</span></span>`;
+
+    if (subEl) subEl.textContent = `Coorte do período · ${document.getElementById('analises-period-lbl')?.textContent || ''}`;
+    el.innerHTML = `
+      <table class="eff-table" style="min-width:980px">
+        <thead><tr>
+          <th class="col-name">Qualificação</th>
+          <th>Leads</th>
+          <th>% Total</th>
+          <th>Agendamentos${tip('Leads da linha que chegaram a agendar reunião (1 por pessoa, mesmo se remarcou).')}</th>
+          <th>% Ag</th>
+          <th>Reuniões${tip('Leads da linha que fizeram a reunião.')}</th>
+          <th>% Re</th>
+          <th>% Ag → Re</th>
+          <th>Vendas${tip('Leads da linha que viraram venda (mesmo que a venda tenha fechado depois do período).')}</th>
+          <th>% Conv.${tip('Vendas ÷ Leads.')}</th>
+          <th>Eficiência${tip('Vendas ÷ Reuniões realizadas.')}</th>
+          <th>Aproveit.${tip('Vendas ÷ Agendamentos — quanto cada reunião marcada rende, já descontando no-show.')}</th>
+        </tr></thead>
+        <tbody>
+          ${classes.map(c => `<tr><td class="col-name">${badge(c)}</td>${cells(row[c])}</tr>`).join('')}
+        </tbody>
+        <tfoot><tr><td class="col-name">Total</td>${cells(tot)}</tr></tfoot>
+      </table>
+      <div style="margin-top:10px;font-size:10.5px;color:var(--muted);line-height:1.45">
+        Coorte: pessoas que entraram no SDR no período e até onde chegaram. % Ag, % Re e % Conv. são sobre os leads da linha. Usa o <b>score final</b> do Kommo (o do Closer prevalece quando a Ana reavalia), por isso os números por score podem diferir dos cards acima, que mostram o score de entrada no SDR. Leads recentes ainda podem avançar, então o período em curso tende a subir.
+      </div>`;
   })();
 
   // Busca de leads por resposta do fluxo (logo abaixo da distribuição)
